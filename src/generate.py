@@ -4,7 +4,7 @@ import anthropic
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 
-from retrieve import EMBEDDING_MODEL, load_index, search
+from retrieve import EMBEDDING_MODEL, load_index, retrieve
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -30,7 +30,7 @@ def main():
 
     index, metadata = load_index()
     embed_model = SentenceTransformer(EMBEDDING_MODEL)
-    chunks = search(query, index, metadata, embed_model)
+    chunks = retrieve(query, index, metadata, embed_model)
 
     context = build_context(chunks)
     client = anthropic.Anthropic()
