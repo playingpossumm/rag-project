@@ -1,0 +1,1300 @@
+<title>Anatomy of a Retrieval Pipeline</title>
+
+<style>
+  :root {
+    --bg: #eaeae2;
+    --surface: #f7f7f1;
+    --surface-2: #ffffff;
+    --ink: #1b2430;
+    --muted: #5b6270;
+    --faint: #8a9099;
+    --line: #d6d4c7;
+    --accent: #1f6f5c;
+    --accent-ink: #ffffff;
+    --accent-2: #a6742a;
+    --alert: #9c3722;
+    --alert-bg: #f6ece8;
+
+    --font-display: Rockwell, "Roboto Slab", "Bookman Old Style", Georgia, serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12181c;
+      --surface: #1a2226;
+      --surface-2: #202a2f;
+      --ink: #e7e7de;
+      --muted: #98a0ac;
+      --faint: #6f7885;
+      --line: #313d43;
+      --accent: #4fbfa0;
+      --accent-ink: #0c1513;
+      --accent-2: #d2a24c;
+      --alert: #e08167;
+      --alert-bg: #251a17;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #12181c;
+    --surface: #1a2226;
+    --surface-2: #202a2f;
+    --ink: #e7e7de;
+    --muted: #98a0ac;
+    --faint: #6f7885;
+    --line: #313d43;
+    --accent: #4fbfa0;
+    --accent-ink: #0c1513;
+    --accent-2: #d2a24c;
+    --alert: #e08167;
+    --alert-bg: #251a17;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 20px 110px;
+  }
+
+  .page { max-width: 880px; margin: 0 auto; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.855em;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  header.masthead {
+    padding: 64px 0 34px;
+    border-bottom: 3px double var(--line);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+
+  h1.title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(32px, 5.2vw, 48px);
+    line-height: 1.1;
+    margin: 0 0 20px;
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+
+  .dek {
+    font-size: 19px;
+    color: var(--muted);
+    max-width: 64ch;
+    margin: 0 0 22px;
+  }
+
+  .dek strong { color: var(--ink); }
+
+  .runsheet {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  .runsheet div {
+    padding: 9px 14px;
+    border-right: 1px solid var(--line);
+    color: var(--muted);
+  }
+
+  .runsheet div:last-child { border-right: none; }
+  .runsheet b { color: var(--ink); font-weight: normal; }
+
+  /* ---------- Sections ---------- */
+
+  .stage { margin-top: 76px; }
+
+  .stage-label {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .stage-tab {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: var(--accent-ink);
+    padding: 5px 11px;
+    white-space: nowrap;
+  }
+
+  .stage-label h2 {
+    font-family: var(--font-display);
+    font-size: 25px;
+    margin: 0;
+  }
+
+  .stage-sub {
+    color: var(--muted);
+    font-size: 15.5px;
+    margin: 0 0 26px;
+    max-width: 68ch;
+  }
+
+  /* ---------- Prose ---------- */
+
+  .body-text { max-width: 68ch; }
+  .body-text p { margin: 0 0 15px; }
+  .body-text p:last-child { margin-bottom: 0; }
+
+  h4.sub {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 30px 0 12px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--line);
+    max-width: 68ch;
+  }
+
+  /* ---------- Cards ---------- */
+
+  .card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    margin-top: 26px;
+    padding: 30px 30px 26px;
+  }
+
+  .card-tab {
+    position: absolute;
+    top: -1px; left: -1px;
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 5px 12px;
+  }
+
+  .card h3 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    margin: 22px 0 6px;
+    padding-top: 4px;
+  }
+
+  .card > p, .card > .body-text p { max-width: 68ch; }
+
+  .terms { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 18px; }
+
+  .term-chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+
+  /* ---------- Mechanism block ---------- */
+
+  .mech {
+    margin: 22px 0 0;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .mech-head {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .mech-body { padding: 18px 18px 16px; overflow-x: auto; }
+
+  pre.code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.65;
+    margin: 0;
+    color: var(--ink);
+    white-space: pre;
+  }
+
+  pre.code .c { color: var(--faint); }
+  pre.code .k { color: var(--accent); }
+  pre.code .n { color: var(--accent-2); }
+
+  /* ---------- Math ---------- */
+
+  .math {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    text-align: center;
+    padding: 20px 16px;
+    margin: 22px 0;
+    background: var(--surface-2);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+
+  .math .note {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    font-style: italic;
+    color: var(--muted);
+    margin-top: 11px;
+  }
+
+  /* ---------- Callouts ---------- */
+
+  .in-project {
+    margin-top: 18px;
+    padding: 15px 17px;
+    background: var(--surface-2);
+    border-left: 3px solid var(--accent-2);
+    font-size: 15.5px;
+  }
+
+  .in-project .k {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent-2);
+    display: block;
+    margin-bottom: 7px;
+  }
+
+  .in-project code {
+    background: var(--bg);
+    padding: 1px 5px;
+    border: 1px solid var(--line);
+  }
+
+  .defect {
+    margin-top: 20px;
+    padding: 20px 22px;
+    background: var(--alert-bg);
+    border: 1px solid var(--alert);
+  }
+
+  .defect .k {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--alert);
+    display: block;
+    margin-bottom: 9px;
+  }
+
+  .defect h4 {
+    font-family: var(--font-display);
+    font-size: 19px;
+    margin: 0 0 10px;
+  }
+
+  .defect p { margin: 0 0 12px; max-width: 66ch; font-size: 16px; }
+  .defect p:last-child { margin-bottom: 0; }
+  .defect code { background: var(--surface-2); padding: 1px 5px; border: 1px solid var(--line); }
+
+  .analogy {
+    color: var(--muted);
+    font-style: italic;
+    border-left: 2px solid var(--line);
+    padding-left: 16px;
+    margin: 16px 0 0;
+    max-width: 66ch;
+  }
+
+  /* ---------- Figures ---------- */
+
+  figure.diagram {
+    margin: 32px 0 12px;
+    padding: 22px 22px 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    overflow-x: auto;
+  }
+
+  figure.diagram svg { display: block; max-width: 100%; height: auto; }
+  figure.diagram.wide svg { min-width: 760px; }
+  figure.diagram.med svg { min-width: 600px; }
+
+  figcaption {
+    font-size: 14px;
+    color: var(--muted);
+    padding: 14px 4px 6px;
+    border-top: 1px solid var(--line);
+    margin-top: 10px;
+    max-width: 76ch;
+  }
+
+  /* ---------- Tables ---------- */
+
+  .table-wrap { overflow-x: auto; margin-top: 22px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 14px 10px 0;
+    border-bottom: 2px solid var(--line);
+    font-weight: normal;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 14px 12px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  td code { color: var(--accent); }
+  td.plain-cell { color: var(--muted); font-style: italic; }
+  td.term-cell code { white-space: nowrap; font-weight: bold; }
+
+  /* ---------- Glossary ---------- */
+
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-top: 26px;
+  }
+
+  .glossary dt, .glossary dd { margin: 0; }
+  .gloss-entry { background: var(--surface); padding: 16px 18px; }
+
+  .gloss-entry dt {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+
+  .gloss-entry dd { font-size: 14.5px; color: var(--muted); line-height: 1.5; }
+
+  @media (max-width: 560px) { .glossary { grid-template-columns: 1fr; } }
+
+  footer.colophon {
+    margin-top: 84px;
+    padding-top: 22px;
+    border-top: 3px double var(--line);
+    color: var(--muted);
+    font-size: 13.5px;
+    font-family: var(--font-mono);
+  }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Phase 1 &middot; Mechanism Notes</p>
+    <h1 class="title">Anatomy of a Retrieval Pipeline</h1>
+    <p class="dek">
+      A step-by-step account of what actually happens to a PDF as it becomes searchable,
+      and to a question as it becomes a cited answer. This is the
+      <strong>Retrieval-Augmented Generation (RAG)</strong> pattern: retrieve first, then
+      generate strictly from what was retrieved. Every number below is measured from
+      the running system, not estimated &mdash; including one genuine defect the
+      measurements exposed.
+    </p>
+    <div class="runsheet">
+      <div>corpus <b>1 PDF / 15 pages</b></div>
+      <div>chunks <b>22</b></div>
+      <div>dim <b>384</b></div>
+      <div>index <b>IndexFlatIP</b></div>
+      <div>on disk <b>33 KB</b></div>
+    </div>
+  </header>
+
+  <!-- ================= OVERVIEW ================= -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Two pipelines, one shared index</h2></div>
+    <p class="stage-sub">
+      The defining structural fact of RAG: the expensive work happens once, offline.
+      Query time only ever touches the artifact that work left behind.
+    </p>
+
+    <figure class="diagram wide">
+      <svg viewBox="0 0 1340 420" role="img" aria-label="Diagram of the indexing pipeline transforming a PDF into 22 chunks then 22 by 384 vectors stored in a FAISS index, and the query pipeline embedding a question into one 384-dimension vector, searching that index for the top 5 chunks, and passing them to Claude to produce a cited answer.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <text x="16" y="22" font-family="ui-monospace, monospace" font-size="12.5" letter-spacing="0.8" fill="currentColor" opacity="0.6">INDEXING PIPELINE &mdash; ingest.py &middot; runs once per corpus &middot; no network, no cost</text>
+
+        <g font-family="Georgia, serif" font-size="14">
+          <rect x="16" y="42" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="84" y="72" text-anchor="middle">PDF</text>
+          <text x="84" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">15 pages</text>
+
+          <line x1="152" y1="80" x2="186" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="169" y="70" text-anchor="middle" font-size="10.5" opacity="0.7">parse</text>
+
+          <rect x="190" y="42" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="258" y="72" text-anchor="middle">Markdown</text>
+          <text x="258" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">per page</text>
+
+          <line x1="326" y1="80" x2="360" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="343" y="70" text-anchor="middle" font-size="10.5" opacity="0.7">chunk</text>
+
+          <rect x="364" y="42" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="432" y="72" text-anchor="middle">Chunks</text>
+          <text x="432" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">22 &times; {text,page}</text>
+
+          <line x1="500" y1="80" x2="534" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="517" y="70" text-anchor="middle" font-size="10.5" opacity="0.7">encode</text>
+
+          <rect x="538" y="42" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="606" y="72" text-anchor="middle">Vectors</text>
+          <text x="606" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">22 &times; 384</text>
+        </g>
+
+        <line x1="674" y1="98" x2="742" y2="168" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+        <text x="700" y="140" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.7">write</text>
+
+        <!-- store -->
+        <rect x="748" y="160" width="180" height="110" fill="currentColor" opacity="0.07" stroke="currentColor" stroke-width="1.4"/>
+        <text x="838" y="190" text-anchor="middle" font-family="Rockwell, Georgia, serif" font-size="15">vector_store/</text>
+        <text x="838" y="214" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.78">index.faiss</text>
+        <text x="838" y="232" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.78">metadata.json</text>
+        <text x="838" y="253" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.55">aligned by row index</text>
+
+        <text x="16" y="404" font-family="ui-monospace, monospace" font-size="12.5" letter-spacing="0.8" fill="currentColor" opacity="0.6">QUERY PIPELINE &mdash; retrieve.py + generate.py &middot; runs per question</text>
+
+        <g font-family="Georgia, serif" font-size="14">
+          <rect x="16" y="300" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="84" y="330" text-anchor="middle">Question</text>
+          <text x="84" y="350" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">free text</text>
+
+          <line x1="152" y1="338" x2="186" y2="338" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="169" y="328" text-anchor="middle" font-size="10.5" opacity="0.7">encode</text>
+
+          <rect x="190" y="300" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="258" y="330" text-anchor="middle">Query vector</text>
+          <text x="258" y="350" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">1 &times; 384</text>
+        </g>
+
+        <line x1="326" y1="322" x2="748" y2="250" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+        <text x="470" y="300" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.7">search(k=5)</text>
+
+        <g font-family="Georgia, serif" font-size="14">
+          <line x1="928" y1="215" x2="962" y2="215" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+
+          <rect x="966" y="177" width="146" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="1039" y="207" text-anchor="middle">Top-5 chunks</text>
+          <text x="1039" y="227" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">text + page + score</text>
+
+          <line x1="1112" y1="215" x2="1146" y2="215" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
+          <text x="1129" y="205" text-anchor="middle" font-size="10.5" opacity="0.7">prompt</text>
+
+          <rect x="1150" y="177" width="174" height="76" fill="currentColor" opacity="0.07" stroke="currentColor" stroke-width="1.4"/>
+          <text x="1237" y="202" text-anchor="middle" font-weight="bold">Grounded answer</text>
+          <text x="1237" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.7">[source, page N]</text>
+        </g>
+      </svg>
+      <figcaption>
+        The only channel between the two pipelines is <code>vector_store/</code>. Re-running a query
+        never re-reads the PDF; changing the embedding model invalidates everything and forces a
+        full re-index, because vectors written by one model are meaningless to another.
+      </figcaption>
+    </figure>
+
+    <h4 class="sub">Data shape at each boundary</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Stage</th><th>Type</th><th>Shape / size</th><th>Where it lives</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Source document</td><td><code>bytes</code></td><td>2,215,244 B</td><td><code>data/*.pdf</code></td></tr>
+          <tr><td>Parsed pages</td><td><code>list[(int, str)]</code></td><td>15 entries</td><td>memory</td></tr>
+          <tr><td>Chunks</td><td><code>list[dict]</code></td><td>22 entries</td><td>memory &rarr; JSON</td></tr>
+          <tr><td>Embeddings</td><td><code>np.float32</code></td><td><code>(22, 384)</code></td><td>memory &rarr; FAISS</td></tr>
+          <tr><td>Index</td><td><code>IndexFlatIP</code></td><td>22 &times; 384 &times; 4 B &asymp; 33 KB</td><td><code>index.faiss</code></td></tr>
+          <tr><td>Sidecar</td><td><code>list[dict]</code></td><td>45,714 B</td><td><code>metadata.json</code></td></tr>
+          <tr><td>Query vector</td><td><code>np.float32</code></td><td><code>(1, 384)</code></td><td>memory</td></tr>
+          <tr><td>Retrieved set</td><td><code>list[dict]</code></td><td>k = 5</td><td>memory</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= STEP 1 ================= -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 01</span>
+      <h2>Parsing &mdash; recovering text from a print format</h2>
+    </div>
+    <p class="stage-sub">Turning a page-description format back into linear, structured text with page provenance intact.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">document parsing</span>
+        <span class="term-chip">layout analysis</span>
+        <span class="term-chip">reading order</span>
+        <span class="term-chip">provenance</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          A PDF does not contain paragraphs. It contains a <em>content stream</em>: a sequence of
+          drawing operators that place glyphs at coordinates on a canvas. &#8220;This character,
+          this font, at x=72.4, y=531.2.&#8221; There is no inherent notion of a sentence, a column,
+          a heading, or even a word &mdash; those are things a human reconstructs visually from
+          spatial arrangement.
+        </p>
+        <p>
+          So extraction is inference, not decoding. A naive extractor walks the content stream in
+          storage order and concatenates glyphs. On a single-column page that accidentally works.
+          On a <strong>two-column academic paper</strong> &mdash; exactly what our test corpus is &mdash;
+          storage order frequently interleaves the columns, producing text that alternates between
+          two unrelated arguments mid-sentence.
+        </p>
+        <p>
+          A layout-aware extractor instead clusters glyphs into lines, lines into blocks, detects
+          column boundaries geometrically, then emits blocks in human reading order. It also infers
+          structure from typography: larger and bolder becomes a Markdown heading, a repeating
+          x-offset becomes a list, a grid of aligned cells becomes a table.
+        </p>
+      </div>
+
+      <p class="analogy">
+        The difference between a transcriber who types what they see left-to-right across a
+        newspaper &mdash; mixing two stories into nonsense &mdash; and one who recognizes the
+        column rule and follows each story down before moving right.
+      </p>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/ingest.py</div>
+        <div class="mech-body">
+<pre class="code"><span class="k">def</span> extract_pages(pdf_path) -> list[tuple[int, str]]:
+    <span class="c"># page_chunks=True returns one dict per page rather than</span>
+    <span class="c"># one concatenated string, which is what preserves provenance.</span>
+    pages = pymupdf4llm.to_markdown(str(pdf_path), page_chunks=<span class="n">True</span>)
+    <span class="k">return</span> [(i + <span class="n">1</span>, p[<span class="n">"text"</span>]) <span class="k">for</span> i, p <span class="k">in</span> enumerate(pages)]
+
+<span class="c"># -> [(1, "# Attention Is All You Need\n\n..."), (2, "..."), ...]</span>
+<span class="c">#      ^ 1-indexed to match what a human sees in a PDF reader</span></pre>
+        </div>
+      </div>
+
+      <div class="in-project">
+        <span class="k">Why the page number is captured here and nowhere else</span>
+        Page identity exists at parse time and is <em>destroyed</em> by every later step &mdash;
+        chunking splits text, embedding discards text entirely. If the page number is not
+        attached to each unit of text at this exact moment, no downstream step can recover it,
+        and the citation requirement becomes unimplementable. Capturing provenance at the
+        earliest possible stage is the single design decision that makes
+        <code>[source, page N]</code> possible.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STEP 2 ================= -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 02</span>
+      <h2>Chunking &mdash; a sliding window with stride</h2>
+    </div>
+    <p class="stage-sub">Splitting each page into overlapping fixed-size windows, each independently retrievable.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">chunking</span>
+        <span class="term-chip">fixed-size windowing</span>
+        <span class="term-chip">stride</span>
+        <span class="term-chip">chunk_overlap</span>
+        <span class="term-chip">boundary loss</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          Retrieval operates on units. Too large a unit and a match returns mostly irrelevant text,
+          diluting the signal sent to the model; too small and the unit loses the context that made
+          it meaningful. Fixed-size windowing is the simplest workable policy: walk the page's word
+          array in windows of <code>size</code>, advancing by a <em>stride</em> of
+          <code>size &minus; overlap</code> each time.
+        </p>
+      </div>
+
+      <div class="math">
+        stride = size &minus; overlap = 500 &minus; 50 = <b>450</b><br>
+        window<sub>i</sub> = words[450&middot;i : 450&middot;i + 500]
+        <span class="note">Consecutive windows share exactly 50 words. Every word appears in at least one window; interior words appear in two.</span>
+      </div>
+
+      <figure class="diagram med">
+        <svg viewBox="0 0 900 250" role="img" aria-label="Diagram of three overlapping 500-word windows advancing by a stride of 450 words across a page's word array, with the shared 50-word overlap regions highlighted, and a sentence that would be cut by a boundary shown surviving intact inside the neighbouring window.">
+          <defs>
+            <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <text x="10" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.6">words[ ] for one page</text>
+
+          <!-- the tape -->
+          <rect x="10" y="32" width="880" height="26" fill="currentColor" opacity="0.06" stroke="currentColor" stroke-width="1"/>
+          <text x="14" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.5">0</text>
+          <text x="862" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.5">1400</text>
+
+          <!-- window 1 -->
+          <rect x="10" y="76" width="314" height="30" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text x="167" y="96" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 0 &nbsp;&middot;&nbsp; words[0:500]</text>
+
+          <!-- window 2 -->
+          <rect x="293" y="120" width="314" height="30" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text x="450" y="140" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 1 &nbsp;&middot;&nbsp; words[450:950]</text>
+
+          <!-- window 3 -->
+          <rect x="576" y="164" width="314" height="30" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text x="733" y="184" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 2 &nbsp;&middot;&nbsp; words[900:1400]</text>
+
+          <!-- overlap bands -->
+          <rect x="293" y="76" width="31" height="74" fill="currentColor" opacity="0.14"/>
+          <rect x="576" y="120" width="31" height="74" fill="currentColor" opacity="0.14"/>
+
+          <line x1="308" y1="208" x2="308" y2="150" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+          <text x="308" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">50-word overlap</text>
+
+          <line x1="591" y1="208" x2="591" y2="194" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+          <text x="591" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">50-word overlap</text>
+
+          <!-- stride marker -->
+          <line x1="10" y1="66" x2="293" y2="66" stroke="currentColor" stroke-width="1" marker-end="url(#ar2)" opacity="0.7"/>
+          <text x="150" y="62" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">stride 450</text>
+        </svg>
+        <figcaption>
+          Overlap is insurance against boundary loss. A definition that straddles word 448 would be
+          split in half by chunk&nbsp;0's edge &mdash; but survives whole inside chunk&nbsp;1, which
+          starts 50 words earlier than the cut.
+        </figcaption>
+      </figure>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/ingest.py</div>
+        <div class="mech-body">
+<pre class="code"><span class="k">def</span> chunk_text(text, size, overlap):
+    words = text.split()
+    chunks, start = [], <span class="n">0</span>
+    <span class="k">while</span> start &lt; len(words):
+        chunks.append(<span class="n">" "</span>.join(words[start : start + size]))
+        start += size - overlap        <span class="c"># advance by the stride</span>
+    <span class="k">return</span> chunks
+
+<span class="c"># Chunking is applied PER PAGE, not to the whole document:</span>
+<span class="k">for</span> page_num, page_text <span class="k">in</span> extract_pages(pdf_path):
+    <span class="k">for</span> piece <span class="k">in</span> chunk_text(page_text, <span class="n">500</span>, <span class="n">50</span>):
+        chunks.append({<span class="n">"source"</span>: name, <span class="n">"page"</span>: page_num, <span class="n">"text"</span>: piece})</pre>
+        </div>
+      </div>
+
+      <div class="in-project">
+        <span class="k">The page-boundary tradeoff</span>
+        Because chunking runs inside the per-page loop, no chunk can ever span two pages &mdash;
+        which is precisely what keeps <code>page</code> a single unambiguous integer per chunk.
+        The cost is real: a paragraph flowing across a page break is cut at the break with no
+        overlap to rescue it. We accepted unambiguous citations over perfect continuity. It also
+        explains the shape of the corpus &mdash; 15 pages yielded 22 chunks, and the shortest chunk
+        is only <code>46 words</code>, the tail end of a sparse page.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STEP 3 ================= -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 03</span>
+      <h2>Embedding &mdash; projecting text into a metric space</h2>
+    </div>
+    <p class="stage-sub">A neural encoder maps variable-length text to a fixed 384-dimensional vector where geometric proximity approximates semantic similarity.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">embedding</span>
+        <span class="term-chip">bi-encoder</span>
+        <span class="term-chip">mean pooling</span>
+        <span class="term-chip">dense vector</span>
+        <span class="term-chip">L2 normalization</span>
+        <span class="term-chip">max_seq_length</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          The embedding model is a small transformer &mdash; six layers, trained specifically so
+          that texts with similar meaning land near each other. The forward pass is mechanical:
+        </p>
+        <p>
+          <strong>1. Tokenize.</strong> Text is split into sub-word tokens by a WordPiece vocabulary.
+          Not words &mdash; <em>tokens</em>. This distinction matters enormously in a moment. Technical
+          prose tokenizes badly: rare terms fragment into several pieces each.
+        </p>
+        <p>
+          <strong>2. Encode.</strong> Each token becomes a 384-dim vector, and six layers of
+          self-attention let every token's representation absorb context from every other token. This is
+          why the model can tell that &#8220;bank&#8221; near &#8220;river&#8221; differs from
+          &#8220;bank&#8221; near &#8220;deposit&#8221;.
+        </p>
+        <p>
+          <strong>3. Pool.</strong> The result is one vector per token, but we need one vector per
+          chunk &mdash; so the token vectors are averaged element-wise (mean pooling) into a single
+          384-dim vector.
+        </p>
+        <p>
+          <strong>4. Normalize.</strong> Each vector is scaled to unit length. This discards magnitude
+          and keeps only direction &mdash; and direction is where meaning lives.
+        </p>
+      </div>
+
+      <p class="analogy">
+        The model places every chunk as a point on the surface of a 384-dimensional sphere.
+        Two chunks about the same idea sit close together on that surface even when they share
+        no vocabulary at all; &#8220;revenue increased&#8221; and &#8220;sales grew&#8221; are near
+        neighbours despite zero overlapping words.
+      </p>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/ingest.py</div>
+        <div class="mech-body">
+<pre class="code">model = SentenceTransformer(<span class="n">"all-MiniLM-L6-v2"</span>)
+embeddings = model.encode(texts, convert_to_numpy=<span class="n">True</span>)
+<span class="c"># embeddings.shape == (22, 384), dtype float32</span>
+
+faiss.normalize_L2(embeddings)      <span class="c"># in-place; every row now has ||v|| == 1.0</span></pre>
+        </div>
+      </div>
+
+      <div class="defect">
+        <span class="k">Defect found while writing this document</span>
+        <h4>Most of each chunk is invisible to search</h4>
+        <p>
+          <code>all-MiniLM-L6-v2</code> has a hard input ceiling of <code>max_seq_length = 256</code>
+          tokens. Anything past token 256 is <strong>silently truncated</strong> before the encoder
+          ever sees it &mdash; no error, no warning at encode time.
+        </p>
+        <p>
+          Our chunk size is specified in <em>words</em> (500), but the limit is in <em>tokens</em>.
+          Measured across the real corpus: median chunk is <code>626 tokens</code>, the largest is
+          <code>1,212 tokens</code>, and <code>15 of 22 chunks</code> exceed the 256-token ceiling,
+          losing a median of <code>370 tokens</code> each.
+        </p>
+        <p>
+          Concretely: for two-thirds of the corpus, roughly the last 60% of each chunk contributes
+          <em>nothing</em> to its vector. The text is still stored and still gets sent to Claude once
+          retrieved &mdash; so answers stay correct &mdash; but that text is unfindable. It cannot
+          influence whether its own chunk gets retrieved in the first place.
+        </p>
+        <p>
+          This is very likely part of why retrieval ranked figure captions on pages 14&ndash;15 above
+          the actual definition on page 5: the page-5 chunk's definition may sit past the truncation
+          boundary. <strong>The fix belongs in Phase 2</strong> &mdash; either measure chunk size in
+          tokens rather than words (target ~250), or move to an embedding model with a longer context
+          window.
+        </p>
+      </div>
+
+      <div class="in-project">
+        <span class="k">Why normalize</span>
+        Unit-length vectors are what make the next step cheap. Once
+        <code>||u|| = ||v|| = 1</code>, the cosine of the angle between two vectors is
+        <em>identical</em> to their dot product &mdash; so a similarity search reduces to plain
+        multiplication with no division and no square roots. The check confirms it:
+        <code>||vector[0]|| = 1.000000</code>.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STEP 4 ================= -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 04</span>
+      <h2>Indexing &mdash; the vector store and its sidecar</h2>
+    </div>
+    <p class="stage-sub">Persisting vectors for fast nearest-neighbour search, and the alignment invariant that keeps text and page numbers attached to them.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">vector store</span>
+        <span class="term-chip">IndexFlatIP</span>
+        <span class="term-chip">inner product</span>
+        <span class="term-chip">cosine similarity</span>
+        <span class="term-chip">exact vs. ANN</span>
+        <span class="term-chip">parallel arrays</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          FAISS stores an <code>n &times; d</code> matrix of float32 and answers one question fast:
+          given a query vector, which stored rows are closest? Two design choices define our index.
+        </p>
+        <p>
+          <strong>Exact, not approximate.</strong> <code>IndexFlatIP</code> is brute force &mdash; it
+          compares the query against every single stored vector. At 22 vectors that is 8,448
+          multiply-accumulate operations, which is nothing. Approximate indexes (HNSW, IVF) trade a
+          little recall for sub-linear search and only start paying off in the hundreds of thousands
+          of vectors. Choosing exact search now means retrieval quality problems are unambiguously
+          <em>our</em> problems, never the index quietly missing a true neighbour.
+        </p>
+        <p>
+          <strong>Inner product on normalized vectors.</strong> The <code>IP</code> suffix means the
+          scoring function is the dot product. Because step 3 normalized everything to unit length,
+          that dot product <em>is</em> cosine similarity.
+        </p>
+      </div>
+
+      <div class="math">
+        cos(&theta;) = (u &middot; v) / (&#8214;u&#8214; &#8214;v&#8214;) &nbsp;&nbsp;&rarr;&nbsp;&nbsp;
+        when &#8214;u&#8214; = &#8214;v&#8214; = 1 &nbsp;&nbsp;&rarr;&nbsp;&nbsp; cos(&theta;) = u &middot; v
+        <span class="note">Scores run &minus;1 to 1. Our observed top-5 for &#8220;What is multi-head attention?&#8221; ranged 0.634 down to 0.402.</span>
+      </div>
+
+      <figure class="diagram med">
+        <svg viewBox="0 0 860 300" role="img" aria-label="Left: three unit vectors drawn from a common origin on a quarter circle, with a small angle between the query and a relevant chunk and a large angle to an unrelated chunk, illustrating that a smaller angle means a higher cosine score. Right: a table showing FAISS row indices aligned one-to-one with metadata.json array positions.">
+          <defs>
+            <marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <!-- LEFT: cosine geometry -->
+          <text x="14" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.6">cosine = angle between unit vectors</text>
+
+          <path d="M 60 250 A 190 190 0 0 1 250 60" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"/>
+          <circle cx="60" cy="250" r="3" fill="currentColor"/>
+
+          <line x1="60" y1="250" x2="238" y2="182" stroke="currentColor" stroke-width="2" marker-end="url(#ar3)"/>
+          <text x="248" y="180" font-family="Georgia,serif" font-size="13">query</text>
+
+          <line x1="60" y1="250" x2="222" y2="145" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar3)" opacity="0.85"/>
+          <text x="230" y="140" font-family="Georgia,serif" font-size="13">chunk A</text>
+          <text x="230" y="156" font-family="ui-monospace,monospace" font-size="11" opacity="0.65">0.63</text>
+
+          <line x1="60" y1="250" x2="128" y2="76" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar3)" opacity="0.5"/>
+          <text x="120" y="66" font-family="Georgia,serif" font-size="13" opacity="0.75">chunk B</text>
+          <text x="120" y="50" font-family="ui-monospace,monospace" font-size="11" opacity="0.55">0.11</text>
+
+          <path d="M 130 226 A 74 74 0 0 0 122 205" fill="none" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+          <text x="146" y="212" font-family="ui-monospace,monospace" font-size="11" opacity="0.7">small &theta;</text>
+
+          <text x="14" y="284" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.65" font-style="italic">only direction matters &mdash; all vectors have length 1</text>
+
+          <!-- divider -->
+          <line x1="430" y1="30" x2="430" y2="270" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+
+          <!-- RIGHT: parallel arrays -->
+          <text x="470" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.6">the alignment invariant</text>
+
+          <text x="470" y="52" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.75">index.faiss</text>
+          <text x="672" y="52" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.75">metadata.json</text>
+
+          <g font-family="ui-monospace,monospace" font-size="11">
+            <rect x="470" y="62" width="150" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+            <text x="480" y="80" opacity="0.7">row 0 &nbsp;[0.02, ...]</text>
+            <rect x="672" y="62" width="172" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+            <text x="682" y="80" opacity="0.7">[0] page 1</text>
+            <line x1="620" y1="76" x2="668" y2="76" stroke="currentColor" stroke-width="1" opacity="0.45"/>
+
+            <rect x="470" y="98" width="150" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+            <text x="480" y="116" opacity="0.7">row 1 &nbsp;[0.11, ...]</text>
+            <rect x="672" y="98" width="172" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+            <text x="682" y="116" opacity="0.7">[1] page 2</text>
+            <line x1="620" y1="112" x2="668" y2="112" stroke="currentColor" stroke-width="1" opacity="0.45"/>
+
+            <rect x="470" y="134" width="150" height="28" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.6"/>
+            <text x="480" y="152">row 3 &nbsp;[0.47, ...]</text>
+            <rect x="672" y="134" width="172" height="28" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.6"/>
+            <text x="682" y="152">[3] page 3, "Figure 1..."</text>
+            <line x1="620" y1="148" x2="668" y2="148" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar3)"/>
+
+            <text x="470" y="184" opacity="0.5">...</text>
+            <text x="672" y="184" opacity="0.5">...</text>
+          </g>
+
+          <text x="470" y="222" font-family="Georgia,serif" font-size="13" fill="currentColor">
+            <tspan font-family="ui-monospace,monospace" font-size="11.5">search()</tspan> returns id = 3
+          </text>
+          <text x="470" y="244" font-family="Georgia,serif" font-size="13" fill="currentColor">
+            &rarr; look up <tspan font-family="ui-monospace,monospace" font-size="11.5">metadata[3]</tspan> for text + page
+          </text>
+          <text x="470" y="272" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.65" font-style="italic">order is the only thing joining these two files</text>
+        </svg>
+        <figcaption>
+          Left: retrieval is angular proximity on the unit sphere. Right: FAISS stores no text &mdash;
+          only vectors and integer row ids. The citation depends entirely on row <em>i</em> of the index
+          corresponding to element <em>i</em> of the JSON.
+        </figcaption>
+      </figure>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/ingest.py</div>
+        <div class="mech-body">
+<pre class="code">dim   = embeddings.shape[<span class="n">1</span>]        <span class="c"># 384</span>
+index = faiss.IndexFlatIP(dim)      <span class="c"># Flat = exhaustive, IP = inner product</span>
+index.add(embeddings.astype(np.float32))
+
+faiss.write_index(index, STORE_DIR / <span class="n">"index.faiss"</span>)
+json.dump(all_chunks, open(STORE_DIR / <span class="n">"metadata.json"</span>, <span class="n">"w"</span>))
+<span class="c">#         ^ same list, same order --- this is the invariant</span></pre>
+        </div>
+      </div>
+
+      <div class="in-project">
+        <span class="k">The fragile part of the design</span>
+        Nothing in the code <em>enforces</em> that the two files stay aligned &mdash; it holds only
+        because both are written from the same list in the same order, in the same function, in one
+        pass. Any future change that filters, sorts, deduplicates, or incrementally appends to one
+        without the other silently corrupts every citation the system produces: the answer text would
+        be right while the page number points somewhere else. A production version stores an explicit
+        id on each record instead of relying on positional coincidence.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STEP 5 ================= -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 05</span>
+      <h2>Retrieval &mdash; symmetric encoding and top-k</h2>
+    </div>
+    <p class="stage-sub">Projecting the question into the same space as the corpus, then taking the k nearest rows.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">retrieval</span>
+        <span class="term-chip">semantic search</span>
+        <span class="term-chip">top-k</span>
+        <span class="term-chip">query embedding</span>
+        <span class="term-chip">recall@k</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          The critical constraint is <strong>symmetry</strong>: the query must be encoded by the
+          identical model, with the identical normalization, as the corpus was. A vector produced by
+          a different model occupies a different space, and distances between the two are arithmetically
+          computable but semantically meaningless &mdash; the system would return confident nonsense.
+        </p>
+        <p>
+          Search itself is one matrix multiplication: the <code>(1, 384)</code> query against the
+          transposed <code>(22, 384)</code> corpus gives 22 scores, from which FAISS returns the
+          <code>k</code> highest along with their row ids. Those ids are then resolved against the
+          metadata sidecar to recover text, source, and page.
+        </p>
+      </div>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/retrieve.py</div>
+        <div class="mech-body">
+<pre class="code">query_vec = model.encode([query], convert_to_numpy=<span class="n">True</span>)   <span class="c"># (1, 384)</span>
+faiss.normalize_L2(query_vec)                             <span class="c"># same treatment as corpus</span>
+
+scores, ids = index.search(query_vec.astype(np.float32), k)
+
+<span class="k">for</span> score, idx <span class="k">in</span> zip(scores[<span class="n">0</span>], ids[<span class="n">0</span>]):
+    <span class="k">if</span> idx == -<span class="n">1</span>:                <span class="c"># FAISS pads with -1 when k &gt; ntotal</span>
+        <span class="k">continue</span>
+    chunk = metadata[idx]        <span class="c"># &lt;-- the invariant being cashed in</span>
+    results.append({**chunk, <span class="n">"score"</span>: float(score)})</pre>
+        </div>
+      </div>
+
+      <div class="in-project">
+        <span class="k">Measured output &middot; &#8220;What is multi-head attention?&#8221;</span>
+        <div class="table-wrap" style="margin-top:12px">
+          <table>
+            <thead><tr><th>Rank</th><th>Page</th><th>Score</th><th>Content</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>14</td><td><code>0.634</code></td><td>Figure 4 caption &mdash; attention head visualisation</td></tr>
+              <tr><td>2</td><td>15</td><td><code>0.632</code></td><td>Figure 5 caption &mdash; attention head behaviour</td></tr>
+              <tr><td>3</td><td>13</td><td><code>0.528</code></td><td>&#8220;Attention Visualizations&#8221; section opener</td></tr>
+              <tr><td>4</td><td>5</td><td><code>0.506</code></td><td><strong>the actual definition of multi-head attention</strong></td></tr>
+              <tr><td>5</td><td>4</td><td><code>0.402</code></td><td>Figure 2 &mdash; scaled dot-product / multi-head diagram</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="defect">
+        <span class="k">Known limitation &mdash; by design, for now</span>
+        <h4>Vector similarity measures aboutness, not answerhood</h4>
+        <p>
+          The single best answer ranked <strong>fourth</strong>. Figure captions that repeat the phrase
+          &#8220;attention heads&#8221; several times in very few words score high on topical density;
+          the definitional passage on page 5 is longer, more discursive, and therefore more diluted
+          in a single averaged vector &mdash; and, per the truncation defect above, may be partially
+          unencoded.
+        </p>
+        <p>
+          This is the structural weakness of single-vector retrieval: mean pooling compresses a whole
+          chunk to one point, so a short on-topic fragment can out-score a long precise one.
+          <strong>Recall is fine</strong> &mdash; the right chunk is in the top&nbsp;5, so the model
+          does receive it. <strong>Precision at rank 1 is not.</strong> This is exactly the gap a
+          <em>cross-encoder reranker</em> closes in Phase&nbsp;2: retrieve k=20 cheaply, then re-score
+          each candidate against the query jointly rather than through pre-computed vectors, and keep
+          the best 5.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STEP 6 ================= -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 06</span>
+      <h2>Generation &mdash; constrained synthesis with attribution</h2>
+    </div>
+    <p class="stage-sub">Assembling retrieved context into a prompt that permits only grounded, cited claims.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">generation</span>
+        <span class="term-chip">context window</span>
+        <span class="term-chip">system prompt</span>
+        <span class="term-chip">citation grounding</span>
+        <span class="term-chip">closed-book vs. open-book</span>
+        <span class="term-chip">abstention</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          Everything up to here was <em>search</em>. This step is the &#8220;augmented generation&#8221;
+          half of RAG: the model is converted from a closed-book system answering out of parametric
+          memory into an open-book one answering out of supplied evidence.
+        </p>
+        <p>
+          Three things are enforced in the prompt. <strong>Restriction</strong> &mdash; answer only
+          from the provided excerpts. <strong>Attribution</strong> &mdash; emit
+          <code>[source, page N]</code> for every claim, which is trivially satisfiable because each
+          excerpt is labelled with its provenance in the context itself.
+          <strong>Abstention</strong> &mdash; say so plainly when the context does not contain the
+          answer. Abstention is the one that most reduces hallucination: without an explicit licence
+          to decline, a model under instruction to answer will tend to produce something.
+        </p>
+      </div>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/generate.py &middot; what goes over the wire</div>
+        <div class="mech-body">
+<pre class="code"><span class="c"># Each retrieved chunk is rendered with its provenance inline,</span>
+<span class="c"># so the citation the model must emit is already in front of it.</span>
+context = <span class="n">"\n\n---\n\n"</span>.join(
+    f<span class="n">"[{c['source']}, page {c['page']}]\n{c['text']}"</span> <span class="k">for</span> c <span class="k">in</span> chunks
+)
+
+client.messages.create(
+    model=<span class="n">"claude-opus-5"</span>,
+    max_tokens=<span class="n">1024</span>,
+    output_config={<span class="n">"effort"</span>: <span class="n">"low"</span>},        <span class="c"># extraction, not deep reasoning</span>
+    system=SYSTEM_PROMPT,                    <span class="c"># restriction + attribution + abstention</span>
+    messages=[{<span class="n">"role"</span>: <span class="n">"user"</span>,
+               <span class="n">"content"</span>: f<span class="n">"Context:\n\n{context}\n\nQuestion: {query}"</span>}],
+)</pre>
+        </div>
+      </div>
+
+      <p class="analogy">
+        The difference between asking a well-read colleague to answer from memory, and handing them
+        five marked-up photocopies with the page numbers written in the margin, saying: answer using
+        only these, cite which one, and tell me if the answer isn't in here.
+      </p>
+
+      <div class="in-project">
+        <span class="k">Separation of concerns worth noticing</span>
+        The model is never asked to <em>find</em> anything &mdash; retrieval already did that, deterministically
+        and cheaply. It is asked only to read, synthesise, and attribute. That split is what makes the
+        system auditable: when an answer is wrong you can inspect the retrieved set and immediately tell
+        whether retrieval failed to surface the evidence, or generation mishandled evidence it was given.
+        Those are different bugs with different fixes.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= STATUS ================= -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Verification status</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Step</th><th>Status</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>01 &middot; Parsing</td><td><code>verified</code></td><td>15 pages extracted; Markdown structure present in output</td></tr>
+          <tr><td>02 &middot; Chunking</td><td><code>verified</code></td><td>22 chunks, all carrying <code>source</code> + <code>page</code></td></tr>
+          <tr><td>03 &middot; Embedding</td><td><code>verified, defective</code></td><td><code>(22, 384)</code> unit vectors &mdash; but 15/22 truncated at 256 tokens</td></tr>
+          <tr><td>04 &middot; Indexing</td><td><code>verified</code></td><td><code>ntotal=22</code>, <code>d=384</code>, <code>||v||=1.0</code>, 33 KB on disk</td></tr>
+          <tr><td>05 &middot; Retrieval</td><td><code>verified, imprecise</code></td><td>Correct chunk at rank 4 of 5 &mdash; recall yes, precision@1 no</td></tr>
+          <tr><td>06 &middot; Generation</td><td><code>unverified</code></td><td>Code complete; blocked at API billing before producing output</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= CHEAT SHEET ================= -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>The technical cheat sheet</h2></div>
+    <p class="stage-sub">Every plain-language idea above, mapped to its real name and this build's actual configuration.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Plain idea</th><th>Technical term</th><th>This build</th></tr></thead>
+        <tbody>
+          <tr><td class="plain-cell">reading the PDF</td><td class="term-cell"><code>document parsing</code></td><td><code>pymupdf4llm</code>, layout-aware, <code>page_chunks=True</code></td></tr>
+          <tr><td class="plain-cell">cutting into pieces</td><td class="term-cell"><code>chunking</code></td><td>fixed window, <code>size=500</code> words, <code>overlap=50</code>, stride 450, per-page</td></tr>
+          <tr><td class="plain-cell">meaning fingerprint</td><td class="term-cell"><code>embedding</code></td><td><code>all-MiniLM-L6-v2</code>, bi-encoder, mean-pooled, 384-dim, L2-normalized</td></tr>
+          <tr><td class="plain-cell">the filing cabinet</td><td class="term-cell"><code>vector store</code></td><td><code>faiss.IndexFlatIP</code> &mdash; exhaustive search, cosine via inner product</td></tr>
+          <tr><td class="plain-cell">the label on each card</td><td class="term-cell"><code>metadata sidecar</code></td><td><code>metadata.json</code>, positionally aligned to index rows</td></tr>
+          <tr><td class="plain-cell">finding relevant pieces</td><td class="term-cell"><code>top-k retrieval</code></td><td><code>k=5</code>, single-stage, no reranking</td></tr>
+          <tr><td class="plain-cell">writing a sourced answer</td><td class="term-cell"><code>grounded generation</code></td><td><code>claude-opus-5</code>, <code>effort=low</code>, system-prompt-enforced citation</td></tr>
+          <tr><td class="plain-cell">the whole architecture</td><td class="term-cell"><code>RAG</code></td><td>Retrieval-Augmented Generation &mdash; naive/single-stage variant</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= GLOSSARY ================= -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Glossary</h2></div>
+    <dl class="glossary">
+      <div class="gloss-entry">
+        <dt>chunk</dt>
+        <dd>One independently retrievable unit of text, plus the metadata identifying where it came from.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>embedding / dense vector</dt>
+        <dd>A fixed-length array of floats encoding a text's meaning as a position in a metric space. Here, 384 float32 values.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>bi-encoder</dt>
+        <dd>An architecture that encodes query and document <em>separately</em>, so document vectors can be precomputed. Fast, but it never lets the two texts interact.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>cross-encoder</dt>
+        <dd>Encodes query and document <em>together</em> for a far more accurate relevance score. Too slow to run over a whole corpus &mdash; hence its use as a second-stage reranker.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>mean pooling</dt>
+        <dd>Averaging per-token vectors into one per-chunk vector. Cheap and effective, but it dilutes long passages.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>cosine similarity</dt>
+        <dd>The cosine of the angle between two vectors; on unit-length vectors it equals their dot product. Range &minus;1 to 1.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>max_seq_length</dt>
+        <dd>The token ceiling of an encoder. Input beyond it is silently truncated &mdash; the source of the defect documented in step 3.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>top-k / recall@k</dt>
+        <dd>Returning the k highest-scoring chunks; recall@k asks whether the correct chunk appears anywhere in that set.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>exact vs. approximate (ANN)</dt>
+        <dd>Exact search compares every vector and is always right; ANN structures trade a little recall for sub-linear speed at scale.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>citation grounding</dt>
+        <dd>Constraining the model to answer only from supplied context and cite its provenance &mdash; the primary hallucination control in RAG.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>abstention</dt>
+        <dd>Explicitly licensing the model to say &#8220;not in the provided context&#8221; rather than inventing an answer.</dd>
+      </div>
+      <div class="gloss-entry">
+        <dt>closed-book vs. open-book</dt>
+        <dd>Answering from parametric memory versus from evidence supplied at inference time. RAG converts the former into the latter.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <!-- ================= FILE MAP ================= -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Module map</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File</th><th>Responsibility</th><th>Steps</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>ingest.py</code></td>
+            <td>Parse &rarr; chunk &rarr; embed &rarr; persist index + sidecar</td>
+            <td>01&ndash;04</td>
+            <td>free / local</td>
+          </tr>
+          <tr>
+            <td><code>retrieve.py</code></td>
+            <td>Load store, embed query, return top-k with provenance</td>
+            <td>05</td>
+            <td>free / local</td>
+          </tr>
+          <tr>
+            <td><code>generate.py</code></td>
+            <td>Assemble grounded prompt, call the model, print cited answer</td>
+            <td>05&ndash;06</td>
+            <td>paid API</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    rag-project &middot; phase 1 mechanism notes &middot; all figures measured from the running system
+  </footer>
+
+</div>
