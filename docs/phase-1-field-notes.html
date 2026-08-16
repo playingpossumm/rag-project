@@ -443,15 +443,17 @@
       and to a question as it becomes a cited answer. This is the
       <strong>Retrieval-Augmented Generation (RAG)</strong> pattern: retrieve first, then
       generate strictly from what was retrieved. Every number below is measured from
-      the running system, not estimated &mdash; including one genuine defect the
-      measurements exposed.
+      the running system, not estimated &mdash; including a silent truncation defect those
+      measurements exposed, its fix, and the before-and-after that separates what the fix
+      solved from what it did not.
     </p>
     <div class="runsheet">
       <div>corpus <b>1 PDF / 15 pages</b></div>
-      <div>chunks <b>22</b></div>
+      <div>chunks <b>64</b></div>
+      <div>chunk size <b>240 tok</b></div>
       <div>dim <b>384</b></div>
       <div>index <b>IndexFlatIP</b></div>
-      <div>on disk <b>33 KB</b></div>
+      <div>on disk <b>96 KB</b></div>
     </div>
   </header>
 
@@ -560,10 +562,10 @@
         <tbody>
           <tr><td>Source document</td><td><code>bytes</code></td><td>2,215,244 B</td><td><code>data/*.pdf</code></td></tr>
           <tr><td>Parsed pages</td><td><code>list[(int, str)]</code></td><td>15 entries</td><td>memory</td></tr>
-          <tr><td>Chunks</td><td><code>list[dict]</code></td><td>22 entries</td><td>memory &rarr; JSON</td></tr>
-          <tr><td>Embeddings</td><td><code>np.float32</code></td><td><code>(22, 384)</code></td><td>memory &rarr; FAISS</td></tr>
-          <tr><td>Index</td><td><code>IndexFlatIP</code></td><td>22 &times; 384 &times; 4 B &asymp; 33 KB</td><td><code>index.faiss</code></td></tr>
-          <tr><td>Sidecar</td><td><code>list[dict]</code></td><td>45,714 B</td><td><code>metadata.json</code></td></tr>
+          <tr><td>Chunks</td><td><code>list[dict]</code></td><td>64 entries</td><td>memory &rarr; JSON</td></tr>
+          <tr><td>Embeddings</td><td><code>np.float32</code></td><td><code>(64, 384)</code></td><td>memory &rarr; FAISS</td></tr>
+          <tr><td>Index</td><td><code>IndexFlatIP</code></td><td>64 &times; 384 &times; 4 B &asymp; 96 KB</td><td><code>index.faiss</code></td></tr>
+          <tr><td>Sidecar</td><td><code>list[dict]</code></td><td>55,203 B</td><td><code>metadata.json</code></td></tr>
           <tr><td>Query vector</td><td><code>np.float32</code></td><td><code>(1, 384)</code></td><td>memory</td></tr>
           <tr><td>Retrieved set</td><td><code>list[dict]</code></td><td>k = 5</td><td>memory</td></tr>
         </tbody>
@@ -665,16 +667,30 @@
         <p>
           Retrieval operates on units. Too large a unit and a match returns mostly irrelevant text,
           diluting the signal sent to the model; too small and the unit loses the context that made
-          it meaningful. Fixed-size windowing is the simplest workable policy: walk the page's word
-          array in windows of <code>size</code>, advancing by a <em>stride</em> of
+          it meaningful. Fixed-size windowing is the simplest workable policy: walk the page in
+          windows of <code>size</code>, advancing by a <em>stride</em> of
           <code>size &minus; overlap</code> each time.
+        </p>
+        <p>
+          The unit of <code>size</code> matters more than it appears. Our first implementation
+          measured in <strong>words</strong>, which felt natural but was the wrong axis &mdash; the
+          encoder's input limit is denominated in <strong>tokens</strong>, and the ratio between
+          them is neither fixed nor small. On this corpus a 500-word window averaged over 600
+          tokens. Sizing in the wrong unit produced the defect documented in step&nbsp;3, so
+          chunking is now driven by the encoder's own tokenizer.
+        </p>
+        <p>
+          One wrinkle: converting tokens back to text is lossy, because sub-word pieces do not
+          reassemble into the original string exactly. So the windows are <em>computed</em> over
+          tokens but <em>cut</em> from the source string using each token's character offsets. The
+          stored chunk is byte-identical to the parsed Markdown, Unicode and formatting intact.
         </p>
       </div>
 
       <div class="math">
-        stride = size &minus; overlap = 500 &minus; 50 = <b>450</b><br>
-        window<sub>i</sub> = words[450&middot;i : 450&middot;i + 500]
-        <span class="note">Consecutive windows share exactly 50 words. Every word appears in at least one window; interior words appear in two.</span>
+        stride = size &minus; overlap = 240 &minus; 40 = <b>200</b> tokens<br>
+        window<sub>i</sub> = text[ offset(200&middot;i)<sub>start</sub> : offset(200&middot;i + 240)<sub>end</sub> ]
+        <span class="note">240 leaves headroom under the encoder's 256-token ceiling for the [CLS] and [SEP] tokens added at encode time &mdash; measured maximum is 242.</span>
       </div>
 
       <figure class="diagram med">
@@ -684,60 +700,69 @@
               <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
             </marker>
           </defs>
-          <text x="10" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.6">words[ ] for one page</text>
+          <text x="10" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.6">token stream for one page</text>
 
           <!-- the tape -->
           <rect x="10" y="32" width="880" height="26" fill="currentColor" opacity="0.06" stroke="currentColor" stroke-width="1"/>
           <text x="14" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.5">0</text>
-          <text x="862" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.5">1400</text>
+          <text x="866" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.5">640</text>
 
           <!-- window 1 -->
           <rect x="10" y="76" width="314" height="30" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <text x="167" y="96" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 0 &nbsp;&middot;&nbsp; words[0:500]</text>
+          <text x="167" y="96" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 0 &nbsp;&middot;&nbsp; tok[0:240]</text>
 
           <!-- window 2 -->
           <rect x="293" y="120" width="314" height="30" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <text x="450" y="140" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 1 &nbsp;&middot;&nbsp; words[450:950]</text>
+          <text x="450" y="140" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 1 &nbsp;&middot;&nbsp; tok[200:440]</text>
 
           <!-- window 3 -->
           <rect x="576" y="164" width="314" height="30" fill="none" stroke="currentColor" stroke-width="1.5"/>
-          <text x="733" y="184" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 2 &nbsp;&middot;&nbsp; words[900:1400]</text>
+          <text x="733" y="184" text-anchor="middle" font-family="Georgia,serif" font-size="13">chunk 2 &nbsp;&middot;&nbsp; tok[400:640]</text>
 
           <!-- overlap bands -->
           <rect x="293" y="76" width="31" height="74" fill="currentColor" opacity="0.14"/>
           <rect x="576" y="120" width="31" height="74" fill="currentColor" opacity="0.14"/>
 
           <line x1="308" y1="208" x2="308" y2="150" stroke="currentColor" stroke-width="1" opacity="0.6"/>
-          <text x="308" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">50-word overlap</text>
+          <text x="308" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">40-token overlap</text>
 
           <line x1="591" y1="208" x2="591" y2="194" stroke="currentColor" stroke-width="1" opacity="0.6"/>
-          <text x="591" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">50-word overlap</text>
+          <text x="591" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">40-token overlap</text>
 
           <!-- stride marker -->
           <line x1="10" y1="66" x2="293" y2="66" stroke="currentColor" stroke-width="1" marker-end="url(#ar2)" opacity="0.7"/>
-          <text x="150" y="62" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">stride 450</text>
+          <text x="150" y="62" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">stride 200</text>
         </svg>
         <figcaption>
-          Overlap is insurance against boundary loss. A definition that straddles word 448 would be
+          Overlap is insurance against boundary loss. A definition straddling token&nbsp;238 would be
           split in half by chunk&nbsp;0's edge &mdash; but survives whole inside chunk&nbsp;1, which
-          starts 50 words earlier than the cut.
+          starts 40 tokens earlier than the cut.
         </figcaption>
       </figure>
 
       <div class="mech">
         <div class="mech-head">Mechanism &middot; src/ingest.py</div>
         <div class="mech-body">
-<pre class="code"><span class="k">def</span> chunk_text(text, size, overlap):
-    words = text.split()
+<pre class="code"><span class="k">def</span> chunk_text(text, tokenizer, size, overlap):
+    <span class="c"># offset_mapping gives (char_start, char_end) per token, which is what</span>
+    <span class="c"># lets us cut on token counts without detokenizing.</span>
+    enc = tokenizer(text, add_special_tokens=<span class="n">False</span>, return_offsets_mapping=<span class="n">True</span>)
+    offsets = enc[<span class="n">"offset_mapping"</span>]
+
     chunks, start = [], <span class="n">0</span>
-    <span class="k">while</span> start &lt; len(words):
-        chunks.append(<span class="n">" "</span>.join(words[start : start + size]))
-        start += size - overlap        <span class="c"># advance by the stride</span>
+    <span class="k">while</span> start &lt; len(offsets):
+        window = offsets[start : start + size]
+        piece  = text[window[<span class="n">0</span>][<span class="n">0</span>] : window[-<span class="n">1</span>][<span class="n">1</span>]].strip()   <span class="c"># slice the ORIGINAL string</span>
+        <span class="k">if</span> piece:
+            chunks.append(piece)
+        <span class="k">if</span> start + size &gt;= len(offsets):
+            <span class="k">break</span>                          <span class="c"># avoid a tail already inside the last window</span>
+        start += size - overlap             <span class="c"># advance by the stride</span>
     <span class="k">return</span> chunks
 
 <span class="c"># Chunking is applied PER PAGE, not to the whole document:</span>
 <span class="k">for</span> page_num, page_text <span class="k">in</span> extract_pages(pdf_path):
-    <span class="k">for</span> piece <span class="k">in</span> chunk_text(page_text, <span class="n">500</span>, <span class="n">50</span>):
+    <span class="k">for</span> piece <span class="k">in</span> chunk_text(page_text, tokenizer, <span class="n">240</span>, <span class="n">40</span>):
         chunks.append({<span class="n">"source"</span>: name, <span class="n">"page"</span>: page_num, <span class="n">"text"</span>: piece})</pre>
         </div>
       </div>
@@ -748,8 +773,8 @@
         which is precisely what keeps <code>page</code> a single unambiguous integer per chunk.
         The cost is real: a paragraph flowing across a page break is cut at the break with no
         overlap to rescue it. We accepted unambiguous citations over perfect continuity. It also
-        explains the shape of the corpus &mdash; 15 pages yielded 22 chunks, and the shortest chunk
-        is only <code>46 words</code>, the tail end of a sparse page.
+        explains the shape of the corpus &mdash; 15 pages yielded <code>64 chunks</code>, and the
+        shortest is only <code>44 tokens</code>, the tail end of a sparse page.
       </div>
     </div>
   </section>
@@ -819,32 +844,44 @@ faiss.normalize_L2(embeddings)      <span class="c"># in-place; every row now ha
       </div>
 
       <div class="defect">
-        <span class="k">Defect found while writing this document</span>
-        <h4>Most of each chunk is invisible to search</h4>
+        <span class="k">Defect found by measurement &mdash; since fixed</span>
+        <h4>Most of each chunk was invisible to search</h4>
         <p>
           <code>all-MiniLM-L6-v2</code> has a hard input ceiling of <code>max_seq_length = 256</code>
           tokens. Anything past token 256 is <strong>silently truncated</strong> before the encoder
-          ever sees it &mdash; no error, no warning at encode time.
+          ever sees it &mdash; no exception, no warning at encode time. The failure is invisible
+          unless you go looking.
         </p>
         <p>
-          Our chunk size is specified in <em>words</em> (500), but the limit is in <em>tokens</em>.
-          Measured across the real corpus: median chunk is <code>626 tokens</code>, the largest is
-          <code>1,212 tokens</code>, and <code>15 of 22 chunks</code> exceed the 256-token ceiling,
-          losing a median of <code>370 tokens</code> each.
+          The original chunk size was specified in <em>words</em> (500) while the limit is in
+          <em>tokens</em>. Measured across the real corpus: median chunk <code>626 tokens</code>,
+          largest <code>1,212</code>, with <code>15 of 22 chunks</code> over the ceiling and losing
+          a median of <code>370 tokens</code> each.
         </p>
         <p>
-          Concretely: for two-thirds of the corpus, roughly the last 60% of each chunk contributes
-          <em>nothing</em> to its vector. The text is still stored and still gets sent to Claude once
-          retrieved &mdash; so answers stay correct &mdash; but that text is unfindable. It cannot
-          influence whether its own chunk gets retrieved in the first place.
+          The consequence is subtle and worth stating precisely: the dropped text was still stored,
+          still retrievable, and still sent to the model once its chunk was selected &mdash; so no
+          answer was ever wrong <em>because</em> of it. But that text could not contribute to its own
+          chunk's vector, meaning it could never influence whether that chunk got selected at all.
+          Roughly 60% of the corpus was <strong>unfindable but not unusable</strong>.
         </p>
         <p>
-          This is very likely part of why retrieval ranked figure captions on pages 14&ndash;15 above
-          the actual definition on page 5: the page-5 chunk's definition may sit past the truncation
-          boundary. <strong>The fix belongs in Phase 2</strong> &mdash; either measure chunk size in
-          tokens rather than words (target ~250), or move to an embedding model with a longer context
-          window.
+          <strong>Fixed</strong> by windowing on tokenizer offsets instead of whitespace
+          (step&nbsp;2), plus an assertion in <code>ingest.py</code> that refuses to build an index
+          if any chunk exceeds the ceiling &mdash; so the failure cannot recur silently.
         </p>
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead><tr><th>Metric</th><th>Before</th><th>After</th></tr></thead>
+            <tbody>
+              <tr><td>Chunk unit</td><td>500 words</td><td>240 tokens</td></tr>
+              <tr><td>Chunks</td><td>22</td><td>64</td></tr>
+              <tr><td>Median tokens</td><td>626</td><td>242</td></tr>
+              <tr><td>Max tokens</td><td>1,212</td><td>242</td></tr>
+              <tr><td>Chunks truncated</td><td>15 / 22 (68%)</td><td><b>0 / 64</b></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="in-project">
@@ -1054,39 +1091,82 @@ scores, ids = index.search(query_vec.astype(np.float32), k)
       </div>
 
       <div class="in-project">
-        <span class="k">Measured output &middot; &#8220;What is multi-head attention?&#8221;</span>
+        <span class="k">Measured output &middot; &#8220;What is multi-head attention?&#8221; &middot; before vs. after the chunking fix</span>
         <div class="table-wrap" style="margin-top:12px">
           <table>
-            <thead><tr><th>Rank</th><th>Page</th><th>Score</th><th>Content</th></tr></thead>
+            <thead><tr><th>Rank</th><th>Before (22 chunks)</th><th>After (64 chunks)</th></tr></thead>
             <tbody>
-              <tr><td>1</td><td>14</td><td><code>0.634</code></td><td>Figure 4 caption &mdash; attention head visualisation</td></tr>
-              <tr><td>2</td><td>15</td><td><code>0.632</code></td><td>Figure 5 caption &mdash; attention head behaviour</td></tr>
-              <tr><td>3</td><td>13</td><td><code>0.528</code></td><td>&#8220;Attention Visualizations&#8221; section opener</td></tr>
-              <tr><td>4</td><td>5</td><td><code>0.506</code></td><td><strong>the actual definition of multi-head attention</strong></td></tr>
-              <tr><td>5</td><td>4</td><td><code>0.402</code></td><td>Figure 2 &mdash; scaled dot-product / multi-head diagram</td></tr>
+              <tr>
+                <td>1</td>
+                <td>p14 &middot; <code>0.634</code> &middot; Figure 4 caption</td>
+                <td>p14 &middot; <code>0.634</code> &middot; Figure 4 caption</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>p15 &middot; <code>0.632</code> &middot; Figure 5 caption</td>
+                <td>p15 &middot; <code>0.632</code> &middot; Figure 5 caption</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>p13 &middot; <code>0.528</code> &middot; section opener</td>
+                <td>p3 &middot; <code>0.576</code> &middot; attention function defined</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>p5 &middot; <code>0.506</code> &middot; <strong>the definition</strong></td>
+                <td>p5 &middot; <code>0.537</code> &middot; <strong>the definition</strong></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>p4 &middot; <code>0.402</code> &middot; Figure 2</td>
+                <td>p5 &middot; <code>0.535</code> &middot; <strong>h = 8 heads, d<sub>k</sub> = 64</strong></td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
+      <div class="in-project">
+        <span class="k">Reading the delta</span>
+        Ranks 1&ndash;2 are <em>identical</em> &mdash; those figure captions were already short enough
+        to fit under the token ceiling, so re-chunking could not have changed them. Everything below
+        them improved: the page-5 definition rose <code>0.506 &rarr; 0.537</code>, a second
+        substantive page-5 chunk entered the set, and page&nbsp;3's definition of the attention
+        function displaced a section-heading chunk that carried no real content. Three of five
+        results are now definitional rather than two.
+        <p style="margin:12px 0 0">
+          Across a five-query probe (<code>src/eval_probe.py</code>), four queries now return the
+          correct passage at rank&nbsp;1 &mdash; including questions whose answers sit mid-page, in
+          exactly the region that used to be truncated away: the learning-rate warmup schedule
+          (p7, <code>0.516</code>), the self-attention complexity comparison (p6, <code>0.776</code>),
+          and the positional-encoding formula (p6, <code>0.507</code>).
+        </p>
+      </div>
+
       <div class="defect">
-        <span class="k">Known limitation &mdash; by design, for now</span>
+        <span class="k">Open limitation &mdash; structural, not a bug</span>
         <h4>Vector similarity measures aboutness, not answerhood</h4>
         <p>
-          The single best answer ranked <strong>fourth</strong>. Figure captions that repeat the phrase
-          &#8220;attention heads&#8221; several times in very few words score high on topical density;
-          the definitional passage on page 5 is longer, more discursive, and therefore more diluted
-          in a single averaged vector &mdash; and, per the truncation defect above, may be partially
-          unencoded.
+          Fixing truncation did not move ranks 1 and 2, and that is the informative part. Those
+          figure captions repeat &#8220;attention heads&#8221; several times inside a very short
+          chunk, giving them high topical density; the actual definition is longer and more
+          discursive, so averaging its tokens into one vector dilutes the signal. A short on-topic
+          fragment out-scores a long precise one &mdash; and no amount of re-chunking changes that,
+          because it is inherent to compressing a passage into a single point.
         </p>
         <p>
-          This is the structural weakness of single-vector retrieval: mean pooling compresses a whole
-          chunk to one point, so a short on-topic fragment can out-score a long precise one.
-          <strong>Recall is fine</strong> &mdash; the right chunk is in the top&nbsp;5, so the model
-          does receive it. <strong>Precision at rank 1 is not.</strong> This is exactly the gap a
-          <em>cross-encoder reranker</em> closes in Phase&nbsp;2: retrieve k=20 cheaply, then re-score
-          each candidate against the query jointly rather than through pre-computed vectors, and keep
-          the best 5.
+          <strong>Recall is good</strong> &mdash; the right passage is reliably inside the top&nbsp;5,
+          so the model does receive it and can still answer correctly.
+          <strong>Precision@1 is the weak spot.</strong> That distinction matters: it means the
+          system is usable today but wastes context on near-misses, and would degrade if
+          <code>k</code> were tightened.
+        </p>
+        <p>
+          This is precisely the gap a <em>cross-encoder reranker</em> closes, and it is now the
+          best-evidenced reason to build one: retrieve <code>k=20</code> cheaply with the bi-encoder,
+          then re-score each candidate by encoding query and chunk <em>together</em> &mdash; letting
+          the two texts attend to each other rather than comparing pre-computed summaries &mdash; and
+          keep the best 5. That is the first task of Phase&nbsp;2.
         </p>
       </div>
     </div>
@@ -1174,10 +1254,10 @@ client.messages.create(
         <thead><tr><th>Step</th><th>Status</th><th>Evidence</th></tr></thead>
         <tbody>
           <tr><td>01 &middot; Parsing</td><td><code>verified</code></td><td>15 pages extracted; Markdown structure present in output</td></tr>
-          <tr><td>02 &middot; Chunking</td><td><code>verified</code></td><td>22 chunks, all carrying <code>source</code> + <code>page</code></td></tr>
-          <tr><td>03 &middot; Embedding</td><td><code>verified, defective</code></td><td><code>(22, 384)</code> unit vectors &mdash; but 15/22 truncated at 256 tokens</td></tr>
-          <tr><td>04 &middot; Indexing</td><td><code>verified</code></td><td><code>ntotal=22</code>, <code>d=384</code>, <code>||v||=1.0</code>, 33 KB on disk</td></tr>
-          <tr><td>05 &middot; Retrieval</td><td><code>verified, imprecise</code></td><td>Correct chunk at rank 4 of 5 &mdash; recall yes, precision@1 no</td></tr>
+          <tr><td>02 &middot; Chunking</td><td><code>verified</code></td><td>64 chunks, all carrying <code>source</code> + <code>page</code>; token-bounded</td></tr>
+          <tr><td>03 &middot; Embedding</td><td><code>verified</code></td><td><code>(64, 384)</code> unit vectors; 0/64 truncated, guarded by assertion</td></tr>
+          <tr><td>04 &middot; Indexing</td><td><code>verified</code></td><td><code>ntotal=64</code>, <code>d=384</code>, <code>||v||=1.0</code>, 96 KB on disk</td></tr>
+          <tr><td>05 &middot; Retrieval</td><td><code>verified, imprecise</code></td><td>4/5 probe queries correct at rank 1; precision@1 still the weak spot</td></tr>
           <tr><td>06 &middot; Generation</td><td><code>unverified</code></td><td>Code complete; blocked at API billing before producing output</td></tr>
         </tbody>
       </table>
@@ -1194,7 +1274,7 @@ client.messages.create(
         <thead><tr><th>Plain idea</th><th>Technical term</th><th>This build</th></tr></thead>
         <tbody>
           <tr><td class="plain-cell">reading the PDF</td><td class="term-cell"><code>document parsing</code></td><td><code>pymupdf4llm</code>, layout-aware, <code>page_chunks=True</code></td></tr>
-          <tr><td class="plain-cell">cutting into pieces</td><td class="term-cell"><code>chunking</code></td><td>fixed window, <code>size=500</code> words, <code>overlap=50</code>, stride 450, per-page</td></tr>
+          <tr><td class="plain-cell">cutting into pieces</td><td class="term-cell"><code>chunking</code></td><td>token window over tokenizer offsets, <code>size=240</code>, <code>overlap=40</code>, stride 200, per-page</td></tr>
           <tr><td class="plain-cell">meaning fingerprint</td><td class="term-cell"><code>embedding</code></td><td><code>all-MiniLM-L6-v2</code>, bi-encoder, mean-pooled, 384-dim, L2-normalized</td></tr>
           <tr><td class="plain-cell">the filing cabinet</td><td class="term-cell"><code>vector store</code></td><td><code>faiss.IndexFlatIP</code> &mdash; exhaustive search, cosine via inner product</td></tr>
           <tr><td class="plain-cell">the label on each card</td><td class="term-cell"><code>metadata sidecar</code></td><td><code>metadata.json</code>, positionally aligned to index rows</td></tr>
@@ -1287,6 +1367,12 @@ client.messages.create(
             <td>Assemble grounded prompt, call the model, print cited answer</td>
             <td>05&ndash;06</td>
             <td>paid API</td>
+          </tr>
+          <tr>
+            <td><code>eval_probe.py</code></td>
+            <td>Run a fixed query set and print compact top-k, for comparing retrieval across changes</td>
+            <td>05</td>
+            <td>free / local</td>
           </tr>
         </tbody>
       </table>
