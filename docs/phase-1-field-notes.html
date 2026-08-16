@@ -2,18 +2,18 @@
 
 <style>
   :root {
-    --bg: #eaeae2;
-    --surface: #f7f7f1;
-    --surface-2: #ffffff;
-    --ink: #1b2430;
-    --muted: #5b6270;
-    --faint: #8a9099;
-    --line: #d6d4c7;
-    --accent: #1f6f5c;
+    --bg: #f2f4f2;
+    --surface: #ffffff;
+    --surface-2: #f8faf9;
+    --ink: #15202a;
+    --muted: #4b5560;
+    --faint: #66717c;
+    --line: #d5dbd7;
+    --accent: #15635a;
     --accent-ink: #ffffff;
-    --accent-2: #a6742a;
-    --alert: #9c3722;
-    --alert-bg: #f6ece8;
+    --accent-2: #8a5d18;
+    --alert: #96331f;
+    --alert-bg: #fbeeea;
 
     --font-display: Rockwell, "Roboto Slab", "Bookman Old Style", Georgia, serif;
     --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
@@ -22,34 +22,34 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #12181c;
-      --surface: #1a2226;
-      --surface-2: #202a2f;
-      --ink: #e7e7de;
-      --muted: #98a0ac;
-      --faint: #6f7885;
-      --line: #313d43;
-      --accent: #4fbfa0;
-      --accent-ink: #0c1513;
-      --accent-2: #d2a24c;
-      --alert: #e08167;
-      --alert-bg: #251a17;
+      --bg: #1c2228;
+      --surface: #252c33;
+      --surface-2: #2c343c;
+      --ink: #f0f2f4;
+      --muted: #b3bcc6;
+      --faint: #939ea9;
+      --line: #414c56;
+      --accent: #6fdcbb;
+      --accent-ink: #0b1614;
+      --accent-2: #e6b45f;
+      --alert: #f0937a;
+      --alert-bg: #33221d;
     }
   }
 
   :root[data-theme="dark"] {
-    --bg: #12181c;
-    --surface: #1a2226;
-    --surface-2: #202a2f;
-    --ink: #e7e7de;
-    --muted: #98a0ac;
-    --faint: #6f7885;
-    --line: #313d43;
-    --accent: #4fbfa0;
-    --accent-ink: #0c1513;
-    --accent-2: #d2a24c;
-    --alert: #e08167;
-    --alert-bg: #251a17;
+    --bg: #1c2228;
+    --surface: #252c33;
+    --surface-2: #2c343c;
+    --ink: #f0f2f4;
+    --muted: #b3bcc6;
+    --faint: #939ea9;
+    --line: #414c56;
+    --accent: #6fdcbb;
+    --accent-ink: #0b1614;
+    --accent-2: #e6b45f;
+    --alert: #f0937a;
+    --alert-bg: #33221d;
   }
 
   * { box-sizing: border-box; }
@@ -431,7 +431,33 @@
   }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+  /* ---------- Theme toggle ---------- */
+
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 7px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .theme-toggle:hover { color: var(--ink); border-color: var(--muted); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media print { .theme-toggle { display: none; } }
 </style>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between light and dark theme">theme</button>
 
 <div class="page">
 
@@ -474,76 +500,76 @@
           </marker>
         </defs>
 
-        <text x="16" y="22" font-family="ui-monospace, monospace" font-size="12.5" letter-spacing="0.8" fill="currentColor" opacity="0.6">INDEXING PIPELINE &mdash; ingest.py &middot; runs once per corpus &middot; no network, no cost</text>
+        <text x="16" y="22" font-family="ui-monospace, monospace" font-size="12.5" letter-spacing="0.8" fill="currentColor" opacity="0.76">INDEXING PIPELINE &mdash; ingest.py &middot; runs once per corpus &middot; no network, no cost</text>
 
         <g font-family="Georgia, serif" font-size="14">
           <rect x="16" y="42" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
           <text x="84" y="72" text-anchor="middle">PDF</text>
-          <text x="84" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">15 pages</text>
+          <text x="84" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.78">15 pages</text>
 
           <line x1="152" y1="80" x2="186" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
-          <text x="169" y="70" text-anchor="middle" font-size="10.5" opacity="0.7">parse</text>
+          <text x="169" y="70" text-anchor="middle" font-size="10.5" opacity="0.84">parse</text>
 
           <rect x="190" y="42" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
           <text x="258" y="72" text-anchor="middle">Markdown</text>
-          <text x="258" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">per page</text>
+          <text x="258" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.78">per page</text>
 
           <line x1="326" y1="80" x2="360" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
-          <text x="343" y="70" text-anchor="middle" font-size="10.5" opacity="0.7">chunk</text>
+          <text x="343" y="70" text-anchor="middle" font-size="10.5" opacity="0.84">chunk</text>
 
           <rect x="364" y="42" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
           <text x="432" y="72" text-anchor="middle">Chunks</text>
-          <text x="432" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">22 &times; {text,page}</text>
+          <text x="432" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.78">22 &times; {text,page}</text>
 
           <line x1="500" y1="80" x2="534" y2="80" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
-          <text x="517" y="70" text-anchor="middle" font-size="10.5" opacity="0.7">encode</text>
+          <text x="517" y="70" text-anchor="middle" font-size="10.5" opacity="0.84">encode</text>
 
           <rect x="538" y="42" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
           <text x="606" y="72" text-anchor="middle">Vectors</text>
-          <text x="606" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">22 &times; 384</text>
+          <text x="606" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.78">22 &times; 384</text>
         </g>
 
         <line x1="674" y1="98" x2="742" y2="168" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
-        <text x="700" y="140" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.7">write</text>
+        <text x="700" y="140" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.84">write</text>
 
         <!-- store -->
         <rect x="748" y="160" width="180" height="110" fill="currentColor" opacity="0.07" stroke="currentColor" stroke-width="1.4"/>
         <text x="838" y="190" text-anchor="middle" font-family="Rockwell, Georgia, serif" font-size="15">vector_store/</text>
-        <text x="838" y="214" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.78">index.faiss</text>
-        <text x="838" y="232" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.78">metadata.json</text>
-        <text x="838" y="253" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.55">aligned by row index</text>
+        <text x="838" y="214" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.88">index.faiss</text>
+        <text x="838" y="232" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.88">metadata.json</text>
+        <text x="838" y="253" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.72">aligned by row index</text>
 
-        <text x="16" y="404" font-family="ui-monospace, monospace" font-size="12.5" letter-spacing="0.8" fill="currentColor" opacity="0.6">QUERY PIPELINE &mdash; retrieve.py + generate.py &middot; runs per question</text>
+        <text x="16" y="404" font-family="ui-monospace, monospace" font-size="12.5" letter-spacing="0.8" fill="currentColor" opacity="0.76">QUERY PIPELINE &mdash; retrieve.py + generate.py &middot; runs per question</text>
 
         <g font-family="Georgia, serif" font-size="14">
           <rect x="16" y="300" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
           <text x="84" y="330" text-anchor="middle">Question</text>
-          <text x="84" y="350" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">free text</text>
+          <text x="84" y="350" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.78">free text</text>
 
           <line x1="152" y1="338" x2="186" y2="338" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
-          <text x="169" y="328" text-anchor="middle" font-size="10.5" opacity="0.7">encode</text>
+          <text x="169" y="328" text-anchor="middle" font-size="10.5" opacity="0.84">encode</text>
 
           <rect x="190" y="300" width="136" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
           <text x="258" y="330" text-anchor="middle">Query vector</text>
-          <text x="258" y="350" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">1 &times; 384</text>
+          <text x="258" y="350" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.78">1 &times; 384</text>
         </g>
 
         <line x1="326" y1="322" x2="748" y2="250" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
-        <text x="470" y="300" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.7">search(k=5)</text>
+        <text x="470" y="300" font-family="ui-monospace,monospace" font-size="10.5" opacity="0.84">search(k=5)</text>
 
         <g font-family="Georgia, serif" font-size="14">
           <line x1="928" y1="215" x2="962" y2="215" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
 
           <rect x="966" y="177" width="146" height="76" fill="none" stroke="currentColor" stroke-width="1.4"/>
           <text x="1039" y="207" text-anchor="middle">Top-5 chunks</text>
-          <text x="1039" y="227" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.62">text + page + score</text>
+          <text x="1039" y="227" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.78">text + page + score</text>
 
           <line x1="1112" y1="215" x2="1146" y2="215" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar)"/>
-          <text x="1129" y="205" text-anchor="middle" font-size="10.5" opacity="0.7">prompt</text>
+          <text x="1129" y="205" text-anchor="middle" font-size="10.5" opacity="0.84">prompt</text>
 
           <rect x="1150" y="177" width="174" height="76" fill="currentColor" opacity="0.07" stroke="currentColor" stroke-width="1.4"/>
           <text x="1237" y="202" text-anchor="middle" font-weight="bold">Grounded answer</text>
-          <text x="1237" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.7">[source, page N]</text>
+          <text x="1237" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.84">[source, page N]</text>
         </g>
       </svg>
       <figcaption>
@@ -700,12 +726,12 @@
               <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
             </marker>
           </defs>
-          <text x="10" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.6">token stream for one page</text>
+          <text x="10" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.76">token stream for one page</text>
 
           <!-- the tape -->
           <rect x="10" y="32" width="880" height="26" fill="currentColor" opacity="0.06" stroke="currentColor" stroke-width="1"/>
-          <text x="14" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.5">0</text>
-          <text x="866" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.5">640</text>
+          <text x="14" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.68">0</text>
+          <text x="866" y="50" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.68">640</text>
 
           <!-- window 1 -->
           <rect x="10" y="76" width="314" height="30" fill="none" stroke="currentColor" stroke-width="1.5"/>
@@ -723,15 +749,15 @@
           <rect x="293" y="76" width="31" height="74" fill="currentColor" opacity="0.14"/>
           <rect x="576" y="120" width="31" height="74" fill="currentColor" opacity="0.14"/>
 
-          <line x1="308" y1="208" x2="308" y2="150" stroke="currentColor" stroke-width="1" opacity="0.6"/>
-          <text x="308" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">40-token overlap</text>
+          <line x1="308" y1="208" x2="308" y2="150" stroke="currentColor" stroke-width="1" opacity="0.76"/>
+          <text x="308" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.86">40-token overlap</text>
 
-          <line x1="591" y1="208" x2="591" y2="194" stroke="currentColor" stroke-width="1" opacity="0.6"/>
-          <text x="591" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">40-token overlap</text>
+          <line x1="591" y1="208" x2="591" y2="194" stroke="currentColor" stroke-width="1" opacity="0.76"/>
+          <text x="591" y="224" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.86">40-token overlap</text>
 
           <!-- stride marker -->
-          <line x1="10" y1="66" x2="293" y2="66" stroke="currentColor" stroke-width="1" marker-end="url(#ar2)" opacity="0.7"/>
-          <text x="150" y="62" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.75">stride 200</text>
+          <line x1="10" y1="66" x2="293" y2="66" stroke="currentColor" stroke-width="1" marker-end="url(#ar2)" opacity="0.84"/>
+          <text x="150" y="62" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.86">stride 200</text>
         </svg>
         <figcaption>
           Overlap is insurance against boundary loss. A definition straddling token&nbsp;238 would be
@@ -948,48 +974,48 @@ faiss.normalize_L2(embeddings)      <span class="c"># in-place; every row now ha
             </marker>
           </defs>
           <!-- LEFT: cosine geometry -->
-          <text x="14" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.6">cosine = angle between unit vectors</text>
+          <text x="14" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.76">cosine = angle between unit vectors</text>
 
-          <path d="M 60 250 A 190 190 0 0 1 250 60" fill="none" stroke="currentColor" stroke-width="1" opacity="0.25"/>
+          <path d="M 60 250 A 190 190 0 0 1 250 60" fill="none" stroke="currentColor" stroke-width="1" opacity="0.45"/>
           <circle cx="60" cy="250" r="3" fill="currentColor"/>
 
           <line x1="60" y1="250" x2="238" y2="182" stroke="currentColor" stroke-width="2" marker-end="url(#ar3)"/>
           <text x="248" y="180" font-family="Georgia,serif" font-size="13">query</text>
 
-          <line x1="60" y1="250" x2="222" y2="145" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar3)" opacity="0.85"/>
+          <line x1="60" y1="250" x2="222" y2="145" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar3)" opacity="0.92"/>
           <text x="230" y="140" font-family="Georgia,serif" font-size="13">chunk A</text>
-          <text x="230" y="156" font-family="ui-monospace,monospace" font-size="11" opacity="0.65">0.63</text>
+          <text x="230" y="156" font-family="ui-monospace,monospace" font-size="11" opacity="0.8">0.63</text>
 
-          <line x1="60" y1="250" x2="128" y2="76" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar3)" opacity="0.5"/>
-          <text x="120" y="66" font-family="Georgia,serif" font-size="13" opacity="0.75">chunk B</text>
-          <text x="120" y="50" font-family="ui-monospace,monospace" font-size="11" opacity="0.55">0.11</text>
+          <line x1="60" y1="250" x2="128" y2="76" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar3)" opacity="0.68"/>
+          <text x="120" y="66" font-family="Georgia,serif" font-size="13" opacity="0.86">chunk B</text>
+          <text x="120" y="50" font-family="ui-monospace,monospace" font-size="11" opacity="0.72">0.11</text>
 
-          <path d="M 130 226 A 74 74 0 0 0 122 205" fill="none" stroke="currentColor" stroke-width="1" opacity="0.7"/>
-          <text x="146" y="212" font-family="ui-monospace,monospace" font-size="11" opacity="0.7">small &theta;</text>
+          <path d="M 130 226 A 74 74 0 0 0 122 205" fill="none" stroke="currentColor" stroke-width="1" opacity="0.84"/>
+          <text x="146" y="212" font-family="ui-monospace,monospace" font-size="11" opacity="0.84">small &theta;</text>
 
-          <text x="14" y="284" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.65" font-style="italic">only direction matters &mdash; all vectors have length 1</text>
+          <text x="14" y="284" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.8" font-style="italic">only direction matters &mdash; all vectors have length 1</text>
 
           <!-- divider -->
           <line x1="430" y1="30" x2="430" y2="270" stroke="currentColor" stroke-width="1" opacity="0.2"/>
 
           <!-- RIGHT: parallel arrays -->
-          <text x="470" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.6">the alignment invariant</text>
+          <text x="470" y="20" font-family="ui-monospace,monospace" font-size="12" fill="currentColor" opacity="0.76">the alignment invariant</text>
 
-          <text x="470" y="52" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.75">index.faiss</text>
-          <text x="672" y="52" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.75">metadata.json</text>
+          <text x="470" y="52" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.86">index.faiss</text>
+          <text x="672" y="52" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.86">metadata.json</text>
 
           <g font-family="ui-monospace,monospace" font-size="11">
-            <rect x="470" y="62" width="150" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
-            <text x="480" y="80" opacity="0.7">row 0 &nbsp;[0.02, ...]</text>
-            <rect x="672" y="62" width="172" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
-            <text x="682" y="80" opacity="0.7">[0] page 1</text>
-            <line x1="620" y1="76" x2="668" y2="76" stroke="currentColor" stroke-width="1" opacity="0.45"/>
+            <rect x="470" y="62" width="150" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.72"/>
+            <text x="480" y="80" opacity="0.84">row 0 &nbsp;[0.02, ...]</text>
+            <rect x="672" y="62" width="172" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.72"/>
+            <text x="682" y="80" opacity="0.84">[0] page 1</text>
+            <line x1="620" y1="76" x2="668" y2="76" stroke="currentColor" stroke-width="1" opacity="0.62"/>
 
-            <rect x="470" y="98" width="150" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
-            <text x="480" y="116" opacity="0.7">row 1 &nbsp;[0.11, ...]</text>
-            <rect x="672" y="98" width="172" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
-            <text x="682" y="116" opacity="0.7">[1] page 2</text>
-            <line x1="620" y1="112" x2="668" y2="112" stroke="currentColor" stroke-width="1" opacity="0.45"/>
+            <rect x="470" y="98" width="150" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.72"/>
+            <text x="480" y="116" opacity="0.84">row 1 &nbsp;[0.11, ...]</text>
+            <rect x="672" y="98" width="172" height="28" fill="none" stroke="currentColor" stroke-width="1" opacity="0.72"/>
+            <text x="682" y="116" opacity="0.84">[1] page 2</text>
+            <line x1="620" y1="112" x2="668" y2="112" stroke="currentColor" stroke-width="1" opacity="0.62"/>
 
             <rect x="470" y="134" width="150" height="28" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.6"/>
             <text x="480" y="152">row 3 &nbsp;[0.47, ...]</text>
@@ -997,8 +1023,8 @@ faiss.normalize_L2(embeddings)      <span class="c"># in-place; every row now ha
             <text x="682" y="152">[3] page 3, "Figure 1..."</text>
             <line x1="620" y1="148" x2="668" y2="148" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar3)"/>
 
-            <text x="470" y="184" opacity="0.5">...</text>
-            <text x="672" y="184" opacity="0.5">...</text>
+            <text x="470" y="184" opacity="0.68">...</text>
+            <text x="672" y="184" opacity="0.68">...</text>
           </g>
 
           <text x="470" y="222" font-family="Georgia,serif" font-size="13" fill="currentColor">
@@ -1007,7 +1033,7 @@ faiss.normalize_L2(embeddings)      <span class="c"># in-place; every row now ha
           <text x="470" y="244" font-family="Georgia,serif" font-size="13" fill="currentColor">
             &rarr; look up <tspan font-family="ui-monospace,monospace" font-size="11.5">metadata[3]</tspan> for text + page
           </text>
-          <text x="470" y="272" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.65" font-style="italic">order is the only thing joining these two files</text>
+          <text x="470" y="272" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.8" font-style="italic">order is the only thing joining these two files</text>
         </svg>
         <figcaption>
           Left: retrieval is angular proximity on the unit sphere. Right: FAISS stores no text &mdash;
@@ -1384,3 +1410,40 @@ client.messages.create(
   </footer>
 
 </div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var button = document.getElementById("themeToggle");
+
+    // Resolve what the reader is actually seeing: an explicit choice if one was
+    // made, otherwise whatever the OS reports.
+    function current() {
+      return root.getAttribute("data-theme")
+        || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }
+
+    function label() {
+      button.textContent = current() === "dark" ? "light mode" : "dark mode";
+    }
+
+    try {
+      var saved = localStorage.getItem("rag-doc-theme");
+      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+    } catch (e) { /* storage unavailable; fall through to system theme */ }
+
+    label();
+
+    button.addEventListener("click", function () {
+      var next = current() === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("rag-doc-theme", next); } catch (e) {}
+      label();
+    });
+
+    // Keep the label honest if the OS theme changes and no explicit choice is set.
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+      if (!root.getAttribute("data-theme")) label();
+    });
+  })();
+</script>
