@@ -20,6 +20,14 @@ TOP_K = 5
 # trades a little reranking latency for recall headroom.
 CANDIDATE_K = 20
 
+# RRF measured never worse than dense-only and increasingly better as the
+# candidate pool gets selective (see eval/RESULTS.md). On this 64-chunk corpus
+# k=20 is 31% of everything, so recall is perfect either way and the two look
+# equivalent -- that equivalence is an artifact of a small corpus, not a
+# property of the method. Defaulting to RRF is the choice that stays correct as
+# the corpus grows.
+DEFAULT_FUSION = "rrf"
+
 
 def load_index():
     index = faiss.read_index(str(STORE_DIR / "index.faiss"))
@@ -38,8 +46,46 @@ def search(query: str, index, metadata, model, k: int = TOP_K) -> list[dict]:
         if idx == -1:
             continue
         chunk = metadata[idx]
-        results.append({**chunk, "score": float(score)})
+        # chunk_id is the row position shared by the FAISS index and the
+        # metadata sidecar. Carrying it explicitly lets rankings from different
+        # retrievers be fused by identity rather than by comparing text.
+        results.append({**chunk, "chunk_id": int(idx), "score": float(score)})
     return results
+
+
+def shortlist(
+    query: str,
+    index,
+    metadata,
+    model,
+    k: int,
+    fusion: str = DEFAULT_FUSION,
+    bm25=None,
+    alpha: float = 0.5,
+) -> list[dict]:
+    """First stage: produce the candidate pool the reranker will reorder.
+
+    fusion="none" is dense-only; "rrf" and "weighted" add BM25 and fuse. Both
+    retrievers are asked for k candidates each, so fusion sees the same depth
+    per retriever rather than splitting one budget between them.
+    """
+    dense = search(query, index, metadata, model, k=k)
+    if fusion == "none":
+        return dense
+
+    from hybrid import bm25_search, build_bm25, fuse_rrf, fuse_weighted
+
+    # Callers that run many queries should build this once and pass it in; the
+    # eval harness does. Building per call is only acceptable for one-shot use.
+    if bm25 is None:
+        bm25 = build_bm25(metadata)
+
+    sparse = bm25_search(query, bm25, metadata, k=k)
+    if fusion == "rrf":
+        return fuse_rrf(dense, sparse, k=k)
+    if fusion == "weighted":
+        return fuse_weighted(dense, sparse, k=k, alpha=alpha)
+    raise ValueError(f"unknown fusion strategy: {fusion!r}")
 
 
 def retrieve(
@@ -50,18 +96,23 @@ def retrieve(
     k: int = TOP_K,
     candidate_k: int = CANDIDATE_K,
     use_reranker: bool = True,
+    fusion: str = DEFAULT_FUSION,
+    bm25=None,
+    alpha: float = 0.5,
 ) -> list[dict]:
-    """Full retrieval pipeline: bi-encoder shortlist, then cross-encoder rerank.
+    """Full retrieval pipeline: shortlist, then optionally rerank.
 
-    With use_reranker=False this is the single-stage baseline, which is what the
-    reranked pipeline is measured against.
+    The two stages are independent knobs so they can be measured separately --
+    fusion widens what the candidate pool contains, reranking reorders it.
     """
     if not use_reranker:
-        return search(query, index, metadata, model, k=k)
+        return shortlist(query, index, metadata, model, k=k,
+                         fusion=fusion, bm25=bm25, alpha=alpha)
 
     from rerank import rerank  # imported lazily so the baseline path stays light
 
-    candidates = search(query, index, metadata, model, k=candidate_k)
+    candidates = shortlist(query, index, metadata, model, k=candidate_k,
+                           fusion=fusion, bm25=bm25, alpha=alpha)
     return rerank(query, candidates, k=k)
 
 
