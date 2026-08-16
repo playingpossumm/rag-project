@@ -6,6 +6,11 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+# Windows consoles default to cp1252, which cannot encode the mathematical
+# notation common in technical PDFs; printing a retrieved chunk would crash.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 STORE_DIR = Path(__file__).parent.parent / "vector_store"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 TOP_K = 5

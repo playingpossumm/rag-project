@@ -8,9 +8,16 @@ from sentence_transformers import SentenceTransformer
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 STORE_DIR = Path(__file__).parent.parent / "vector_store"
-CHUNK_SIZE_WORDS = 500
-CHUNK_OVERLAP_WORDS = 50
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+
+# Chunk size is measured in TOKENS, not words, because the encoder's input
+# ceiling (max_seq_length) is a token count. Sizing in words let chunks run to
+# ~1200 tokens, and everything past token 256 was silently dropped before the
+# encoder saw it -- that text was stored and retrievable, but invisible to
+# search. 240 leaves headroom under the 256 limit for the [CLS]/[SEP] tokens
+# the tokenizer adds at encode time.
+CHUNK_SIZE_TOKENS = 240
+CHUNK_OVERLAP_TOKENS = 40
 
 
 def extract_pages(pdf_path: Path) -> list[tuple[int, str]]:
@@ -18,23 +25,36 @@ def extract_pages(pdf_path: Path) -> list[tuple[int, str]]:
     return [(i + 1, chunk["text"]) for i, chunk in enumerate(page_chunks)]
 
 
-def chunk_text(text: str, size: int, overlap: int) -> list[str]:
-    words = text.split()
-    if not words:
+def chunk_text(text: str, tokenizer, size: int, overlap: int) -> list[str]:
+    """Split text into overlapping windows of `size` tokens.
+
+    Windows are cut by token count but sliced out of the original string via
+    character offsets, so the returned text is byte-identical to the source
+    (Markdown structure included) rather than a lossy detokenization.
+    """
+    encoded = tokenizer(text, add_special_tokens=False, return_offsets_mapping=True)
+    offsets = encoded["offset_mapping"]
+    if not offsets:
         return []
+
     chunks = []
     start = 0
-    while start < len(words):
-        end = start + size
-        chunks.append(" ".join(words[start:end]))
+    while start < len(offsets):
+        window = offsets[start:start + size]
+        piece = text[window[0][0]:window[-1][1]].strip()
+        if piece:
+            chunks.append(piece)
+        if start + size >= len(offsets):
+            break
         start += size - overlap
     return chunks
 
 
-def build_chunks(pdf_path: Path) -> list[dict]:
+def build_chunks(pdf_path: Path, tokenizer) -> list[dict]:
     chunks = []
     for page_num, page_text in extract_pages(pdf_path):
-        for piece in chunk_text(page_text, CHUNK_SIZE_WORDS, CHUNK_OVERLAP_WORDS):
+        pieces = chunk_text(page_text, tokenizer, CHUNK_SIZE_TOKENS, CHUNK_OVERLAP_TOKENS)
+        for piece in pieces:
             chunks.append({
                 "source": pdf_path.name,
                 "page": page_num,
@@ -49,17 +69,31 @@ def main():
         print(f"No PDFs found in {DATA_DIR}")
         return
 
+    # Loaded before chunking: the tokenizer defines the chunk boundaries.
+    print(f"Loading embedding model ({EMBEDDING_MODEL})...")
+    model = SentenceTransformer(EMBEDDING_MODEL)
+    limit = model.max_seq_length
+
     all_chunks = []
     for pdf_path in pdf_files:
         print(f"Reading {pdf_path.name}...")
-        all_chunks.extend(build_chunks(pdf_path))
+        all_chunks.extend(build_chunks(pdf_path, model.tokenizer))
 
     print(f"Built {len(all_chunks)} chunks from {len(pdf_files)} PDF(s)")
 
-    print(f"Loading embedding model ({EMBEDDING_MODEL})...")
-    model = SentenceTransformer(EMBEDDING_MODEL)
-
     texts = [c["text"] for c in all_chunks]
+
+    # Fail loudly rather than truncate silently: anything over the encoder's
+    # ceiling would be dropped mid-chunk with no error at encode time.
+    lengths = [len(model.tokenizer.encode(t)) for t in texts]
+    over = [n for n in lengths if n > limit]
+    if over:
+        raise ValueError(
+            f"{len(over)} chunk(s) exceed max_seq_length={limit} "
+            f"(largest {max(over)}). Lower CHUNK_SIZE_TOKENS."
+        )
+    print(f"Token budget OK: max {max(lengths)}/{limit}, median {sorted(lengths)[len(lengths) // 2]}")
+
     print("Embedding chunks...")
     embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
     faiss.normalize_L2(embeddings)
