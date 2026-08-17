@@ -432,6 +432,55 @@
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
+  /* ---------- Tabs ---------- */
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-top: 34px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    appearance: none;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    padding: 13px 20px 12px 0;
+    margin-right: 28px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 17px;
+    color: var(--muted);
+    text-align: left;
+    line-height: 1.25;
+  }
+
+  .tab .tab-num {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 4px;
+  }
+
+  .tab:hover { color: var(--ink); }
+  .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .tab[aria-selected="true"] {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab[aria-selected="true"] .tab-num { color: var(--accent); }
+
+  .panel[hidden] { display: none; }
+  .panel > .stage:first-child { margin-top: 44px; }
+
   /* ---------- Theme toggle ---------- */
 
   .theme-toggle {
@@ -462,26 +511,38 @@
 <div class="page">
 
   <header class="masthead">
-    <p class="eyebrow">Phase 1 &middot; Mechanism Notes</p>
+    <p class="eyebrow">Mechanism Notes &middot; Phases 1&ndash;2</p>
     <h1 class="title">Anatomy of a Retrieval Pipeline</h1>
     <p class="dek">
       A step-by-step account of what actually happens to a PDF as it becomes searchable,
       and to a question as it becomes a cited answer. This is the
       <strong>Retrieval-Augmented Generation (RAG)</strong> pattern: retrieve first, then
-      generate strictly from what was retrieved. Every number below is measured from
-      the running system, not estimated &mdash; including a silent truncation defect those
-      measurements exposed, its fix, and the before-and-after that separates what the fix
-      solved from what it did not.
+      generate strictly from what was retrieved. <strong>Phase 1</strong> builds that pipeline
+      and takes it apart; <strong>Phase 2</strong> makes its rankings good and, more
+      importantly, proves it. Every number here is measured from the running system, not
+      estimated &mdash; including two defects the measurements exposed, one of them in the
+      measuring tool itself, and one conclusion that turned out to be an artifact of corpus
+      size rather than a property of the method.
     </p>
     <div class="runsheet">
-      <div>corpus <b>1 PDF / 15 pages</b></div>
-      <div>chunks <b>64</b></div>
-      <div>chunk size <b>240 tok</b></div>
-      <div>dim <b>384</b></div>
-      <div>index <b>IndexFlatIP</b></div>
-      <div>on disk <b>96 KB</b></div>
+      <div>corpus <b>15 pages / 64 chunks</b></div>
+      <div>retrieval <b>dense + BM25, RRF</b></div>
+      <div>rerank <b>cross-encoder</b></div>
+      <div>eval <b>24 cases</b></div>
+      <div>MRR <b>0.771 &rarr; 0.941</b></div>
     </div>
   </header>
+
+  <div class="tabs" role="tablist" aria-label="Project phases">
+    <button class="tab" role="tab" id="tab-p1" aria-controls="panel-p1" aria-selected="true" type="button">
+      <span class="tab-num">Phase 1</span>Building the pipeline
+    </button>
+    <button class="tab" role="tab" id="tab-p2" aria-controls="panel-p2" aria-selected="false" tabindex="-1" type="button">
+      <span class="tab-num">Phase 2</span>Making retrieval good
+    </button>
+  </div>
+
+  <div class="panel" id="panel-p1" role="tabpanel" aria-labelledby="tab-p1" tabindex="0">
 
   <!-- ================= OVERVIEW ================= -->
 
@@ -1405,13 +1466,715 @@ client.messages.create(
     </div>
   </section>
 
+  </div><!-- /panel-p1 -->
+
+  <div class="panel" id="panel-p2" role="tabpanel" aria-labelledby="tab-p2" tabindex="0" hidden>
+
+  <section class="stage">
+    <div class="stage-label"><h2>What Phase 1 left broken</h2></div>
+    <p class="stage-sub">
+      One measured failure, and the structural reason no amount of re-chunking could fix it.
+    </p>
+
+    <div class="body-text">
+      <p>
+        Phase 1 ended with retrieval that worked but ranked badly. Asked
+        &#8220;What is multi-head attention?&#8221;, it returned a figure caption from page 14
+        at rank 1 and the actual definition at rank 4. Fixing the truncation defect improved
+        the tail of the results and moved nothing at the top &mdash; ranks 1 and 2 came back
+        byte-identical, at identical scores.
+      </p>
+      <p>
+        That non-result was the useful one. It ruled out the explanation I expected and left
+        only the structural one: <strong>a bi-encoder scores topical aboutness, not
+        answerhood.</strong> Mean pooling compresses a whole passage into one 384-dimensional
+        point, so a short caption repeating &#8220;attention heads&#8221; three times reads as
+        densely on-topic, while a longer passage that actually defines the term gets diluted by
+        its own surrounding prose. No chunking parameter reaches that; it is inherent to
+        summarising a passage into a single vector before the query is known.
+      </p>
+      <p>
+        Phase 2 is three changes and one discipline. Rerank the shortlist with a model that
+        reads query and passage together. Add a lexical retriever to cover the dense
+        retriever's blind spot. Fuse the two rankings. And &mdash; the discipline &mdash;
+        measure all of it, because the previous paragraph is a plausible story and plausible
+        stories are how retrieval systems quietly get worse.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ RERANKING ============ -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 07</span>
+      <h2>Reranking &mdash; letting the query and the passage meet</h2>
+    </div>
+    <p class="stage-sub">A second-stage model that encodes question and candidate jointly, rather than comparing two summaries written in isolation.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">cross-encoder</span>
+        <span class="term-chip">bi-encoder</span>
+        <span class="term-chip">two-stage retrieval</span>
+        <span class="term-chip">joint encoding</span>
+        <span class="term-chip">precision@1</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          The bi-encoder from Phase 1 has a property that makes it fast and, in the same
+          stroke, imprecise: it encodes the query and the chunk <em>separately</em>. Chunk
+          vectors are computed once at index time, long before any question exists, so at query
+          time the comparison is between two independently-written summaries. The chunk was
+          never allowed to know what was being asked of it.
+        </p>
+        <p>
+          A cross-encoder removes exactly that constraint. Query and chunk are concatenated
+          into one sequence and passed through the encoder <strong>together</strong>, so every
+          query token can attend to every chunk token and vice versa. The model isn't asked
+          &#8220;summarise this passage&#8221; and then compared &mdash; it is asked the only
+          question that matters: <em>does this passage answer this query?</em>
+        </p>
+        <p>
+          The cost is that nothing can be precomputed. Every (query, chunk) pair needs its own
+          forward pass, so scoring a 64-chunk corpus means 64 forward passes and a million-chunk
+          corpus is out of the question. That is why this is a <em>second</em> stage: the
+          bi-encoder scans everything cheaply to produce a shortlist, and the cross-encoder
+          spends real computation only on the survivors.
+        </p>
+      </div>
+
+      <figure class="diagram wide">
+        <svg viewBox="0 0 980 330" role="img" aria-label="Left: a bi-encoder passes query and chunk through separate encoders into two vectors that meet only at a final cosine comparison, with chunk vectors precomputed at index time. Right: a cross-encoder concatenates query and chunk into one sequence through a single encoder that outputs a relevance score directly, with every query token attending to every chunk token.">
+          <defs>
+            <marker id="ar4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- ================= LEFT: bi-encoder ================= -->
+          <text x="16" y="24" font-family="ui-monospace,monospace" font-size="12.5" letter-spacing="0.8" fill="currentColor" opacity="0.84">BI-ENCODER &mdash; first stage, scans everything</text>
+
+          <g font-family="Georgia,serif" font-size="13.5">
+            <rect x="16" y="52" width="94" height="42" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="63" y="78" text-anchor="middle">query</text>
+
+            <rect x="16" y="164" width="94" height="42" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="63" y="190" text-anchor="middle">chunk</text>
+
+            <line x1="110" y1="73" x2="142" y2="73" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar4)"/>
+            <line x1="110" y1="185" x2="142" y2="185" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar4)"/>
+
+            <rect x="146" y="52" width="92" height="42" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="192" y="78" text-anchor="middle">encoder</text>
+
+            <rect x="146" y="164" width="92" height="42" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="192" y="190" text-anchor="middle">encoder</text>
+
+            <line x1="238" y1="73" x2="270" y2="73" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar4)"/>
+            <line x1="238" y1="185" x2="270" y2="185" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar4)"/>
+
+            <rect x="274" y="52" width="70" height="42" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.4"/>
+            <text x="309" y="78" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5">384-d</text>
+
+            <rect x="274" y="164" width="70" height="42" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.4"/>
+            <text x="309" y="190" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5">384-d</text>
+
+            <!-- converge -->
+            <line x1="344" y1="73" x2="392" y2="118" stroke="currentColor" stroke-width="1.4"/>
+            <line x1="344" y1="185" x2="392" y2="140" stroke="currentColor" stroke-width="1.4"/>
+            <rect x="394" y="108" width="58" height="42" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="423" y="134" text-anchor="middle">cos</text>
+          </g>
+
+          <!-- separation annotation -->
+          <line x1="192" y1="100" x2="192" y2="158" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.62"/>
+          <text x="200" y="133" font-family="Georgia,serif" font-size="12" fill="currentColor" opacity="0.84" font-style="italic">no interaction</text>
+
+          <text x="16" y="240" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.84">chunk vectors computed once at index time,</text>
+          <text x="16" y="258" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.84">before any query exists</text>
+          <text x="16" y="288" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.76">64 chunks &rarr; 0 forward passes at query time</text>
+          <text x="16" y="308" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.76">~28 ms per query</text>
+
+          <!-- divider -->
+          <line x1="500" y1="16" x2="500" y2="314" stroke="currentColor" stroke-width="1" opacity="0.45"/>
+
+          <!-- ================= RIGHT: cross-encoder ================= -->
+          <text x="530" y="24" font-family="ui-monospace,monospace" font-size="12.5" letter-spacing="0.8" fill="currentColor" opacity="0.84">CROSS-ENCODER &mdash; second stage, shortlist only</text>
+
+          <g font-family="Georgia,serif" font-size="13.5">
+            <rect x="530" y="108" width="176" height="42" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="618" y="128" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5">[query] [SEP] [chunk]</text>
+            <text x="618" y="144" text-anchor="middle" font-size="11.5" opacity="0.84">one sequence</text>
+
+            <line x1="706" y1="129" x2="740" y2="129" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar4)"/>
+
+            <rect x="744" y="108" width="96" height="42" fill="none" stroke="currentColor" stroke-width="1.4"/>
+            <text x="792" y="134" text-anchor="middle">encoder</text>
+
+            <line x1="840" y1="129" x2="874" y2="129" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar4)"/>
+
+            <rect x="878" y="108" width="86" height="42" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="1.4"/>
+            <text x="921" y="128" text-anchor="middle" font-size="12.5">relevance</text>
+            <text x="921" y="144" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11">logit</text>
+          </g>
+
+          <!-- interaction annotation -->
+          <path d="M 560 104 C 580 76, 660 76, 690 104" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.72" marker-end="url(#ar4)"/>
+          <path d="M 690 104 C 660 76, 580 76, 560 104" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.72" marker-end="url(#ar4)"/>
+          <text x="618" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="currentColor" opacity="0.86" font-style="italic">every token attends to every other</text>
+
+          <text x="530" y="240" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.84">nothing can be precomputed &mdash; the chunk&#8217;s</text>
+          <text x="530" y="258" font-family="Georgia,serif" font-size="12.5" fill="currentColor" opacity="0.84">representation depends on the query</text>
+          <text x="530" y="288" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.76">20 candidates &rarr; 20 forward passes per query</text>
+          <text x="530" y="308" font-family="ui-monospace,monospace" font-size="11.5" fill="currentColor" opacity="0.76">~1200 ms per query</text>
+        </svg>
+        <figcaption>
+          The architectural difference is <em>when</em> the query and the passage are allowed to
+          interact. The bi-encoder never lets them meet &mdash; which is precisely what permits
+          precomputing chunk vectors, and therefore what permits scanning a corpus at all. The
+          cross-encoder is ~40&times; slower per query here for exactly the reason it is more
+          accurate.
+        </figcaption>
+      </figure>
+
+      <div class="in-project">
+        <span class="k">In your project</span>
+        <code>cross-encoder/ms-marco-MiniLM-L-6-v2</code>, run over the top
+        <code>20</code> candidates and cutting to <code>5</code>. It outputs raw logits, not
+        similarities: ordering is meaningful, the absolute values are not comparable to cosine
+        scores, and they can be negative. The first-stage score is preserved on each result as
+        <code>retrieval_score</code> so the two stages remain separable.
+      </div>
+
+      <div class="in-project">
+        <span class="k">Measured &middot; the case that motivated all of this</span>
+        <div class="table-wrap" style="margin-top:12px">
+          <table>
+            <thead><tr><th>Rank</th><th>Bi-encoder only</th><th>After reranking</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>p14 &middot; Figure 4 caption</td><td><strong>p5 &middot; the definition</strong></td></tr>
+              <tr><td>2</td><td>p15 &middot; Figure 5 caption</td><td>p4 &middot; Figure 2, multi-head diagram</td></tr>
+              <tr><td>3</td><td>p3 &middot; attention function</td><td>p5 &middot; h = 8 heads, d<sub>k</sub> = 64</td></tr>
+              <tr><td>4</td><td><strong>p5 &middot; the definition</strong></td><td>p2 &middot; related work</td></tr>
+              <tr><td>5</td><td>p5 &middot; h = 8 heads</td><td>p4 &middot; scaling rationale</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin:12px 0 0">
+          Both figure captions leave the top 5 entirely. They are genuinely <em>about</em>
+          attention heads &mdash; the bi-encoder was not wrong about that &mdash; they simply do
+          not answer the question, which is a distinction only joint encoding can draw.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HYBRID ============ -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 08</span>
+      <h2>Sparse retrieval &mdash; covering the dense blind spot</h2>
+    </div>
+    <p class="stage-sub">BM25 scores exact term overlap weighted by rarity, which is precisely what embeddings smooth away.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">BM25</span>
+        <span class="term-chip">sparse retrieval</span>
+        <span class="term-chip">lexical matching</span>
+        <span class="term-chip">IDF</span>
+        <span class="term-chip">term saturation</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          Embeddings are strong on paraphrase because they map meaning to geometry. That same
+          mechanism is a weakness for tokens whose value is their <em>identity</em> rather than
+          their semantics: <code>P100</code>, <code>WMT 2014</code>, <code>d_model</code>,
+          <code>BLEU</code>. A rare symbol contributes a small nudge to a 384-dimensional
+          average dominated by the surrounding prose, so a query naming it exactly gets little
+          extra pull toward the chunk that contains it.
+        </p>
+        <p>
+          BM25 has the mirror-image profile. It scores documents by term overlap, weighting
+          each shared term by <strong>inverse document frequency</strong> &mdash; a term
+          occurring in few chunks is treated as far more informative than one occurring
+          everywhere. A rare token is therefore the <em>strongest</em> possible signal, which is
+          exactly backwards from the dense retriever. It also applies <em>term
+          saturation</em>: the fifth occurrence of a word adds much less than the second, so
+          keyword-stuffed passages cannot run away with the score.
+        </p>
+        <p>
+          Its blind spot is the dense retriever's strength: BM25 cannot see paraphrase at all.
+          A query saying &#8220;how fast does it train&#8221; shares no terms with a passage
+          saying &#8220;step time was 1.0 seconds&#8221; and scores exactly zero. Neither
+          retriever is better; they fail on disjoint inputs, which is the entire argument for
+          running both.
+        </p>
+      </div>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/hybrid.py</div>
+        <div class="mech-body">
+<pre class="code"><span class="c"># Deliberately crude tokenization: no stemming, no stopword list.</span>
+<span class="c"># Stemming would collapse distinctions this corpus depends on</span>
+<span class="c"># (d_k vs d_v), and IDF already discounts common words without</span>
+<span class="c"># needing a stoplist.</span>
+TOKEN_RE = re.compile(<span class="n">r"[a-z0-9]+"</span>)
+
+<span class="k">def</span> build_bm25(metadata):
+    <span class="k">return</span> BM25Okapi([tokenize(c[<span class="n">"text"</span>]) <span class="k">for</span> c <span class="k">in</span> metadata])
+
+<span class="k">def</span> bm25_search(query, bm25, metadata, k):
+    scores = bm25.get_scores(tokenize(query))
+    ranked = sorted(range(len(scores)), key=<span class="k">lambda</span> i: scores[i], reverse=<span class="n">True</span>)[:k]
+    <span class="k">return</span> [{**metadata[i], <span class="n">"chunk_id"</span>: i, <span class="n">"score"</span>: float(scores[i])}
+            <span class="k">for</span> i <span class="k">in</span> ranked <span class="k">if</span> scores[i] &gt; <span class="n">0</span>]   <span class="c"># 0 = no query term present</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FUSION ============ -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 09</span>
+      <h2>Fusion &mdash; combining two incomparable rankings</h2>
+    </div>
+    <p class="stage-sub">Cosine similarities and BM25 scores live on unrelated scales, so the safe way to merge them is to ignore the scores entirely.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">reciprocal rank fusion</span>
+        <span class="term-chip">score normalization</span>
+        <span class="term-chip">rank fusion</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          Merging the two result lists sounds like addition, but a cosine similarity of
+          <code>0.63</code> and a BM25 score of <code>11.4</code> are not commensurable
+          quantities &mdash; one is bounded in [&minus;1, 1], the other is unbounded and depends
+          on corpus statistics. Adding them directly is meaningless, so any weighted approach
+          must first normalize each list, usually min-max, per query.
+        </p>
+        <p>
+          That normalization introduces its own distortion: it is <em>relative</em>. A query
+          where every candidate is mediocre still produces a top score of 1.0 after scaling,
+          identical to a query with a perfect match. The normalized number says where a result
+          stands among its peers, not whether it is any good &mdash; and it silently erases the
+          confidence signal.
+        </p>
+        <p>
+          <strong>Reciprocal rank fusion</strong> avoids the problem by discarding scores and
+          using only positions. Each retriever contributes
+          <code>1 / (k + rank)</code> per document, and the contributions are summed. Being
+          ranked highly by both retrievers beats being ranked first by one, the arithmetic is
+          scale-free by construction, and there is no weight to tune per corpus.
+        </p>
+      </div>
+
+      <div class="math">
+        RRF(d) = &Sigma;<sub>r &isin; retrievers</sub> 1 / (k + rank<sub>r</sub>(d)) &nbsp;&nbsp;&nbsp; k = 60
+        <span class="note">The constant damps the difference between top ranks, so rank 1 versus rank 2 is not treated as a decisive gap &mdash; a hedge against either retriever being overconfident.</span>
+      </div>
+
+      <div class="in-project">
+        <span class="k">Why RRF is the default here</span>
+        Weighted fusion measured comparably (see the results below) but carries an
+        <code>alpha</code> that needs retuning per corpus, and inherits the normalization
+        distortion above. RRF wins on robustness rather than on the numbers &mdash; it has one
+        fewer thing to get wrong when the corpus changes.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EVALUATION ============ -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 10</span>
+      <h2>Evaluation &mdash; the part that makes the rest trustworthy</h2>
+    </div>
+    <p class="stage-sub">Three metrics, a labelled golden set, and a deliberate separation between what each pipeline stage is responsible for.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">golden set</span>
+        <span class="term-chip">hit rate</span>
+        <span class="term-chip">MRR</span>
+        <span class="term-chip">NDCG</span>
+        <span class="term-chip">recall vs precision</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          Everything above is a plausible argument. Plausible arguments are how retrieval
+          systems quietly degrade &mdash; each change sounds sensible, nobody measures, and six
+          changes later quality has drifted with no way to identify which one did it. So the
+          third piece of Phase 2 is a harness that scores any configuration against
+          <strong>24 labelled questions</strong> plus 4 deliberately unanswerable ones.
+        </p>
+      </div>
+
+      <h4 class="sub">The three metrics, and what each one hides</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Metric</th><th>Asks</th><th>Blind to</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>hit rate@k</code></td>
+              <td>Is a relevant chunk anywhere in the returned set?</td>
+              <td>Position. Rank 1 and rank 5 score identically &mdash; so it saturates at 1.000 and stops being informative.</td>
+            </tr>
+            <tr>
+              <td><code>MRR</code></td>
+              <td>How high is the <em>first</em> relevant result? (1/rank)</td>
+              <td>Everything after the first hit. A set with one perfect result scores the same as one with five.</td>
+            </tr>
+            <tr>
+              <td><code>NDCG@k</code></td>
+              <td>Are all relevant results near the top, discounted by rank?</td>
+              <td>Absolute quality &mdash; it is normalized against the best achievable ordering of what was actually retrieved.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="in-project">
+        <span class="k">Why relevance is labelled per page, not per chunk</span>
+        A chunk counts as relevant if it came from a page the golden set lists. This is coarse
+        &mdash; it cannot distinguish a precise passage from a vague one on the same page. It
+        was chosen because page labels <strong>survive re-chunking</strong>: chunk-level labels
+        would need redoing after every change to chunk size, which is exactly when a comparable
+        metric matters most. Labelling at a granularity that changes with your parameters means
+        never being able to compare across the change you most want to evaluate.
+      </div>
+
+      <div class="defect">
+        <span class="k">Bug caught by the harness, in its own first run</span>
+        <h4>NDCG returned values above 1.0</h4>
+        <p>
+          NDCG is normalized and cannot exceed 1.0, so the first run printing
+          <code>1.373</code> was proof of a defect in the metric itself, not a good result.
+        </p>
+        <p>
+          The cause was the page-level labelling above: several returned chunks can share one
+          gold page, so the achieved DCG summed over all of them while my ideal DCG allowed only
+          one slot per gold page. The ideal is now defined as <em>the hits actually found,
+          moved to the top</em>, which is the standard formulation for binary relevance with an
+          unknown total. Verified against four hand-computed cases &mdash; all-hits-at-top
+          returning exactly 1.0, hits demoted returning 0.571, no hits returning 0.0.
+        </p>
+        <p>
+          Worth stating plainly: this bug was in the tool built to catch bugs, and it was caught
+          only because the output violated a bound I knew the metric had. A metric with no
+          known bounds would have shipped wrong.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ARCHITECTURE ============ -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>The pipeline after Phase 2</h2></div>
+    <p class="stage-sub">Two stages with different jobs, measured separately because improving one is invisible in the other's numbers.</p>
+
+    <figure class="diagram wide">
+      <svg viewBox="0 0 1120 300" role="img" aria-label="A funnel diagram: 64 indexed chunks feed both a dense retriever and a BM25 retriever, each returning 20 results, which are fused by reciprocal rank fusion into a 20-candidate pool, then reranked by a cross-encoder down to the final 5. Candidate recall is judged at the pool; precision metrics are judged at the final 5.">
+        <defs>
+          <marker id="ar5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <g font-family="Georgia,serif" font-size="13.5">
+          <rect x="16" y="112" width="120" height="60" fill="currentColor" fill-opacity="0.07" stroke="currentColor" stroke-width="1.4"/>
+          <text x="76" y="138" text-anchor="middle">corpus</text>
+          <text x="76" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.84">64 chunks</text>
+
+          <line x1="136" y1="128" x2="176" y2="86" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar5)"/>
+          <line x1="136" y1="156" x2="176" y2="198" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+          <rect x="180" y="56" width="146" height="58" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="253" y="80" text-anchor="middle">dense &middot; FAISS</text>
+          <text x="253" y="99" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.84">meaning &rarr; top 20</text>
+
+          <rect x="180" y="170" width="146" height="58" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="253" y="194" text-anchor="middle">sparse &middot; BM25</text>
+          <text x="253" y="213" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.84">exact terms &rarr; top 20</text>
+
+          <line x1="326" y1="86" x2="368" y2="128" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar5)"/>
+          <line x1="326" y1="198" x2="368" y2="156" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+          <rect x="372" y="112" width="106" height="60" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="425" y="138" text-anchor="middle">RRF</text>
+          <text x="425" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.84">rank fusion</text>
+
+          <line x1="478" y1="142" x2="518" y2="142" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+          <rect x="522" y="112" width="140" height="60" fill="currentColor" fill-opacity="0.07" stroke="currentColor" stroke-width="1.4"/>
+          <text x="592" y="138" text-anchor="middle">candidate pool</text>
+          <text x="592" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.84">20</text>
+
+          <line x1="662" y1="142" x2="702" y2="142" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+          <rect x="706" y="112" width="150" height="60" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <text x="781" y="138" text-anchor="middle">cross-encoder</text>
+          <text x="781" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" opacity="0.84">joint re-scoring</text>
+
+          <line x1="856" y1="142" x2="896" y2="142" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+          <rect x="900" y="112" width="126" height="60" fill="currentColor" fill-opacity="0.07" stroke="currentColor" stroke-width="1.4"/>
+          <text x="963" y="138" text-anchor="middle" font-weight="bold">final</text>
+          <text x="963" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11.5" opacity="0.84">5 &rarr; the model</text>
+        </g>
+
+        <!-- measurement brackets -->
+        <line x1="522" y1="188" x2="662" y2="188" stroke="currentColor" stroke-width="1.2" opacity="0.72"/>
+        <line x1="592" y1="188" x2="592" y2="204" stroke="currentColor" stroke-width="1.2" opacity="0.72"/>
+        <text x="592" y="222" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.84">recall judged here</text>
+        <text x="592" y="240" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="currentColor" opacity="0.8" font-style="italic">fusion&#8217;s job: is the answer present?</text>
+
+        <line x1="900" y1="188" x2="1026" y2="188" stroke="currentColor" stroke-width="1.2" opacity="0.72"/>
+        <line x1="963" y1="188" x2="963" y2="204" stroke="currentColor" stroke-width="1.2" opacity="0.72"/>
+        <text x="963" y="222" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="currentColor" opacity="0.84">precision judged here</text>
+        <text x="963" y="240" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="currentColor" opacity="0.8" font-style="italic">reranker&#8217;s job: is it first?</text>
+      </svg>
+      <figcaption>
+        The two stages answer different questions, so they need different metrics. Fusion widens
+        what the pool <em>contains</em>; reranking fixes its <em>order</em>. A change to fusion
+        that improves recall can be completely invisible in the final numbers &mdash; which is
+        exactly what happened.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Results</h2></div>
+    <p class="stage-sub">24 answerable cases, k = 5, 64-chunk corpus.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pipeline</th><th>hit@5</th><th>MRR</th><th>NDCG</th></tr></thead>
+        <tbody>
+          <tr><td>dense only, no rerank <em>(naive RAG)</em></td><td>0.958</td><td>0.771</td><td>0.807</td></tr>
+          <tr><td>dense + rerank</td><td>1.000</td><td>0.941</td><td>0.921</td></tr>
+          <tr><td><strong>RRF hybrid + rerank</strong></td><td><strong>1.000</strong></td><td><strong>0.941</strong></td><td><strong>0.928</strong></td></tr>
+          <tr><td>weighted hybrid + rerank</td><td>1.000</td><td>0.941</td><td>0.928</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="body-text" style="margin-top:20px">
+      <p>
+        MRR moving <code>0.771 &rarr; 0.941</code> is the meaningful number: relevant passages
+        moved <em>to the top</em>, not merely into the set. hit@5 reaching 1.000 means every
+        answerable question now retrieves a relevant page somewhere in its five results.
+      </p>
+    </div>
+
+    <div class="defect">
+      <span class="k">The measurement that changed a default</span>
+      <h4>Hybrid search looked useless &mdash; because the corpus is small</h4>
+      <p>
+        Read only from the table above, fusion does nothing: identical hit@5 and MRR to
+        dense-only. That reading is wrong, and the reason matters more than the number.
+      </p>
+      <p>
+        On a 64-chunk corpus, a 20-candidate pool is <strong>31% of the entire corpus</strong>.
+        Recall is trivially perfect for any first stage, so fusion has no headroom to fill &mdash;
+        and while it does improve pool <em>ordering</em> (candidate MRR
+        <code>0.774 &rarr; 0.883</code>), the reranker re-scores every candidate from scratch and
+        discards that ordering entirely. Both effects cancel.
+      </p>
+      <p>
+        Sweeping candidate depth puts the pool into the selectivity regime a corpus of hundreds
+        of documents would actually operate in:
+      </p>
+      <div class="table-wrap" style="margin-top:14px">
+        <table>
+          <thead><tr><th>candidate_k</th><th>% of corpus</th><th>dense recall</th><th>RRF recall</th><th>dense MRR</th><th>RRF MRR</th></tr></thead>
+          <tbody>
+            <tr><td>3</td><td>4.7%</td><td>0.875</td><td><strong>0.917</strong></td><td>0.806</td><td><strong>0.889</strong></td></tr>
+            <tr><td>5</td><td>7.8%</td><td>0.958</td><td>0.958</td><td>0.878</td><td><strong>0.931</strong></td></tr>
+            <tr><td>10</td><td>16%</td><td>0.958</td><td><strong>1.000</strong></td><td>0.899</td><td><strong>0.941</strong></td></tr>
+            <tr><td>20</td><td>31%</td><td>1.000</td><td>1.000</td><td>0.941</td><td>0.941</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px">
+        RRF is never worse and increasingly better as the pool tightens. The equivalence at
+        k=20 is an <strong>artifact of a small corpus, not a property of the method</strong>
+        &mdash; a default chosen from that row alone would silently degrade as the corpus grew.
+        Hence <code>DEFAULT_FUSION = "rrf"</code>.
+      </p>
+    </div>
+
+    <h4 class="sub">Abstention &mdash; an unplanned finding</h4>
+    <div class="body-text">
+      <p>
+        The four adversarial cases have no correct answer anywhere in the corpus. A good system
+        should be visibly less confident about them. Top-1 score on each:
+      </p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Stage</th><th>Scores on the four unanswerable questions</th></tr></thead>
+        <tbody>
+          <tr><td>dense first stage <em>(cosine)</em></td><td><code>+0.43, +0.34, +0.35, +0.27</code></td></tr>
+          <tr><td>after reranking <em>(logits)</em></td><td><code>&minus;7.04, +0.96, &minus;8.13, &minus;9.90</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="body-text" style="margin-top:16px">
+      <p>
+        Cosine similarity <strong>cannot separate</strong> answerable from unanswerable &mdash;
+        those scores sit in the same band as genuine matches, because something in a 64-chunk
+        corpus is always the nearest neighbour. Cross-encoder logits separate three of four
+        decisively, which makes <strong>a negative rerank score a usable abstention
+        threshold</strong>. The survivor scores <code>+0.96</code> for a defensible reason: the
+        question asks what the model cost in dollars, and the paper genuinely does discuss
+        training cost &mdash; in FLOPs. That is a near-miss, not a failure of the signal.
+      </p>
+      <p>
+        This was not something we set out to build. It arrived as a side effect of adding
+        adversarial cases to the golden set, and it supplies most of the checklist's
+        &#8220;fallback when confidence is low&#8221; item for free.
+      </p>
+    </div>
+
+    <h4 class="sub">What is still broken</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Case</th><th>MRR</th><th>gold &rarr; got</th><th>Diagnosis</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>d-model</code></td><td>0.25</td><td>[3] &rarr; [5, 6, 6, 3, 5]</td>
+            <td>&#8220;dimensionality of the embeddings&#8221; matches many chunks discussing dimensions; the defining one is not lexically distinctive</td>
+          </tr>
+          <tr>
+            <td><code>compound</code></td><td>0.33</td><td>[9] &rarr; [8, 8, 9, 8, 9]</td>
+            <td>Compound question &mdash; parameter count and dropout rate live in different places, so no single chunk answers both</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="body-text" style="margin-top:16px">
+      <p>
+        Both are identical across every reranked configuration, so neither reranking nor fusion
+        touches them. They are <strong>query-side</strong> problems, not ranking problems: one
+        query is under-specified, the other should be decomposed into two retrievals. That makes
+        them the evidence-backed case for query rewriting, which is where Phase 3 starts.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ CAVEATS ============ -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>How much to trust these numbers</h2></div>
+    <div class="card">
+      <div class="body-text">
+        <p>
+          <strong>24 cases is small.</strong> Each case is worth roughly 4 points of hit rate,
+          so a single case flipping moves the metric visibly. Treat differences under ~0.05 as
+          noise, and the gaps between the three reranked configurations are all inside that band.
+        </p>
+        <p>
+          <strong>One document.</strong> Nothing here tests cross-document retrieval, where
+          returning the right passage from the wrong document is a distinct failure mode that
+          cannot occur in a single-source corpus.
+        </p>
+        <p>
+          <strong>Page-level relevance is coarse.</strong> It cannot tell a precise passage from
+          a vague one on the same page, so it systematically over-credits a chunk that merely
+          shares a page with the answer.
+        </p>
+        <p>
+          <strong>The labels were drafted by the same process that built the system</strong>,
+          then spot-checked rather than independently authored. That is a real weakness in the
+          methodology and the reason the golden set deliberately includes cases expected to fail.
+        </p>
+        <p>
+          Most importantly: the candidate-depth sweep demonstrated that a conclusion drawn from
+          this corpus can <em>invert</em> at realistic scale. Treat every number here as
+          measured on 64 chunks of one paper, and re-measure before trusting any of it on a
+          real corpus.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MODULE MAP ============ -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Phase 2 module map</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File</th><th>Responsibility</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td><code>rerank.py</code></td><td>Cross-encoder second stage; preserves first-stage score for comparison</td><td>free / local</td></tr>
+          <tr><td><code>hybrid.py</code></td><td>BM25 index, reciprocal rank fusion, weighted fusion</td><td>free / local</td></tr>
+          <tr><td><code>retrieve.py</code></td><td><code>shortlist()</code> (first stage, configurable fusion) and <code>retrieve()</code> (full pipeline)</td><td>free / local</td></tr>
+          <tr><td><code>evaluate.py</code></td><td>hit rate, MRR, NDCG; candidate-pool and end-to-end layers</td><td>free / local</td></tr>
+          <tr><td><code>eval/golden_set.json</code></td><td>24 labelled cases + 4 adversarial</td><td>&mdash;</td></tr>
+          <tr><td><code>eval/RESULTS.md</code></td><td>Recorded measurements and the reasoning behind each default</td><td>&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  </div><!-- /panel-p2 -->
+
   <footer class="colophon">
-    rag-project &middot; phase 1 mechanism notes &middot; all figures measured from the running system
+    rag-project &middot; mechanism notes &middot; all figures measured from the running system
   </footer>
 
 </div>
 
 <script>
+  // ---- Tabs -------------------------------------------------------------
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+
+    function select(tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+      if (focus) tab.focus();
+      // Deep-linkable, and survives a reload without adding a history entry.
+      history.replaceState(null, "", "#" + tab.id.replace("tab-", ""));
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener("click", function () { select(tab, false); });
+      tab.addEventListener("keydown", function (e) {
+        var i = tabs.indexOf(tab);
+        if (e.key === "ArrowRight") select(tabs[(i + 1) % tabs.length], true);
+        else if (e.key === "ArrowLeft") select(tabs[(i - 1 + tabs.length) % tabs.length], true);
+        else if (e.key === "Home") select(tabs[0], true);
+        else if (e.key === "End") select(tabs[tabs.length - 1], true);
+        else return;
+        e.preventDefault();
+      });
+    });
+
+    var fromHash = document.getElementById("tab-" + location.hash.replace("#", ""));
+    if (fromHash) select(fromHash, false);
+  })();
+
+  // ---- Theme ------------------------------------------------------------
   (function () {
     var root = document.documentElement;
     var button = document.getElementById("themeToggle");
