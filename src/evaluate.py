@@ -23,6 +23,7 @@ jobs and improving one does not show up in the other's numbers:
 import argparse
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -72,6 +73,30 @@ def ndcg(results, gold) -> float:
     n_relevant = sum(1 for r in results if r["page"] in gold)
     idcg = sum(1.0 / math.log2(i + 1) for i in range(1, n_relevant + 1))
     return dcg / idcg if idcg else 0.0
+
+
+def normalize(text: str) -> str:
+    """Collapse whitespace and lowercase, so a phrase spanning a line break matches."""
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def context_recall(results, answer: str) -> float:
+    """Does the text actually returned contain the answer?
+
+    This is the metric ranking cannot express. hit@k asks whether a chunk from
+    the right *page* was returned; a chunk can satisfy that while being cut
+    before the sentence carrying the answer. Context recall asks the question
+    that decides whether a model could answer at all.
+    """
+    if not answer:
+        return float("nan")
+    needle = normalize(answer)
+    return 1.0 if any(needle in normalize(r["text"]) for r in results) else 0.0
+
+
+def context_tokens(results, tokenizer) -> int:
+    """Total tokens handed to the generator -- the cost side of expansion."""
+    return sum(len(tokenizer.encode(r["text"], add_special_tokens=False)) for r in results)
 
 
 def score_run(cases, retrieve_fn) -> tuple[dict, list[dict]]:
@@ -153,6 +178,28 @@ def main():
                 if c["mrr"] < 1.0:
                     print(f"  {c['id']:<14}{c['difficulty']:<8}{c['mrr']:>5.2f}  "
                           f"{c['gold']} -> {c['got']}")
+
+    # ---- Layer 3: context expansion ---------------------------------------
+    # Expansion cannot change ranking, so hit/MRR/NDCG are identical by
+    # construction and reporting them here would be noise. What changes is
+    # whether the returned text contains the answer, and what that costs.
+    print(f"\nCONTEXT EXPANSION @ {args.k}   (ranking is unchanged by construction)")
+    print(f"{'mode':<16}{'ctx recall':>12}{'tokens/query':>14}{'blocks':>9}")
+    tok = model.tokenizer
+    with_answers = [c for c in answerable if c.get("answer_contains")]
+    for label, cfg in (("none (chunks)", dict(expansion="none")),
+                       ("window +/-1", dict(expansion="window", window=1)),
+                       ("page", dict(expansion="page"))):
+        hits, toks, blocks = 0.0, 0, 0
+        for case in with_answers:
+            res = retrieve(case["question"], index, metadata, model, k=args.k,
+                           candidate_k=args.candidate_k, bm25=bm25,
+                           use_reranker=True, **cfg)
+            hits += context_recall(res, case["answer_contains"])
+            toks += context_tokens(res, tok)
+            blocks += len(res)
+        n = len(with_answers)
+        print(f"{label:<16}{hits / n:>12.3f}{toks / n:>14.0f}{blocks / n:>9.1f}")
 
     # ---- Abstention signal ------------------------------------------------
     print("\nADVERSARIAL top-1 score (no correct answer exists; lower is better)")

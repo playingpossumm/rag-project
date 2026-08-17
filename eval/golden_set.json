@@ -1,35 +1,256 @@
 {
   "corpus": "attention_is_all_you_need.pdf",
-  "note": "Gold pages verified by grepping the parsed corpus, not recalled from memory. 'pages' lists every page where the answer is genuinely present; a retrieval counts as a hit if any listed page appears in the returned set. Cases marked unanswerable have no supporting page and exist to test abstention rather than recall.",
+  "note": "Gold pages verified by grepping the parsed corpus, not recalled from memory. 'pages' lists every page where the answer is genuinely present; a retrieval counts as a hit if any listed page appears in the returned set. Cases marked unanswerable have no supporting page and exist to test abstention rather than recall. Each answerable case also carries `answer_contains`: a distinctive substring of the actual answer, verified to occur in the parsed corpus on its gold page. This enables context recall -- whether the text returned to the model actually contains the answer -- which ranking metrics cannot measure.",
   "cases": [
-    {"id": "mha-def",      "question": "What is multi-head attention?",                                            "pages": [5],     "difficulty": "medium", "why": "definition competes with figure captions that repeat the term"},
-    {"id": "mha-heads",    "question": "How many attention heads does the base model use?",                        "pages": [5],     "difficulty": "easy"},
-    {"id": "scale-why",    "question": "Why is the dot product scaled by the square root of the key dimension?",   "pages": [4],     "difficulty": "medium"},
-    {"id": "optimizer",    "question": "Which optimizer was used to train the model?",                             "pages": [7],     "difficulty": "easy"},
-    {"id": "lr-schedule",  "question": "How is the learning rate varied over the course of training?",             "pages": [7],     "difficulty": "medium"},
-    {"id": "enc-layers",   "question": "How many layers are in the encoder stack?",                                "pages": [3],     "difficulty": "easy"},
-    {"id": "d-model",      "question": "What is the dimensionality of the model's embeddings?",                    "pages": [3],     "difficulty": "medium"},
-    {"id": "dropout",      "question": "What dropout rate was used for the base model?",                           "pages": [8, 9],  "difficulty": "medium"},
-    {"id": "complexity",   "question": "What is the computational complexity per layer of self-attention?",        "pages": [6],     "difficulty": "medium"},
-    {"id": "path-length",  "question": "How does the maximum path length of self-attention compare to recurrent layers?", "pages": [6], "difficulty": "medium"},
-    {"id": "pos-enc-fn",   "question": "What function is used to compute the positional encodings?",               "pages": [6],     "difficulty": "medium"},
-    {"id": "pos-enc-why",  "question": "Why does the model need positional encodings at all?",                     "pages": [6],     "difficulty": "medium"},
-    {"id": "bleu-ende",    "question": "What BLEU score did the big model achieve on English-to-German?",          "pages": [8],     "difficulty": "easy"},
-    {"id": "bleu-enfr",    "question": "What BLEU score did the model achieve on English-to-French?",              "pages": [8],     "difficulty": "easy"},
-    {"id": "hardware",     "question": "What hardware was the model trained on?",                                  "pages": [7],     "difficulty": "easy"},
-    {"id": "train-time",   "question": "How long did the base model take to train?",                               "pages": [7],     "difficulty": "medium"},
-    {"id": "dataset",      "question": "Which dataset was used for English-to-German translation?",                "pages": [7],     "difficulty": "easy"},
-    {"id": "label-smooth", "question": "What label smoothing value was used during training?",                     "pages": [8],     "difficulty": "medium"},
-    {"id": "parsing",      "question": "How did the Transformer perform on English constituency parsing?",         "pages": [9, 10], "difficulty": "medium"},
-    {"id": "ffn-act",      "question": "What activation function is used in the position-wise feed-forward network?", "pages": [5],   "difficulty": "hard", "why": "buried mid-page in a section about something else"},
-    {"id": "ffn-dim",      "question": "What is the inner dimensionality of the feed-forward layer?",              "pages": [5, 9],  "difficulty": "hard"},
-    {"id": "attn-uses",    "question": "In which three ways does the Transformer use multi-head attention?",       "pages": [5],     "difficulty": "hard"},
-    {"id": "compound",     "question": "How many parameters and what dropout rate did the base model use?",        "pages": [9],     "difficulty": "hard", "why": "compound question; answers sit in different places"},
-    {"id": "residual",     "question": "How are residual connections and layer normalization applied to sub-layers?", "pages": [3],   "difficulty": "medium"},
-
-    {"id": "adv-bert",     "question": "What learning rate schedule does BERT use?",                               "pages": [], "unanswerable": true, "why": "BERT postdates this paper and is never mentioned"},
-    {"id": "adv-cost",     "question": "How many dollars did it cost to train the big model?",                     "pages": [], "unanswerable": true, "why": "training cost is reported in FLOPs, never in currency"},
-    {"id": "adv-rlhf",     "question": "What do the authors conclude about reinforcement learning from human feedback?", "pages": [], "unanswerable": true, "why": "topic absent from the paper"},
-    {"id": "adv-authors",  "question": "Which of the authors previously worked at OpenAI?",                        "pages": [], "unanswerable": true, "why": "affiliations are listed but no employment history"}
+    {
+      "id": "mha-def",
+      "question": "What is multi-head attention?",
+      "pages": [
+        5
+      ],
+      "difficulty": "medium",
+      "why": "definition competes with figure captions that repeat the term",
+      "answer_contains": "jointly attend to information from different representation subspaces"
+    },
+    {
+      "id": "mha-heads",
+      "question": "How many attention heads does the base model use?",
+      "pages": [
+        5
+      ],
+      "difficulty": "easy",
+      "answer_contains": "employ _h_ = 8 parallel attention layers"
+    },
+    {
+      "id": "scale-why",
+      "question": "Why is the dot product scaled by the square root of the key dimension?",
+      "pages": [
+        4
+      ],
+      "difficulty": "medium",
+      "answer_contains": "extremely small gradients"
+    },
+    {
+      "id": "optimizer",
+      "question": "Which optimizer was used to train the model?",
+      "pages": [
+        7
+      ],
+      "difficulty": "easy",
+      "answer_contains": "Adam optimizer"
+    },
+    {
+      "id": "lr-schedule",
+      "question": "How is the learning rate varied over the course of training?",
+      "pages": [
+        7
+      ],
+      "difficulty": "medium",
+      "answer_contains": "warmup_steps"
+    },
+    {
+      "id": "enc-layers",
+      "question": "How many layers are in the encoder stack?",
+      "pages": [
+        3
+      ],
+      "difficulty": "easy",
+      "answer_contains": "stack of _N_ = 6 identical layers"
+    },
+    {
+      "id": "d-model",
+      "question": "What is the dimensionality of the model's embeddings?",
+      "pages": [
+        3
+      ],
+      "difficulty": "medium",
+      "answer_contains": "dmodel = 512"
+    },
+    {
+      "id": "dropout",
+      "question": "What dropout rate was used for the base model?",
+      "pages": [
+        8,
+        9
+      ],
+      "difficulty": "medium",
+      "answer_contains": "_Pdrop_ = 0.1"
+    },
+    {
+      "id": "complexity",
+      "question": "What is the computational complexity per layer of self-attention?",
+      "pages": [
+        6
+      ],
+      "difficulty": "medium",
+      "answer_contains": "O(n[2]"
+    },
+    {
+      "id": "path-length",
+      "question": "How does the maximum path length of self-attention compare to recurrent layers?",
+      "pages": [
+        6
+      ],
+      "difficulty": "medium",
+      "answer_contains": "Maximum Path Length"
+    },
+    {
+      "id": "pos-enc-fn",
+      "question": "What function is used to compute the positional encodings?",
+      "pages": [
+        6
+      ],
+      "difficulty": "medium",
+      "answer_contains": "where pos is the position"
+    },
+    {
+      "id": "pos-enc-why",
+      "question": "Why does the model need positional encodings at all?",
+      "pages": [
+        6
+      ],
+      "difficulty": "medium",
+      "answer_contains": "no recurrence and no convolution"
+    },
+    {
+      "id": "bleu-ende",
+      "question": "What BLEU score did the big model achieve on English-to-German?",
+      "pages": [
+        8
+      ],
+      "difficulty": "easy",
+      "answer_contains": "28.4"
+    },
+    {
+      "id": "bleu-enfr",
+      "question": "What BLEU score did the model achieve on English-to-French?",
+      "pages": [
+        8
+      ],
+      "difficulty": "easy",
+      "answer_contains": "41.0"
+    },
+    {
+      "id": "hardware",
+      "question": "What hardware was the model trained on?",
+      "pages": [
+        7
+      ],
+      "difficulty": "easy",
+      "answer_contains": "8 NVIDIA P100 GPUs"
+    },
+    {
+      "id": "train-time",
+      "question": "How long did the base model take to train?",
+      "pages": [
+        7
+      ],
+      "difficulty": "medium",
+      "answer_contains": "12 hours"
+    },
+    {
+      "id": "dataset",
+      "question": "Which dataset was used for English-to-German translation?",
+      "pages": [
+        7
+      ],
+      "difficulty": "easy",
+      "answer_contains": "WMT 2014 English-German"
+    },
+    {
+      "id": "label-smooth",
+      "question": "What label smoothing value was used during training?",
+      "pages": [
+        8
+      ],
+      "difficulty": "medium",
+      "answer_contains": "label smoothing of value"
+    },
+    {
+      "id": "parsing",
+      "question": "How did the Transformer perform on English constituency parsing?",
+      "pages": [
+        9,
+        10
+      ],
+      "difficulty": "medium",
+      "answer_contains": "WSJ 23 F1"
+    },
+    {
+      "id": "ffn-act",
+      "question": "What activation function is used in the position-wise feed-forward network?",
+      "pages": [
+        5
+      ],
+      "difficulty": "hard",
+      "why": "buried mid-page in a section about something else",
+      "answer_contains": "ReLU"
+    },
+    {
+      "id": "ffn-dim",
+      "question": "What is the inner dimensionality of the feed-forward layer?",
+      "pages": [
+        5,
+        9
+      ],
+      "difficulty": "hard",
+      "answer_contains": "2048"
+    },
+    {
+      "id": "attn-uses",
+      "question": "In which three ways does the Transformer use multi-head attention?",
+      "pages": [
+        5
+      ],
+      "difficulty": "hard",
+      "answer_contains": "three different ways"
+    },
+    {
+      "id": "compound",
+      "question": "How many parameters and what dropout rate did the base model use?",
+      "pages": [
+        9
+      ],
+      "difficulty": "hard",
+      "why": "compound question; answers sit in different places",
+      "answer_contains": "4.92 25.8 65"
+    },
+    {
+      "id": "residual",
+      "question": "How are residual connections and layer normalization applied to sub-layers?",
+      "pages": [
+        3
+      ],
+      "difficulty": "medium",
+      "answer_contains": "residual connection"
+    },
+    {
+      "id": "adv-bert",
+      "question": "What learning rate schedule does BERT use?",
+      "pages": [],
+      "unanswerable": true,
+      "why": "BERT postdates this paper and is never mentioned"
+    },
+    {
+      "id": "adv-cost",
+      "question": "How many dollars did it cost to train the big model?",
+      "pages": [],
+      "unanswerable": true,
+      "why": "training cost is reported in FLOPs, never in currency"
+    },
+    {
+      "id": "adv-rlhf",
+      "question": "What do the authors conclude about reinforcement learning from human feedback?",
+      "pages": [],
+      "unanswerable": true,
+      "why": "topic absent from the paper"
+    },
+    {
+      "id": "adv-authors",
+      "question": "Which of the authors previously worked at OpenAI?",
+      "pages": [],
+      "unanswerable": true,
+      "why": "affiliations are listed but no employment history"
+    }
   ]
 }

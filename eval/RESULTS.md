@@ -44,6 +44,48 @@ per-corpus tuning and relies on per-query min-max normalization, which distorts
 absolute scores. RRF is scale-free and parameter-light, so it wins on robustness
 rather than on the numbers.
 
+## Context expansion (parent-document retrieval)
+
+Expansion changes what text is *returned*, never the ranking, so `hit@k` / MRR / NDCG
+are identical by construction across all three modes. It is measured instead by
+**context recall**: does the text handed to the generator actually contain the answer?
+Each answerable case carries a verified `answer_contains` string for this.
+
+| mode | context recall | tokens/query | blocks/query |
+|---|---|---|---|
+| none (240-token chunks) | 0.958 | 1,138 | 5.0 |
+| window ±1 chunk | 0.958 | 2,716 | 5.0 |
+| **page** | **1.000** | 2,680 | **3.0** |
+
+**Window expansion is strictly dominated** — it costs the same as page expansion and
+recovers nothing. Page expansion reaches full context recall, and returns *fewer*
+blocks because hits sharing a page are deduplicated into one, so the model reads each
+page once instead of seeing overlapping fragments of it repeatedly.
+
+`expansion="page"` is the default in `generate.py`. The 2.4× token cost is real but
+cheap in absolute terms (~2.7k tokens), and it buys the property the whole pipeline
+exists for: a citation the model can actually substantiate from the text it was given.
+
+### The case that justifies it — and what it revealed about the metrics
+
+Only one case separates the modes: `compound` ("how many parameters and what dropout
+rate did the base model use?").
+
+| | pages returned | hit@k | context recall |
+|---|---|---|---|
+| chunks | [8, 8, 9, 8, 9] | **1.000** | **0.000** |
+| page | [8, 9] | 1.000 | **1.000** |
+
+Chunk retrieval *did* return page 9 — the gold page — so `hit@k` scored it a success.
+But the page-9 chunks it returned came from elsewhere on that page and did not contain
+the Table 3 row holding the answer. **The ranking metrics reported success on a query
+the system could not answer.**
+
+This is the page-level-labelling caveat biting in practice: judging relevance per page
+over-credits any chunk that merely shares a page with the answer. Context recall is the
+check that catches it, which is the argument for building the measurement before the
+feature rather than after.
+
 ## Abstention signal
 
 Adversarial cases have no correct answer; a good system should be visibly less

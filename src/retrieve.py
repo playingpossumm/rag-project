@@ -99,21 +99,34 @@ def retrieve(
     fusion: str = DEFAULT_FUSION,
     bm25=None,
     alpha: float = 0.5,
+    expansion: str = "none",
+    window: int = 1,
 ) -> list[dict]:
-    """Full retrieval pipeline: shortlist, then optionally rerank.
+    """Full retrieval pipeline: shortlist, rerank, then expand context.
 
-    The two stages are independent knobs so they can be measured separately --
-    fusion widens what the candidate pool contains, reranking reorders it.
+    Each stage is an independent knob so they can be measured separately --
+    fusion widens what the candidate pool contains, reranking reorders it, and
+    expansion changes how much text each survivor carries. Note that expansion
+    cannot move any ranking metric; it is measured by context recall instead.
     """
-    if not use_reranker:
-        return shortlist(query, index, metadata, model, k=k,
-                         fusion=fusion, bm25=bm25, alpha=alpha)
+    if use_reranker:
+        from rerank import rerank  # lazy so the baseline path stays light
 
-    from rerank import rerank  # imported lazily so the baseline path stays light
+        candidates = shortlist(query, index, metadata, model, k=candidate_k,
+                               fusion=fusion, bm25=bm25, alpha=alpha)
+        results = rerank(query, candidates, k=k)
+    else:
+        results = shortlist(query, index, metadata, model, k=k,
+                            fusion=fusion, bm25=bm25, alpha=alpha)
 
-    candidates = shortlist(query, index, metadata, model, k=candidate_k,
-                           fusion=fusion, bm25=bm25, alpha=alpha)
-    return rerank(query, candidates, k=k)
+    # Expansion runs last, deliberately. Ranking on small chunks is what keeps
+    # precision high; growing them any earlier would feed the reranker diluted
+    # text and undo the gain.
+    if expansion != "none":
+        from parent import expand
+
+        results = expand(results, metadata, mode=expansion, window=window)
+    return results
 
 
 def main():

@@ -30,7 +30,11 @@ def main():
 
     index, metadata = load_index()
     embed_model = SentenceTransformer(EMBEDDING_MODEL)
-    chunks = retrieve(query, index, metadata, embed_model)
+    # expansion="page": rank on small chunks, then hand the model whole pages.
+    # Measured to lift context recall 0.958 -> 1.000 at ~2.4x the token cost --
+    # worth it here, since a citation the model cannot substantiate from the
+    # text it was given is the failure this whole pipeline exists to prevent.
+    chunks = retrieve(query, index, metadata, embed_model, expansion="page")
 
     context = build_context(chunks)
     client = anthropic.Anthropic()
