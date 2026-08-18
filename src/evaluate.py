@@ -221,10 +221,13 @@ def main():
     if args.per_case:
         for label, (_, per_case) in runs.items():
             print(f"\n--- {label} ---")
-            for c in sorted(per_case, key=lambda x: x["mrr"]):
-                if c["mrr"] < 1.0:
-                    print(f"  {c['id']:<14}{c['difficulty']:<8}{c['mrr']:>5.2f}  "
-                          f"{c['gold']} -> {c['got']}")
+            for c in sorted(per_case, key=lambda x: (x["src_recall"], x["mrr"])):
+                if c["mrr"] < 1.0 or c["src_recall"] < 1.0:
+                    gold = ", ".join(g[:16] for g in c["gold_sources"])
+                    print(f"  {c['id']:<14}{c['kind']:<10}"
+                          f"mrr={c['mrr']:.2f} src={c['src_recall']:.2f}")
+                    print(f"      gold: {gold}")
+                    print(f"      got : {', '.join(c['got'])}")
 
     # ---- Layer 3: context expansion ---------------------------------------
     # Expansion cannot change ranking, so hit/MRR/NDCG are identical by
