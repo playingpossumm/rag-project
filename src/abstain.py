@@ -44,7 +44,27 @@ unanswerable cases rather than chosen by intuition. See eval/RESULTS.md.
 # reader can judge for themselves. Only `generate.py` refuses outright, because
 # spending money to synthesise prose from a weak retrieval is the one case where
 # proceeding has a real cost.
-ABSTAIN_THRESHOLD = 1.5
+#
+# RECALIBRATED AGAIN on the expanded 84-case golden set. The 1.5 above was
+# derived from 23 answerable cases, where a clean gap appeared to exist between
+# the populations. With 66 answerable cases that gap closes:
+#
+#   answerable    min -4.02   median +4.93   max +9.58
+#   unanswerable  min -9.52   median -2.33   max +2.76
+#
+#   threshold   caught   falsely refused
+#        0.0     0.722             0.015
+#        1.0     0.833             0.061
+#        2.0     0.944             0.076
+#
+# The apparent gap was an artifact of too few cases. At 1.5 the gate would now
+# refuse ~6% of answerable questions, against a stated preference for answering
+# over refusing, so the threshold drops to 0.0 -- one falsely refused case out
+# of 66, while still catching 72% of unanswerable ones.
+#
+# Third recalibration of this constant, and the third time a corpus or golden
+# set change moved it. It is a property of the data, not of the model.
+ABSTAIN_THRESHOLD = 0.0
 
 
 def top_score(results: list[dict]) -> float:

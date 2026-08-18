@@ -170,7 +170,17 @@ def main():
     ap.add_argument("--k", type=int, default=TOP_K)
     ap.add_argument("--candidate-k", type=int, default=CANDIDATE_K)
     ap.add_argument("--per-case", action="store_true")
+    ap.add_argument("--emit", type=Path, default=Path(__file__).parent.parent / "eval" / "results.json",
+                    help="write machine-readable results here (default: eval/results.json)")
     args = ap.parse_args()
+
+    # Every reported figure is collected here and written out at the end.
+    # Documentation quoting these numbers has drifted before -- the README once
+    # claimed "84 evaluation cases" directly above figures measured on 23 -- so
+    # there is now one machine-written source rather than four hand-maintained
+    # copies. If a document disagrees with results.json, the document is wrong.
+    emitted: dict = {"corpus": {}, "candidate_pool": {}, "end_to_end": {},
+                     "expansion": {}, "abstention": {}}
 
     answerable, adversarial = load_cases()
     index, metadata = load_index()
@@ -197,6 +207,8 @@ def main():
         summary, _ = score_run(answerable, lambda q, c=cfg: shortlist(
             q, index, metadata, model, k=args.candidate_k, bm25=bm25, **c),
             k=args.candidate_k)
+        emitted["candidate_pool"][label] = {
+            k2: round(v, 3) for k2, v in summary.items()}
         print(f"{label:<18}{summary['hit_rate']:>9.3f}{summary['mrr']:>9.3f}"
               f"{summary['src_recall']:>12.3f}")
 
@@ -223,6 +235,8 @@ def main():
             q, index, metadata, model, k=args.k,
             candidate_k=args.candidate_k, bm25=bm25, **c), k=args.k)
         runs[label] = (summary, per_case)
+        emitted["end_to_end"][label.strip()] = {
+            k2: round(v, 3) for k2, v in summary.items()}
         print(f"{label:<20}{summary['hit_rate']:>9.3f}{summary['mrr']:>9.3f}"
               f"{summary['ndcg']:>9.3f}{summary['src_recall']:>12.3f}")
 
@@ -257,6 +271,11 @@ def main():
             toks += context_tokens(res, tok)
             blocks += len(res)
         n = len(with_answers)
+        emitted["expansion"][label] = {
+            "context_recall": round(hits / n, 3),
+            "tokens_per_query": round(toks / n),
+            "blocks_per_query": round(blocks / n, 1),
+        }
         print(f"{label:<16}{hits / n:>12.3f}{toks / n:>14.0f}{blocks / n:>9.1f}")
 
     # ---- Abstention calibration -------------------------------------------
@@ -298,6 +317,13 @@ def main():
     print(f"\n  best net separation at threshold {best[0]} (net {best[1]:.3f})")
     print("  note: false abstention is the costlier error -- refusing a question the")
     print("        corpus CAN answer is worse than answering a weak one with citations.")
+
+
+    if args.emit:
+        args.emit.parent.mkdir(exist_ok=True)
+        emitted["generated_by"] = "src/evaluate.py"
+        args.emit.write_text(json.dumps(emitted, indent=2) + "\n", encoding="utf-8")
+        print(f"\nwrote {args.emit}")
 
 
 if __name__ == "__main__":

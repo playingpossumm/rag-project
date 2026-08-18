@@ -4,19 +4,24 @@ A document question-answering system that retrieves passages from your own files
 and cites exactly where each came from — page, slide, or spreadsheet row.
 
 **The point of this repository is not that it implements retrieval-augmented
-generation. It is that every design decision in it was measured, and three of
-them turned out to be wrong.**
+generation. It is that every design decision in it was measured — and four
+conclusions that had already been written up as results turned out to be wrong.**
 
 ```
                        any-hit@5    MRR    NDCG   source recall
-  naive RAG                0.739  0.612   0.643           0.733
-  + cross-encoder rerank   0.783  0.739   0.730           0.746
-  + hybrid BM25 fusion     0.913  0.848   0.846           0.789
-  + diversity cap          0.913  0.848   0.852           0.830
+  naive RAG                0.788  0.601   0.645           0.704
+  + cross-encoder rerank   0.788  0.710   0.715           0.711
+  + hybrid BM25 fusion     0.864  0.757   0.766           0.742
+  + diversity cap (2/src)  0.848  0.751   0.765           0.773
 ```
 
 20 documents, 2,768 chunks, 84 labelled evaluation cases. Reproduce with
-`python src/evaluate.py`.
+`python src/evaluate.py`; every figure here is written to
+[`eval/results.json`](eval/results.json) by that command.
+
+Note the last row: the diversity cap **trades** hit rate for source recall
+rather than adding one for free. An earlier, smaller golden set said it was
+free. It was wrong — see finding 6.
 
 ---
 
@@ -46,7 +51,7 @@ On one document, hybrid search looked useless — dense, RRF, and weighted fusio
 all tied at a perfect score. But a 20-candidate pool was **31% of that corpus**,
 so recall was trivially perfect for any method.
 
-At 20 documents the pool is **0.84%**, and hybrid fusion is worth **+13 points of
+At 20 documents the pool is **0.84%**, and hybrid fusion is worth **+7.6 points of
 hit rate**. Three separate conclusions inverted when the corpus grew: whether
 fusion helps, which fusion to use, and where the abstention threshold belongs.
 
@@ -60,8 +65,7 @@ one paper**. MRR scored it **1.000**; source recall scored it **0.200**.
 
 Ranking metrics call that perfect — by their definition it is. It is the wrong
 definition when the goal is to compile every relevant source. A per-document cap
-lifted source recall to 0.830 with **no loss to ranking**, because the cap only
-skips; it never reorders. → [`src/diversify.py`](src/diversify.py)
+lifts source recall from 0.742 to 0.773. → [`src/diversify.py`](src/diversify.py)
 
 ### 4. The evaluation tool had a bug in it
 
@@ -79,7 +83,8 @@ Prefixing each chunk with its document title should fix that, and it was reporte
 as a small improvement — **that report was wrong.** The prefix arrived alongside a
 chunk-size change, and the two could not be attributed separately.
 
-Re-measured with one variable:
+Re-measured with one variable *(on the 23-case golden set; superseded by
+finding 6, but the direction held under review)*:
 
 ```
              any-hit    MRR   NDCG   source recall
@@ -91,6 +96,28 @@ No ranking benefit; source recall five points worse. Every chunk in a document
 received the *same* prefix, making them more similar to each other and clustering
 retrieval harder onto one document — the opposite of the goal. Reverted.
 → [commit `d4ea4ab`](../../commit/d4ea4ab)
+
+### 6. Three "settled" conclusions were noise from too small a test set
+
+The golden set began at 23 answerable cases, mostly drawn from one paper. Growing
+it to **66 cases covering all 20 documents** — a strictly harder test — reversed
+three findings that had already been written up as results:
+
+| claim, on 23 cases | on 66 cases |
+|---|---|
+| The diversity cap is **free** — no loss to ranking | It **trades**: +3.1 source recall for −1.6 any-hit |
+| Window expansion is **strictly dominated** by page expansion | Window reaches 0.833 context recall for **half the tokens** (2,371 vs 4,828) |
+| Reranking improves hit rate | It improves **MRR only** (0.601→0.710); any-hit is flat at 0.788 |
+
+The abstention threshold moved too — for the third time. A gap that looked clean
+between the two score distributions closed once there were enough cases to see
+it, and the constant went 0.0 → 1.5 → back to 0.0.
+
+**None of these were bugs.** Every one was a real measurement, correctly
+performed, on a sample too small to support the conclusion drawn from it. With 23
+cases each one is worth 4.3 points, so differences that looked decisive were
+inside the noise. That is the failure mode a test set produces when it is trusted
+more than it deserves — and it is far harder to notice than a crash.
 
 ---
 
@@ -202,7 +229,10 @@ harness.
 - **No permissions model.** Fine for one user; not for a team.
 - **The corpus is 20 ML papers.** Deliberately similar, which is the hard case,
   but not contracts or spreadsheets — behaviour on those is untested.
-- **84 cases is still small.** Treat differences under ~0.03 as noise.
+- **84 cases is still small.** Each answerable case is worth ~1.5 points, so
+  treat differences under ~0.03 as noise. The 23-case set had a 4.3-point
+  resolution and produced three false conclusions (finding 6); assume this one
+  is hiding others.
 - **Labels were authored by the same process that built the system.** Mitigated by
   deriving them from the corpus, not eliminated.
 

@@ -20,23 +20,27 @@ interpretable knob, and cannot be defeated by two documents that happen to
 phrase the same fact differently.
 """
 
-# Measured at k=5 on the 20-document corpus (weighted fusion + reranking):
+# Measured at k=5 on the 84-case golden set (weighted fusion + reranking):
 #
 #   cap    any-hit    MRR    NDCG   src recall
-#   none     0.913  0.828   0.836        0.701
-#   2        0.913  0.828   0.833        0.733
-#   1        0.913  0.828   0.813        0.804
+#   none     0.864  0.754   0.762        0.742
+#   2        0.848  0.751   0.765        0.773
+#   1        0.818  0.739   0.751        0.816
 #
-# any-hit and MRR are untouched at every cap -- the top result never moves,
-# because the cap only skips, never reorders. The cost is NDCG: relevant
-# same-document passages get displaced to make room for other sources.
+# IMPORTANT CORRECTION. On the earlier 23-case golden set the cap appeared to be
+# free -- any-hit and MRR identical at every setting -- and was documented that
+# way. With 66 answerable cases it is not: the cap costs any-hit, because when a
+# question is genuinely answered by only one document, capping that document
+# pushes a relevant passage out for an irrelevant one from elsewhere.
 #
-# 2 is the default rather than 1 despite 1 scoring higher on source recall,
-# because a single passage per document cannot corroborate itself -- a claim
-# and the sentence qualifying it usually sit together. Callers who want maximum
-# breadth should pass 1 explicitly; with page expansion enabled that gives five
-# distinct documents at full-page context, which is the strongest "compile every
-# source" configuration measured here.
+# So this is a real trade, not a free win:
+#
+#   cap 2:  +3.1 points source recall for -1.6 any-hit
+#   cap 1:  +7.4 points source recall for -4.6 any-hit
+#
+# 2 remains the default: it buys most of the breadth for a third of the cost,
+# and a single passage per document cannot corroborate itself. Callers who need
+# maximum breadth and accept the hit rate cost should pass 1 explicitly.
 DEFAULT_MAX_PER_SOURCE = 2
 
 
