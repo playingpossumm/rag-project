@@ -1,0 +1,424 @@
+<title>Retrieval System Status</title>
+
+<style>
+  :root {
+    --bg: #f3f4f2;
+    --surface: #ffffff;
+    --surface-2: #f9faf9;
+    --ink: #16202a;
+    --muted: #4d5762;
+    --faint: #6b7681;
+    --line: #d7ddd8;
+    --accent: #14625a;
+    --accent-ink: #ffffff;
+    --amber: #8a5a12;
+    --amber-bg: #fdf4e3;
+    --red: #94321e;
+    --red-bg: #fbeeea;
+    --green: #1c6338;
+    --font-display: Rockwell, "Roboto Slab", "Bookman Old Style", Georgia, serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1c2228; --surface: #252c33; --surface-2: #2c343c;
+      --ink: #f0f2f4; --muted: #b4bdc7; --faint: #949fab; --line: #414c56;
+      --accent: #6fdcbb; --accent-ink: #0b1614;
+      --amber: #e8b662; --amber-bg: #322816;
+      --red: #f0937a; --red-bg: #33221d; --green: #6fd39a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1c2228; --surface: #252c33; --surface-2: #2c343c;
+    --ink: #f0f2f4; --muted: #b4bdc7; --faint: #949fab; --line: #414c56;
+    --accent: #6fdcbb; --accent-ink: #0b1614;
+    --amber: #e8b662; --amber-bg: #322816;
+    --red: #f0937a; --red-bg: #33221d; --green: #6fd39a;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--font-body); font-size: 17px; line-height: 1.62;
+    margin: 0; padding: 0 20px 110px;
+  }
+  .page { max-width: 900px; margin: 0 auto; }
+  code { font-family: var(--font-mono); font-size: 0.85em; }
+
+  header.masthead { padding: 60px 0 30px; border-bottom: 3px double var(--line); }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(31px, 5vw, 45px); line-height: 1.1;
+    margin: 0 0 18px; text-wrap: balance; max-width: 17ch;
+  }
+  .dek { font-size: 19px; color: var(--muted); max-width: 64ch; margin: 0 0 24px; }
+  .dek strong { color: var(--ink); }
+
+  .runsheet {
+    display: flex; flex-wrap: wrap; border: 1px solid var(--line);
+    background: var(--surface); font-family: var(--font-mono); font-size: 12.5px;
+  }
+  .runsheet div { padding: 9px 14px; border-right: 1px solid var(--line); color: var(--muted); }
+  .runsheet div:last-child { border-right: none; }
+  .runsheet b { color: var(--ink); font-weight: normal; }
+
+  section { margin-top: 66px; }
+  h2 {
+    font-family: var(--font-display); font-size: 25px; margin: 0 0 8px;
+  }
+  .sub { color: var(--muted); font-size: 15.5px; margin: 0 0 24px; max-width: 68ch; }
+  h3 {
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); margin: 34px 0 12px;
+    padding-bottom: 7px; border-bottom: 1px solid var(--line);
+  }
+  p { max-width: 68ch; }
+
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+  th {
+    text-align: left; font-family: var(--font-mono); font-size: 11.5px;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    padding: 0 14px 10px 0; border-bottom: 2px solid var(--line); font-weight: normal;
+    white-space: nowrap;
+  }
+  td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td code { color: var(--accent); }
+  .num { text-align: right; white-space: nowrap; }
+  .win { color: var(--green); font-weight: bold; }
+  .bad { color: var(--red); font-weight: bold; }
+
+  .status { font-family: var(--font-mono); font-size: 11.5px; white-space: nowrap; }
+  .s-done::before { content: "\2713 "; color: var(--green); }
+  .s-part::before { content: "\25D1 "; color: var(--amber); }
+  .s-open::before { content: "\25CB "; color: var(--faint); }
+
+  .callout { padding: 20px 22px; margin: 22px 0; border: 1px solid var(--line); background: var(--surface); }
+  .callout h4 { font-family: var(--font-display); font-size: 19px; margin: 0 0 10px; }
+  .callout p { margin: 0 0 11px; font-size: 16px; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .k {
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.09em;
+    text-transform: uppercase; display: block; margin-bottom: 8px;
+  }
+  .c-red { background: var(--red-bg); border-color: var(--red); }
+  .c-red .k { color: var(--red); }
+  .c-amber { background: var(--amber-bg); border-color: var(--amber); }
+  .c-amber .k { color: var(--amber); }
+  .c-plain .k { color: var(--accent); }
+
+  ol.findings { counter-reset: f; list-style: none; padding: 0; margin: 24px 0 0; }
+  ol.findings > li {
+    counter-increment: f; position: relative;
+    padding: 0 0 22px 46px; margin-bottom: 22px; border-bottom: 1px solid var(--line);
+  }
+  ol.findings > li:last-child { border-bottom: none; }
+  ol.findings > li::before {
+    content: counter(f); position: absolute; left: 0; top: 1px;
+    font-family: var(--font-mono); font-size: 12px; color: var(--accent-ink);
+    background: var(--accent); width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  ol.findings h4 { font-family: var(--font-display); font-size: 19px; margin: 0 0 8px; }
+  ol.findings p { margin: 0 0 9px; font-size: 16px; }
+
+  .theme-toggle {
+    position: fixed; top: 16px; right: 16px; z-index: 10;
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); background: var(--surface);
+    border: 1px solid var(--line); padding: 7px 12px; cursor: pointer; border-radius: 2px;
+  }
+  .theme-toggle:hover { color: var(--ink); border-color: var(--muted); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media print { .theme-toggle { display: none; } }
+
+  footer {
+    margin-top: 76px; padding-top: 20px; border-top: 3px double var(--line);
+    color: var(--muted); font-size: 13.5px; font-family: var(--font-mono);
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">theme</button>
+
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">Project Status &middot; Retrieval-Augmented Generation</p>
+    <h1>What's Built, What's Measured, What's Left</h1>
+    <p class="dek">
+      A document search system that answers questions from your own files and cites exactly
+      where each answer came from. Built and measured over 21 commits. This is the honest
+      account: what works with evidence, what was tried and <strong>removed because
+      measurement said so</strong>, and what remains genuinely unsolved.
+    </p>
+    <div class="runsheet">
+      <div>corpus <b>20 docs / 2,768 chunks</b></div>
+      <div>modules <b>23</b></div>
+      <div>eval cases <b>33</b></div>
+      <div>MRR <b>0.612 &rarr; 0.848</b></div>
+      <div>re-index <b>432s &rarr; 8s</b></div>
+    </div>
+  </header>
+
+  <!-- ============ HEADLINE ============ -->
+  <section>
+    <h2>Where it stands against naive RAG</h2>
+    <p class="sub">
+      23 labelled questions, 20 documents. "Naive" is the standard tutorial build:
+      dense embeddings, top-5, no reranking.
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Pipeline</th><th class="num">any-hit</th><th class="num">MRR</th>
+          <th class="num">NDCG</th><th class="num">source recall</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>dense only, no rerank <em>(naive RAG)</em></td>
+            <td class="num">0.739</td><td class="num">0.612</td><td class="num">0.643</td><td class="num">0.733</td></tr>
+          <tr><td>+ cross-encoder reranking</td>
+            <td class="num">0.783</td><td class="num">0.739</td><td class="num">0.730</td><td class="num">0.746</td></tr>
+          <tr><td>+ hybrid BM25 fusion</td>
+            <td class="num">0.913</td><td class="num">0.848</td><td class="num">0.846</td><td class="num">0.789</td></tr>
+          <tr><td><strong>+ diversity cap</strong> <em>(shipped)</em></td>
+            <td class="num win">0.913</td><td class="num win">0.848</td><td class="num win">0.852</td><td class="num win">0.830</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Every stage earns its place against a measurement. <strong>Source recall</strong> is the
+      metric built specifically for your requirement &mdash; compile <em>every</em> relevant
+      source rather than find one &mdash; and it is the number ordinary RAG tutorials never track.
+    </p>
+  </section>
+
+  <!-- ============ REQUIREMENTS ============ -->
+  <section>
+    <h2>Against your stated requirements</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Requirement</th><th class="status">Status</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>Compile all relevant sources, cite each</td><td class="status s-done">done</td>
+              <td>source recall 0.830; per-document diversity cap</td></tr>
+          <tr><td>Flag disagreements, say I must judge</td><td class="status s-done">done</td>
+              <td>note fires when &gt;1 document is relevant</td></tr>
+          <tr><td>Prefer answering over refusing</td><td class="status s-done">done</td>
+              <td>retrieval path never withholds; only generation refuses</td></tr>
+          <tr><td>Zero hallucination risk / zero cost</td><td class="status s-done">done</td>
+              <td>retrieval-only default; no network calls</td></tr>
+          <tr><td>Embedded in another tool</td><td class="status s-done">done</td>
+              <td>Python <code>ask()</code>, HTTP server, JSON CLI &mdash; one shared function</td></tr>
+          <tr><td>PDF, Word, PowerPoint, Excel</td><td class="status s-done">done</td>
+              <td>all four verified; format-appropriate citations</td></tr>
+          <tr><td>Scanned documents</td><td class="status s-done">done</td>
+              <td>OCR recovered 29/29 words from a rasterised PDF</td></tr>
+          <tr><td>Progress visibility when indexing</td><td class="status s-done">done</td>
+              <td>structured events; UI and CLI share one source</td></tr>
+          <tr><td>Google Drive</td><td class="status s-part">partial</td>
+              <td>mounted folder works; <strong>native Google Docs do not</strong></td></tr>
+          <tr><td>Corpus grows over time</td><td class="status s-part">partial</td>
+              <td>caches make re-index 8s; no true incremental add yet</td></tr>
+          <tr><td>Generated prose answers</td><td class="status s-open">optional</td>
+              <td>written, never executed &mdash; needs API credits</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ FINDINGS ============ -->
+  <section>
+    <h2>The five findings that changed the build</h2>
+    <p class="sub">Each of these overturned something that looked settled.</p>
+
+    <ol class="findings">
+      <li>
+        <h4>Most of every chunk was invisible to search</h4>
+        <p>
+          The encoder caps input at <strong>256 tokens</strong> and truncates the rest
+          <em>silently</em> &mdash; no error. Chunks were sized in <em>words</em> (500), so the
+          median chunk ran to 626 tokens and <strong>15 of 22 lost ~60% of their content</strong>
+          before ever being embedded. The text was stored and citable, but could never influence
+          whether its own chunk was found.
+        </p>
+        <p>Fixed by chunking on the tokenizer, plus an assertion that refuses to build an index if any chunk exceeds the ceiling.</p>
+      </li>
+      <li>
+        <h4>A conclusion drawn on a small corpus was backwards</h4>
+        <p>
+          On one document, hybrid search looked useless &mdash; every fusion mode tied. But a
+          20-candidate pool was <strong>31% of that corpus</strong>, so recall was trivially
+          perfect for anything. At 20 documents the pool is <strong>0.84%</strong>, and hybrid
+          fusion is worth <strong>+13 points of hit rate</strong>.
+        </p>
+        <p>Three separate conclusions inverted when the corpus grew: whether fusion helps, which fusion to use, and where the abstention threshold belongs.</p>
+      </li>
+      <li>
+        <h4>The metrics reported success on questions the system couldn't answer</h4>
+        <p>
+          For a question five papers answer, the system returned <strong>all five passages from
+          one paper</strong>. MRR scored it <strong>1.000</strong>; source recall scored it
+          <strong>0.200</strong>. Ranking metrics call that perfect &mdash; by their definition it is.
+        </p>
+        <p>It is the wrong definition for "compile every source". A per-document cap lifted source recall to 0.830 with <em>no</em> loss to ranking, because the cap only skips &mdash; it never reorders.</p>
+      </li>
+      <li>
+        <h4>The evaluation tool had a bug in it</h4>
+        <p>
+          NDCG is normalised and cannot exceed 1.0. Its first run printed <strong>1.373</strong>.
+          Page-level relevance let several returned chunks share one gold page, so achieved DCG
+          summed over all of them while the ideal allowed only one.
+        </p>
+        <p>Caught only because the output violated a bound the metric is known to have. A metric with no known bounds would have shipped wrong and stayed wrong.</p>
+      </li>
+      <li>
+        <h4>A feature was built, measured, and removed</h4>
+        <p>
+          Chunks carry no document identity, so passages from similar papers look alike.
+          Prefixing each chunk with its document title should fix that. Reported as a small win
+          &mdash; <strong>that report was wrong</strong>: the prefix arrived alongside a chunk-size
+          change, and the two could not be separated.
+        </p>
+        <p>
+          Re-measured with one variable: <strong>no effect on ranking, source recall 5 points
+          worse.</strong> Every chunk in a document got the same prefix, making them more alike
+          and clustering retrieval harder onto one document. Reverted.
+        </p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ PENDING ============ -->
+  <section>
+    <h2>Pending</h2>
+    <p class="sub">Ordered by what actually blocks using this on your real documents.</p>
+
+    <div class="callout c-red">
+      <span class="k">Blocking &middot; your documents</span>
+      <h4>Native Google Docs cannot be read at all</h4>
+      <p>
+        A <code>.gdoc</code> is a ~100-byte JSON file containing a URL. The content is on
+        Google's servers. <strong>Nothing local can read one</strong> &mdash; not this tool, not
+        Word. Ingestion now says so explicitly rather than skipping silently, but the files
+        remain unusable.
+      </p>
+      <p>
+        Two fixes: export them to PDF/<code>.docx</code>, or add Drive API export-on-fetch
+        (Google Cloud project, OAuth, one new loader path).
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Why it matters</th><th class="status">Cost</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Drive API export</strong></td>
+            <td>The only way to reach native Google Docs. Also enables change detection and direct file links in citations.</td>
+            <td class="status">medium</td>
+          </tr>
+          <tr>
+            <td><strong>Verify generation</strong></td>
+            <td>The citation-grounded answering path has <em>never run</em>. Needs a few dollars of API credit. Retrieval-only works without it.</td>
+            <td class="status">small + $</td>
+          </tr>
+          <tr>
+            <td><strong>Cross-document confusion</strong></td>
+            <td>"Optimizer used to train the Transformer" still returns Vision Transformer. Title prefixing failed; unsolved. Query rewriting is the next candidate &mdash; needs an LLM.</td>
+            <td class="status">medium</td>
+          </tr>
+          <tr>
+            <td><strong>True incremental indexing</strong></td>
+            <td>Re-index is 8s cached, but still rebuilds the whole FAISS index. Adding one document should touch only that document.</td>
+            <td class="status">medium</td>
+          </tr>
+          <tr>
+            <td><strong>Permissions model</strong></td>
+            <td>No concept of who may see what. Matters the moment a second person uses it.</td>
+            <td class="status">large</td>
+          </tr>
+          <tr>
+            <td><strong>A real UI</strong></td>
+            <td>Currently CLI plus a local HTTP endpoint. Needed before anyone else can use it.</td>
+            <td class="status">medium</td>
+          </tr>
+          <tr>
+            <td><strong>Table-aware retrieval</strong></td>
+            <td>Financial data chunks poorly as text. Excel rows are serialised as labelled pairs, which helps, but tables inside PDFs are not handled specially.</td>
+            <td class="status">medium</td>
+          </tr>
+          <tr>
+            <td><strong>Grow the golden set</strong></td>
+            <td>23 answerable cases means differences under ~0.05 are noise. Every number here carries that caveat.</td>
+            <td class="status">small</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ CAVEATS ============ -->
+  <section>
+    <h2>How much to trust these numbers</h2>
+    <div class="callout c-amber">
+      <span class="k">Read before quoting any figure above</span>
+      <p>
+        <strong>Every number is a property of this corpus, not of the code.</strong> Three tuned
+        parameters &mdash; chunk size, fusion strategy, abstention threshold &mdash; each had to
+        be re-derived when the corpus changed, and one conclusion reversed outright. Pointing
+        this at your real documents means re-running <code>python src/evaluate.py</code>, which
+        the harness exists to make a ten-minute check rather than a guess.
+      </p>
+      <p>
+        <strong>23 cases is small.</strong> Treat differences under ~0.05 as noise.
+      </p>
+      <p>
+        <strong>The corpus is 20 ML research papers</strong> &mdash; deliberately similar, which
+        is the hard case, but not contracts, spreadsheets, or scanned reports. Retrieval
+        behaviour on those is untested.
+      </p>
+      <p>
+        <strong>Labels were authored by the same process that built the system.</strong>
+        Mitigated by deriving them from the corpus rather than writing them by hand, so they
+        cannot drift &mdash; but not eliminated.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    rag-project &middot; 21 commits &middot; 23 modules &middot; all figures measured from the running system
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var button = document.getElementById("themeToggle");
+    function current() {
+      return root.getAttribute("data-theme")
+        || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }
+    function label() { button.textContent = current() === "dark" ? "light mode" : "dark mode"; }
+    try {
+      var saved = localStorage.getItem("rag-status-theme");
+      if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+    } catch (e) {}
+    label();
+    button.addEventListener("click", function () {
+      var next = current() === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("rag-status-theme", next); } catch (e) {}
+      label();
+    });
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+      if (!root.getAttribute("data-theme")) label();
+    });
+  })();
+</script>
