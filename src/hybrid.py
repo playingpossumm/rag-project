@@ -30,8 +30,14 @@ def tokenize(text: str) -> list[str]:
 
 
 def build_bm25(metadata: list[dict]) -> BM25Okapi:
-    """Build the sparse index. Cheap enough to rebuild per process."""
-    return BM25Okapi([tokenize(c["text"]) for c in metadata])
+    """Build the sparse index. Cheap enough to rebuild per process.
+
+    Indexes `embed_text` -- the title-prefixed form -- so both retrievers see
+    the same content. Lexical matching benefits most directly: a query naming a
+    paper can now match its chunks on the title terms, which the passage text
+    alone frequently never contains.
+    """
+    return BM25Okapi([tokenize(c.get("embed_text", c["text"])) for c in metadata])
 
 
 def bm25_search(query: str, bm25: BM25Okapi, metadata: list[dict], k: int) -> list[dict]:

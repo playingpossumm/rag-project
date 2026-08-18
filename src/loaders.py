@@ -30,6 +30,51 @@ XLSX_ROWS_PER_BLOCK = 40
 # rejected as blank without OCR ever being attempted on it.
 OCR_TRIGGER_WORDS = 20
 
+# Phrases that mark front matter rather than a title. Publishers, preprint
+# servers and document management systems all stamp headers onto page one, and
+# those stamps sit above the real title as often as not.
+BOILERPLATE_MARKERS = (
+    "permission", "copyright", "all rights reserved", "licence", "license",
+    "proceedings of", "published as", "preprint", "under review",
+    "confidential", "draft", "do not distribute",
+)
+
+
+def extract_title(units: list[dict], path: Path) -> str:
+    """Best available human title for a document.
+
+    Chunks carry no document identity of their own, which is what makes
+    cross-document confusion possible: a passage from one paper that never names
+    itself is indistinguishable from a passage in another paper about the same
+    subject. Attaching a title gives every chunk that identity.
+
+    Prefers a real heading over the filename, because filenames are frequently
+    uninformative in practice ("final_v3.pdf", "Doc1.docx") while the first
+    heading usually is the title. Falls back to a cleaned-up filename.
+    """
+    candidates = []
+    for unit in units[:1]:  # the title, if anywhere, is on the first unit
+        for line in unit["text"].splitlines():
+            stripped = line.strip()
+            if not stripped.startswith("#"):
+                continue
+            depth = len(stripped) - len(stripped.lstrip("#"))
+            text = stripped.lstrip("#").strip()
+            if not (8 <= len(text) <= 160) or text[0].isdigit():
+                continue
+            if any(marker in text.lower() for marker in BOILERPLATE_MARKERS):
+                continue
+            candidates.append((depth, text))
+
+    if candidates:
+        # Shallowest heading wins, not the first. Front matter frequently puts
+        # a deeper-level copyright or permission notice above the actual title
+        # -- the Attention paper leads with "### Provided proper attribution...
+        # Google hereby grants permission", with "## Attention Is All You Need"
+        # below it. Taking the first heading picks the notice.
+        return min(candidates, key=lambda c: c[0])[1]
+    return path.stem.replace("_", " ").replace("-", " ").strip()
+
 
 def locator_label(locator: dict) -> str:
     """Human-readable citation fragment, e.g. 'page 5' or 'sheet Q3, rows 1-40'."""

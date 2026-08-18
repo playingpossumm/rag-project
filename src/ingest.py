@@ -7,7 +7,8 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 from corpus_health import SUPPORTED, page_report, scan_unsupported, verdict
-from loaders import load_document
+from embedding_cache import embed_with_cache
+from loaders import extract_title, load_document
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 STORE_DIR = Path(__file__).parent.parent / "vector_store"
@@ -17,10 +18,18 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 # ceiling (max_seq_length) is a token count. Sizing in words let chunks run to
 # ~1200 tokens, and everything past token 256 was silently dropped before the
 # encoder saw it -- that text was stored and retrievable, but invisible to
-# search. 240 leaves headroom under the 256 limit for the [CLS]/[SEP] tokens
-# the tokenizer adds at encode time.
-CHUNK_SIZE_TOKENS = 240
+# search.
+#
+# 210 rather than 240: each chunk is embedded with a title prefix (see
+# embedding_text), which consumes part of the same 256-token budget. The
+# remaining headroom covers the prefix plus the [CLS]/[SEP] tokens added at
+# encode time.
+CHUNK_SIZE_TOKENS = 210
 CHUNK_OVERLAP_TOKENS = 40
+
+# Bounds the embedding prefix. Long enough for a real paper title,
+# short enough that it cannot crowd out the passage it labels.
+MAX_TITLE_CHARS = 90
 
 
 def extract_units(path: Path) -> list[dict]:
@@ -53,6 +62,25 @@ def chunk_text(text: str, tokenizer, size: int, overlap: int) -> list[str]:
     return chunks
 
 
+def embedding_text(title: str, locator: dict, chunk: str) -> str:
+    """Text handed to the encoder: the chunk, prefixed with where it came from.
+
+    A chunk mid-way through a paper rarely names the paper, so its vector
+    encodes only local subject matter. Every transformer paper then looks alike
+    -- which is exactly the observed failure: "what optimizer was used to train
+    the Transformer" returned Vision Transformer, because nothing in the
+    Attention paper's chunks says which Transformer they belong to.
+
+    The prefix is deliberately short, and bounded. It has to shift the vector
+    enough to carry document identity without dominating a 210-token chunk, and
+    it spends part of the same 256-token budget -- an unbounded title from a
+    long-winded document would push chunks over the encoder's ceiling and
+    reintroduce the silent-truncation bug this project already fixed once.
+    """
+    short = title if len(title) <= MAX_TITLE_CHARS else title[:MAX_TITLE_CHARS].rstrip() + "..."
+    return f"{short} ({locator['kind']} {locator['value']}). {chunk}"
+
+
 def build_chunks(path: Path, tokenizer) -> tuple[list[dict], dict, tuple]:
     """Chunk one document, and report on whether it extracted usably.
 
@@ -64,6 +92,7 @@ def build_chunks(path: Path, tokenizer) -> tuple[list[dict], dict, tuple]:
     units = extract_units(path)
     report = page_report(units)
     status, reason = verdict(report)
+    title = extract_title(units, path)
 
     chunks = []
     for unit in units:
@@ -71,8 +100,13 @@ def build_chunks(path: Path, tokenizer) -> tuple[list[dict], dict, tuple]:
         for piece in pieces:
             chunks.append({
                 "source": path.name,
+                "title": title,
                 "locator": unit["locator"],
                 "text": piece,
+                # What actually gets embedded. Kept separate from `text` so the
+                # citation shows the passage as written, while the vector
+                # carries the document identity the passage itself omits.
+                "embed_text": embedding_text(title, unit["locator"], piece),
             })
     return chunks, report, (status, reason)
 
@@ -103,6 +137,11 @@ def _print_progress(event: dict) -> None:
     elif stage == "embed":
         print(f"Embedding {event['chunks']} chunks "
               f"(max {event['max_tokens']}/{event['limit']} tokens)...", flush=True)
+    elif stage == "cache":
+        reused, computed = event["reused"], event["computed"]
+        pct = 100 * reused / max(event["requested"], 1)
+        print(f"  cache: {reused} reused ({pct:.0f}%), {computed} computed, "
+              f"{event['entries']} entries / {event['megabytes']} MB", flush=True)
     elif stage == "done":
         print(f"Indexed {event['chunks']} chunks from {event['indexed']} document(s) "
               f"in {event['seconds']:.0f}s", flush=True)
@@ -157,7 +196,7 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
         emit({"stage": "done", **summary})
         return summary
 
-    texts = [c["text"] for c in all_chunks]
+    texts = [c["embed_text"] for c in all_chunks]
 
     # Fail loudly rather than truncate silently: anything over the encoder's
     # ceiling would be dropped mid-chunk with no error at encode time.
@@ -170,7 +209,10 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
         )
     emit({"stage": "embed", "chunks": len(texts),
           "max_tokens": max(lengths), "limit": limit})
-    embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
+    # Only chunks whose text is new to the cache are actually encoded, so adding
+    # one document to an existing corpus costs one document's worth of work.
+    embeddings, cache_stats = embed_with_cache(texts, model, EMBEDDING_MODEL)
+    emit({"stage": "cache", **cache_stats})
     faiss.normalize_L2(embeddings)
 
     dim = embeddings.shape[1]
