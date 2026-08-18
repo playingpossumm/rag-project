@@ -71,3 +71,53 @@ recalibration of this constant; it is a property of the data, not the model.
   and reverted.
 - **Labels were authored by the same process that built the system**, mitigated
   by deriving them from the corpus rather than writing them by hand.
+
+## Cross-document confusion — diagnosed, not solved
+
+`src/diagnose_crossdoc.py` classifies where the top result comes from:
+
+| outcome | cases | share |
+|---|---|---|
+| correct | 45 | 68.2% |
+| right document, wrong location | 8 | 12.1% |
+| **wrong document first** | 13 | 19.7% |
+
+Reading the returned passages, 3 of those 13 are not system failures: `warmup`
+returns T5 saying *"we use an 'inverse square root' learning rate schedule"* —
+exactly what was asked, but the derived label credits only the paper containing
+the string `warmup_steps`. **Derived labels resist drift but are narrow: a
+document that answers in different words scores as wrong.** Real confusion is
+~10/66 (15%).
+
+### The obvious fix does not work
+
+The remaining failures share a mechanism — the retriever matches the *topic* and
+ignores the *constraint that distinguishes the answer*:
+
+| case | distinguishing clause | what it returned |
+|---|---|---|
+| `ln-stats` | "across features **rather than examples**" | Batch Norm — the excluded concept |
+| `sbert-speed` | "faster than a **cross-encoder**" | FAISS: "8.5× faster than prior GPU state of the art" |
+| `gpt3-params` | "largest **autoregressive** model" | BERT — not autoregressive |
+
+Reading query and passage jointly is what a cross-encoder is *for*, so the
+hypothesis was that the 6-layer MiniLM is too small. Measured on the failing
+cases:
+
+| reranker | params | fixed | ms/query |
+|---|---|---|---|
+| MiniLM-L6 (current) | 22M | 0/10 | 1,226 |
+| MiniLM-L12 | 33M | 2/10 | 2,536 |
+| BGE-reranker-base | 278M | **2/10** | **10,052** |
+
+**An 8× larger model fixes nothing beyond a 1.5× model.** Capacity is not the
+bottleneck. These clauses are *contrastive* — they define the answer by what it
+excludes — and negation is a known transformer weakness that scale does not
+resolve.
+
+The reranker was left at MiniLM-L6: +3 points sits at the noise floor for 66
+cases, and costs 2× latency.
+
+**Conclusion: this is a query-side problem.** The fix is decomposing the
+constraint out of the question before retrieval, which needs an LLM — deferred
+rather than guessed at.
