@@ -22,29 +22,30 @@ MIN_WORDS_PER_PAGE = 20
 # problem -- typically a scan needing OCR -- rather than a few figure pages.
 SUSPECT_PAGE_FRACTION = 0.5
 
-SUPPORTED = {".pdf"}
+SUPPORTED = {".pdf", ".docx", ".pptx", ".xlsx"}
 KNOWN_UNSUPPORTED = {
-    ".docx": "Word -- needs python-docx",
-    ".doc": "legacy Word -- needs conversion first",
-    ".pptx": "PowerPoint -- needs python-pptx",
-    ".xlsx": "Excel -- needs openpyxl, and tabular data needs its own chunking",
-    ".xls": "legacy Excel -- needs conversion first",
-    ".csv": "tabular -- needs its own chunking strategy",
-    ".txt": "plain text -- easy to add, but has no page numbers for citations",
-    ".md": "markdown -- easy to add, but has no page numbers for citations",
-    ".html": "web page -- needs an HTML loader, and has no page numbers",
+    ".doc": "legacy Word -- save as .docx first",
+    ".xls": "legacy Excel -- save as .xlsx first",
+    ".ppt": "legacy PowerPoint -- save as .pptx first",
+    ".csv": "tabular -- loader not written yet; would reuse the .xlsx row strategy",
+    ".txt": "plain text -- easy to add; has no natural locator, so citations would be by block",
+    ".md": "markdown -- easy to add; would cite by heading like .docx",
+    ".html": "web page -- needs an HTML loader; would cite by heading",
 }
 
 
-def page_report(pages: list[tuple[int, str]]) -> dict:
-    """Summarise text yield for one document's extracted pages."""
-    counts = [(num, len(text.split())) for num, text in pages]
-    empty = [num for num, n in counts if n < MIN_WORDS_PER_PAGE]
-    total_words = sum(n for _, n in counts)
+def page_report(units: list[dict]) -> dict:
+    """Summarise text yield across one document's extracted units.
+
+    A "unit" is whatever the format's natural citable division is -- a PDF page,
+    a slide, a Word section, a block of spreadsheet rows.
+    """
+    counts = [(u["locator"], len(u["text"].split())) for u in units]
+    empty = [loc for loc, n in counts if n < MIN_WORDS_PER_PAGE]
     return {
         "pages": len(counts),
-        "words": total_words,
-        "empty_pages": empty,
+        "words": sum(n for _, n in counts),
+        "empty_pages": [loc.get("value") for loc in empty],
         "empty_fraction": len(empty) / len(counts) if counts else 1.0,
         "median_words": sorted(n for _, n in counts)[len(counts) // 2] if counts else 0,
     }

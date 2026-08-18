@@ -57,11 +57,14 @@ def gold_keys(case: dict) -> set:
     for corpora that never had the ambiguity.
     """
     source = case.get("source")
-    return {(source, p) for p in case["pages"]}
+    # Gold labels stay human-readable as page numbers; they are converted to
+    # locator form here so the harness compares like with like.
+    return {(source, "page", str(p)) for p in case["pages"]}
 
 
 def is_relevant(result: dict, gold: set) -> bool:
-    return (result["source"], result["page"]) in gold
+    loc = result["locator"]
+    return (result["source"], loc["kind"], str(loc["value"])) in gold
 
 
 def hit_rate(results, gold) -> float:
@@ -131,8 +134,8 @@ def score_run(cases, retrieve_fn) -> tuple[dict, list[dict]]:
             totals[key] += m[key]
         per_case.append({
             "id": case["id"], "difficulty": case.get("difficulty", "-"),
-            "gold": sorted(f"{s}:p{p}" for s, p in gold),
-            "got": [f"{r['source'][:12]}:p{r['page']}" for r in results],
+            "gold": sorted(f"{s[:12]}:{v}" for s, _kind, v in gold),
+            "got": [f"{r['source'][:12]}:{r['locator']['value']}" for r in results],
             **m,
         })
     n = len(cases) or 1

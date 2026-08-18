@@ -102,7 +102,7 @@ def ask(
     results = expand(ranked, metadata, mode=expansion) if ranked else []
     passages = [
         Passage(source=r["source"],
-                locator={"kind": "page", "value": r["page"]},
+                locator=r["locator"],
                 score=round(float(r.get("rerank_score", r.get("score", 0.0))), 3),
                 text=r["text"])
         for r in results

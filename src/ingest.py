@@ -3,10 +3,10 @@ import json
 
 import faiss
 import numpy as np
-import pymupdf4llm
 from sentence_transformers import SentenceTransformer
 
-from corpus_health import page_report, scan_unsupported, verdict
+from corpus_health import SUPPORTED, page_report, scan_unsupported, verdict
+from loaders import load_document
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 STORE_DIR = Path(__file__).parent.parent / "vector_store"
@@ -22,9 +22,9 @@ CHUNK_SIZE_TOKENS = 240
 CHUNK_OVERLAP_TOKENS = 40
 
 
-def extract_pages(pdf_path: Path) -> list[tuple[int, str]]:
-    page_chunks = pymupdf4llm.to_markdown(str(pdf_path), page_chunks=True)
-    return [(i + 1, chunk["text"]) for i, chunk in enumerate(page_chunks)]
+def extract_units(path: Path) -> list[dict]:
+    """Format-appropriate citable units: PDF pages, slides, sections, row blocks."""
+    return load_document(path)
 
 
 def chunk_text(text: str, tokenizer, size: int, overlap: int) -> list[str]:
@@ -52,32 +52,35 @@ def chunk_text(text: str, tokenizer, size: int, overlap: int) -> list[str]:
     return chunks
 
 
-def build_chunks(pdf_path: Path, tokenizer) -> tuple[list[dict], dict, str]:
+def build_chunks(path: Path, tokenizer) -> tuple[list[dict], dict, tuple]:
     """Chunk one document, and report on whether it extracted usably.
 
     Returns (chunks, health_report, verdict). A document that extracted to
     almost nothing is reported rather than silently contributing empty chunks.
+    Chunking stays inside a unit, so no chunk ever spans two citable locations --
+    which is what keeps each chunk's citation unambiguous.
     """
-    pages = extract_pages(pdf_path)
-    report = page_report(pages)
+    units = extract_units(path)
+    report = page_report(units)
     status, reason = verdict(report)
 
     chunks = []
-    for page_num, page_text in pages:
-        pieces = chunk_text(page_text, tokenizer, CHUNK_SIZE_TOKENS, CHUNK_OVERLAP_TOKENS)
+    for unit in units:
+        pieces = chunk_text(unit["text"], tokenizer, CHUNK_SIZE_TOKENS, CHUNK_OVERLAP_TOKENS)
         for piece in pieces:
             chunks.append({
-                "source": pdf_path.name,
-                "page": page_num,
+                "source": path.name,
+                "locator": unit["locator"],
                 "text": piece,
             })
     return chunks, report, (status, reason)
 
 
 def main():
-    pdf_files = sorted(DATA_DIR.glob("*.pdf"))
-    if not pdf_files:
-        print(f"No PDFs found in {DATA_DIR}")
+    docs = sorted(p for p in DATA_DIR.iterdir()
+                  if p.is_file() and p.suffix.lower() in SUPPORTED)
+    if not docs:
+        print(f"No supported documents found in {DATA_DIR}")
         return
 
     # Loaded before chunking: the tokenizer defines the chunk boundaries.
@@ -94,15 +97,15 @@ def main():
         print()
 
     all_chunks, skipped = [], []
-    for pdf_path in pdf_files:
-        chunks, report, (status, reason) = build_chunks(pdf_path, model.tokenizer)
-        label = f"{pdf_path.name[:34]:<34}"
+    for doc_path in docs:
+        chunks, report, (status, reason) = build_chunks(doc_path, model.tokenizer)
+        label = f"{doc_path.name[:34]:<34}"
 
         if status == "FAIL":
             # Indexing this would add chunks that can never be retrieved, and
             # would quietly lower every metric with no visible cause.
             print(f"  FAIL  {label} {reason}")
-            skipped.append(pdf_path.name)
+            skipped.append(doc_path.name)
             continue
         if status == "WARN":
             print(f"  warn  {label} {reason}")
@@ -111,7 +114,7 @@ def main():
                   f"{report['median_words']:>4} median words/page")
         all_chunks.extend(chunks)
 
-    indexed = len(pdf_files) - len(skipped)
+    indexed = len(docs) - len(skipped)
     print(f"\nBuilt {len(all_chunks)} chunks from {indexed} document(s)")
     if skipped:
         print(f"SKIPPED {len(skipped)}: {', '.join(skipped)}")

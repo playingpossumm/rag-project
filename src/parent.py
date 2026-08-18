@@ -21,8 +21,16 @@ Two expansion modes:
 from collections import defaultdict
 
 
-def _page_key(chunk: dict) -> tuple:
-    return (chunk["source"], chunk["page"])
+def unit_key(chunk: dict) -> tuple:
+    """Identity of the citable unit a chunk belongs to.
+
+    Hashable form of (source, locator). Expansion groups by this, so a chunk is
+    only ever merged with text from the same page/slide/section -- never across
+    a citation boundary, which would attach text to a citation that does not
+    support it.
+    """
+    loc = chunk["locator"]
+    return (chunk["source"], loc["kind"], str(loc["value"]), str(loc.get("rows", "")))
 
 
 def expand_to_pages(results: list[dict], metadata: list[dict]) -> list[dict]:
@@ -34,11 +42,11 @@ def expand_to_pages(results: list[dict], metadata: list[dict]) -> list[dict]:
     """
     pages = defaultdict(list)
     for chunk in metadata:
-        pages[_page_key(chunk)].append(chunk)
+        pages[unit_key(chunk)].append(chunk)
 
     seen, out = set(), []
     for r in results:
-        key = _page_key(r)
+        key = unit_key(r)
         if key in seen:
             continue
         seen.add(key)
@@ -48,7 +56,7 @@ def expand_to_pages(results: list[dict], metadata: list[dict]) -> list[dict]:
             **r,
             "text": _stitch(members),
             "expanded_from": r["text"],
-            "expansion": "page",
+            "expansion": "unit",
             "n_chunks_merged": len(members),
         })
     return out
@@ -68,9 +76,9 @@ def expand_to_window(results: list[dict], metadata: list[dict], window: int = 1)
         lo, hi = cid - window, cid + window
         members = [
             c for i, c in enumerate(metadata)
-            if lo <= i <= hi and _page_key(c) == _page_key(r)
+            if lo <= i <= hi and unit_key(c) == unit_key(r)
         ]
-        span = (members[0]["source"], members[0]["page"],
+        span = (unit_key(members[0]),
                 metadata.index(members[0]), metadata.index(members[-1]))
         if span in seen_windows:
             continue
