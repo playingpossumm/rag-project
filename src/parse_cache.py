@@ -30,15 +30,22 @@ CACHE_DIR = Path(__file__).parent.parent / "vector_store" / "parse_cache"
 # Without this, a loader improvement would be invisible to every document
 # already in the cache -- the old output would be served indefinitely, and the
 # bug you just fixed would appear to persist.
-PARSER_VERSION = 2
+PARSER_VERSION = 3
 
 
-def file_key(path: Path) -> str:
+def file_key(path: Path, salt: str = "") -> str:
+    """Content hash of a file, optionally bound to processing parameters.
+
+    `salt` carries anything that changes the derived output for identical bytes
+    -- chunk size, overlap, whether titles are prefixed. Without it, changing
+    chunk size would silently serve chunks built under the old setting, which is
+    the same class of bug PARSER_VERSION prevents for the loaders.
+    """
     digest = hashlib.sha256()
     with open(path, "rb") as fh:
         for block in iter(lambda: fh.read(1 << 20), b""):
             digest.update(block)
-    digest.update(f"\x00v{PARSER_VERSION}".encode())
+    digest.update(f"\x00v{PARSER_VERSION}\x00{salt}".encode())
     return digest.hexdigest()[:32]
 
 
@@ -51,8 +58,8 @@ class ParseCache:
     def _path(self, key: str) -> Path:
         return self.dir / f"{key}.json"
 
-    def get(self, path: Path) -> list[dict] | None:
-        entry = self._path(file_key(path))
+    def get(self, path: Path, salt: str = "") -> list[dict] | None:
+        entry = self._path(file_key(path, salt))
         if not entry.exists():
             self.misses += 1
             return None
@@ -67,9 +74,9 @@ class ParseCache:
             self.misses += 1
             return None
 
-    def put(self, path: Path, units: list[dict]) -> None:
+    def put(self, path: Path, units: list[dict], salt: str = "") -> None:
         self.dir.mkdir(parents=True, exist_ok=True)
-        target = self._path(file_key(path))
+        target = self._path(file_key(path, salt))
         # Write to a temporary file and replace, so an interrupted run cannot
         # leave a truncated entry that later reads as a valid short document.
         tmp = target.with_suffix(".tmp")

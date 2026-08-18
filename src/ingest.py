@@ -5,9 +5,10 @@ import time
 
 import faiss
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 from corpus_health import SUPPORTED, page_report, scan_unsupported, verdict
+# sentence_transformers (and torch beneath it) is imported inside _LazyModel,
+# not here: importing it costs ~15s and a fully-cached re-index never needs it.
 from embedding_cache import embed_with_cache
 from parse_cache import ParseCache, file_key
 from loaders import extract_title, load_document
@@ -127,6 +128,38 @@ def embedding_text(title: str, locator: dict, chunk: str) -> str:
     return f"{short} ({locator['kind']} {locator['value']}). {chunk}"
 
 
+def chunk_salt() -> str:
+    """Everything that changes a chunk's content for identical input bytes."""
+    return f"{CHUNK_SIZE_TOKENS}-{CHUNK_OVERLAP_TOKENS}-{int(USE_TITLE_PREFIX)}"
+
+
+class _LazyModel:
+    """Defers loading the embedding model until something actually needs it.
+
+    Loading is 4.1s of an 8.5s fully-cached re-index -- 48% -- and it is only
+    needed for the tokenizer that drives chunking. When every document is
+    cached, nothing needs chunking, so nothing needs the model.
+    """
+
+    def __init__(self, name: str):
+        self._name = name
+        self._model = None
+
+    @property
+    def loaded(self) -> bool:
+        return self._model is not None
+
+    def get(self):
+        if self._model is None:
+            from sentence_transformers import SentenceTransformer as _ST
+            self._model = _ST(self._name)
+        return self._model
+
+    @property
+    def tokenizer(self):
+        return self.get().tokenizer
+
+
 def build_chunks(path: Path, tokenizer, cache: ParseCache | None = None) -> tuple[list[dict], dict, tuple]:
     """Chunk one document, and report on whether it extracted usably.
 
@@ -135,6 +168,12 @@ def build_chunks(path: Path, tokenizer, cache: ParseCache | None = None) -> tupl
     Chunking stays inside a unit, so no chunk ever spans two citable locations --
     which is what keeps each chunk's citation unambiguous.
     """
+    if cache is not None:
+        done = cache.get(path, salt=chunk_salt())
+        if done is not None:
+            return done["chunks"], done["report"], tuple(done["verdict"])
+
+    tokenizer = tokenizer.tokenizer if isinstance(tokenizer, _LazyModel) else tokenizer
     units = extract_units(path, cache)
     report = page_report(units)
     status, reason = verdict(report)
@@ -154,6 +193,10 @@ def build_chunks(path: Path, tokenizer, cache: ParseCache | None = None) -> tupl
                 # carries the document identity the passage itself omits.
                 "embed_text": embedding_text(title, unit["locator"], piece),
             })
+
+    if cache is not None:
+        cache.put(path, {"chunks": chunks, "report": report,
+                         "verdict": [status, reason]}, salt=chunk_salt())
     return chunks, report, (status, reason)
 
 
@@ -180,9 +223,12 @@ def _print_progress(event: dict) -> None:
         else:
             print(f"  {pos} ok    {label} {event['units']:>3} units, "
                   f"{event['chunks']:>4} chunks", flush=True)
+    elif stage == "guard":
+        print(f"Token budget OK on {event['checked']} new chunk(s): "
+              f"max {event['max_tokens']}/{event['limit']}", flush=True)
     elif stage == "embed":
         print(f"Embedding {event['chunks']} chunks "
-              f"(max {event['max_tokens']}/{event['limit']} tokens)...", flush=True)
+              f"({event['fresh']} newly chunked)...", flush=True)
     elif stage == "cache":
         reused, computed = event["reused"], event["computed"]
         pct = 100 * reused / max(event["requested"], 1)
@@ -193,8 +239,9 @@ def _print_progress(event: dict) -> None:
                   f"{event['parse_misses']} parsed, "
                   f"{event['parse_cache_mb']} MB", flush=True)
     elif stage == "done":
+        loaded = "" if event.get("model_loaded", True) else " (model never loaded)"
         print(f"Indexed {event['chunks']} chunks from {event['indexed']} document(s) "
-              f"in {event['seconds']:.0f}s", flush=True)
+              f"in {event['seconds']:.1f}s{loaded}", flush=True)
         if event["skipped"]:
             print(f"SKIPPED {len(event['skipped'])}: {', '.join(event['skipped'])}",
                   flush=True)
@@ -217,9 +264,8 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
     if not docs:
         return {"chunks": 0, "indexed": 0, "skipped": [], "seconds": 0.0}
 
-    # Loaded before chunking: the tokenizer defines the chunk boundaries.
-    model = SentenceTransformer(EMBEDDING_MODEL)
-    limit = model.max_seq_length
+    # Deferred: only a cache miss needs the tokenizer.
+    lazy = _LazyModel(EMBEDDING_MODEL)
 
     # Files we would otherwise skip in silence.
     for path, reason in scan_unsupported(data_dir):
@@ -227,9 +273,12 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
 
     parse_cache = ParseCache()
 
-    all_chunks, skipped = [], []
+    all_chunks, skipped, fresh_chunks = [], [], []
     for i, doc_path in enumerate(docs, start=1):
-        chunks, report, (status, reason) = build_chunks(doc_path, model.tokenizer, parse_cache)
+        before = parse_cache.hits
+        chunks, report, (status, reason) = build_chunks(doc_path, lazy, parse_cache)
+        if parse_cache.hits == before:      # cache miss: these chunks are new
+            fresh_chunks.extend(chunks)
         emit({
             "stage": "parse", "current": i, "total": len(docs),
             "document": doc_path.name, "status": status, "detail": reason,
@@ -252,20 +301,29 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
 
     # Fail loudly rather than truncate silently: anything over the encoder's
     # ceiling would be dropped mid-chunk with no error at encode time.
-    lengths = [len(model.tokenizer.encode(t)) for t in texts]
-    over = [n for n in lengths if n > limit]
-    if over:
-        raise ValueError(
-            f"{len(over)} chunk(s) exceed max_seq_length={limit} "
-            f"(largest {max(over)}). Lower CHUNK_SIZE_TOKENS."
-        )
-    emit({"stage": "embed", "chunks": len(texts),
-          "max_tokens": max(lengths), "limit": limit})
+    #
+    # Only NEW chunks are checked. Cached ones passed this same guard when they
+    # were built, under the same chunk parameters -- the salt guarantees that --
+    # so re-tokenizing them costs 19% of a cached run to re-derive a known
+    # answer.
+    if fresh_chunks:
+        limit = lazy.get().max_seq_length
+        lengths = [len(lazy.tokenizer.encode(c["embed_text"])) for c in fresh_chunks]
+        over = [n for n in lengths if n > limit]
+        if over:
+            raise ValueError(
+                f"{len(over)} chunk(s) exceed max_seq_length={limit} "
+                f"(largest {max(over)}). Lower CHUNK_SIZE_TOKENS."
+            )
+        emit({"stage": "guard", "checked": len(fresh_chunks), "max_tokens": max(lengths),
+              "limit": limit})
+    emit({"stage": "embed", "chunks": len(texts), "fresh": len(fresh_chunks)})
     # Only chunks whose text is new to the cache are actually encoded, so adding
     # one document to an existing corpus costs one document's worth of work.
-    embeddings, cache_stats = embed_with_cache(texts, model, EMBEDDING_MODEL)
+    embeddings, cache_stats = embed_with_cache(texts, lazy, EMBEDDING_MODEL)
     # Entries for documents no longer present would accumulate forever.
-    parse_cache.prune({file_key(p) for p in docs})
+    parse_cache.prune({file_key(p) for p in docs}
+                      | {file_key(p, chunk_salt()) for p in docs})
     emit({"stage": "cache", **cache_stats, **parse_cache.stats()})
     faiss.normalize_L2(embeddings)
 
@@ -279,6 +337,7 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
         json.dump(all_chunks, f, ensure_ascii=False, indent=2)
 
     summary = {
+        "model_loaded": lazy.loaded,
         "chunks": len(all_chunks),
         "indexed": len(docs) - len(skipped),
         "skipped": skipped,

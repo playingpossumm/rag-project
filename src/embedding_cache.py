@@ -126,6 +126,9 @@ def embed_with_cache(texts: list[str], model, model_name: str,
     _, misses = cache.get_many(texts, model_name)
 
     if misses:
+        # Resolved only here: `model` may be a lazy handle, and when every text
+        # is already cached the model is never needed at all.
+        model = model.get() if hasattr(model, "get") else model
         if progress:
             progress({"stage": "embed", "chunks": len(misses),
                       "cached": len(texts) - len(misses), "total": len(texts)})
