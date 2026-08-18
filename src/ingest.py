@@ -37,6 +37,33 @@ CHUNK_OVERLAP_TOKENS = 40
 # short enough that it cannot crowd out the passage it labels.
 MAX_TITLE_CHARS = 90
 
+# DEFAULT OFF -- measured, and it does not work.
+#
+# The idea was to fix cross-document confusion by giving each chunk its
+# document's identity, since a passage mid-paper rarely names its own paper.
+# Controlled comparison at identical chunk size (2,768 chunks, same golden set,
+# prefix the only variable):
+#
+#              any-hit    MRR   NDCG   src recall
+#   prefix       0.913  0.848  0.855        0.779
+#   no prefix    0.913  0.848  0.852        0.830
+#
+# No effect on ranking, and source recall 5 points WORSE -- which is the metric
+# that matters most here. The mechanism is clear in hindsight: every chunk in a
+# document receives the SAME prefix, making chunks within a document more
+# similar to each other, so retrieval clusters harder on a single document.
+# That is the opposite of compiling every relevant source.
+#
+# It also failed at its stated purpose: "what optimizer was used to train the
+# Transformer" got worse, because Vision Transformer's title contains
+# "Transformer" while "Attention Is All You Need" does not.
+#
+# Kept behind a switch rather than deleted, because the technique is sound in
+# general (it is standard practice with larger context windows and per-chunk
+# summaries); it is this cheap variant, on this corpus, that fails.
+# Set RAG_TITLE_PREFIX=1 to re-enable.
+USE_TITLE_PREFIX = os.environ.get("RAG_TITLE_PREFIX", "0") != "0"
+
 
 def extract_units(path: Path, cache: ParseCache | None = None) -> list[dict]:
     """Format-appropriate citable units: PDF pages, slides, sections, row blocks.
@@ -94,6 +121,8 @@ def embedding_text(title: str, locator: dict, chunk: str) -> str:
     long-winded document would push chunks over the encoder's ceiling and
     reintroduce the silent-truncation bug this project already fixed once.
     """
+    if not USE_TITLE_PREFIX:
+        return chunk
     short = title if len(title) <= MAX_TITLE_CHARS else title[:MAX_TITLE_CHARS].rstrip() + "..."
     return f"{short} ({locator['kind']} {locator['value']}). {chunk}"
 
