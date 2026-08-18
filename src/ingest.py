@@ -6,6 +6,8 @@ import numpy as np
 import pymupdf4llm
 from sentence_transformers import SentenceTransformer
 
+from corpus_health import page_report, scan_unsupported, verdict
+
 DATA_DIR = Path(__file__).parent.parent / "data"
 STORE_DIR = Path(__file__).parent.parent / "vector_store"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
@@ -50,9 +52,18 @@ def chunk_text(text: str, tokenizer, size: int, overlap: int) -> list[str]:
     return chunks
 
 
-def build_chunks(pdf_path: Path, tokenizer) -> list[dict]:
+def build_chunks(pdf_path: Path, tokenizer) -> tuple[list[dict], dict, str]:
+    """Chunk one document, and report on whether it extracted usably.
+
+    Returns (chunks, health_report, verdict). A document that extracted to
+    almost nothing is reported rather than silently contributing empty chunks.
+    """
+    pages = extract_pages(pdf_path)
+    report = page_report(pages)
+    status, reason = verdict(report)
+
     chunks = []
-    for page_num, page_text in extract_pages(pdf_path):
+    for page_num, page_text in pages:
         pieces = chunk_text(page_text, tokenizer, CHUNK_SIZE_TOKENS, CHUNK_OVERLAP_TOKENS)
         for piece in pieces:
             chunks.append({
@@ -60,7 +71,7 @@ def build_chunks(pdf_path: Path, tokenizer) -> list[dict]:
                 "page": page_num,
                 "text": piece,
             })
-    return chunks
+    return chunks, report, (status, reason)
 
 
 def main():
@@ -74,12 +85,40 @@ def main():
     model = SentenceTransformer(EMBEDDING_MODEL)
     limit = model.max_seq_length
 
-    all_chunks = []
-    for pdf_path in pdf_files:
-        print(f"Reading {pdf_path.name}...")
-        all_chunks.extend(build_chunks(pdf_path, model.tokenizer))
+    # Files we would otherwise skip in silence.
+    unsupported = scan_unsupported(DATA_DIR)
+    if unsupported:
+        print(f"\n{len(unsupported)} file(s) in data/ will NOT be indexed:")
+        for path, reason in unsupported:
+            print(f"  SKIP  {path.name:<40} {reason}")
+        print()
 
-    print(f"Built {len(all_chunks)} chunks from {len(pdf_files)} PDF(s)")
+    all_chunks, skipped = [], []
+    for pdf_path in pdf_files:
+        chunks, report, (status, reason) = build_chunks(pdf_path, model.tokenizer)
+        label = f"{pdf_path.name[:34]:<34}"
+
+        if status == "FAIL":
+            # Indexing this would add chunks that can never be retrieved, and
+            # would quietly lower every metric with no visible cause.
+            print(f"  FAIL  {label} {reason}")
+            skipped.append(pdf_path.name)
+            continue
+        if status == "WARN":
+            print(f"  warn  {label} {reason}")
+        else:
+            print(f"  ok    {label} {report['pages']:>3} pages, "
+                  f"{report['median_words']:>4} median words/page")
+        all_chunks.extend(chunks)
+
+    indexed = len(pdf_files) - len(skipped)
+    print(f"\nBuilt {len(all_chunks)} chunks from {indexed} document(s)")
+    if skipped:
+        print(f"SKIPPED {len(skipped)}: {', '.join(skipped)}")
+        print("These need OCR before they can contribute anything to retrieval.")
+    if not all_chunks:
+        print("Nothing to index -- aborting rather than writing an empty store.")
+        return
 
     texts = [c["text"] for c in all_chunks]
 
