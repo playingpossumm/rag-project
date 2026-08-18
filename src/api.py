@@ -109,7 +109,11 @@ def ask(
     ]
     documents = list(dict.fromkeys(p.source for p in passages))
 
-    if len(documents) > 1:
+    # Only meaningful when something relevant was actually found. Announcing
+    # that "5 documents contain relevant material" directly after reporting that
+    # nothing answers the question contradicts itself, and would train a reader
+    # to ignore the note in exactly the cases it matters.
+    if confident and len(documents) > 1:
         notes.append(
             f"{len(documents)} different documents contain relevant material "
             f"({', '.join(documents)}). They may not agree -- read the passages "

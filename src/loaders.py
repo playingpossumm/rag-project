@@ -24,6 +24,12 @@ from pathlib import Path
 # large sheet rather than the whole thing.
 XLSX_ROWS_PER_BLOCK = 40
 
+# Below this word count a PDF page is treated as having no usable text layer and
+# is sent to OCR. Kept in step with corpus_health.MIN_WORDS_PER_PAGE so the
+# guard and the rescue agree on what "empty" means -- otherwise a page could be
+# rejected as blank without OCR ever being attempted on it.
+OCR_TRIGGER_WORDS = 20
+
 
 def locator_label(locator: dict) -> str:
     """Human-readable citation fragment, e.g. 'page 5' or 'sheet Q3, rows 1-40'."""
@@ -40,14 +46,49 @@ def locator_label(locator: dict) -> str:
 
 # --------------------------------------------------------------------------- PDF
 
-def load_pdf(path: Path) -> list[dict]:
+def load_pdf(path: Path, use_ocr: bool = True) -> list[dict]:
+    """Extract a PDF page by page, falling back to OCR only where needed.
+
+    OCR runs per page rather than per document because the common real case is
+    mixed: a born-digital report with scanned exhibits appended, or a contract
+    whose signature pages were scanned back in. OCR output is worse than a real
+    text layer, so running it across pages that already extracted cleanly would
+    actively degrade them -- as well as being far slower.
+    """
     import pymupdf4llm
 
     pages = pymupdf4llm.to_markdown(str(path), page_chunks=True)
-    return [
+    units = [
         {"locator": {"kind": "page", "value": i + 1}, "text": p["text"]}
         for i, p in enumerate(pages)
     ]
+
+    if not use_ocr:
+        return units
+
+    needs_ocr = [
+        u["locator"]["value"] for u in units
+        if len(u["text"].split()) < OCR_TRIGGER_WORDS
+    ]
+    if not needs_ocr:
+        return units
+
+    import ocr
+    if not ocr.available():
+        print(f"    {path.name}: {len(needs_ocr)} page(s) have no text layer and "
+              f"OCR is not installed -- they will be empty in the index")
+        return units
+
+    print(f"    {path.name}: OCR on {len(needs_ocr)} page(s) with no text layer...")
+    recovered = ocr.ocr_pdf_pages(path, needs_ocr)
+    by_page = {u["locator"]["value"]: u for u in units}
+    gained = 0
+    for page_num, text in recovered.items():
+        if len(text.split()) > len(by_page[page_num]["text"].split()):
+            by_page[page_num]["text"] = text
+            gained += len(text.split())
+    print(f"    {path.name}: OCR recovered {gained} words")
+    return units
 
 
 # -------------------------------------------------------------------------- DOCX
