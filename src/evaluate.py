@@ -201,22 +201,30 @@ def main():
               f"{summary['src_recall']:>12.3f}")
 
     # ---- Layer 2: end-to-end, with reranking ------------------------------
+    # max_per_source=None disables the diversity cap, so its effect is isolated:
+    # the two "weighted + rerank" rows differ only in that one parameter.
     finals = [
         ("dense, no rerank", dict(fusion="none", use_reranker=False)),
-        ("dense + rerank",   dict(fusion="none", use_reranker=True)),
-        ("rrf + rerank",     dict(fusion="rrf", use_reranker=True)),
-        ("weighted + rerank", dict(fusion="weighted", alpha=0.5, use_reranker=True)),
+        ("dense + rerank",   dict(fusion="none", use_reranker=True, max_per_source=None)),
+        ("rrf + rerank",     dict(fusion="rrf", use_reranker=True, max_per_source=None)),
+        ("weighted + rerank", dict(fusion="weighted", alpha=0.5, use_reranker=True,
+                                   max_per_source=None)),
+        ("  + diversity 2/src", dict(fusion="weighted", alpha=0.5, use_reranker=True,
+                                     max_per_source=2)),
+        ("  + diversity 1/src", dict(fusion="weighted", alpha=0.5, use_reranker=True,
+                                     max_per_source=1)),
     ]
 
     print(f"\nEND TO END @ {args.k}")
-    print(f"{'pipeline':<20}{'hit@k':>9}{'MRR':>9}{'NDCG':>9}")
+    print(f"{'pipeline':<20}{'any-hit':>9}{'MRR':>9}{'NDCG':>9}{'src recall':>12}")
     runs = {}
     for label, cfg in finals:
         summary, per_case = score_run(answerable, lambda q, c=cfg: retrieve(
             q, index, metadata, model, k=args.k,
-            candidate_k=args.candidate_k, bm25=bm25, **c))
+            candidate_k=args.candidate_k, bm25=bm25, **c), k=args.k)
         runs[label] = (summary, per_case)
-        print(f"{label:<20}{summary['hit_rate']:>9.3f}{summary['mrr']:>9.3f}{summary['ndcg']:>9.3f}")
+        print(f"{label:<20}{summary['hit_rate']:>9.3f}{summary['mrr']:>9.3f}"
+              f"{summary['ndcg']:>9.3f}{summary['src_recall']:>12.3f}")
 
     if args.per_case:
         for label, (_, per_case) in runs.items():

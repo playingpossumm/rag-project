@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import time
 
 import faiss
 import numpy as np
@@ -76,52 +77,85 @@ def build_chunks(path: Path, tokenizer) -> tuple[list[dict], dict, tuple]:
     return chunks, report, (status, reason)
 
 
-def main():
-    docs = sorted(p for p in DATA_DIR.iterdir()
+def _print_progress(event: dict) -> None:
+    """Default reporter: one line per event, flushed immediately.
+
+    Flushing matters. Indexing is the slowest thing this system does, and
+    buffered output makes a long run indistinguishable from a hung one -- the
+    caller has no way to tell whether to wait or intervene.
+    """
+    stage = event["stage"]
+    if stage == "scan":
+        print(f"Found {event['documents']} document(s) to index", flush=True)
+    elif stage == "skip_unsupported":
+        print(f"  SKIP  {event['document']:<40} {event['reason']}", flush=True)
+    elif stage == "parse":
+        pos = f"[{event['current']}/{event['total']}]"
+        status = event["status"]
+        label = f"{event['document'][:34]:<34}"
+        if status == "FAIL":
+            print(f"  {pos} FAIL  {label} {event['detail']}", flush=True)
+        elif status == "WARN":
+            print(f"  {pos} warn  {label} {event['detail']}", flush=True)
+        else:
+            print(f"  {pos} ok    {label} {event['units']:>3} units, "
+                  f"{event['chunks']:>4} chunks", flush=True)
+    elif stage == "embed":
+        print(f"Embedding {event['chunks']} chunks "
+              f"(max {event['max_tokens']}/{event['limit']} tokens)...", flush=True)
+    elif stage == "done":
+        print(f"Indexed {event['chunks']} chunks from {event['indexed']} document(s) "
+              f"in {event['seconds']:.0f}s", flush=True)
+        if event["skipped"]:
+            print(f"SKIPPED {len(event['skipped'])}: {', '.join(event['skipped'])}",
+                  flush=True)
+
+
+def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
+                progress=None) -> dict:
+    """Index every supported document in `data_dir`, reporting progress.
+
+    `progress` receives structured events rather than formatted text, so a UI
+    can drive a progress bar from the same source the CLI prints from -- there
+    is no second code path to keep in step.
+    """
+    emit = progress or _print_progress
+    started = time.perf_counter()
+
+    docs = sorted(p for p in data_dir.iterdir()
                   if p.is_file() and p.suffix.lower() in SUPPORTED)
+    emit({"stage": "scan", "documents": len(docs)})
     if not docs:
-        print(f"No supported documents found in {DATA_DIR}")
-        return
+        return {"chunks": 0, "indexed": 0, "skipped": [], "seconds": 0.0}
 
     # Loaded before chunking: the tokenizer defines the chunk boundaries.
-    print(f"Loading embedding model ({EMBEDDING_MODEL})...")
     model = SentenceTransformer(EMBEDDING_MODEL)
     limit = model.max_seq_length
 
     # Files we would otherwise skip in silence.
-    unsupported = scan_unsupported(DATA_DIR)
-    if unsupported:
-        print(f"\n{len(unsupported)} file(s) in data/ will NOT be indexed:")
-        for path, reason in unsupported:
-            print(f"  SKIP  {path.name:<40} {reason}")
-        print()
+    for path, reason in scan_unsupported(data_dir):
+        emit({"stage": "skip_unsupported", "document": path.name, "reason": reason})
 
     all_chunks, skipped = [], []
-    for doc_path in docs:
+    for i, doc_path in enumerate(docs, start=1):
         chunks, report, (status, reason) = build_chunks(doc_path, model.tokenizer)
-        label = f"{doc_path.name[:34]:<34}"
-
+        emit({
+            "stage": "parse", "current": i, "total": len(docs),
+            "document": doc_path.name, "status": status, "detail": reason,
+            "units": report["pages"], "chunks": len(chunks),
+        })
         if status == "FAIL":
             # Indexing this would add chunks that can never be retrieved, and
             # would quietly lower every metric with no visible cause.
-            print(f"  FAIL  {label} {reason}")
             skipped.append(doc_path.name)
             continue
-        if status == "WARN":
-            print(f"  warn  {label} {reason}")
-        else:
-            print(f"  ok    {label} {report['pages']:>3} pages, "
-                  f"{report['median_words']:>4} median words/page")
         all_chunks.extend(chunks)
 
-    indexed = len(docs) - len(skipped)
-    print(f"\nBuilt {len(all_chunks)} chunks from {indexed} document(s)")
-    if skipped:
-        print(f"SKIPPED {len(skipped)}: {', '.join(skipped)}")
-        print("These need OCR before they can contribute anything to retrieval.")
     if not all_chunks:
-        print("Nothing to index -- aborting rather than writing an empty store.")
-        return
+        summary = {"chunks": 0, "indexed": 0, "skipped": skipped,
+                   "seconds": time.perf_counter() - started}
+        emit({"stage": "done", **summary})
+        return summary
 
     texts = [c["text"] for c in all_chunks]
 
@@ -134,9 +168,8 @@ def main():
             f"{len(over)} chunk(s) exceed max_seq_length={limit} "
             f"(largest {max(over)}). Lower CHUNK_SIZE_TOKENS."
         )
-    print(f"Token budget OK: max {max(lengths)}/{limit}, median {sorted(lengths)[len(lengths) // 2]}")
-
-    print("Embedding chunks...")
+    emit({"stage": "embed", "chunks": len(texts),
+          "max_tokens": max(lengths), "limit": limit})
     embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
     faiss.normalize_L2(embeddings)
 
@@ -144,12 +177,23 @@ def main():
     index = faiss.IndexFlatIP(dim)
     index.add(embeddings.astype(np.float32))
 
-    STORE_DIR.mkdir(exist_ok=True)
-    faiss.write_index(index, str(STORE_DIR / "index.faiss"))
-    with open(STORE_DIR / "metadata.json", "w", encoding="utf-8") as f:
+    store_dir.mkdir(exist_ok=True)
+    faiss.write_index(index, str(store_dir / "index.faiss"))
+    with open(store_dir / "metadata.json", "w", encoding="utf-8") as f:
         json.dump(all_chunks, f, ensure_ascii=False, indent=2)
 
-    print(f"Saved index and metadata to {STORE_DIR}")
+    summary = {
+        "chunks": len(all_chunks),
+        "indexed": len(docs) - len(skipped),
+        "skipped": skipped,
+        "seconds": time.perf_counter() - started,
+    }
+    emit({"stage": "done", **summary})
+    return summary
+
+
+def main():
+    build_index()
 
 
 if __name__ == "__main__":

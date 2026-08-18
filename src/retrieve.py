@@ -6,6 +6,8 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+from diversify import DEFAULT_MAX_PER_SOURCE, diversify
+
 # Windows consoles default to cp1252, which cannot encode the mathematical
 # notation common in technical PDFs; printing a retrieved chunk would crash.
 if hasattr(sys.stdout, "reconfigure"):
@@ -101,6 +103,7 @@ def retrieve(
     alpha: float = 0.5,
     expansion: str = "none",
     window: int = 1,
+    max_per_source: int | None = DEFAULT_MAX_PER_SOURCE,
 ) -> list[dict]:
     """Full retrieval pipeline: shortlist, rerank, then expand context.
 
@@ -114,7 +117,11 @@ def retrieve(
 
         candidates = shortlist(query, index, metadata, model, k=candidate_k,
                                fusion=fusion, bm25=bm25, alpha=alpha)
-        results = rerank(query, candidates, k=k)
+        # Rerank the whole pool, then select k. Selecting first would give the
+        # diversity step nothing to choose between.
+        ranked = rerank(query, candidates, k=len(candidates))
+        results = (diversify(ranked, k=k, max_per_source=max_per_source)
+                   if max_per_source else ranked[:k])
     else:
         results = shortlist(query, index, metadata, model, k=k,
                             fusion=fusion, bm25=bm25, alpha=alpha)
@@ -140,7 +147,8 @@ def main():
     print(f"\nTop {len(results)} matches for: {query!r}\n")
     for rank, r in enumerate(results, start=1):
         score = r.get("rerank_score", r.get("score"))
-        print(f"[{rank}] {r['source']}, page {r['page']} (score: {score:+.3f})")
+        loc = r["locator"]
+        print(f"[{rank}] {r['source']}, {loc['kind']} {loc['value']} (score: {score:+.3f})")
         print(r["text"][:300].replace("\n", " ") + "...")
         print()
 
