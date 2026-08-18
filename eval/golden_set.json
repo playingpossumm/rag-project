@@ -1,380 +1,632 @@
 {
-  "corpus": "multi-document (20 arXiv ML/NLP papers)",
-  "note": "Gold pages verified by grepping the parsed corpus, not recalled from memory. 'pages' lists every page where the answer is genuinely present; a retrieval counts as a hit if any listed page appears in the returned set. Cases marked unanswerable have no supporting page and exist to test abstention rather than recall. Each answerable case also carries `answer_contains`: a distinctive substring of the actual answer, verified to occur in the parsed corpus on its gold page. This enables context recall -- whether the text returned to the model actually contains the answer -- which ranking metrics cannot measure. NOTE: relevance is keyed on (source, page), not page alone -- once the corpus held more than one document, page number stopped identifying a location and matching on it would have scored wrong-document hits as correct.",
+  "corpus": "20 arXiv ML/NLP papers",
+  "generated_by": "src/build_golden_set.py",
+  "note": "Gold locations are DERIVED from answer strings against the current corpus, not hand-labelled, so labels cannot drift out of step with the documents. Multi-source falls out naturally: every location containing the answer is gold, matching the requirement to compile all relevant sources rather than pick one. Regenerate after any corpus change by re-running the generator.",
   "cases": [
     {
       "id": "mha-def",
-      "question": "What is multi-head attention?",
-      "pages": [
-        5
-      ],
-      "difficulty": "medium",
-      "why": "definition competes with figure captions that repeat the term",
+      "question": "What is multi-head attention and why use several heads instead of one?",
+      "kind": "fact",
       "answer_contains": "jointly attend to information from different representation subspaces",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "mha-heads",
-      "question": "How many attention heads does the base model use?",
-      "pages": [
-        5
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            5
+          ]
+        }
       ],
-      "difficulty": "easy",
-      "answer_contains": "employ _h_ = 8 parallel attention layers",
-      "source": "attention_is_all_you_need.pdf"
+      "multi_source": false
     },
     {
       "id": "scale-why",
       "question": "Why is the dot product scaled by the square root of the key dimension?",
-      "pages": [
-        4
-      ],
-      "difficulty": "medium",
+      "kind": "fact",
       "answer_contains": "extremely small gradients",
-      "source": "attention_is_all_you_need.pdf"
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            4
+          ]
+        }
+      ],
+      "multi_source": false
     },
     {
-      "id": "optimizer",
-      "question": "Which optimizer was used to train the model?",
-      "pages": [
-        7
-      ],
-      "difficulty": "easy",
-      "answer_contains": "Adam optimizer",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "lr-schedule",
-      "question": "How is the learning rate varied over the course of training?",
-      "pages": [
-        7
-      ],
-      "difficulty": "medium",
+      "id": "warmup",
+      "question": "Which learning rate schedule increases linearly for the first steps then decays by inverse square root?",
+      "kind": "fact",
       "answer_contains": "warmup_steps",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "enc-layers",
-      "question": "How many layers are in the encoder stack?",
-      "pages": [
-        3
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            7
+          ]
+        }
       ],
-      "difficulty": "easy",
-      "answer_contains": "stack of _N_ = 6 identical layers",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "d-model",
-      "question": "What is the dimensionality of the model's embeddings?",
-      "pages": [
-        3
-      ],
-      "difficulty": "medium",
-      "answer_contains": "dmodel = 512",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "dropout",
-      "question": "What dropout rate was used for the base model?",
-      "pages": [
-        8,
-        9
-      ],
-      "difficulty": "medium",
-      "answer_contains": "_Pdrop_ = 0.1",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "complexity",
-      "question": "What is the computational complexity per layer of self-attention?",
-      "pages": [
-        6
-      ],
-      "difficulty": "medium",
-      "answer_contains": "O(n[2]",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "path-length",
-      "question": "How does the maximum path length of self-attention compare to recurrent layers?",
-      "pages": [
-        6
-      ],
-      "difficulty": "medium",
-      "answer_contains": "Maximum Path Length",
-      "source": "attention_is_all_you_need.pdf"
+      "multi_source": false
     },
     {
       "id": "pos-enc-fn",
-      "question": "What function is used to compute the positional encodings?",
-      "pages": [
-        6
-      ],
-      "difficulty": "medium",
+      "question": "What sinusoidal function is used to compute positional encodings?",
+      "kind": "fact",
       "answer_contains": "where pos is the position",
-      "source": "attention_is_all_you_need.pdf"
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            6
+          ]
+        }
+      ],
+      "multi_source": false
     },
     {
       "id": "pos-enc-why",
-      "question": "Why does the model need positional encodings at all?",
-      "pages": [
-        6
-      ],
-      "difficulty": "medium",
+      "question": "Why does a model with no recurrence and no convolution need positional encodings?",
+      "kind": "fact",
       "answer_contains": "no recurrence and no convolution",
-      "source": "attention_is_all_you_need.pdf"
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            6
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "path-length",
+      "question": "How does the maximum path length between positions compare for self-attention and recurrent layers?",
+      "kind": "fact",
+      "answer_contains": "Maximum Path Length",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            6,
+            7
+          ]
+        }
+      ],
+      "multi_source": false
     },
     {
       "id": "bleu-ende",
-      "question": "What BLEU score did the big model achieve on English-to-German?",
-      "pages": [
-        8
-      ],
-      "difficulty": "easy",
+      "question": "Which model achieved 28.4 BLEU on WMT 2014 English-to-German?",
+      "kind": "fact",
       "answer_contains": "28.4",
-      "source": "attention_is_all_you_need.pdf"
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            1,
+            8
+          ]
+        },
+        {
+          "source": "bahdanau_attention.pdf",
+          "pages": [
+            7
+          ]
+        },
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            7
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            63
+          ]
+        },
+        {
+          "source": "seq2seq.pdf",
+          "pages": [
+            6
+          ]
+        }
+      ],
+      "multi_source": true
     },
     {
-      "id": "bleu-enfr",
-      "question": "What BLEU score did the model achieve on English-to-French?",
-      "pages": [
-        8
+      "id": "attn-uses",
+      "question": "In which three different ways is multi-head attention used in an encoder-decoder Transformer?",
+      "kind": "fact",
+      "answer_contains": "three different ways",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            5
+          ]
+        }
       ],
-      "difficulty": "easy",
-      "answer_contains": "41.0",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "hardware",
-      "question": "What hardware was the model trained on?",
-      "pages": [
-        7
-      ],
-      "difficulty": "easy",
-      "answer_contains": "8 NVIDIA P100 GPUs",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "train-time",
-      "question": "How long did the base model take to train?",
-      "pages": [
-        7
-      ],
-      "difficulty": "medium",
-      "answer_contains": "12 hours",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "dataset",
-      "question": "Which dataset was used for English-to-German translation?",
-      "pages": [
-        7
-      ],
-      "difficulty": "easy",
-      "answer_contains": "WMT 2014 English-German",
-      "source": "attention_is_all_you_need.pdf"
+      "multi_source": false
     },
     {
       "id": "label-smooth",
       "question": "What label smoothing value was used during training?",
-      "pages": [
-        8
-      ],
-      "difficulty": "medium",
+      "kind": "fact",
       "answer_contains": "label smoothing of value",
-      "source": "attention_is_all_you_need.pdf"
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            8
+          ]
+        }
+      ],
+      "multi_source": false
     },
     {
-      "id": "parsing",
-      "question": "How did the Transformer perform on English constituency parsing?",
-      "pages": [
-        9,
-        10
+      "id": "p100",
+      "question": "What GPU hardware was used for training, and how many?",
+      "kind": "fact",
+      "answer_contains": "8 NVIDIA P100 GPUs",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            7
+          ]
+        }
       ],
-      "difficulty": "medium",
-      "answer_contains": "WSJ 23 F1",
-      "source": "attention_is_all_you_need.pdf"
+      "multi_source": false
     },
     {
-      "id": "ffn-act",
-      "question": "What activation function is used in the position-wise feed-forward network?",
-      "pages": [
-        5
+      "id": "adam",
+      "question": "Which optimizer was used, and with what beta values?",
+      "kind": "multi",
+      "answer_contains": "β1 = 0.9",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            7
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            43
+          ]
+        },
+        {
+          "source": "roberta.pdf",
+          "pages": [
+            2
+          ]
+        },
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            5
+          ]
+        }
       ],
-      "difficulty": "hard",
-      "why": "buried mid-page in a section about something else",
+      "multi_source": true
+    },
+    {
+      "id": "relu",
+      "question": "Which activation function is applied between the two linear layers of a feed-forward block?",
+      "kind": "multi",
       "answer_contains": "ReLU",
-      "source": "attention_is_all_you_need.pdf"
+      "gold": [
+        {
+          "source": "adam_optimizer.pdf",
+          "pages": [
+            6
+          ]
+        },
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            5
+          ]
+        },
+        {
+          "source": "batch_normalization.pdf",
+          "pages": [
+            2,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "source": "bert.pdf",
+          "pages": [
+            13
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            38
+          ]
+        },
+        {
+          "source": "layer_normalization.pdf",
+          "pages": [
+            2,
+            3
+          ]
+        },
+        {
+          "source": "resnet.pdf",
+          "pages": [
+            2,
+            3,
+            6,
+            8
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            11,
+            29
+          ]
+        }
+      ],
+      "multi_source": true
     },
     {
-      "id": "ffn-dim",
-      "question": "What is the inner dimensionality of the feed-forward layer?",
-      "pages": [
-        5,
-        9
+      "id": "dropout-rate",
+      "question": "What dropout rate was applied for regularization?",
+      "kind": "multi",
+      "answer_contains": "dropout rate",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            8
+          ]
+        },
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            5
+          ]
+        }
       ],
-      "difficulty": "hard",
-      "answer_contains": "2048",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "attn-uses",
-      "question": "In which three ways does the Transformer use multi-head attention?",
-      "pages": [
-        5
-      ],
-      "difficulty": "hard",
-      "answer_contains": "three different ways",
-      "source": "attention_is_all_you_need.pdf"
-    },
-    {
-      "id": "compound",
-      "question": "How many parameters and what dropout rate did the base model use?",
-      "pages": [
-        9
-      ],
-      "difficulty": "hard",
-      "why": "compound question; answers sit in different places",
-      "answer_contains": "4.92 25.8 65",
-      "source": "attention_is_all_you_need.pdf"
+      "multi_source": true
     },
     {
       "id": "residual",
-      "question": "How are residual connections and layer normalization applied to sub-layers?",
-      "pages": [
-        3
-      ],
-      "difficulty": "medium",
+      "question": "How are residual connections and layer normalization applied around each sub-layer?",
+      "kind": "multi",
       "answer_contains": "residual connection",
-      "source": "attention_is_all_you_need.pdf"
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            3
+          ]
+        },
+        {
+          "source": "lora.pdf",
+          "pages": [
+            6
+          ]
+        },
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            3
+          ]
+        }
+      ],
+      "multi_source": true
     },
     {
-      "id": "adv-bert",
-      "question": "What learning rate schedule does BERT use?",
-      "pages": [],
-      "unanswerable": true,
-      "why": "BERT postdates this paper and is never mentioned",
-      "adversarial_kind": "absent"
+      "id": "wmt14",
+      "question": "Which translation dataset was used for the English-to-German experiments?",
+      "kind": "multi",
+      "answer_contains": "WMT 2014 English-German",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            7
+          ]
+        }
+      ],
+      "multi_source": false
     },
     {
-      "id": "adv-cost",
-      "question": "How many dollars did it cost to train the big model?",
-      "pages": [],
-      "unanswerable": true,
-      "why": "training cost is reported in FLOPs, never in currency",
-      "adversarial_kind": "near-miss"
+      "id": "colbert-late",
+      "question": "What is late interaction in a retrieval model?",
+      "kind": "cross-doc",
+      "answer_contains": "late interaction",
+      "gold": [
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            7,
+            9
+          ]
+        },
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            10
+          ]
+        }
+      ],
+      "multi_source": true
     },
     {
-      "id": "adv-rlhf",
-      "question": "What do the authors conclude about reinforcement learning from human feedback?",
-      "pages": [],
-      "unanswerable": true,
-      "why": "topic absent from the paper",
-      "adversarial_kind": "absent"
+      "id": "dpr-dual",
+      "question": "How is a dual-encoder retriever trained with in-batch negatives?",
+      "kind": "cross-doc",
+      "answer_contains": "in-batch negatives",
+      "gold": [
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            4
+          ]
+        }
+      ],
+      "multi_source": false
     },
     {
-      "id": "adv-authors",
-      "question": "Which of the authors previously worked at OpenAI?",
-      "pages": [],
-      "unanswerable": true,
-      "why": "affiliations are listed but no employment history",
-      "adversarial_kind": "metadata"
+      "id": "lora-rank",
+      "question": "How does low-rank adaptation reduce the number of trainable parameters?",
+      "kind": "cross-doc",
+      "answer_contains": "low-rank",
+      "gold": [
+        {
+          "source": "lora.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            9,
+            10,
+            12,
+            14,
+            15,
+            16,
+            24
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "bert-mlm",
+      "question": "What is the masked language model pre-training objective?",
+      "kind": "cross-doc",
+      "answer_contains": "masked language model",
+      "gold": [
+        {
+          "source": "bert.pdf",
+          "pages": [
+            1,
+            2,
+            16
+          ]
+        },
+        {
+          "source": "rag.pdf",
+          "pages": [
+            1
+          ]
+        },
+        {
+          "source": "roberta.pdf",
+          "pages": [
+            1,
+            2,
+            4,
+            6,
+            8,
+            9
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            10,
+            13,
+            21
+          ]
+        },
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            9
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "cot-prompt",
+      "question": "How does prompting a model with intermediate reasoning steps affect arithmetic accuracy?",
+      "kind": "cross-doc",
+      "answer_contains": "a series of intermediate reasoning steps",
+      "gold": [
+        {
+          "source": "chain_of_thought.pdf",
+          "pages": [
+            1
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "sbert-siamese",
+      "question": "How are siamese network structures used to derive sentence embeddings?",
+      "kind": "cross-doc",
+      "answer_contains": "siamese",
+      "gold": [
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            10
+          ]
+        },
+        {
+          "source": "sentence_bert.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            7,
+            8
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "vit-patches",
+      "question": "How is an image split into patches and fed to a Transformer?",
+      "kind": "cross-doc",
+      "answer_contains": "patches",
+      "gold": [
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            8,
+            9,
+            17,
+            19
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "faiss-pq",
+      "question": "How does product quantization compress vectors for similarity search?",
+      "kind": "cross-doc",
+      "answer_contains": "product quantization",
+      "gold": [
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            6
+          ]
+        },
+        {
+          "source": "faiss_billion_scale.pdf",
+          "pages": [
+            1,
+            6,
+            10,
+            11
+          ]
+        },
+        {
+          "source": "resnet.pdf",
+          "pages": [
+            9
+          ]
+        }
+      ],
+      "multi_source": true
     },
     {
       "id": "adv-diffusion",
-      "question": "What noise schedule does the diffusion model use?",
-      "pages": [],
+      "question": "What noise schedule does the denoising diffusion model use?",
       "unanswerable": true,
       "adversarial_kind": "absent",
-      "why": "diffusion models are unrelated to this paper"
+      "why": "no diffusion paper in the corpus",
+      "gold": []
     },
     {
-      "id": "adv-gpt3-params",
-      "question": "How many parameters does GPT-3 have?",
-      "pages": [],
+      "id": "adv-rlhf",
+      "question": "How is the reward model trained for RLHF?",
       "unanswerable": true,
       "adversarial_kind": "absent",
-      "why": "GPT-3 postdates this paper"
+      "why": "no InstructGPT/RLHF paper in the corpus",
+      "gold": []
     },
     {
-      "id": "adv-finetune",
-      "question": "How should the model be fine-tuned for sentiment classification?",
-      "pages": [],
+      "id": "adv-mamba",
+      "question": "How does the state space model handle long sequences without attention?",
       "unanswerable": true,
       "adversarial_kind": "absent",
-      "why": "the paper covers training from scratch for translation only"
+      "why": "no state-space/Mamba paper in the corpus",
+      "gold": []
     },
     {
-      "id": "adv-review",
-      "question": "What did the peer reviewers say about this paper?",
-      "pages": [],
-      "unanswerable": true,
-      "adversarial_kind": "metadata",
-      "why": "review commentary is not part of the document"
-    },
-    {
-      "id": "adv-funding",
-      "question": "Which grant funded this research?",
-      "pages": [],
-      "unanswerable": true,
-      "adversarial_kind": "metadata",
-      "why": "no funding statement appears in the paper"
-    },
-    {
-      "id": "adv-license",
-      "question": "Under what software licence was the code released?",
-      "pages": [],
-      "unanswerable": true,
-      "adversarial_kind": "metadata",
-      "why": "the paper mentions code availability but no licence terms"
-    },
-    {
-      "id": "adv-inference-time",
-      "question": "How long does the model take to run inference on one sentence?",
-      "pages": [],
+      "id": "adv-price",
+      "question": "How many dollars did it cost to train the model?",
       "unanswerable": true,
       "adversarial_kind": "near-miss",
-      "why": "training time is reported in detail; inference latency never is"
+      "why": "compute cost is reported in FLOPs and GPU-hours, never in currency",
+      "gold": []
     },
     {
       "id": "adv-energy",
-      "question": "How much energy did training consume in kilowatt-hours?",
-      "pages": [],
+      "question": "How many kilowatt-hours did training consume?",
       "unanswerable": true,
       "adversarial_kind": "near-miss",
-      "why": "training cost is given in FLOPs, never in energy"
+      "why": "training cost is reported, but never as energy",
+      "gold": []
     },
     {
-      "id": "adv-decoder-layers",
-      "question": "How many layers does the decoder use in the big model?",
-      "pages": [],
+      "id": "adv-carbon",
+      "question": "What was the carbon footprint of training?",
       "unanswerable": true,
       "adversarial_kind": "near-miss",
-      "why": "N is given for the base model; Table 3 varies other params, not decoder depth separately"
-    },
-    {
-      "id": "adv-val-split",
-      "question": "What percentage of the data was held out for validation?",
-      "pages": [],
-      "unanswerable": true,
-      "adversarial_kind": "near-miss",
-      "why": "dev sets are named (newstest2013) but no split percentage is given"
+      "why": "adjacent to compute cost, never stated",
+      "gold": []
     },
     {
       "id": "adv-seed",
       "question": "What random seed was used for the reported runs?",
-      "pages": [],
       "unanswerable": true,
       "adversarial_kind": "near-miss",
-      "why": "extensive hyperparameters are listed; seeds are not"
+      "why": "hyperparameters are listed exhaustively; seeds are not",
+      "gold": []
     },
     {
-      "id": "adv-human-eval",
-      "question": "What did human evaluators rate the translation quality?",
-      "pages": [],
+      "id": "adv-review",
+      "question": "What did the peer reviewers say about this work?",
       "unanswerable": true,
-      "adversarial_kind": "near-miss",
-      "why": "BLEU is reported throughout; no human evaluation was run"
+      "adversarial_kind": "metadata",
+      "why": "review commentary is not part of any document",
+      "gold": []
+    },
+    {
+      "id": "adv-salary",
+      "question": "What were the authors paid for this research?",
+      "unanswerable": true,
+      "adversarial_kind": "metadata",
+      "why": "no compensation information exists in any paper",
+      "gold": []
+    },
+    {
+      "id": "adv-retract",
+      "question": "Has this paper been retracted?",
+      "unanswerable": true,
+      "adversarial_kind": "metadata",
+      "why": "publication status is not recorded in the documents",
+      "gold": []
     }
   ]
 }

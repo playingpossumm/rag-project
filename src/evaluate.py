@@ -48,23 +48,45 @@ def load_cases(path: Path = GOLDEN_SET) -> tuple[list[dict], list[dict]]:
 
 
 def gold_keys(case: dict) -> set:
-    """Relevant locations as (source, page) pairs.
+    """Relevant locations as (source, kind, value) triples.
 
-    Page number alone stopped identifying a location once the corpus held more
-    than one document -- page 5 exists in every paper. Matching on page alone
-    would score a hit on the wrong document as correct, which is the single most
-    common real-world RAG failure. `source` defaults to the case's own document
-    for corpora that never had the ambiguity.
+    Keyed on source as well as locator because page number alone stopped
+    identifying a location once the corpus held more than one document -- every
+    paper has a page 5. Matching on page alone would score a hit on the wrong
+    document as correct, which is the most common real-world RAG failure.
     """
-    source = case.get("source")
-    # Gold labels stay human-readable as page numbers; they are converted to
-    # locator form here so the harness compares like with like.
-    return {(source, "page", str(p)) for p in case["pages"]}
+    return {
+        (entry["source"], "page", str(p))
+        for entry in case.get("gold", [])
+        for p in entry["pages"]
+    }
+
+
+def gold_sources(case: dict) -> set:
+    return {entry["source"] for entry in case.get("gold", [])}
 
 
 def is_relevant(result: dict, gold: set) -> bool:
     loc = result["locator"]
     return (result["source"], loc["kind"], str(loc["value"])) in gold
+
+
+def source_recall(results, sources: set, k: int) -> float:
+    """Fraction of the documents that answer the question which were returned.
+
+    This is the metric that matches "compile every relevant source" rather than
+    "find one". hit@k cannot express it: a run that returns one of four
+    answering papers scores a perfect 1.000 on hit@k while missing three
+    quarters of the answer.
+
+    Normalised by min(|gold|, k) because k results cannot represent more than k
+    documents -- scoring against the raw count would penalise a run for a
+    ceiling imposed by the caller's own k rather than by retrieval quality.
+    """
+    if not sources:
+        return float("nan")
+    found = {r["source"] for r in results} & sources
+    return len(found) / min(len(sources), k)
 
 
 def hit_rate(results, gold) -> float:
@@ -119,8 +141,8 @@ def context_tokens(results, tokenizer) -> int:
     return sum(len(tokenizer.encode(r["text"], add_special_tokens=False)) for r in results)
 
 
-def score_run(cases, retrieve_fn) -> tuple[dict, list[dict]]:
-    totals = {"hit_rate": 0.0, "mrr": 0.0, "ndcg": 0.0}
+def score_run(cases, retrieve_fn, k: int = 5) -> tuple[dict, list[dict]]:
+    totals = {"hit_rate": 0.0, "mrr": 0.0, "ndcg": 0.0, "src_recall": 0.0}
     per_case = []
     for case in cases:
         results = retrieve_fn(case["question"])
@@ -129,17 +151,18 @@ def score_run(cases, retrieve_fn) -> tuple[dict, list[dict]]:
             "hit_rate": hit_rate(results, gold),
             "mrr": reciprocal_rank(results, gold),
             "ndcg": ndcg(results, gold),
+            "src_recall": source_recall(results, gold_sources(case), k),
         }
         for key in totals:
             totals[key] += m[key]
         per_case.append({
-            "id": case["id"], "difficulty": case.get("difficulty", "-"),
-            "gold": sorted(f"{s[:12]}:{v}" for s, _kind, v in gold),
-            "got": [f"{r['source'][:12]}:{r['locator']['value']}" for r in results],
+            "id": case["id"], "kind": case.get("kind", "-"),
+            "gold_sources": sorted(gold_sources(case)),
+            "got": [f"{r['source'][:14]}:{r['locator']['value']}" for r in results],
             **m,
         })
     n = len(cases) or 1
-    return {k: v / n for k, v in totals.items()}, per_case
+    return {name: total / n for name, total in totals.items()}, per_case
 
 
 def main():
@@ -169,13 +192,13 @@ def main():
     ]
 
     print(f"CANDIDATE POOL @ {args.candidate_k}   (can the reranker even see the answer?)")
-    print(f"{'first stage':<18}{'recall':>9}{'MRR':>9}")
-    pool_rows = {}
+    print(f"{'first stage':<18}{'any-hit':>9}{'MRR':>9}{'src recall':>12}")
     for label, cfg in pools:
         summary, _ = score_run(answerable, lambda q, c=cfg: shortlist(
-            q, index, metadata, model, k=args.candidate_k, bm25=bm25, **c))
-        pool_rows[label] = summary
-        print(f"{label:<18}{summary['hit_rate']:>9.3f}{summary['mrr']:>9.3f}")
+            q, index, metadata, model, k=args.candidate_k, bm25=bm25, **c),
+            k=args.candidate_k)
+        print(f"{label:<18}{summary['hit_rate']:>9.3f}{summary['mrr']:>9.3f}"
+              f"{summary['src_recall']:>12.3f}")
 
     # ---- Layer 2: end-to-end, with reranking ------------------------------
     finals = [
