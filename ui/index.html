@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retrieval Inspector</title>
+<style>
+/* ------------------------------------------------------------------ tokens
+   Two hues carry meaning and are never decorative: teal is the dense
+   (semantic) retriever, amber is the sparse (lexical) one. Everything the
+   page says about agreement, disagreement and promotion is said in those
+   two colours, so they are defined once and used everywhere. */
+:root{
+  --ground:#F6F7F9; --panel:#FFFFFF; --sunk:#EDEFF3;
+  --ink:#151A21; --muted:#5D6875; --faint:#8A94A1;
+  --line:#DFE3E9; --line-soft:#EAEDF1;
+  --dense:#0B7A85; --sparse:#B0611A;
+  --up:#1F7A4D; --down:#AA3A3F;
+  --shadow:0 1px 2px rgba(20,26,34,.05),0 8px 24px -12px rgba(20,26,34,.18);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1216; --panel:#151A20; --sunk:#1B2128;
+    --ink:#E7EBEF; --muted:#95A0AD; --faint:#6C7885;
+    --line:#242C35; --line-soft:#1E252D;
+    --dense:#3FC2C9; --sparse:#E39A46;
+    --up:#4FB77C; --down:#E0696D;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1216; --panel:#151A20; --sunk:#1B2128;
+  --ink:#E7EBEF; --muted:#95A0AD; --faint:#6C7885;
+  --line:#242C35; --line-soft:#1E252D;
+  --dense:#3FC2C9; --sparse:#E39A46;
+  --up:#4FB77C; --down:#E0696D;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
+  font-size:15px; line-height:1.55;
+}
+.mono{font-family:"Cascadia Mono","JetBrains Mono","SF Mono",ui-monospace,Consolas,monospace;
+      font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0; text-wrap:balance; font-weight:620; letter-spacing:-.011em}
+
+/* ------------------------------------------------------------------ shell */
+.wrap{max-width:1180px; margin:0 auto; padding:0 28px 96px}
+header{border-bottom:1px solid var(--line); background:var(--panel); margin-bottom:34px}
+.head-in{max-width:1180px; margin:0 auto; padding:22px 28px 24px;
+  display:flex; align-items:flex-start; gap:24px; flex-wrap:wrap}
+.brand{flex:1 1 320px; min-width:0}
+.brand h1{font-size:20px; display:flex; align-items:center; gap:10px}
+.brand p{margin:5px 0 0; color:var(--muted); font-size:13.5px; max-width:62ch}
+.spark{width:26px;height:14px;flex:none;color:var(--dense)}
+
+.themer{border:1px solid var(--line); background:var(--panel); color:var(--muted);
+  border-radius:7px; padding:7px 12px; font:inherit; font-size:12.5px; cursor:pointer}
+.themer:hover{color:var(--ink); border-color:var(--faint)}
+
+/* ------------------------------------------------------------------ query */
+.query{display:flex; gap:10px; width:100%; margin-top:4px}
+.query input{
+  flex:1; padding:13px 15px; border:1px solid var(--line); border-radius:9px;
+  background:var(--ground); color:var(--ink); font:inherit; min-width:0}
+.query input:focus{outline:2px solid var(--dense); outline-offset:-1px; border-color:transparent}
+.query button{
+  padding:13px 22px; border:0; border-radius:9px; background:var(--ink);
+  color:var(--ground); font:inherit; font-weight:600; cursor:pointer; white-space:nowrap}
+.query button:hover{opacity:.87}
+.query button:disabled{opacity:.45; cursor:default}
+
+.examples{display:flex; gap:7px; flex-wrap:wrap; margin-top:11px; width:100%}
+.examples span{color:var(--faint); font-size:12px; padding:4px 0}
+.chip{border:1px solid var(--line); background:transparent; color:var(--muted);
+  border-radius:20px; padding:4px 11px; font:inherit; font-size:12px; cursor:pointer}
+.chip:hover{border-color:var(--dense); color:var(--dense)}
+
+/* ------------------------------------------------------------------ verdict */
+.verdict{display:flex; gap:18px; align-items:stretch; flex-wrap:wrap;
+  background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--dense);
+  border-radius:11px; padding:18px 20px; margin-bottom:26px; box-shadow:var(--shadow)}
+.verdict.abstain{border-left-color:var(--down)}
+.v-main{flex:1 1 380px; min-width:0}
+.v-tag{font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+  font-weight:700; color:var(--dense)}
+.verdict.abstain .v-tag{color:var(--down)}
+.v-main p{margin:5px 0 0; color:var(--muted); font-size:13.5px}
+.v-docs{margin-top:10px; display:flex; gap:6px; flex-wrap:wrap}
+.doc-pill{font-size:11.5px; padding:3px 9px; border-radius:5px;
+  background:var(--sunk); border:1px solid var(--line-soft)}
+.doc-pill i{display:inline-block;width:7px;height:7px;border-radius:2px;
+  margin-right:6px;vertical-align:1px}
+
+/* confidence gauge: the threshold is a real position, not a label */
+.gauge{flex:0 0 232px}
+.gauge-l{font-size:11px; color:var(--faint); text-transform:uppercase;
+  letter-spacing:.08em; font-weight:600; margin-bottom:7px}
+
+/* ------------------------------------------------------------------ figure */
+figure{margin:0 0 26px; background:var(--panel); border:1px solid var(--line);
+  border-radius:11px; padding:20px 22px 16px; box-shadow:var(--shadow)}
+figure h2{font-size:15.5px}
+.fig-sub{color:var(--muted); font-size:13px; margin:5px 0 14px; max-width:74ch}
+.scroll{overflow-x:auto}
+figcaption{color:var(--faint); font-size:12px; margin-top:12px;
+  padding-top:12px; border-top:1px solid var(--line-soft); max-width:80ch}
+
+.legend{display:flex; gap:16px; flex-wrap:wrap; margin:0 0 14px; font-size:12px; color:var(--muted)}
+.legend b{font-weight:500; color:var(--ink)}
+.key{display:inline-flex; align-items:center; gap:6px}
+.key i{width:14px; height:0; border-top-width:2px; border-top-style:solid; display:inline-block}
+
+/* ------------------------------------------------------------------ stages */
+.stage{background:var(--panel); border:1px solid var(--line); border-radius:11px;
+  margin-bottom:12px; overflow:hidden; box-shadow:var(--shadow)}
+.stage summary{list-style:none; cursor:pointer; padding:15px 20px;
+  display:flex; align-items:center; gap:14px}
+.stage summary::-webkit-details-marker{display:none}
+.stage summary:hover{background:var(--sunk)}
+.n{flex:none; width:23px; height:23px; border-radius:6px; background:var(--sunk);
+  color:var(--muted); font-size:11.5px; font-weight:700;
+  display:grid; place-items:center; border:1px solid var(--line-soft)}
+.stage[open] .n{background:var(--dense); color:var(--panel); border-color:transparent}
+.s-t{flex:1; min-width:0}
+.s-t h3{font-size:14.5px}
+.s-t p{margin:2px 0 0; color:var(--faint); font-size:12.5px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.caret{flex:none; color:var(--faint); transition:transform .18s}
+.stage[open] .caret{transform:rotate(90deg)}
+.s-body{padding:0 20px 18px; border-top:1px solid var(--line-soft)}
+.s-why{color:var(--muted); font-size:13.2px; margin:14px 0 15px; max-width:78ch}
+
+table{width:100%; border-collapse:collapse; font-size:13px}
+th{text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.075em;
+  color:var(--faint); font-weight:700; padding:0 10px 7px 0; border-bottom:1px solid var(--line)}
+th.r,td.r{text-align:right; padding-right:0}
+td{padding:8px 10px 8px 0; border-bottom:1px solid var(--line-soft); vertical-align:top}
+tr:last-child td{border-bottom:0}
+.src{white-space:nowrap; font-size:12.5px}
+.loc{color:var(--faint); font-size:11.5px; white-space:nowrap}
+.snip{color:var(--muted); font-size:12.3px; line-height:1.45;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.delta{font-size:12px; font-weight:650}
+.delta.u{color:var(--up)} .delta.d{color:var(--down)} .delta.z{color:var(--faint); font-weight:400}
+.both{color:var(--dense); font-weight:600}
+.dot{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:7px;vertical-align:1px}
+
+.empty{color:var(--faint); font-size:13px; padding:14px 0; font-style:italic}
+.status{color:var(--muted); font-size:13.5px; padding:40px 0; text-align:center}
+.err{color:var(--down)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+@media (max-width:720px){
+  .wrap,.head-in{padding-left:18px; padding-right:18px}
+  .gauge{flex:1 1 100%}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="brand">
+      <h1>
+        <svg class="spark" viewBox="0 0 26 14" fill="none" aria-hidden="true">
+          <polyline points="0,11 5,11 8,3 12,13 15,7 18,7" stroke="currentColor"
+                    stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="21.5" cy="7" r="2.6" fill="currentColor"/>
+        </svg>
+        Retrieval Inspector
+      </h1>
+      <p>Every stage of the pipeline, and what each one changed. Ask something the
+         corpus covers &mdash; or something it doesn&rsquo;t, and watch it decline to answer.</p>
+    </div>
+    <button class="themer" id="themer" type="button">Theme</button>
+
+    <form class="query" id="form">
+      <input id="q" placeholder="Ask a question about the corpus&hellip;" autocomplete="off"
+             aria-label="Question">
+      <button id="go" type="submit">Trace</button>
+    </form>
+    <div class="examples" id="examples"><span>Try:</span></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="out"><div class="status" id="status">Loading corpus&hellip;</div></div>
+</div>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const out = $("#out");
+
+/* --------------------------------------------------------------- theme */
+const themer = $("#themer");
+themer.onclick = () => {
+  const now = document.documentElement.getAttribute("data-theme")
+    || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", now === "dark" ? "light" : "dark");
+  if (window.__last) render(window.__last);   // repaint SVG in the new palette
+};
+
+/* Documents get stable colours so a passage is recognisable across every
+   stage of the chart. Hues are spaced around the wheel and kept mid-chroma
+   so they stay legible on both grounds. */
+const HUES = [188, 32, 258, 148, 12, 212, 88, 320, 168, 52, 278, 108];
+const docColor = (() => {
+  const seen = new Map();
+  return name => {
+    if (!seen.has(name)) {
+      const h = HUES[seen.size % HUES.length];
+      const dark = (document.documentElement.getAttribute("data-theme")
+        || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light")) === "dark";
+      seen.set(name, `hsl(${h} ${dark ? "62% 60%" : "68% 36%"})`);
+    }
+    return seen.get(name);
+  };
+})();
+const esc = s => String(s).replace(/[&<>"]/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const short = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
+
+/* --------------------------------------------------------------- corpus */
+fetch("/api/corpus").then(r => r.json()).then(c => {
+  $("#status").textContent = `${c.chunks.toLocaleString()} chunks from ${c.documents} documents. Ask a question to begin.`;
+  const box = $("#examples");
+  (c.examples || []).forEach(x => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.type = "button"; b.textContent = x.label; b.title = x.q;
+    b.onclick = () => { $("#q").value = x.q; $("#form").requestSubmit(); };
+    box.appendChild(b);
+  });
+}).catch(() => $("#status").textContent = "Could not reach the server.");
+
+/* --------------------------------------------------------------- submit */
+$("#form").onsubmit = async e => {
+  e.preventDefault();
+  const q = $("#q").value.trim();
+  if (!q) return;
+  $("#go").disabled = true;
+  out.innerHTML = `<div class="status">Running the pipeline&hellip;</div>`;
+  try {
+    const r = await fetch("/api/trace", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || r.statusText);
+    window.__last = data;
+    render(data);
+  } catch (err) {
+    out.innerHTML = `<div class="status err">${esc(err.message)}</div>`;
+  } finally {
+    $("#go").disabled = false;
+  }
+};
+
+/* --------------------------------------------------------------- render */
+function render(data) {
+  out.innerHTML = "";
+  out.appendChild(verdictEl(data.verdict));
+  out.appendChild(flowFigure(data.stages));
+  data.stages.forEach((s, i) => out.appendChild(stageEl(s, i + 1)));
+}
+
+function verdictEl(v) {
+  const el = document.createElement("section");
+  el.className = "verdict" + (v.confident ? "" : " abstain");
+  el.innerHTML = `
+    <div class="v-main">
+      <div class="v-tag">${v.confident ? "Answering" : "Declined — below threshold"}</div>
+      <p>${esc(v.explanation)}</p>
+      <div class="v-docs">${(v.documents || []).map(d =>
+        `<span class="doc-pill"><i style="background:${docColor(d)}"></i>${esc(short(d))}</span>`).join("")}</div>
+    </div>
+    <div class="gauge">
+      <div class="gauge-l">Confidence</div>
+      ${gauge(v.confidence, v.threshold)}
+    </div>`;
+  return el;
+}
+
+/* Gauge, not a number: the point is where the score sits RELATIVE to the
+   threshold, which a bare figure never conveys. */
+function gauge(score, threshold) {
+  const LO = -12, HI = 12, W = 232, H = 46;
+  const x = v => ((Math.max(LO, Math.min(HI, v)) - LO) / (HI - LO)) * (W - 2) + 1;
+  const ok = score >= threshold;
+  const col = ok ? "var(--up)" : "var(--down)";
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img"
+       aria-label="Score ${score} against threshold ${threshold}">
+    <rect x="1" y="8" width="${W - 2}" height="7" rx="3.5" fill="var(--sunk)"/>
+    <rect x="${x(threshold)}" y="8" width="${Math.max(0, x(score) - x(threshold))}"
+          height="7" rx="3.5" fill="${col}" opacity=".85"/>
+    <line x1="${x(threshold)}" y1="3" x2="${x(threshold)}" y2="20"
+          stroke="var(--ink)" stroke-width="1.5"/>
+    <text x="${x(threshold)}" y="31" font-size="9.5" fill="var(--faint)"
+          text-anchor="middle" font-family="system-ui">threshold ${threshold.toFixed(1)}</text>
+    <circle cx="${x(score)}" cy="11.5" r="5" fill="${col}" stroke="var(--panel)" stroke-width="2"/>
+    <text x="${x(score)}" y="45" font-size="12" fill="${col}" text-anchor="middle"
+          font-weight="700" font-family="ui-monospace,monospace">${score > 0 ? "+" : ""}${score.toFixed(2)}</text>
+  </svg>`;
+}
+
+/* ---------------------------------------------------- the bump chart
+   Columns are stages, vertical position is rank, and each line is one
+   passage travelling through the pipeline. A line that climbs steeply
+   between two columns is exactly the case that stage exists to catch. */
+function flowFigure(stages) {
+  const fig = document.createElement("figure");
+  const DEPTH = 12;
+  const cols = stages.map(s => ({
+    name: s.title.replace(/ \(.*\)/, ""),
+    rank: new Map(s.items.slice(0, DEPTH).map(i => [i.chunk_id, i.rank])),
+    all: new Map(s.items.map(i => [i.chunk_id, i]))
+  }));
+
+  // Draw only passages that reach the final selection, plus anything that
+  // ever cracked the top few -- drawing all twenty is noise, not information.
+  const finalIds = [...cols[cols.length - 1].rank.keys()];
+  const notable = new Set(finalIds);
+  cols.forEach(c => c.rank.forEach((r, id) => { if (r <= 3) notable.add(id); }));
+
+  const W = 940, PAD_L = 8, PAD_R = 8, TOP = 44, ROW = 25, H = TOP + ROW * DEPTH + 34;
+  const cw = (W - PAD_L - PAD_R) / cols.length;
+  const cx = i => PAD_L + cw * i + cw / 2;
+  const cy = r => TOP + (r - 0.5) * ROW;
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:760px;height:auto"
+      role="img" aria-label="Rank of each passage across the five pipeline stages">`;
+
+  // grid + headers
+  cols.forEach((c, i) => {
+    svg += `<text x="${cx(i)}" y="18" text-anchor="middle" font-size="11.5"
+      font-weight="700" fill="var(--ink)" font-family="system-ui">${esc(c.name)}</text>`;
+    svg += `<text x="${cx(i)}" y="32" text-anchor="middle" font-size="10"
+      fill="var(--faint)" font-family="system-ui">${c.all.size} items</text>`;
+  });
+  for (let r = 1; r <= DEPTH; r++) {
+    svg += `<line x1="${PAD_L}" y1="${cy(r)}" x2="${W - PAD_R}" y2="${cy(r)}"
+      stroke="var(--line-soft)" stroke-width="1"/>`;
+    svg += `<text x="${PAD_L + 2}" y="${cy(r) + 3.5}" font-size="9" fill="var(--faint)"
+      font-family="ui-monospace,monospace">${r}</text>`;
+  }
+
+  // one polyline per passage, broken where it drops out of the top DEPTH
+  notable.forEach(id => {
+    const pts = [];
+    cols.forEach((c, i) => { const r = c.rank.get(id); if (r) pts.push([cx(i), cy(r), i]); });
+    if (!pts.length) return;
+    const meta = cols.find(c => c.all.has(id)).all.get(id);
+    const col = docColor(meta.source);
+    const isFinal = cols[cols.length - 1].rank.has(id);
+
+    for (let j = 0; j < pts.length - 1; j++) {
+      const [x1, y1, i1] = pts[j], [x2, y2, i2] = pts[j + 1];
+      const gap = i2 - i1 > 1;   // was absent from an intermediate stage
+      svg += `<path d="M${x1} ${y1} C ${x1 + cw * .42} ${y1}, ${x2 - cw * .42} ${y2}, ${x2} ${y2}"
+        fill="none" stroke="${col}" stroke-width="${isFinal ? 2.1 : 1.2}"
+        opacity="${isFinal ? .95 : .38}" ${gap ? 'stroke-dasharray="3 3"' : ""}/>`;
+    }
+    pts.forEach(([x, y]) => {
+      svg += `<circle cx="${x}" cy="${y}" r="${isFinal ? 3.6 : 2.4}" fill="${col}"
+        opacity="${isFinal ? 1 : .5}"><title>${esc(short(meta.source))} — ${esc(meta.locator)}</title></circle>`;
+    });
+  });
+  svg += "</svg>";
+
+  const docs = [...new Set(finalIds.map(id => cols[cols.length - 1].all.get(id).source))];
+  fig.innerHTML = `
+    <h2>Where each passage travelled</h2>
+    <p class="fig-sub">Vertical position is rank. Each line is one passage moving through the
+      pipeline &mdash; solid lines are the ones that survived into the final answer, faded lines
+      were overtaken along the way. A dashed segment means the passage was outside the top
+      ${DEPTH} at that stage.</p>
+    <div class="legend">
+      ${docs.map(d => `<span class="key"><i style="border-top-color:${docColor(d)}"></i><b>${esc(short(d))}</b></span>`).join("")}
+    </div>
+    <div class="scroll">${svg}</div>
+    <figcaption>Steep climbs are the pipeline earning its keep: a passage that enters at rank
+      10 and leaves at rank 1 was found by the cheap stage and correctly promoted by the
+      expensive one.</figcaption>`;
+  return fig;
+}
+
+function stageEl(s, n) {
+  const el = document.createElement("details");
+  el.className = "stage";
+  if (n === 1) el.open = true;
+  const rows = s.items.slice(0, 10).map(i => {
+    const d = i.delta;
+    const cls = d > 0 ? "u" : d < 0 ? "d" : "z";
+    const move = d === undefined ? "" :
+      `<td class="r delta ${cls}">${d > 0 ? "↑" + d : d < 0 ? "↓" + (-d) : "–"}</td>`;
+    const cross = i.also_found_by !== undefined
+      ? `<td class="r mono">${i.also_found_by ? `<span class="both">#${i.also_found_by}</span>` : "–"}</td>` : "";
+    const agree = i.agreement !== undefined
+      ? `<td class="r mono">${i.dense_rank ? "d" + i.dense_rank : "–"} / ${i.sparse_rank ? "s" + i.sparse_rank : "–"}</td>` : "";
+    return `<tr>
+      <td class="r mono" style="color:var(--faint)">${i.rank}</td>
+      <td><div class="src"><span class="dot" style="background:${docColor(i.source)}"></span>${esc(short(i.source))}</div>
+          <div class="loc">${esc(i.locator)}</div></td>
+      <td><div class="snip">${esc(i.text)}</div></td>
+      ${cross}${agree}${move}
+      <td class="r mono">${typeof i.score === "number" ? (i.score > 0 && s.name === "reranked" ? "+" : "") + i.score : ""}</td>
+    </tr>`;
+  }).join("");
+
+  const hasX = s.items[0] && s.items[0].also_found_by !== undefined;
+  const hasA = s.items[0] && s.items[0].agreement !== undefined;
+  const hasD = s.items[0] && s.items[0].delta !== undefined;
+
+  el.innerHTML = `
+    <summary>
+      <span class="n">${n}</span>
+      <span class="s-t"><h3>${esc(s.title)}</h3><p>${esc(s.note)}</p></span>
+      <svg class="caret" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+        <polyline points="5,3 9,7 5,11" fill="none" stroke="currentColor" stroke-width="1.6"
+          stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </summary>
+    <div class="s-body">
+      <p class="s-why">${esc(s.detail)}</p>
+      ${s.items.length ? `<div class="scroll"><table>
+        <thead><tr>
+          <th class="r">#</th><th>Document</th><th>Passage</th>
+          ${hasX ? '<th class="r">Other</th>' : ""}
+          ${hasA ? '<th class="r">d / s</th>' : ""}
+          ${hasD ? '<th class="r">Move</th>' : ""}
+          <th class="r">Score</th>
+        </tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<div class="empty">No results — no query term appears anywhere in the corpus.</div>`}
+    </div>`;
+  return el;
+}
+</script>
+</body>
+</html>

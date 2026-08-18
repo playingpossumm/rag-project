@@ -1,4 +1,14 @@
-"""Local HTTP wrapper around `api.ask`, so other tools can call the pipeline.
+"""Local HTTP server: the JSON API, plus a UI for inspecting retrieval.
+
+Two audiences, one process. `POST /ask` is the machine-facing endpoint another
+tool embeds. `GET /` is the Retrieval Inspector -- the same pipeline, but showing
+every intermediate ranking instead of only the five passages that survived.
+
+The inspector exists because "why did it return that?" is the question that
+actually matters, and no amount of prose about reciprocal rank fusion explains it
+as well as watching a passage climb from rank 14 to rank 1. It is also the honest
+answer to what this offers over a closed product: not better answers, but visible
+reasoning and a number you can regress against.
 
 Uses the standard library rather than FastAPI deliberately. This is a thin
 adapter -- parse JSON, call one function, serialise the result -- and adding a
@@ -12,20 +22,71 @@ documents, and a service that answers questions about them should not be
 reachable from the network by accident; exposing it has to be a deliberate act,
 not the default.
 
-    python src/serve.py
+    python src/serve.py                     # then open http://127.0.0.1:8000
     curl -s localhost:8000/ask -d '{"question": "What is late interaction?"}'
 """
 import json
 import sys
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 from api import ask
 
 HOST, PORT = "127.0.0.1", 8000
 MAX_BODY = 64 * 1024  # a question is small; refuse anything that clearly is not
+UI_FILE = Path(__file__).parent.parent / "ui" / "index.html"
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
+class Resources:
+    """Index, embedder and BM25, loaded once and shared across requests.
+
+    Loading these per request would cost ~20s each time. The lock serialises
+    tracing rather than the whole server: SentenceTransformer and the reranker
+    are not documented as thread-safe, and a ThreadingHTTPServer will happily
+    call them concurrently the moment two browser tabs are open.
+    """
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self._loaded = False
+
+    def load(self):
+        if self._loaded:
+            return
+        from sentence_transformers import SentenceTransformer
+
+        from hybrid import build_bm25
+        from retrieve import EMBEDDING_MODEL, load_index
+
+        self.index, self.metadata = load_index()
+        self.model = SentenceTransformer(EMBEDDING_MODEL)
+        self.bm25 = build_bm25(self.metadata)
+        self._loaded = True
+
+    def corpus(self) -> dict:
+        docs = sorted({c["source"] for c in self.metadata})
+        return {"chunks": len(self.metadata), "documents": len(docs), "sources": docs}
+
+
+RES = Resources()
+
+# Chosen to demonstrate the three behaviours worth seeing: a fact only lexical
+# matching finds reliably, a question whose distinguishing clause the ranking
+# must honour, and one the corpus cannot answer at all.
+EXAMPLES = [
+    {"label": "a specific figure",
+     "q": "What BLEU score did the Transformer achieve on WMT 2014 English-to-German?"},
+    {"label": "a constraint that must be honoured",
+     "q": "How are normalization statistics computed across features rather than examples?"},
+    {"label": "spread across documents",
+     "q": "What learning rate schedule and optimizer settings were used for training?"},
+    {"label": "not in the corpus",
+     "q": "What is the airspeed velocity of an unladen swallow?"},
+]
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -33,16 +94,42 @@ class Handler(BaseHTTPRequestHandler):
 
     def _send(self, status: int, payload: dict):
         body = json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
+        self._raw(status, body, "application/json; charset=utf-8")
+
+    def _raw(self, status: int, body: bytes, content_type: str):
         self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
+    def _body(self) -> dict | None:
+        length = int(self.headers.get("Content-Length") or 0)
+        if length > MAX_BODY:
+            self._send(413, {"error": "request body too large"})
+            return None
+        try:
+            return json.loads(self.rfile.read(length) or b"{}")
+        except json.JSONDecodeError as exc:
+            self._send(400, {"error": f"invalid JSON: {exc}"})
+            return None
+
     def do_GET(self):
-        if self.path.rstrip("/") in ("", "/health"):
+        route = self.path.split("?")[0].rstrip("/")
+
+        if route == "":
+            if not UI_FILE.exists():
+                self._send(404, {"error": "ui/index.html is missing"})
+                return
+            self._raw(200, UI_FILE.read_bytes(), "text/html; charset=utf-8")
+
+        elif route == "/api/corpus":
+            self._send(200, {**RES.corpus(), "examples": EXAMPLES})
+
+        elif route == "/health":
             self._send(200, {
                 "status": "ok",
+                "ui": "GET /",
                 "usage": "POST /ask with {\"question\": \"...\"}",
                 "options": {
                     "k": "number of passages (default 5)",
@@ -55,19 +142,13 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, {"error": f"no route {self.path}"})
 
     def do_POST(self):
-        if self.path.rstrip("/") != "/ask":
+        route = self.path.rstrip("/")
+        if route not in ("/ask", "/api/trace"):
             self._send(404, {"error": f"no route {self.path}"})
             return
 
-        length = int(self.headers.get("Content-Length") or 0)
-        if length > MAX_BODY:
-            self._send(413, {"error": "request body too large"})
-            return
-
-        try:
-            payload = json.loads(self.rfile.read(length) or b"{}")
-        except json.JSONDecodeError as exc:
-            self._send(400, {"error": f"invalid JSON: {exc}"})
+        payload = self._body()
+        if payload is None:
             return
 
         question = (payload.get("question") or "").strip()
@@ -76,18 +157,25 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         try:
-            answer = ask(
-                question,
-                k=int(payload.get("k", 5)),
-                expansion=payload.get("expansion", "page"),
-                min_confidence=float(payload.get("min_confidence", -2.0)),
-                generate=bool(payload.get("generate", False)),
-            )
+            if route == "/api/trace":
+                from pipeline_trace import trace_pipeline  # not 'trace': shadows a stdlib module
+
+                with RES.lock:
+                    result = trace_pipeline(question, RES.index, RES.metadata,
+                                            RES.model, bm25=RES.bm25,
+                                            k=int(payload.get("k", 5)))
+                self._send(200, result)
+            else:
+                answer = ask(
+                    question,
+                    k=int(payload.get("k", 5)),
+                    expansion=payload.get("expansion", "page"),
+                    min_confidence=float(payload.get("min_confidence", -2.0)),
+                    generate=bool(payload.get("generate", False)),
+                )
+                self._send(200, answer.to_dict())
         except Exception as exc:  # noqa: BLE001 - report rather than drop the connection
             self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
-            return
-
-        self._send(200, answer.to_dict())
 
     def log_message(self, fmt, *args):
         # Default logging writes to stderr with a noisy prefix; keep it terse.
@@ -101,8 +189,13 @@ def main():
     # Warm the index, embedder and BM25 before accepting traffic, so the first
     # real request is not the one that pays ~30s of model loading.
     print("Loading index and models...")
+    RES.load()
     ask("warmup", k=1)
-    print(f"Ready on http://{host}:{port}  (POST /ask)")
+    stats = RES.corpus()
+    print(f"Ready on http://{host}:{port}")
+    print(f"  inspector  http://{host}:{port}/")
+    print(f"  api        POST /ask, POST /api/trace")
+    print(f"  corpus     {stats['chunks']} chunks from {stats['documents']} documents")
     if host not in ("127.0.0.1", "localhost"):
         print("  WARNING: bound to a non-loopback address -- this exposes your "
               "document contents to the network.")
