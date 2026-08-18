@@ -549,6 +549,1287 @@
       "multi_source": true
     },
     {
+      "id": "adam-bias",
+      "question": "How does the optimizer correct for bias in its moment estimates?",
+      "kind": "fact",
+      "answer_contains": "bias-correction",
+      "gold": [
+        {
+          "source": "adam_optimizer.pdf",
+          "pages": [
+            5,
+            8,
+            9
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "adam-adamax",
+      "question": "What variant based on the infinity norm is proposed?",
+      "kind": "fact",
+      "answer_contains": "AdaMax",
+      "gold": [
+        {
+          "source": "adam_optimizer.pdf",
+          "pages": [
+            1,
+            8,
+            9,
+            10
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "bahdanau-fixed",
+      "question": "What bottleneck does encoding a sentence into a fixed-length vector create?",
+      "kind": "fact",
+      "answer_contains": "fixed-length vector",
+      "gold": [
+        {
+          "source": "bahdanau_attention.pdf",
+          "pages": [
+            1,
+            2,
+            7,
+            9
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "bahdanau-align",
+      "question": "How does the model learn to align and translate jointly?",
+      "kind": "fact",
+      "answer_contains": "align and translate",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            10
+          ]
+        },
+        {
+          "source": "bahdanau_attention.pdf",
+          "pages": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "source": "seq2seq.pdf",
+          "pages": [
+            9
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            58
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "bn-covariate",
+      "question": "What problem does normalizing layer inputs address?",
+      "kind": "fact",
+      "answer_contains": "internal covariate shift",
+      "gold": [
+        {
+          "source": "batch_normalization.pdf",
+          "pages": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "source": "layer_normalization.pdf",
+          "pages": [
+            11
+          ]
+        },
+        {
+          "source": "resnet.pdf",
+          "pages": [
+            9
+          ]
+        },
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            11
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "bn-minibatch",
+      "question": "How are normalization statistics computed during training?",
+      "kind": "multi",
+      "answer_contains": "mini-batch",
+      "gold": [
+        {
+          "source": "batch_normalization.pdf",
+          "pages": [
+            1,
+            3,
+            4,
+            5,
+            6,
+            8
+          ]
+        },
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            5
+          ]
+        },
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            3,
+            4,
+            12
+          ]
+        },
+        {
+          "source": "layer_normalization.pdf",
+          "pages": [
+            1,
+            2,
+            9,
+            10
+          ]
+        },
+        {
+          "source": "resnet.pdf",
+          "pages": [
+            4,
+            10,
+            12
+          ]
+        },
+        {
+          "source": "roberta.pdf",
+          "pages": [
+            5,
+            6
+          ]
+        },
+        {
+          "source": "sentence_bert.pdf",
+          "pages": [
+            8
+          ]
+        },
+        {
+          "source": "word2vec.pdf",
+          "pages": [
+            4,
+            8
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "bert-nsp",
+      "question": "What sentence-level pre-training task is used alongside masked prediction?",
+      "kind": "cross-doc",
+      "answer_contains": "next sentence prediction",
+      "gold": [
+        {
+          "source": "bert.pdf",
+          "pages": [
+            2,
+            4,
+            8,
+            13
+          ]
+        },
+        {
+          "source": "roberta.pdf",
+          "pages": [
+            1,
+            2,
+            4,
+            10
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "bert-wordpiece",
+      "question": "What subword tokenization scheme is used?",
+      "kind": "multi",
+      "answer_contains": "WordPiece",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            9
+          ]
+        },
+        {
+          "source": "bert.pdf",
+          "pages": [
+            4,
+            9,
+            13
+          ]
+        },
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            4,
+            5
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            12,
+            13
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "bert-glue",
+      "question": "What benchmark suite is used to evaluate language understanding?",
+      "kind": "multi",
+      "answer_contains": "GLUE benchmark",
+      "gold": [
+        {
+          "source": "bert.pdf",
+          "pages": [
+            2,
+            14
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            10,
+            17,
+            18
+          ]
+        },
+        {
+          "source": "lora.pdf",
+          "pages": [
+            6,
+            7,
+            17,
+            18,
+            19,
+            20
+          ]
+        },
+        {
+          "source": "rag.pdf",
+          "pages": [
+            9
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            8,
+            15,
+            38,
+            43,
+            44
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "cot-gsm8k",
+      "question": "Which grade-school math benchmark is used to evaluate reasoning?",
+      "kind": "cross-doc",
+      "answer_contains": "GSM8K",
+      "gold": [
+        {
+          "source": "chain_of_thought.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            5,
+            6,
+            18,
+            19,
+            20,
+            21,
+            23,
+            25,
+            27,
+            29,
+            30
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "cot-scale",
+      "question": "At what model scale does chain-of-thought reasoning emerge?",
+      "kind": "cross-doc",
+      "answer_contains": "540B",
+      "gold": [
+        {
+          "source": "chain_of_thought.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            16,
+            17,
+            19,
+            20,
+            21,
+            22,
+            30,
+            34
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "colbert-maxsim",
+      "question": "What operator computes the similarity between query and document embeddings?",
+      "kind": "fact",
+      "answer_contains": "MaxSim",
+      "gold": [
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            2,
+            3,
+            4,
+            5,
+            9
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "colbert-msmarco",
+      "question": "Which passage ranking dataset is used for evaluation?",
+      "kind": "multi",
+      "answer_contains": "MS MARCO",
+      "gold": [
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        },
+        {
+          "source": "rag.pdf",
+          "pages": [
+            10,
+            13
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "dpr-bm25",
+      "question": "How does dense retrieval compare with BM25 on top-20 accuracy?",
+      "kind": "multi",
+      "answer_contains": "BM25",
+      "gold": [
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            12,
+            13
+          ]
+        },
+        {
+          "source": "rag.pdf",
+          "pages": [
+            7,
+            8,
+            14
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "dpr-nq",
+      "question": "Which open-domain question answering dataset is used?",
+      "kind": "multi",
+      "answer_contains": "Natural Questions",
+      "gold": [
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            12
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            4,
+            13,
+            14,
+            56,
+            70
+          ]
+        },
+        {
+          "source": "rag.pdf",
+          "pages": [
+            2,
+            3,
+            4,
+            5,
+            12,
+            18,
+            19
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "faiss-kselect",
+      "question": "How is top-k selection implemented efficiently on GPU?",
+      "kind": "fact",
+      "answer_contains": "k-selection",
+      "gold": [
+        {
+          "source": "faiss_billion_scale.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            12
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "faiss-ivf",
+      "question": "What index structure partitions vectors into cells for search?",
+      "kind": "fact",
+      "answer_contains": "inverted file",
+      "gold": [
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            6
+          ]
+        },
+        {
+          "source": "faiss_billion_scale.pdf",
+          "pages": [
+            2
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "gpt3-params",
+      "question": "How many parameters does the largest autoregressive model have?",
+      "kind": "cross-doc",
+      "answer_contains": "175 billion",
+      "gold": [
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            1,
+            5,
+            8,
+            10,
+            22,
+            24,
+            36,
+            40
+          ]
+        },
+        {
+          "source": "lora.pdf",
+          "pages": [
+            1,
+            3,
+            8
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "gpt3-icl",
+      "question": "What is in-context learning without gradient updates?",
+      "kind": "cross-doc",
+      "answer_contains": "in-context learning",
+      "gold": [
+        {
+          "source": "chain_of_thought.pdf",
+          "pages": [
+            12,
+            14
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            3,
+            4,
+            5,
+            6,
+            10,
+            17,
+            18,
+            20,
+            24,
+            25,
+            33,
+            40,
+            41,
+            42,
+            45
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "gpt3-fewshot",
+      "question": "How does task performance change with the number of examples in the prompt?",
+      "kind": "cross-doc",
+      "answer_contains": "zero-shot, one-shot",
+      "gold": [
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            7,
+            17,
+            40
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "ln-vs-bn",
+      "question": "Why is layer normalization preferred over batch normalization for recurrent networks?",
+      "kind": "multi",
+      "answer_contains": "recurrent neural networks",
+      "gold": [
+        {
+          "source": "adam_optimizer.pdf",
+          "pages": [
+            10
+          ]
+        },
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            2,
+            11
+          ]
+        },
+        {
+          "source": "bahdanau_attention.pdf",
+          "pages": [
+            2,
+            5,
+            10,
+            11,
+            12
+          ]
+        },
+        {
+          "source": "batch_normalization.pdf",
+          "pages": [
+            8,
+            9
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            69
+          ]
+        },
+        {
+          "source": "layer_normalization.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            6,
+            10,
+            11,
+            12
+          ]
+        },
+        {
+          "source": "seq2seq.pdf",
+          "pages": [
+            9
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            4,
+            60,
+            67
+          ]
+        },
+        {
+          "source": "word2vec.pdf",
+          "pages": [
+            9
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "ln-stats",
+      "question": "How are normalization statistics computed across features rather than examples?",
+      "kind": "cross-doc",
+      "answer_contains": "layer normalization",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            3,
+            10
+          ]
+        },
+        {
+          "source": "layer_normalization.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            6,
+            7,
+            8,
+            9,
+            10,
+            13,
+            14
+          ]
+        },
+        {
+          "source": "lora.pdf",
+          "pages": [
+            13
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            4,
+            5,
+            29,
+            58
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "lora-latency",
+      "question": "Does the adaptation method add inference latency?",
+      "kind": "fact",
+      "answer_contains": "no additional inference latency",
+      "gold": [
+        {
+          "source": "lora.pdf",
+          "pages": [
+            4
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "lora-frozen",
+      "question": "Are the pretrained weights updated during adaptation?",
+      "kind": "multi",
+      "answer_contains": "frozen",
+      "gold": [
+        {
+          "source": "batch_normalization.pdf",
+          "pages": [
+            4
+          ]
+        },
+        {
+          "source": "lora.pdf",
+          "pages": [
+            2,
+            4,
+            5,
+            9,
+            18
+          ]
+        },
+        {
+          "source": "rag.pdf",
+          "pages": [
+            8
+          ]
+        },
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            5
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "rag-parametric",
+      "question": "How are parametric and non-parametric memory combined?",
+      "kind": "cross-doc",
+      "answer_contains": "non-parametric",
+      "gold": [
+        {
+          "source": "rag.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            6,
+            7,
+            8,
+            9,
+            19
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "rag-marginalize",
+      "question": "How are retrieved documents marginalized during generation?",
+      "kind": "cross-doc",
+      "answer_contains": "marginaliz",
+      "gold": [
+        {
+          "source": "rag.pdf",
+          "pages": [
+            2,
+            3,
+            6,
+            18
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "resnet-degradation",
+      "question": "What happens to accuracy when plain networks get deeper?",
+      "kind": "fact",
+      "answer_contains": "degradation",
+      "gold": [
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            1,
+            6,
+            12
+          ]
+        },
+        {
+          "source": "resnet.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "source": "roberta.pdf",
+          "pages": [
+            4
+          ]
+        },
+        {
+          "source": "seq2seq.pdf",
+          "pages": [
+            7
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            23,
+            30
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "resnet-shortcut",
+      "question": "What connections allow gradients to flow through very deep networks?",
+      "kind": "fact",
+      "answer_contains": "shortcut connections",
+      "gold": [
+        {
+          "source": "resnet.pdf",
+          "pages": [
+            2,
+            3,
+            4,
+            7
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "resnet-152",
+      "question": "How deep is the deepest network evaluated on ImageNet?",
+      "kind": "fact",
+      "answer_contains": "152",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            12
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            45
+          ]
+        },
+        {
+          "source": "resnet.pdf",
+          "pages": [
+            1,
+            2,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            6,
+            7,
+            8,
+            13,
+            15,
+            16,
+            19
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "roberta-dynamic",
+      "question": "What masking strategy is applied differently at each epoch?",
+      "kind": "fact",
+      "answer_contains": "dynamic masking",
+      "gold": [
+        {
+          "source": "roberta.pdf",
+          "pages": [
+            4,
+            6
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "roberta-nsp-drop",
+      "question": "What pre-training objective was found unnecessary and removed?",
+      "kind": "cross-doc",
+      "answer_contains": "NSP loss",
+      "gold": [
+        {
+          "source": "roberta.pdf",
+          "pages": [
+            4,
+            5,
+            6
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "sbert-cosine",
+      "question": "How is sentence similarity computed from the derived embeddings?",
+      "kind": "multi",
+      "answer_contains": "cosine-similarity",
+      "gold": [
+        {
+          "source": "sentence_bert.pdf",
+          "pages": [
+            1,
+            3,
+            4,
+            5,
+            7,
+            8
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "sbert-speed",
+      "question": "How much faster is the approach than a cross-encoder for similarity search?",
+      "kind": "fact",
+      "answer_contains": "65 hours",
+      "gold": [
+        {
+          "source": "sentence_bert.pdf",
+          "pages": [
+            1,
+            2,
+            8
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "seq2seq-reverse",
+      "question": "What input transformation improved translation performance markedly?",
+      "kind": "fact",
+      "answer_contains": "reversing",
+      "gold": [
+        {
+          "source": "faiss_billion_scale.pdf",
+          "pages": [
+            4
+          ]
+        },
+        {
+          "source": "seq2seq.pdf",
+          "pages": [
+            1,
+            2,
+            4,
+            5,
+            8
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "seq2seq-lstm",
+      "question": "What recurrent architecture maps sequences to a fixed-dimensional vector?",
+      "kind": "fact",
+      "answer_contains": "deep LSTM",
+      "gold": [
+        {
+          "source": "seq2seq.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "t5-c4",
+      "question": "What cleaned web-scraped corpus is used for pre-training?",
+      "kind": "fact",
+      "answer_contains": "Colossal Clean Crawled Corpus",
+      "gold": [
+        {
+          "source": "t5.pdf",
+          "pages": [
+            1,
+            3,
+            4,
+            42
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "t5-text2text",
+      "question": "How are all NLP tasks cast into a single format?",
+      "kind": "cross-doc",
+      "answer_contains": "unified text-to-text",
+      "gold": [
+        {
+          "source": "colbert.pdf",
+          "pages": [
+            10
+          ]
+        },
+        {
+          "source": "dense_passage_retrieval.pdf",
+          "pages": [
+            11
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            73
+          ]
+        },
+        {
+          "source": "rag.pdf",
+          "pages": [
+            14
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            31,
+            44
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "t5-span",
+      "question": "What corruption objective masks contiguous spans of tokens?",
+      "kind": "multi",
+      "answer_contains": "corrupted spans",
+      "gold": [
+        {
+          "source": "t5.pdf",
+          "pages": [
+            22,
+            23,
+            43,
+            57
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "vit-jft",
+      "question": "Which large private dataset is used for pre-training?",
+      "kind": "fact",
+      "answer_contains": "JFT",
+      "gold": [
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            8,
+            13,
+            14,
+            15,
+            16,
+            19
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "vit-inductive",
+      "question": "What inductive biases do convolutional networks have that transformers lack?",
+      "kind": "cross-doc",
+      "answer_contains": "inductive bias",
+      "gold": [
+        {
+          "source": "vision_transformer.pdf",
+          "pages": [
+            1,
+            2,
+            4,
+            6,
+            7,
+            9
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "w2v-cbow",
+      "question": "What architecture predicts a word from its surrounding context?",
+      "kind": "fact",
+      "answer_contains": "continuous bag-of-words",
+      "gold": [
+        {
+          "source": "word2vec.pdf",
+          "pages": [
+            4,
+            11
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "w2v-skipgram",
+      "question": "What architecture predicts surrounding words from a target word?",
+      "kind": "fact",
+      "answer_contains": "Skip-gram",
+      "gold": [
+        {
+          "source": "layer_normalization.pdf",
+          "pages": [
+            7
+          ]
+        },
+        {
+          "source": "word2vec.pdf",
+          "pages": [
+            4,
+            5,
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
+      "id": "w2v-analogy",
+      "question": "How are syntactic and semantic regularities measured in word vectors?",
+      "kind": "multi",
+      "answer_contains": "syntactic",
+      "gold": [
+        {
+          "source": "attention_is_all_you_need.pdf",
+          "pages": [
+            7
+          ]
+        },
+        {
+          "source": "gpt3.pdf",
+          "pages": [
+            72
+          ]
+        },
+        {
+          "source": "t5.pdf",
+          "pages": [
+            23
+          ]
+        },
+        {
+          "source": "word2vec.pdf",
+          "pages": [
+            1,
+            2,
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      ],
+      "multi_source": true
+    },
+    {
       "id": "adv-diffusion",
       "question": "What noise schedule does the denoising diffusion model use?",
       "unanswerable": true,
@@ -626,6 +1907,70 @@
       "unanswerable": true,
       "adversarial_kind": "metadata",
       "why": "publication status is not recorded in the documents",
+      "gold": []
+    },
+    {
+      "id": "adv-flash",
+      "question": "How does flash attention reduce memory reads and writes?",
+      "unanswerable": true,
+      "adversarial_kind": "absent",
+      "why": "FlashAttention postdates every paper here",
+      "gold": []
+    },
+    {
+      "id": "adv-moe-routing",
+      "question": "What load balancing loss is used for expert routing?",
+      "unanswerable": true,
+      "adversarial_kind": "absent",
+      "why": "no mixture-of-experts paper in the corpus",
+      "gold": []
+    },
+    {
+      "id": "adv-quantize-4bit",
+      "question": "How is the model quantized to 4-bit precision?",
+      "unanswerable": true,
+      "adversarial_kind": "absent",
+      "why": "quantization to 4 bits is never discussed",
+      "gold": []
+    },
+    {
+      "id": "adv-inference-cost",
+      "question": "What is the cost per thousand inference requests?",
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "training cost is reported; inference cost never is",
+      "gold": []
+    },
+    {
+      "id": "adv-latency-ms",
+      "question": "What is the end-to-end latency in milliseconds per query?",
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "throughput appears, but not per-query latency",
+      "gold": []
+    },
+    {
+      "id": "adv-context-window",
+      "question": "What is the maximum context length in tokens?",
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "sequence lengths appear; no paper frames it as a context window",
+      "gold": []
+    },
+    {
+      "id": "adv-license-terms",
+      "question": "Under what licence were the model weights released?",
+      "unanswerable": true,
+      "adversarial_kind": "metadata",
+      "why": "release terms are not stated in any paper",
+      "gold": []
+    },
+    {
+      "id": "adv-compute-budget",
+      "question": "How many GPU-hours were budgeted before training began?",
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "compute used is reported after the fact, never as a prior budget",
       "gold": []
     }
   ]
