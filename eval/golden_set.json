@@ -1,6 +1,6 @@
 {
-  "corpus": "attention_is_all_you_need.pdf",
-  "note": "Gold pages verified by grepping the parsed corpus, not recalled from memory. 'pages' lists every page where the answer is genuinely present; a retrieval counts as a hit if any listed page appears in the returned set. Cases marked unanswerable have no supporting page and exist to test abstention rather than recall. Each answerable case also carries `answer_contains`: a distinctive substring of the actual answer, verified to occur in the parsed corpus on its gold page. This enables context recall -- whether the text returned to the model actually contains the answer -- which ranking metrics cannot measure.",
+  "corpus": "multi-document (20 arXiv ML/NLP papers)",
+  "note": "Gold pages verified by grepping the parsed corpus, not recalled from memory. 'pages' lists every page where the answer is genuinely present; a retrieval counts as a hit if any listed page appears in the returned set. Cases marked unanswerable have no supporting page and exist to test abstention rather than recall. Each answerable case also carries `answer_contains`: a distinctive substring of the actual answer, verified to occur in the parsed corpus on its gold page. This enables context recall -- whether the text returned to the model actually contains the answer -- which ranking metrics cannot measure. NOTE: relevance is keyed on (source, page), not page alone -- once the corpus held more than one document, page number stopped identifying a location and matching on it would have scored wrong-document hits as correct.",
   "cases": [
     {
       "id": "mha-def",
@@ -10,7 +10,8 @@
       ],
       "difficulty": "medium",
       "why": "definition competes with figure captions that repeat the term",
-      "answer_contains": "jointly attend to information from different representation subspaces"
+      "answer_contains": "jointly attend to information from different representation subspaces",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "mha-heads",
@@ -19,7 +20,8 @@
         5
       ],
       "difficulty": "easy",
-      "answer_contains": "employ _h_ = 8 parallel attention layers"
+      "answer_contains": "employ _h_ = 8 parallel attention layers",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "scale-why",
@@ -28,7 +30,8 @@
         4
       ],
       "difficulty": "medium",
-      "answer_contains": "extremely small gradients"
+      "answer_contains": "extremely small gradients",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "optimizer",
@@ -37,7 +40,8 @@
         7
       ],
       "difficulty": "easy",
-      "answer_contains": "Adam optimizer"
+      "answer_contains": "Adam optimizer",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "lr-schedule",
@@ -46,7 +50,8 @@
         7
       ],
       "difficulty": "medium",
-      "answer_contains": "warmup_steps"
+      "answer_contains": "warmup_steps",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "enc-layers",
@@ -55,7 +60,8 @@
         3
       ],
       "difficulty": "easy",
-      "answer_contains": "stack of _N_ = 6 identical layers"
+      "answer_contains": "stack of _N_ = 6 identical layers",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "d-model",
@@ -64,7 +70,8 @@
         3
       ],
       "difficulty": "medium",
-      "answer_contains": "dmodel = 512"
+      "answer_contains": "dmodel = 512",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "dropout",
@@ -74,7 +81,8 @@
         9
       ],
       "difficulty": "medium",
-      "answer_contains": "_Pdrop_ = 0.1"
+      "answer_contains": "_Pdrop_ = 0.1",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "complexity",
@@ -83,7 +91,8 @@
         6
       ],
       "difficulty": "medium",
-      "answer_contains": "O(n[2]"
+      "answer_contains": "O(n[2]",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "path-length",
@@ -92,7 +101,8 @@
         6
       ],
       "difficulty": "medium",
-      "answer_contains": "Maximum Path Length"
+      "answer_contains": "Maximum Path Length",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "pos-enc-fn",
@@ -101,7 +111,8 @@
         6
       ],
       "difficulty": "medium",
-      "answer_contains": "where pos is the position"
+      "answer_contains": "where pos is the position",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "pos-enc-why",
@@ -110,7 +121,8 @@
         6
       ],
       "difficulty": "medium",
-      "answer_contains": "no recurrence and no convolution"
+      "answer_contains": "no recurrence and no convolution",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "bleu-ende",
@@ -119,7 +131,8 @@
         8
       ],
       "difficulty": "easy",
-      "answer_contains": "28.4"
+      "answer_contains": "28.4",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "bleu-enfr",
@@ -128,7 +141,8 @@
         8
       ],
       "difficulty": "easy",
-      "answer_contains": "41.0"
+      "answer_contains": "41.0",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "hardware",
@@ -137,7 +151,8 @@
         7
       ],
       "difficulty": "easy",
-      "answer_contains": "8 NVIDIA P100 GPUs"
+      "answer_contains": "8 NVIDIA P100 GPUs",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "train-time",
@@ -146,7 +161,8 @@
         7
       ],
       "difficulty": "medium",
-      "answer_contains": "12 hours"
+      "answer_contains": "12 hours",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "dataset",
@@ -155,7 +171,8 @@
         7
       ],
       "difficulty": "easy",
-      "answer_contains": "WMT 2014 English-German"
+      "answer_contains": "WMT 2014 English-German",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "label-smooth",
@@ -164,7 +181,8 @@
         8
       ],
       "difficulty": "medium",
-      "answer_contains": "label smoothing of value"
+      "answer_contains": "label smoothing of value",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "parsing",
@@ -174,7 +192,8 @@
         10
       ],
       "difficulty": "medium",
-      "answer_contains": "WSJ 23 F1"
+      "answer_contains": "WSJ 23 F1",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "ffn-act",
@@ -184,7 +203,8 @@
       ],
       "difficulty": "hard",
       "why": "buried mid-page in a section about something else",
-      "answer_contains": "ReLU"
+      "answer_contains": "ReLU",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "ffn-dim",
@@ -194,7 +214,8 @@
         9
       ],
       "difficulty": "hard",
-      "answer_contains": "2048"
+      "answer_contains": "2048",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "attn-uses",
@@ -203,7 +224,8 @@
         5
       ],
       "difficulty": "hard",
-      "answer_contains": "three different ways"
+      "answer_contains": "three different ways",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "compound",
@@ -213,7 +235,8 @@
       ],
       "difficulty": "hard",
       "why": "compound question; answers sit in different places",
-      "answer_contains": "4.92 25.8 65"
+      "answer_contains": "4.92 25.8 65",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "residual",
@@ -222,7 +245,8 @@
         3
       ],
       "difficulty": "medium",
-      "answer_contains": "residual connection"
+      "answer_contains": "residual connection",
+      "source": "attention_is_all_you_need.pdf"
     },
     {
       "id": "adv-bert",

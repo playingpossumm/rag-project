@@ -47,15 +47,32 @@ def load_cases(path: Path = GOLDEN_SET) -> tuple[list[dict], list[dict]]:
     )
 
 
+def gold_keys(case: dict) -> set:
+    """Relevant locations as (source, page) pairs.
+
+    Page number alone stopped identifying a location once the corpus held more
+    than one document -- page 5 exists in every paper. Matching on page alone
+    would score a hit on the wrong document as correct, which is the single most
+    common real-world RAG failure. `source` defaults to the case's own document
+    for corpora that never had the ambiguity.
+    """
+    source = case.get("source")
+    return {(source, p) for p in case["pages"]}
+
+
+def is_relevant(result: dict, gold: set) -> bool:
+    return (result["source"], result["page"]) in gold
+
+
 def hit_rate(results, gold) -> float:
-    """1.0 if any relevant page appears anywhere in the returned set."""
-    return 1.0 if any(r["page"] in gold for r in results) else 0.0
+    """1.0 if any relevant location appears anywhere in the returned set."""
+    return 1.0 if any(is_relevant(r, gold) for r in results) else 0.0
 
 
 def reciprocal_rank(results, gold) -> float:
     """1/rank of the first relevant result; 0 if none. Rewards ranking it first."""
     for i, r in enumerate(results, start=1):
-        if r["page"] in gold:
+        if is_relevant(r, gold):
             return 1.0 / i
     return 0.0
 
@@ -69,8 +86,8 @@ def ndcg(results, gold) -> float:
     exceed IDCG and produce scores above 1.0.
     """
     dcg = sum(1.0 / math.log2(i + 1)
-              for i, r in enumerate(results, start=1) if r["page"] in gold)
-    n_relevant = sum(1 for r in results if r["page"] in gold)
+              for i, r in enumerate(results, start=1) if is_relevant(r, gold))
+    n_relevant = sum(1 for r in results if is_relevant(r, gold))
     idcg = sum(1.0 / math.log2(i + 1) for i in range(1, n_relevant + 1))
     return dcg / idcg if idcg else 0.0
 
@@ -104,7 +121,7 @@ def score_run(cases, retrieve_fn) -> tuple[dict, list[dict]]:
     per_case = []
     for case in cases:
         results = retrieve_fn(case["question"])
-        gold = set(case["pages"])
+        gold = gold_keys(case)
         m = {
             "hit_rate": hit_rate(results, gold),
             "mrr": reciprocal_rank(results, gold),
@@ -112,8 +129,12 @@ def score_run(cases, retrieve_fn) -> tuple[dict, list[dict]]:
         }
         for key in totals:
             totals[key] += m[key]
-        per_case.append({"id": case["id"], "difficulty": case.get("difficulty", "-"),
-                         "gold": sorted(gold), "got": [r["page"] for r in results], **m})
+        per_case.append({
+            "id": case["id"], "difficulty": case.get("difficulty", "-"),
+            "gold": sorted(f"{s}:p{p}" for s, p in gold),
+            "got": [f"{r['source'][:12]}:p{r['page']}" for r in results],
+            **m,
+        })
     n = len(cases) or 1
     return {k: v / n for k, v in totals.items()}, per_case
 
