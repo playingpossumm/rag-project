@@ -504,16 +504,26 @@
   .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
   @media print { .theme-toggle { display: none; } }
+
+  /* Scoped disclaimer. Uses tokens, not literals: the previous inline hex
+     rendered dark-brown-on-cream over the dark theme's dark ground. */
+  .snapshot {
+    max-width: 900px; margin: 0 auto 4px; padding: 13px 18px;
+    border: 1px solid var(--accent-2); background: var(--alert-bg);
+    color: var(--ink); font-family: var(--font-body);
+    font-size: 14.5px; line-height: 1.5;
+  }
+  .snapshot b { color: var(--accent-2); }
 </style>
 
 <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between light and dark theme">theme</button>
 
-<div style="max-width:900px;margin:0 auto;padding:14px 18px;border:1px solid #8a5a12;background:#fdf4e3;color:#5a3c0c;font-family:Georgia,serif;font-size:15px;line-height:1.5"><b>Historical snapshot.</b> Figures on this page were measured on an earlier corpus and golden set. Three of its conclusions later reversed when the test set grew. Current measurements live in <code>eval/RESULTS.md</code> and <code>eval/results.json</code>.</div>
+<div class="snapshot"><b>Read the phases as dated.</b> Figures under Phase&nbsp;1 and Phase&nbsp;2 were measured on a smaller corpus and golden set; three of their conclusions later reversed when the test set grew to 84 cases, and those reversals are recorded in place. Phase&nbsp;3 reflects the system as it stands. Current measurements always live in <code>eval/RESULTS.md</code> and <code>eval/results.json</code>.</div>
 
 <div class="page">
 
   <header class="masthead">
-    <p class="eyebrow">Mechanism Notes &middot; Phases 1&ndash;2</p>
+    <p class="eyebrow">Mechanism Notes &middot; Phases 1&ndash;3</p>
     <h1 class="title">Anatomy of a Retrieval Pipeline</h1>
     <p class="dek">
       A step-by-step account of what actually happens to a PDF as it becomes searchable,
@@ -527,11 +537,12 @@
       size rather than a property of the method.
     </p>
     <div class="runsheet">
-      <div>corpus <b>15 pages / 64 chunks</b></div>
+      <div>corpus <b>20 docs / 2,768 chunks</b></div>
       <div>retrieval <b>dense + BM25, RRF</b></div>
       <div>rerank <b>cross-encoder</b></div>
-      <div>eval <b>24 cases</b></div>
-      <div>MRR <b>0.771 &rarr; 0.941</b></div>
+      <div>eval <b>84 cases</b></div>
+      <div>MRR <b>0.601 &rarr; 0.751</b></div>
+      <div>re-index <b>432 s &rarr; 0.8 s</b></div>
     </div>
   </header>
 
@@ -541,6 +552,9 @@
     </button>
     <button class="tab" role="tab" id="tab-p2" aria-controls="panel-p2" aria-selected="false" tabindex="-1" type="button">
       <span class="tab-num">Phase 2</span>Making retrieval good
+    </button>
+    <button class="tab" role="tab" id="tab-p3" aria-controls="panel-p3" aria-selected="false" tabindex="-1" type="button">
+      <span class="tab-num">Phase 3</span>Fast, and legible
     </button>
   </div>
 
@@ -2127,7 +2141,7 @@ TOKEN_RE = re.compile(<span class="n">r"[a-z0-9]+"</span>)
           <tr><td><code>hybrid.py</code></td><td>BM25 index, reciprocal rank fusion, weighted fusion</td><td>free / local</td></tr>
           <tr><td><code>retrieve.py</code></td><td><code>shortlist()</code> (first stage, configurable fusion) and <code>retrieve()</code> (full pipeline)</td><td>free / local</td></tr>
           <tr><td><code>evaluate.py</code></td><td>hit rate, MRR, NDCG; candidate-pool and end-to-end layers</td><td>free / local</td></tr>
-          <tr><td><code>eval/golden_set.json</code></td><td>24 labelled cases + 4 adversarial</td><td>&mdash;</td></tr>
+          <tr><td><code>eval/golden_set.json</code></td><td>24 labelled + 4 adversarial at the time &mdash; since grown to 66 + 18</td><td>&mdash;</td></tr>
           <tr><td><code>eval/RESULTS.md</code></td><td>Recorded measurements and the reasoning behind each default</td><td>&mdash;</td></tr>
         </tbody>
       </table>
@@ -2135,6 +2149,726 @@ TOKEN_RE = re.compile(<span class="n">r"[a-z0-9]+"</span>)
   </section>
 
   </div><!-- /panel-p2 -->
+
+  <div class="panel" id="panel-p3" role="tabpanel" aria-labelledby="tab-p3" tabindex="0" hidden>
+
+  <section class="stage">
+    <div class="stage-label"><h2>What Phase 2 left slow &mdash; and invisible</h2></div>
+    <p class="stage-sub">
+      Two problems that are really the same problem: the system did work nobody could see,
+      and repeated work nobody needed.
+    </p>
+
+    <div class="body-text">
+      <p>
+        Phase 2 made retrieval good. It did not make it <em>usable</em>, and it left the
+        thing entirely opaque. Two symptoms, measured:
+      </p>
+      <p>
+        <strong>Re-indexing cost 432 seconds every time.</strong> Adding one document to
+        twenty meant re-reading, re-splitting and re-encoding all twenty-one from scratch.
+        Since the corpus is meant to grow document by document, that cost lands on every
+        single addition &mdash; the operation you do most often was the most expensive one.
+      </p>
+      <p>
+        <strong>And you could not see why it returned anything.</strong> Ask a question, get
+        five passages. Everything that produced them &mdash; which of the two retrievers found
+        what, how their disagreement was resolved, what the reranker promoted or buried,
+        what the diversity cap threw out &mdash; was computed and then thrown away. Fine for
+        serving. Useless for understanding, and understanding was the entire point of
+        building this by hand.
+      </p>
+      <p>
+        Phase 3 is caching, profiling, and a user interface whose actual job is to make the
+        invisible part visible.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ CACHING ============ -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 12</span>
+      <h2>Caching &mdash; addressing work by its content, not its name</h2>
+    </div>
+    <p class="stage-sub">Three layers of remembered work, each keyed on a fingerprint of the input rather than a filename or a timestamp.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">content-addressed</span>
+        <span class="term-chip">hash</span>
+        <span class="term-chip">cache key</span>
+        <span class="term-chip">invalidation</span>
+        <span class="term-chip">salt</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          A <strong>cache</strong> is stored work you can reuse instead of redoing. The whole
+          difficulty is knowing when the stored copy has gone stale &mdash; the industry joke
+          that cache invalidation is one of the two hard problems in computing is a joke
+          because it is true, and because the failure is silent. A cache that returns the wrong
+          answer is far worse than no cache at all: you get a confidently incorrect result with
+          no error to alert you.
+        </p>
+        <p>
+          The usual approach keys on the filename and the modification date. Both lie.
+          Sync clients &mdash; Google Drive and OneDrive especially &mdash; touch modification
+          times constantly without changing a byte, and renaming a file changes its name while
+          changing nothing about its contents.
+        </p>
+        <p>
+          So each cache here is <strong>content-addressed</strong>: the key is a
+          <strong>hash</strong> of the file's actual bytes. A hash is a fixed-length fingerprint
+          &mdash; change one character anywhere in a 60-page document and the fingerprint changes
+          completely. That gives three properties for free:
+        </p>
+      </div>
+
+      <p class="analogy">
+        Filing by a photograph of the contents rather than by the label on the folder. Retitle
+        the folder, move it to another cabinet, or put it back untouched after a year &mdash;
+        the photograph still matches. Change a single line inside, and it no longer does.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Situation</th><th>Keyed on name + timestamp</th><th>Keyed on content hash</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>File renamed or moved</td><td>Full re-parse &mdash; wasted</td><td>Recognised, reused</td></tr>
+            <tr><td>Sync client touches the file</td><td>Full re-parse &mdash; wasted</td><td>Recognised, reused</td></tr>
+            <tr><td>File genuinely edited</td><td>Re-parsed</td><td>Re-parsed, with no staleness window</td></tr>
+            <tr><td>Two copies, different names</td><td>Both parsed</td><td>Parsed once</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="body-text">
+        <p>
+          Three layers accumulated over the project, each removing the bottleneck that the
+          previous one exposed. Removing the embedding cost revealed parsing as the new
+          ceiling; removing parsing revealed chunking and the safety check behind it.
+        </p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Layer</th><th>Stores</th><th>Key includes</th><th>Removed</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>embedding_cache.py</code></td>
+              <td>The 384-number vector for each chunk</td>
+              <td>chunk text + model name</td>
+              <td>~6 min of encoding</td>
+            </tr>
+            <tr>
+              <td><code>parse_cache.py</code></td>
+              <td>Text recovered from each document</td>
+              <td>file bytes + parser version</td>
+              <td>300 s of 432 s</td>
+            </tr>
+            <tr>
+              <td><code>parse_cache.py</code> <span class="note">(chunk layer)</span></td>
+              <td>Finished chunks, report and verdict</td>
+              <td>file bytes + parser version + chunk settings</td>
+              <td>The remaining 43&nbsp;%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="body-text">
+        <p>
+          The third column is where the real care went. A key must include
+          <em>everything that changes the output</em>, not just the input file. The chunk cache
+          stores text that was split using a particular chunk size and overlap &mdash; so those
+          settings are mixed into the key as a <strong>salt</strong>, an extra ingredient that
+          changes the fingerprint. Without it, changing the chunk size would appear to do
+          nothing: the system would keep serving chunks built under the old setting, and you
+          would conclude the parameter did not matter. The same reasoning puts a
+          <code>PARSER_VERSION</code> number in the parse key, so that improving a loader
+          actually invalidates the documents it affects.
+        </p>
+      </div>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/parse_cache.py</div>
+        <div class="mech-body">
+<pre class="code"><span class="k">def</span> file_key(path, salt=<span class="n">""</span>) -> str:
+    digest = hashlib.sha256()
+    <span class="c"># Read in 1 MB blocks so a 200 MB scan does not land in memory at once.</span>
+    <span class="k">with</span> open(path, <span class="n">"rb"</span>) <span class="k">as</span> fh:
+        <span class="k">for</span> block <span class="k">in</span> iter(<span class="k">lambda</span>: fh.read(<span class="n">1</span> &lt;&lt; <span class="n">20</span>), <span class="n">b""</span>):
+            digest.update(block)
+    <span class="c"># Everything else that changes the derived output for identical bytes.</span>
+    digest.update(f<span class="n">"\x00v{PARSER_VERSION}\x00{salt}"</span>.encode())
+    <span class="k">return</span> digest.hexdigest()[:<span class="n">32</span>]
+
+<span class="c"># chunk_salt() == "210-40-0"  -- size, overlap, title-prefix flag</span></pre>
+        </div>
+      </div>
+
+      <div class="body-text">
+        <p>
+          One more decision worth naming, because it is the opposite of the instinct: when the
+          cache looks damaged &mdash; a truncated file, a key count that disagrees with the
+          vector count &mdash; it is <strong>discarded rather than repaired</strong>. Rebuilding
+          is merely slow. A half-trusted cache silently returns another chunk's vector, and
+          distances to a wrong vector are perfectly computable and completely meaningless.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROFILING ============ -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 13</span>
+      <h2>Profiling &mdash; when the measurement refutes the task</h2>
+    </div>
+    <p class="stage-sub">The requested optimisation targeted 0.1&nbsp;% of the runtime. Measuring first is what caught it.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">profiling</span>
+        <span class="term-chip">bottleneck</span>
+        <span class="term-chip">incremental indexing</span>
+        <span class="term-chip">Amdahl's law</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          <strong>Profiling</strong> means timing each part of a program to find where the time
+          actually goes, rather than where you assume it goes. The task on the list was
+          &ldquo;incremental indexing&rdquo; &mdash; which in normal usage means updating the
+          search index in place when a document is added, instead of rebuilding it. A sensible,
+          standard optimisation.
+        </p>
+        <p>
+          The profile said rebuilding the index takes <strong>ten milliseconds</strong>.
+        </p>
+      </div>
+
+      <figure class="diagram med">
+        <svg viewBox="0 0 900 268" role="img" aria-label="Horizontal bar chart of where 8.5 seconds of re-indexing time is spent: loading the embedding model 4.10 seconds or 48 percent, parsing and chunking 2.08 seconds or 24 percent, the token budget guard 1.63 seconds or 19 percent, hashing files 0.57 seconds or 7 percent, embedding 0.09 seconds or 1 percent, and building the FAISS index 0.01 seconds or 0 percent.">
+          <g font-family="Georgia, serif" font-size="13" fill="currentColor">
+            <text x="0" y="16" font-size="12" opacity="0.75">Where 8.5 s of re-indexing actually went</text>
+
+            <text x="0" y="52">load embedding model</text>
+            <rect x="196" y="40" width="560" height="17" fill="var(--accent)" opacity="0.85"/>
+            <text x="766" y="52" font-size="12">4.10 s &middot; 48%</text>
+
+            <text x="0" y="84">parse + chunk</text>
+            <rect x="196" y="72" width="284" height="17" fill="var(--accent)" opacity="0.7"/>
+            <text x="490" y="84" font-size="12">2.08 s &middot; 24%</text>
+
+            <text x="0" y="116">token-budget guard</text>
+            <rect x="196" y="104" width="223" height="17" fill="var(--accent)" opacity="0.58"/>
+            <text x="429" y="116" font-size="12">1.63 s &middot; 19%</text>
+
+            <text x="0" y="148">hash 20 files</text>
+            <rect x="196" y="136" width="78" height="17" fill="var(--accent)" opacity="0.45"/>
+            <text x="284" y="148" font-size="12">0.57 s &middot; 7%</text>
+
+            <text x="0" y="180">embed (cached)</text>
+            <rect x="196" y="168" width="12" height="17" fill="var(--accent)" opacity="0.35"/>
+            <text x="218" y="180" font-size="12">0.09 s &middot; 1%</text>
+
+            <text x="0" y="212" fill="var(--alert)" font-weight="bold">build FAISS index</text>
+            <rect x="196" y="200" width="3" height="17" fill="var(--alert)"/>
+            <text x="209" y="212" font-size="12" fill="var(--alert)" font-weight="bold">0.01 s &middot; 0%</text>
+            <text x="196" y="240" font-size="12" fill="var(--alert)" font-style="italic">&#8593; the step &ldquo;incremental indexing&rdquo; would have optimised</text>
+          </g>
+        </svg>
+        <figcaption>
+          Rebuilding the entire vector index is the cheapest step in the pipeline by a factor of
+          four hundred. The expensive work was never the index &mdash; it was everything being
+          redone for documents that had not changed, and a model being loaded to do it.
+        </figcaption>
+      </figure>
+
+      <div class="body-text">
+        <p>
+          This is <strong>Amdahl's law</strong> in its most practical form: the most you can
+          possibly gain from speeding up one part is bounded by how much of the total that part
+          occupies. Make index-building infinitely fast &mdash; instantaneous, free &mdash; and
+          the run goes from 8.5 seconds to 8.49 seconds. The work would have been correct,
+          well-engineered, and worth nothing.
+        </p>
+        <p>
+          So the profile changed the task. Instead of incremental index updates, three changes
+          aimed at where the time actually was:
+        </p>
+        <ol>
+          <li><strong>Cache finished chunks</strong>, not just parsed text &mdash; removing the
+              24&nbsp;% spent re-splitting documents that had not changed.</li>
+          <li><strong>Run the safety check only on new chunks.</strong> The token-budget guard
+              re-verified every chunk on every run; cached chunks passed the identical check
+              under identical settings when they were built, which the salt in the key
+              guarantees. That is 19&nbsp;% spent re-deriving a known answer.</li>
+          <li><strong>Load the model only if something needs it</strong> &mdash; the 48&nbsp;%,
+              covered next.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LAZY LOADING ============ -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 14</span>
+      <h2>Lazy loading &mdash; not paying for what you never use</h2>
+    </div>
+    <p class="stage-sub">The single largest cost was a model loaded out of habit, for a run that never touched it.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">lazy loading</span>
+        <span class="term-chip">deferred import</span>
+        <span class="term-chip">import side effect</span>
+        <span class="term-chip">wall-clock time</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          <strong>Lazy loading</strong> means deferring expensive setup until the moment
+          something genuinely needs it &mdash; and skipping it entirely if that moment never
+          arrives. The embedding model was loaded at the top of every run because
+          <em>usually</em> it is needed. On a fully-cached re-index it is needed for exactly
+          nothing: no chunk is built, so no tokenizer is consulted, and no text is encoded.
+          Four seconds, every run, for a model that was never asked a question.
+        </p>
+        <p>
+          Wrapping it in a handle that loads on first genuine use removed that. It also exposed
+          a bug I had written myself, which is the honest part of the story: the code passed
+          <code>lazy.get()</code> into the embedding step, and <code>.get()</code> is what
+          forces the load. The optimisation was silently doing nothing. The fix was to pass the
+          unopened handle and let the cache decide &mdash; it only resolves the model if there
+          are chunks it does not already have.
+        </p>
+      </div>
+
+      <div class="mech">
+        <div class="mech-head">Mechanism &middot; src/embedding_cache.py</div>
+        <div class="mech-body">
+<pre class="code">    _, misses = cache.get_many(texts, model_name)
+
+    <span class="k">if</span> misses:
+        <span class="c"># Resolved only here: `model` may be a lazy handle, and when every</span>
+        <span class="c"># text is already cached the model is never needed at all.</span>
+        model = model.get() <span class="k">if</span> hasattr(model, <span class="n">"get"</span>) <span class="k">else</span> model
+        fresh = model.encode(missing_texts, convert_to_numpy=<span class="n">True</span>)</pre>
+        </div>
+      </div>
+
+      <div class="body-text">
+        <p>
+          That took the measured section from 8.5 s to 0.3 s &mdash; but the command still took
+          <strong>22 seconds</strong> to finish. The gap is the difference between the time your
+          program measures and <strong>wall-clock time</strong>, the time you actually wait.
+          The remainder was Python loading the machine-learning libraries themselves, before a
+          single line of my code ran. In Python, importing a library <em>executes</em> it, and
+          <code>sentence_transformers</code> pulls in PyTorch &mdash; hundreds of megabytes of
+          numerical machinery &mdash; as an <strong>import side effect</strong>.
+        </p>
+        <p>
+          Moving that import inside the lazy handle, so it only happens when the model is truly
+          needed, took the wall clock from 22 s to <strong>0.76 s</strong>.
+        </p>
+      </div>
+
+      <figure class="diagram med">
+        <svg viewBox="0 0 900 214" role="img" aria-label="Two-lane comparison. First run: hash, parse, chunk, guard, embed and index all execute, taking 432 seconds. Re-run with nothing changed: hash executes, then parse, chunk, guard and embed are all skipped by cache hits, only the index is rebuilt, taking 0.76 seconds.">
+          <defs>
+            <marker id="p3-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <g font-family="Georgia, serif" font-size="12" fill="currentColor">
+            <text x="0" y="14" font-size="12" font-weight="bold">First run &mdash; nothing cached</text>
+            <g>
+              <rect x="0" y="26" width="106" height="30" rx="4" fill="var(--accent)" opacity="0.8"/>
+              <text x="53" y="45" text-anchor="middle" fill="var(--accent-ink)">hash</text>
+              <rect x="118" y="26" width="106" height="30" rx="4" fill="var(--accent)" opacity="0.8"/>
+              <text x="171" y="45" text-anchor="middle" fill="var(--accent-ink)">parse</text>
+              <rect x="236" y="26" width="106" height="30" rx="4" fill="var(--accent)" opacity="0.8"/>
+              <text x="289" y="45" text-anchor="middle" fill="var(--accent-ink)">chunk</text>
+              <rect x="354" y="26" width="106" height="30" rx="4" fill="var(--accent)" opacity="0.8"/>
+              <text x="407" y="45" text-anchor="middle" fill="var(--accent-ink)">guard</text>
+              <rect x="472" y="26" width="106" height="30" rx="4" fill="var(--accent)" opacity="0.8"/>
+              <text x="525" y="45" text-anchor="middle" fill="var(--accent-ink)">embed</text>
+              <rect x="590" y="26" width="106" height="30" rx="4" fill="var(--accent)" opacity="0.8"/>
+              <text x="643" y="45" text-anchor="middle" fill="var(--accent-ink)">index</text>
+              <line x1="700" y1="41" x2="742" y2="41" stroke="currentColor" stroke-width="1.4" marker-end="url(#p3-arrow)"/>
+              <text x="752" y="45" font-weight="bold">432 s</text>
+            </g>
+
+            <text x="0" y="104" font-size="12" font-weight="bold">Re-run &mdash; nothing changed</text>
+            <g>
+              <rect x="0" y="116" width="106" height="30" rx="4" fill="var(--accent)" opacity="0.8"/>
+              <text x="53" y="135" text-anchor="middle" fill="var(--accent-ink)">hash</text>
+              <rect x="118" y="116" width="106" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.5"/>
+              <text x="171" y="135" text-anchor="middle" opacity="0.55">parse</text>
+              <rect x="236" y="116" width="106" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.5"/>
+              <text x="289" y="135" text-anchor="middle" opacity="0.55">chunk</text>
+              <rect x="354" y="116" width="106" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.5"/>
+              <text x="407" y="135" text-anchor="middle" opacity="0.55">guard</text>
+              <rect x="472" y="116" width="106" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.5"/>
+              <text x="525" y="135" text-anchor="middle" opacity="0.55">embed</text>
+              <rect x="590" y="116" width="106" height="30" rx="4" fill="var(--accent)" opacity="0.8"/>
+              <text x="643" y="135" text-anchor="middle" fill="var(--accent-ink)">index</text>
+              <line x1="700" y1="131" x2="742" y2="131" stroke="currentColor" stroke-width="1.4" marker-end="url(#p3-arrow)"/>
+              <text x="752" y="135" font-weight="bold" fill="var(--accent)">0.76 s</text>
+
+              <path d="M 106 131 C 150 178, 546 178, 590 131" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#p3-arrow)"/>
+              <text x="348" y="196" text-anchor="middle" font-style="italic" fill="var(--accent)">four cache hits &mdash; and the model is never loaded</text>
+            </g>
+          </g>
+        </svg>
+        <figcaption>
+          The hash is the only work that must always happen: it is what proves nothing changed.
+          Everything between it and the index is skipped, and because no chunk is built, the
+          embedding model &mdash; and the machine-learning libraries beneath it &mdash; are
+          never loaded at all.
+        </figcaption>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Scenario</th><th>Before</th><th>After</th><th>What happens</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Full rebuild, cold start</td><td>432 s</td><td>432 s</td>
+              <td>Unchanged &mdash; the work is genuinely new</td>
+            </tr>
+            <tr>
+              <td>Re-index, nothing changed</td><td>432 s</td><td><strong>0.76 s</strong></td>
+              <td>All four layers hit; model never loaded</td>
+            </tr>
+            <tr>
+              <td>Add 1 document to 20</td><td>432 s</td><td><strong>18.8 s</strong></td>
+              <td>20 reused, 1 parsed, 1 chunk embedded</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="body-text">
+        <p>
+          The middle row is the one that matters day to day, and the third is the one the corpus
+          will actually live on. Note that the first row does not improve at all &mdash; caching
+          never makes new work faster, it only stops old work from being repeated. Claiming
+          otherwise would be the kind of number that looks good in a summary and misleads
+          anyone who relies on it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ THE INSPECTOR ============ -->
+
+  <section class="stage">
+    <div class="stage-label">
+      <span class="stage-tab">Step 15</span>
+      <h2>The Retrieval Inspector &mdash; making the pipeline legible</h2>
+    </div>
+    <p class="stage-sub">Five stages each reorder the results. Until now, four of those orderings were computed and discarded.</p>
+
+    <div class="card">
+      <div class="terms">
+        <span class="term-chip">instrumentation</span>
+        <span class="term-chip">glass box</span>
+        <span class="term-chip">bump chart</span>
+        <span class="term-chip">observability</span>
+      </div>
+
+      <div class="body-text">
+        <p>
+          <strong>Instrumentation</strong> is adding the ability to observe a system's internal
+          state while it runs. The retrieval pipeline had none: it produced five passages and
+          silently dropped every intermediate ranking that led there. So
+          <code>pipeline_trace.py</code> re-runs the same stages while keeping all of it &mdash;
+          which retriever found what, how the two disagreeing rankings were reconciled, what the
+          reranker promoted or buried, what the diversity cap displaced, and where the final
+          score landed relative to the refusal threshold.
+        </p>
+        <p>
+          The centrepiece of the interface is a <strong>bump chart</strong>: a diagram where
+          vertical position is rank and each line is one passage travelling left to right
+          through the pipeline. Lines that climb steeply are the pipeline earning its keep.
+        </p>
+      </div>
+
+      <figure class="diagram med">
+        <svg viewBox="0 0 900 250" role="img" aria-label="Bump chart showing three passages moving through five pipeline stages. One passage enters at rank 9 in dense retrieval and finishes at rank 1 after reranking; another starts at rank 1 and falls to rank 4; a third is found only by the sparse retriever and rises to rank 2.">
+          <g font-family="Georgia, serif" font-size="11.5" fill="currentColor">
+            <g font-weight="bold" font-size="11">
+              <text x="70" y="16" text-anchor="middle">dense</text>
+              <text x="250" y="16" text-anchor="middle">sparse</text>
+              <text x="430" y="16" text-anchor="middle">fused</text>
+              <text x="610" y="16" text-anchor="middle">reranked</text>
+              <text x="790" y="16" text-anchor="middle">final</text>
+            </g>
+            <g opacity="0.35">
+              <line x1="20" y1="42" x2="860" y2="42" stroke="currentColor"/>
+              <line x1="20" y1="74" x2="860" y2="74" stroke="currentColor"/>
+              <line x1="20" y1="106" x2="860" y2="106" stroke="currentColor"/>
+              <line x1="20" y1="138" x2="860" y2="138" stroke="currentColor"/>
+              <line x1="20" y1="170" x2="860" y2="170" stroke="currentColor"/>
+            </g>
+            <g font-size="10" opacity="0.6">
+              <text x="6" y="46">1</text><text x="6" y="78">2</text><text x="6" y="110">3</text>
+              <text x="6" y="142">4</text><text x="6" y="174">5</text>
+            </g>
+
+            <path d="M 70 170 C 130 170, 190 138, 250 138 C 310 138, 370 106, 430 106 C 490 106, 550 42, 610 42 C 670 42, 730 42, 790 42"
+                  fill="none" stroke="var(--accent)" stroke-width="2.6"/>
+            <g fill="var(--accent)">
+              <circle cx="70" cy="170" r="4"/><circle cx="250" cy="138" r="4"/><circle cx="430" cy="106" r="4"/>
+              <circle cx="610" cy="42" r="4.6"/><circle cx="790" cy="42" r="4.6"/>
+            </g>
+            <text x="836" y="46" font-size="11" fill="var(--accent)" font-weight="bold">&#8593; promoted</text>
+
+            <path d="M 70 42 C 130 42, 190 42, 250 42 C 310 42, 370 74, 430 74 C 490 74, 550 138, 610 138 C 670 138, 730 138, 790 138"
+                  fill="none" stroke="var(--alert)" stroke-width="2.2" opacity="0.85"/>
+            <g fill="var(--alert)" opacity="0.85">
+              <circle cx="70" cy="42" r="4"/><circle cx="250" cy="42" r="4"/><circle cx="430" cy="74" r="4"/>
+              <circle cx="610" cy="138" r="4"/><circle cx="790" cy="138" r="4"/>
+            </g>
+            <text x="836" y="142" font-size="11" fill="var(--alert)">&#8595; demoted</text>
+
+            <path d="M 250 106 C 310 106, 370 138, 430 138 C 490 138, 550 74, 610 74 C 670 74, 730 74, 790 74"
+                  fill="none" stroke="var(--accent-2)" stroke-width="2.2" stroke-dasharray="5 3"/>
+            <g fill="var(--accent-2)">
+              <circle cx="250" cy="106" r="4"/><circle cx="430" cy="138" r="4"/>
+              <circle cx="610" cy="74" r="4"/><circle cx="790" cy="74" r="4"/>
+            </g>
+            <text x="836" y="78" font-size="11" fill="var(--accent-2)">lexical only</text>
+
+            <text x="20" y="212" font-size="11.5" font-style="italic" opacity="0.8">
+              The dashed line was invisible to the meaning-based retriever &mdash; it was found only by exact term overlap, and the reranker confirmed it belonged.
+            </text>
+            <text x="20" y="234" font-size="11.5" font-style="italic" opacity="0.8">
+              The red line looked best to a cheap comparison of two summaries, and lost once a model read the question and the passage together.
+            </text>
+          </g>
+        </svg>
+        <figcaption>
+          Every claim Phase 2 makes about reranking and fusion is visible here as motion. This is
+          a schematic; the live interface draws the same chart from real traced runs, colouring
+          each line by its source document.
+        </figcaption>
+      </figure>
+
+      <div class="body-text">
+        <p>
+          One design decision is worth spelling out, because it is a habit rather than a trick.
+          The tracer <strong>does not modify the serving code</strong>. A serving path that
+          carries debug state is a serving path that eventually ships debug state, and the two
+          want opposite things: one should be fast and forget everything, the other slow and
+          remember everything.
+        </p>
+        <p>
+          The price of that separation is duplication &mdash; the stage order exists in two
+          places and could drift apart. So a test asserts that the tracer and the real pipeline
+          return byte-identical results, verified across four queries including one the system
+          is supposed to refuse. That test is what makes the duplication safe to keep rather
+          than a bug waiting to happen.
+        </p>
+      </div>
+
+      <div class="defect">
+        <span class="k">Caught before it could bite</span>
+        <h4>A module named <code>trace</code> would have shadowed Python's own</h4>
+        <p>
+          The file was first written as <code>src/trace.py</code>. Python has a built-in module
+          called <code>trace</code>, and because <code>src/</code> is searched first, every
+          library in the project asking for the standard one would silently have received mine
+          instead &mdash; a failure that surfaces far from its cause, in someone else's code.
+          Renamed to <code>pipeline_trace.py</code>.
+        </p>
+      </div>
+
+      <div class="body-text">
+        <p>
+          The interface immediately earned its place by exposing a defect rather than hiding
+          one. Asked how normalisation statistics are computed <em>across features rather than
+          examples</em>, the system still ranks Batch Normalization first &mdash; which is the
+          concept the phrase &ldquo;rather than examples&rdquo; explicitly rules out. That is the
+          known cross-document confusion from Phase 2, no longer a paragraph in a results file
+          but a visible line on a chart.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STRATEGY ============ -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Why build this when NotebookLM exists</h2></div>
+    <p class="stage-sub">The honest answer is not &ldquo;better answers&rdquo;, and pretending otherwise would be the weaker position.</p>
+
+    <div class="card">
+      <div class="body-text">
+        <p>
+          A hand-built system will not beat Google's NotebookLM or an enterprise product like
+          Glean on raw answer quality. They have better underlying models, far more compute, and
+          teams working on nothing else. Competing there means losing on their terms.
+        </p>
+        <p>
+          But both share a structural weakness, and it is not an oversight &mdash; it follows
+          from being a polished consumer product. They are closed systems that always sound
+          confident. You cannot see why a passage was chosen, cannot measure whether a change
+          helped, and are never told the system is unsure. That is defensible ground precisely
+          because they cannot concede it without becoming a different kind of product.
+        </p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Question a user actually has</th><th>Closed product</th><th>This system</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Why did it return <em>that</em>?</td><td>No answer available</td><td>Every stage inspectable, with scores</td></tr>
+            <tr><td>Did my change make it better?</td><td>No numbers exist</td><td>84 labelled cases, four measured configurations</td></tr>
+            <tr><td>What if it does not know?</td><td>Answers anyway</td><td>Refuses below a calibrated threshold</td></tr>
+            <tr><td>What if my sources disagree?</td><td>Blended into one voice</td><td>Conflict surfaced; the judgement stays yours</td></tr>
+            <tr><td>Can I put it inside my own tool?</td><td>No &mdash; it is a destination</td><td>Yes &mdash; a library with an HTTP wrapper</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="body-text">
+        <p>
+          There is a second reason, and for a project whose stated purpose is learning it is the
+          stronger one. A system you assembled from parts is a system whose failures you can
+          diagnose. Every number in these notes was produced by a measurement you can re-run,
+          and four separate times a measurement overturned a decision that sounded obviously
+          right. That is not an experience a finished product can give you, because a finished
+          product's whole job is to prevent it.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DISCIPLINE ============ -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Four times measurement overturned the plan</h2></div>
+    <p class="stage-sub">The single most valuable habit in the project, stated as evidence rather than advice.</p>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>What seemed obvious</th><th>What measuring showed</th><th>Outcome</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Prefixing each chunk with its document title should help the retriever place it</td>
+              <td>No ranking benefit; source recall <em>fell</em> 0.051. The earlier apparent win came from changing two things at once</td>
+              <td>Built, measured, reverted</td>
+            </tr>
+            <tr>
+              <td>The reranker misses constraint words because it is too small</td>
+              <td>A model eight times larger fixed the same 2 of 10 cases, at 10 s per query. Capacity is not the bottleneck</td>
+              <td>Upgrade rejected</td>
+            </tr>
+            <tr>
+              <td>Tables retrieve badly and need special handling</td>
+              <td>Tables measured <em>easier</em> than prose &mdash; 0.952 against 0.800 &mdash; and 91&nbsp;% kept their headers</td>
+              <td>No code written</td>
+            </tr>
+            <tr>
+              <td>Re-indexing is slow because the index is rebuilt each time</td>
+              <td>Rebuilding the index is 0.01 s, 0&nbsp;% of runtime</td>
+              <td>Task redefined entirely</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="body-text">
+        <p>
+          Three of those four would have produced working, defensible code that improved
+          nothing. The fourth &mdash; title prefixing &mdash; was actively harmful and had already
+          been recorded as a success before a controlled re-test caught it. The cost of
+          measuring first was minutes each time.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MODULE MAP ============ -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>Phase 3 module map</h2></div>
+    <p class="stage-sub">What was added, and what each piece is responsible for.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File</th><th>Responsibility</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td><code>embedding_cache.py</code></td><td>Vectors keyed on chunk text + model name; one matrix plus a key map</td><td>free / local</td></tr>
+          <tr><td><code>parse_cache.py</code></td><td>Parsed text and finished chunks, keyed on file bytes + version + settings</td><td>free / local</td></tr>
+          <tr><td><code>ingest.py</code></td><td><code>_LazyModel</code>, <code>chunk_salt()</code>, guard limited to new chunks, progress events</td><td>free / local</td></tr>
+          <tr><td><code>pipeline_trace.py</code></td><td>Re-runs retrieval retaining every intermediate ranking</td><td>free / local</td></tr>
+          <tr><td><code>serve.py</code></td><td><code>GET /</code> inspector, <code>POST /api/trace</code>, <code>POST /ask</code>; shared resources behind a lock</td><td>free / local</td></tr>
+          <tr><td><code>ui/index.html</code></td><td>The inspector: bump chart, confidence gauge, per-stage tables. No external requests</td><td>free / local</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ OPEN ============ -->
+
+  <section class="stage">
+    <div class="stage-label"><h2>What Phase 3 leaves open</h2></div>
+    <p class="stage-sub">Stated plainly, because a status document that only lists wins is not a status document.</p>
+
+    <div class="card">
+      <div class="body-text">
+        <p>
+          <strong>The corpus is twenty PDFs and nothing else.</strong> Loaders for Word,
+          PowerPoint, Excel and scanned documents are written and have never run on real files.
+          The spreadsheet path is the least trustworthy: rows are serialised into
+          <code>Column: value</code> text on the assumption that this retrieves well, and that
+          assumption has no evidence behind it. This is the largest unknown in the system and
+          the cheapest to resolve.
+        </p>
+        <p>
+          <strong>Cross-document confusion is still unsolved</strong> at roughly 15&nbsp;% of
+          questions. The mechanism is understood &mdash; the retriever matches the topic and
+          ignores the constraint that distinguishes the answer &mdash; and the obvious fix has
+          been ruled out by measurement. The real fix is decomposing the query before
+          retrieving, which needs a language model.
+        </p>
+        <p>
+          <strong>Generation is unverified end to end.</strong> Retrieval-only was a deliberate
+          choice &mdash; it cannot hallucinate and costs nothing &mdash; but the path that writes
+          prose with inline citations has never completed a real call, because the account has
+          no credit. The code is written; the evidence is not.
+        </p>
+        <p>
+          <strong>Indexing progress is emitted but unread.</strong> <code>build_index()</code>
+          already reports structured events for every stage; nothing displays them yet.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /panel-p3 -->
+
 
   <footer class="colophon">
     rag-project &middot; mechanism notes &middot; all figures measured from the running system
