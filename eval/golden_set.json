@@ -229,28 +229,128 @@
       "question": "What learning rate schedule does BERT use?",
       "pages": [],
       "unanswerable": true,
-      "why": "BERT postdates this paper and is never mentioned"
+      "why": "BERT postdates this paper and is never mentioned",
+      "adversarial_kind": "absent"
     },
     {
       "id": "adv-cost",
       "question": "How many dollars did it cost to train the big model?",
       "pages": [],
       "unanswerable": true,
-      "why": "training cost is reported in FLOPs, never in currency"
+      "why": "training cost is reported in FLOPs, never in currency",
+      "adversarial_kind": "near-miss"
     },
     {
       "id": "adv-rlhf",
       "question": "What do the authors conclude about reinforcement learning from human feedback?",
       "pages": [],
       "unanswerable": true,
-      "why": "topic absent from the paper"
+      "why": "topic absent from the paper",
+      "adversarial_kind": "absent"
     },
     {
       "id": "adv-authors",
       "question": "Which of the authors previously worked at OpenAI?",
       "pages": [],
       "unanswerable": true,
-      "why": "affiliations are listed but no employment history"
+      "why": "affiliations are listed but no employment history",
+      "adversarial_kind": "metadata"
+    },
+    {
+      "id": "adv-diffusion",
+      "question": "What noise schedule does the diffusion model use?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "absent",
+      "why": "diffusion models are unrelated to this paper"
+    },
+    {
+      "id": "adv-gpt3-params",
+      "question": "How many parameters does GPT-3 have?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "absent",
+      "why": "GPT-3 postdates this paper"
+    },
+    {
+      "id": "adv-finetune",
+      "question": "How should the model be fine-tuned for sentiment classification?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "absent",
+      "why": "the paper covers training from scratch for translation only"
+    },
+    {
+      "id": "adv-review",
+      "question": "What did the peer reviewers say about this paper?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "metadata",
+      "why": "review commentary is not part of the document"
+    },
+    {
+      "id": "adv-funding",
+      "question": "Which grant funded this research?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "metadata",
+      "why": "no funding statement appears in the paper"
+    },
+    {
+      "id": "adv-license",
+      "question": "Under what software licence was the code released?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "metadata",
+      "why": "the paper mentions code availability but no licence terms"
+    },
+    {
+      "id": "adv-inference-time",
+      "question": "How long does the model take to run inference on one sentence?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "training time is reported in detail; inference latency never is"
+    },
+    {
+      "id": "adv-energy",
+      "question": "How much energy did training consume in kilowatt-hours?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "training cost is given in FLOPs, never in energy"
+    },
+    {
+      "id": "adv-decoder-layers",
+      "question": "How many layers does the decoder use in the big model?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "N is given for the base model; Table 3 varies other params, not decoder depth separately"
+    },
+    {
+      "id": "adv-val-split",
+      "question": "What percentage of the data was held out for validation?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "dev sets are named (newstest2013) but no split percentage is given"
+    },
+    {
+      "id": "adv-seed",
+      "question": "What random seed was used for the reported runs?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "extensive hyperparameters are listed; seeds are not"
+    },
+    {
+      "id": "adv-human-eval",
+      "question": "What did human evaluators rate the translation quality?",
+      "pages": [],
+      "unanswerable": true,
+      "adversarial_kind": "near-miss",
+      "why": "BLEU is reported throughout; no human evaluation was run"
     }
   ]
 }

@@ -4,6 +4,8 @@ import anthropic
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 
+from abstain import ABSTAIN_THRESHOLD, abstention_message, should_abstain
+from parent import expand
 from retrieve import EMBEDDING_MODEL, load_index, retrieve
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -30,11 +32,25 @@ def main():
 
     index, metadata = load_index()
     embed_model = SentenceTransformer(EMBEDDING_MODEL)
+    # Retrieve WITHOUT expansion first: the abstention gate reads the reranker's
+    # confidence on the small chunk it actually scored. Expanding to a whole page
+    # would dilute that judgement with surrounding text the reranker never saw.
+    ranked = retrieve(query, index, metadata, embed_model)
+
+    if should_abstain(ranked):
+        print(f"\n{abstention_message(query)}")
+        best = ranked[0] if ranked else None
+        if best:
+            print(f"\nClosest match was {best['source']}, page {best['page']} "
+                  f"(confidence {best['rerank_score']:+.2f}, "
+                  f"below threshold {ABSTAIN_THRESHOLD:+.1f}).")
+        return
+
     # expansion="page": rank on small chunks, then hand the model whole pages.
     # Measured to lift context recall 0.958 -> 1.000 at ~2.4x the token cost --
     # worth it here, since a citation the model cannot substantiate from the
     # text it was given is the failure this whole pipeline exists to prevent.
-    chunks = retrieve(query, index, metadata, embed_model, expansion="page")
+    chunks = expand(ranked, metadata, mode="page")
 
     context = build_context(chunks)
     client = anthropic.Anthropic()

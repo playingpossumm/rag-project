@@ -1,7 +1,8 @@
 # Retrieval evaluation results
 
 Corpus: `attention_is_all_you_need.pdf`, 15 pages → **64 chunks** (240 tokens, 40 overlap).
-Golden set: 24 answerable cases + 4 adversarial, labelled at page level.
+Golden set: **24 answerable + 16 adversarial** cases, labelled at page level, each
+answerable case carrying a verified answer string.
 Reproduce with `python src/evaluate.py [--candidate-k N] [--per-case]`.
 
 ## Headline: the pipeline vs. the naive baseline
@@ -86,22 +87,79 @@ over-credits any chunk that merely shares a page with the answer. Context recall
 check that catches it, which is the argument for building the measurement before the
 feature rather than after.
 
-## Abstention signal
+## Abstention — knowing when the corpus cannot answer
 
-Adversarial cases have no correct answer; a good system should be visibly less
-confident. Top-1 score on the four unanswerable questions:
+Nearest-neighbour search has no concept of "nothing here": it always returns `k`
+results, so a question about a topic the corpus has never seen still yields five
+chunks at scores indistinguishable from real matches. Handing those to a generator
+invites confabulation, and citations make confabulation look authoritative.
 
-| stage | scores |
-|---|---|
-| dense first stage (cosine) | +0.43, +0.34, +0.35, +0.27 |
-| after reranking (logits) | **−7.04**, +0.96, **−8.13**, **−9.90** |
+Cosine similarity structurally cannot fix this — every vector has some cosine to
+every other. Cross-encoder logits can, because the model is asked whether a passage
+*answers* a query rather than whether it resembles one.
 
-Cosine similarity cannot separate answerable from unanswerable — the scores sit in
-the same band as genuine matches. Cross-encoder logits separate three of four
-decisively, making **a negative rerank score a usable abstention threshold**. The
-survivor (`adv-cost`, "how many dollars did it cost to train") scores +0.96 because
-the paper *does* discuss training cost, just in FLOPs rather than currency — a
-near-miss rather than a failure of the signal.
+Calibrated against 24 answerable and **16 unanswerable** cases:
+
+| population | n | min | median | max |
+|---|---|---|---|---|
+| answerable | 24 | **+1.88** | +4.78 | +9.24 |
+| unanswerable | 16 | −11.06 | −8.10 | **+3.95** |
+
+Adversarial cases are grouped by *why* they are unanswerable, because the groups
+behave very differently:
+
+| kind | n | worst (highest) score | caught at threshold 0 |
+|---|---|---|---|
+| absent topic | 5 | −4.53 | **5 / 5** |
+| absent metadata | 4 | −5.34 | **4 / 4** |
+| near-miss | 7 | +3.95 | 5 / 7 |
+
+**All overlap between the populations comes from near-misses** — questions where the
+paper discusses the adjacent thing. That is why the adversarial set was expanded from
+4 cases to 16 with near-misses deliberately over-represented: an easy adversarial set
+would have produced a threshold that collapsed on the first realistic hard question.
+
+### Choosing the threshold — and not taking the sweep's optimum
+
+| threshold | unanswerable caught | answerable wrongly refused | net |
+|---|---|---|---|
+| −4 | 0.812 | 0.000 | 0.812 |
+| **0** | **0.875** | **0.000** | 0.875 |
+| +1 | 0.938 | 0.000 | **0.938** |
+| +2 | 0.938 | 0.042 | 0.896 |
+
+The sweep's best net separation is **+1**. The shipped threshold is **0**, deliberately:
+
+- The lowest answerable case scores **+1.88**. A threshold of +1 leaves 0.88 of margin
+  on a 24-case sample — tuning to the edge of the data rather than to the signal, and
+  the first unseen hard-but-answerable question gets refused.
+- **False abstention is the costlier error.** Refusing a question the corpus *can*
+  answer is worse than returning weak-but-cited context, because the citation lets a
+  reader judge for themselves.
+- Zero is where the logit's own semantics put the boundary: positive means the passage
+  answers the query. A threshold that needs justifying is worse than one that already
+  means something.
+
+The two survivors at zero are `adv-decoder-layers` (+3.95 — the paper does give N = 6
+for the base model) and `adv-cost` (+0.96 — training cost is given, in FLOPs not
+dollars). Both return cited context for a genuinely neighbouring question, which is a
+defensible outcome rather than a hallucination.
+
+### Verified end to end
+
+The abstention path runs entirely before any API call, so unlike generation it is
+fully verified despite the billing block:
+
+```
+$ python src/generate.py "What noise schedule does the diffusion model use?"
+
+The indexed documents do not appear to contain an answer to: '...'
+Rather than answer from general knowledge, which would be ungrounded and
+uncitable, the system is declining.
+
+Closest match was attention_is_all_you_need.pdf, page 8
+(confidence -10.57, below threshold +0.0).
+```
 
 ## Known remaining failures
 

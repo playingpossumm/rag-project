@@ -201,17 +201,45 @@ def main():
         n = len(with_answers)
         print(f"{label:<16}{hits / n:>12.3f}{toks / n:>14.0f}{blocks / n:>9.1f}")
 
-    # ---- Abstention signal ------------------------------------------------
-    print("\nADVERSARIAL top-1 score (no correct answer exists; lower is better)")
-    for label, cfg in (("dense + rerank", dict(fusion="none")),
-                       ("rrf + rerank", dict(fusion="rrf"))):
-        tops = []
-        for case in adversarial:
-            res = retrieve(case["question"], index, metadata, model, k=args.k,
-                           candidate_k=args.candidate_k, bm25=bm25,
-                           use_reranker=True, **cfg)
-            tops.append(res[0]["rerank_score"] if res else float("nan"))
-        print(f"  {label:<18}" + ", ".join(f"{s:+.2f}" for s in tops))
+    # ---- Abstention calibration -------------------------------------------
+    # Collect top-1 confidence for both populations, then sweep the threshold.
+    # A threshold picked by eyeballing a handful of scores is a guess; this is
+    # the tradeoff curve it should be picked from.
+    def top1(case):
+        res = retrieve(case["question"], index, metadata, model, k=args.k,
+                       candidate_k=args.candidate_k, bm25=bm25, use_reranker=True)
+        return res[0]["rerank_score"] if res else float("-inf")
+
+    ans_scores = [top1(c) for c in answerable]
+    adv_scores = [top1(c) for c in adversarial]
+
+    print("\nABSTENTION CALIBRATION")
+    print(f"  answerable   n={len(ans_scores):<3} min {min(ans_scores):+.2f}  "
+          f"median {sorted(ans_scores)[len(ans_scores) // 2]:+.2f}  max {max(ans_scores):+.2f}")
+    print(f"  unanswerable n={len(adv_scores):<3} min {min(adv_scores):+.2f}  "
+          f"median {sorted(adv_scores)[len(adv_scores) // 2]:+.2f}  max {max(adv_scores):+.2f}")
+
+    by_kind = {}
+    for case, score in zip(adversarial, adv_scores):
+        by_kind.setdefault(case.get("adversarial_kind", "?"), []).append(score)
+    print("  unanswerable by kind:")
+    for kind, scores in sorted(by_kind.items()):
+        print(f"    {kind:<11} n={len(scores):<3} max {max(scores):+.2f}  "
+              f"({', '.join(f'{s:+.1f}' for s in sorted(scores, reverse=True))})")
+
+    print(f"\n  {'threshold':>10}{'caught':>9}{'false abstain':>15}{'net':>8}")
+    best = None
+    for t in [-10, -8, -6, -5, -4, -3, -2, -1, 0, 1, 2]:
+        caught = sum(1 for s in adv_scores if s < t) / len(adv_scores)
+        false_ab = sum(1 for s in ans_scores if s < t) / len(ans_scores)
+        net = caught - false_ab
+        flag = ""
+        if best is None or net > best[1]:
+            best, flag = (t, net), ""
+        print(f"  {t:>10}{caught:>9.3f}{false_ab:>15.3f}{net:>8.3f}{flag}")
+    print(f"\n  best net separation at threshold {best[0]} (net {best[1]:.3f})")
+    print("  note: false abstention is the costlier error -- refusing a question the")
+    print("        corpus CAN answer is worse than answering a weak one with citations.")
 
 
 if __name__ == "__main__":
