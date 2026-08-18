@@ -68,7 +68,18 @@ def diversify(results: list[dict], k: int,
     # highest-scoring rejects is better than returning fewer results: the cap
     # exists to encourage breadth, not to withhold relevant material when the
     # corpus genuinely has only one source for the question.
-    return (chosen + overflow)[:k]
+    #
+    # Re-sorted by score because appending overflow at the end produces a list
+    # that is not in score order -- a reader going top-down would see a +3.87
+    # sitting below a -5.09 and reasonably conclude the ranking is broken. The
+    # cap decides WHICH passages are returned; score decides the order they are
+    # read in.
+    filled = (chosen + overflow)[:k]
+    return sorted(filled, key=_score, reverse=True)
+
+
+def _score(result: dict) -> float:
+    return float(result.get("rerank_score", result.get("score", 0.0)))
 
 
 def source_spread(results: list[dict]) -> dict:

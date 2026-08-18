@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import os
 import time
 
 import faiss
@@ -8,9 +9,14 @@ from sentence_transformers import SentenceTransformer
 
 from corpus_health import SUPPORTED, page_report, scan_unsupported, verdict
 from embedding_cache import embed_with_cache
+from parse_cache import ParseCache, file_key
 from loaders import extract_title, load_document
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+# Overridable so the corpus can live anywhere -- notably a Google Drive for
+# Desktop mount (G:/My Drive/...), which appears as an ordinary folder and needs
+# no API integration for files that are genuinely files.
+DATA_DIR = Path(os.environ.get("RAG_DATA_DIR",
+                               Path(__file__).parent.parent / "data")).expanduser()
 STORE_DIR = Path(__file__).parent.parent / "vector_store"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
@@ -32,9 +38,20 @@ CHUNK_OVERLAP_TOKENS = 40
 MAX_TITLE_CHARS = 90
 
 
-def extract_units(path: Path) -> list[dict]:
-    """Format-appropriate citable units: PDF pages, slides, sections, row blocks."""
-    return load_document(path)
+def extract_units(path: Path, cache: ParseCache | None = None) -> list[dict]:
+    """Format-appropriate citable units: PDF pages, slides, sections, row blocks.
+
+    Parsing is the slowest step once embeddings are cached, and it produces the
+    same output for the same bytes, so it caches on file content.
+    """
+    if cache is not None:
+        cached = cache.get(path)
+        if cached is not None:
+            return cached
+    units = load_document(path)
+    if cache is not None:
+        cache.put(path, units)
+    return units
 
 
 def chunk_text(text: str, tokenizer, size: int, overlap: int) -> list[str]:
@@ -81,7 +98,7 @@ def embedding_text(title: str, locator: dict, chunk: str) -> str:
     return f"{short} ({locator['kind']} {locator['value']}). {chunk}"
 
 
-def build_chunks(path: Path, tokenizer) -> tuple[list[dict], dict, tuple]:
+def build_chunks(path: Path, tokenizer, cache: ParseCache | None = None) -> tuple[list[dict], dict, tuple]:
     """Chunk one document, and report on whether it extracted usably.
 
     Returns (chunks, health_report, verdict). A document that extracted to
@@ -89,7 +106,7 @@ def build_chunks(path: Path, tokenizer) -> tuple[list[dict], dict, tuple]:
     Chunking stays inside a unit, so no chunk ever spans two citable locations --
     which is what keeps each chunk's citation unambiguous.
     """
-    units = extract_units(path)
+    units = extract_units(path, cache)
     report = page_report(units)
     status, reason = verdict(report)
     title = extract_title(units, path)
@@ -140,8 +157,12 @@ def _print_progress(event: dict) -> None:
     elif stage == "cache":
         reused, computed = event["reused"], event["computed"]
         pct = 100 * reused / max(event["requested"], 1)
-        print(f"  cache: {reused} reused ({pct:.0f}%), {computed} computed, "
+        print(f"  embeddings: {reused} reused ({pct:.0f}%), {computed} computed, "
               f"{event['entries']} entries / {event['megabytes']} MB", flush=True)
+        if "parse_hits" in event:
+            print(f"  parsing:    {event['parse_hits']} reused, "
+                  f"{event['parse_misses']} parsed, "
+                  f"{event['parse_cache_mb']} MB", flush=True)
     elif stage == "done":
         print(f"Indexed {event['chunks']} chunks from {event['indexed']} document(s) "
               f"in {event['seconds']:.0f}s", flush=True)
@@ -175,9 +196,11 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
     for path, reason in scan_unsupported(data_dir):
         emit({"stage": "skip_unsupported", "document": path.name, "reason": reason})
 
+    parse_cache = ParseCache()
+
     all_chunks, skipped = [], []
     for i, doc_path in enumerate(docs, start=1):
-        chunks, report, (status, reason) = build_chunks(doc_path, model.tokenizer)
+        chunks, report, (status, reason) = build_chunks(doc_path, model.tokenizer, parse_cache)
         emit({
             "stage": "parse", "current": i, "total": len(docs),
             "document": doc_path.name, "status": status, "detail": reason,
@@ -212,7 +235,9 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
     # Only chunks whose text is new to the cache are actually encoded, so adding
     # one document to an existing corpus costs one document's worth of work.
     embeddings, cache_stats = embed_with_cache(texts, model, EMBEDDING_MODEL)
-    emit({"stage": "cache", **cache_stats})
+    # Entries for documents no longer present would accumulate forever.
+    parse_cache.prune({file_key(p) for p in docs})
+    emit({"stage": "cache", **cache_stats, **parse_cache.stats()})
     faiss.normalize_L2(embeddings)
 
     dim = embeddings.shape[1]

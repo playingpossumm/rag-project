@@ -23,6 +23,18 @@ MIN_WORDS_PER_PAGE = 20
 SUSPECT_PAGE_FRACTION = 0.5
 
 SUPPORTED = {".pdf", ".docx", ".pptx", ".xlsx"}
+# Google Drive for Desktop represents NATIVE Google files as tiny JSON pointers
+# containing a URL and no document content whatsoever. They look like documents
+# in a folder listing and are nothing of the kind, so they get their own message
+# rather than a generic "unrecognised type" -- the fix is completely different
+# (export via the Drive API, not "write a loader").
+GOOGLE_NATIVE = {
+    ".gdoc": "native Google Doc",
+    ".gsheet": "native Google Sheet",
+    ".gslides": "native Google Slides",
+    ".gdraw": "native Google Drawing",
+}
+
 KNOWN_UNSUPPORTED = {
     ".doc": "legacy Word -- save as .docx first",
     ".xls": "legacy Excel -- save as .xlsx first",
@@ -76,6 +88,13 @@ def scan_unsupported(data_dir: Path) -> list[tuple[Path, str]]:
     for path in sorted(data_dir.iterdir()):
         if not path.is_file() or path.suffix.lower() in SUPPORTED:
             continue
-        reason = KNOWN_UNSUPPORTED.get(path.suffix.lower(), "unrecognised file type")
+        suffix = path.suffix.lower()
+        if suffix in GOOGLE_NATIVE:
+            reason = (f"{GOOGLE_NATIVE[suffix]} -- this file is a link, not the "
+                      f"document. Its contents live in Google's servers and cannot "
+                      f"be read from disk. Export it to PDF/.docx/.xlsx, or add "
+                      f"Drive API export.")
+        else:
+            reason = KNOWN_UNSUPPORTED.get(suffix, "unrecognised file type")
         out.append((path, reason))
     return out
