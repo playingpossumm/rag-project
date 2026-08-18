@@ -121,3 +121,41 @@ cases, and costs 2× latency.
 **Conclusion: this is a query-side problem.** The fix is decomposing the
 constraint out of the question before retrieval, which needs an LLM — deferred
 rather than guessed at.
+
+## Tables are a strength here, not a weakness
+
+Table-aware retrieval was scoped as the next piece of work on the assumption that
+tables chunk badly. Measured first:
+
+| | n | any-hit | MRR | src recall |
+|---|---|---|---|---|
+| **table-answered** | 21 | **0.952** | **0.821** | 0.726 |
+| prose-answered | 45 | 0.800 | 0.723 | 0.796 |
+
+Questions whose answer sits in a table are **15 points easier**, not harder. And
+91% of table chunks retain their markdown header separator, so the feared
+orphaned-rows problem (numbers with no column names) affects ~0.4% of the corpus.
+
+The reason is straightforward once measured: a results table is lexically dense
+and distinctive — `MaxSim`, `152`, `28.4`, `WSJ 23 F1` — which is precisely what
+BM25 and a cross-encoder latch onto. Prose is diffuse by comparison.
+
+**No work done, because there was no problem to solve.**
+
+### Why this must not be generalised
+
+This corpus's tables are small academic results tables. A financial spreadsheet
+is a different object:
+
+| academic results table | financial spreadsheet |
+|---|---|
+| tens of rows | thousands |
+| distinctive terms per cell | repeated numbers, few unique tokens |
+| meaning in the caption | meaning in row/column *position* |
+| read as a unit | queried by intersection ("Q3, EMEA") |
+
+Nothing measured here says anything about the second column. The `.xlsx` loader
+already serialises rows as `Column: value` pairs for exactly that reason, but that
+choice is **unvalidated** — no spreadsheet has been evaluated. Testing on real
+financial data is the only way to know, and it is likely to produce a different
+answer.
