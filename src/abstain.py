@@ -15,30 +15,36 @@ The threshold here is calibrated in evaluate.py against labelled answerable and
 unanswerable cases rather than chosen by intuition. See eval/RESULTS.md.
 """
 
-# Calibrated on 24 answerable + 16 unanswerable cases (`python src/evaluate.py`).
+# RECALIBRATED for the 20-document corpus. The previous value (0.0) was tuned on
+# a single-paper corpus where anything off-topic was WILDLY off-topic; that
+# separation does not survive a corpus of adjacent ML papers, where almost any
+# ML question finds plausibly-related material. This is the clearest evidence in
+# the project that a threshold is a property of a corpus, not of a model --
+# re-run `python src/evaluate.py` after any substantial corpus change.
 #
-#   answerable    min +1.88   median +4.78   max  +9.24
-#   unanswerable  min -11.06  median -8.10   max  +3.95
+# Measured on 23 answerable + 10 unanswerable cases:
 #
-# Zero is chosen deliberately over the sweep's arithmetic optimum of +1, which
-# scored marginally better on this sample. Two reasons:
+#   answerable    min -2.92   median +5.05   max +8.75
+#   unanswerable  min -8.96   median -3.12   max +1.09
 #
-#   1. The lowest answerable case sits at +1.88. A threshold of +1 leaves 0.88
-#      of margin on a 24-case sample -- that is tuning to the edge of the data
-#      rather than to the signal, and the first unseen hard-but-answerable
-#      question would be refused.
-#   2. Zero is where the logit's own semantics put the boundary: positive means
-#      the passage answers the query, negative means it does not. A threshold
-#      that needs justifying is worse than one that is already meaningful.
+# The distributions overlap, but not messily. Sorted, there is a clean gap:
 #
-# At zero the gate catches 5/5 "absent topic" and 4/4 "absent metadata" cases --
-# every question about something the corpus has never heard of. The two that get
-# through are both near-misses where the paper genuinely discusses the adjacent
-# material (decoder depth, training cost in FLOPs rather than dollars). Returning
-# cited context there is defensible: the citation lets a reader see for
-# themselves that the cited page answers a neighbouring question, which is a far
-# better failure than a confident answer about diffusion models.
-ABSTAIN_THRESHOLD = 0.0
+#   highest unanswerable      +1.09   (adv-seed)
+#   ---- threshold sits here ----
+#   second-lowest answerable  +2.21   (p100)
+#
+# 1.5 sits in that gap. It flags 10/10 unanswerable questions and exactly one
+# answerable case: `adam` at -2.92, which asks "which optimizer, and with what
+# beta values" -- a question four papers answer differently. Low confidence
+# there is arguably correct rather than a mistake: the system genuinely cannot
+# tell which paper was meant.
+#
+# Note what this threshold does and does not do. `api.ask` NEVER withholds
+# passages; the flag is advisory and the citations are always returned, so a
+# reader can judge for themselves. Only `generate.py` refuses outright, because
+# spending money to synthesise prose from a weak retrieval is the one case where
+# proceeding has a real cost.
+ABSTAIN_THRESHOLD = 1.5
 
 
 def top_score(results: list[dict]) -> float:

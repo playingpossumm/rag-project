@@ -22,14 +22,17 @@ from functools import lru_cache
 
 from sentence_transformers import SentenceTransformer
 
+from abstain import ABSTAIN_THRESHOLD
 from hybrid import build_bm25
 from parent import expand
 from retrieve import CANDIDATE_K, EMBEDDING_MODEL, TOP_K, load_index, retrieve
 
-# Lower than the abstention gate's own default: refusing an answerable question
-# is the costlier error here, and confidence is returned on every response so a
-# caller can apply a stricter bar without the pipeline hiding results from them.
-DEFAULT_MIN_CONFIDENCE = -2.0
+# Shares the calibrated threshold with the abstention gate (see abstain.py for
+# the measurement). Safe to use the same value here because this flag is
+# ADVISORY: `ask` always returns its passages and citations regardless, so a
+# low-confidence result is labelled rather than withheld. Refusing an answerable
+# question is the costlier error, and nothing is refused on this path.
+DEFAULT_MIN_CONFIDENCE = ABSTAIN_THRESHOLD
 
 
 @dataclass
