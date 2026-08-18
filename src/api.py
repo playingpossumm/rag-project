@@ -34,6 +34,21 @@ from retrieve import CANDIDATE_K, EMBEDDING_MODEL, TOP_K, load_index, retrieve
 # question is the costlier error, and nothing is refused on this path.
 DEFAULT_MIN_CONFIDENCE = ABSTAIN_THRESHOLD
 
+# Measured on the 84-case golden set (context recall / tokens per query):
+#
+#   none (chunks)   0.742 @   997      window +/-1  0.833 @ 2371
+#   page            0.848 @ 4828
+#
+# Window is the better trade: it recovers 91 of the 106 points page gains over
+# raw chunks, for less than half the context. Page was the earlier default
+# because on a 23-case set window measured no better than raw chunks at all --
+# one of three conclusions that reversed when the test set grew.
+#
+# Page remains available and is the right choice where a citation must point at
+# a complete unit a reader can verify in one place -- a contract clause read
+# half-in and half-out of context is worse than useless.
+DEFAULT_EXPANSION = "window"
+
 
 @dataclass
 class Passage:
@@ -76,7 +91,7 @@ def ask(
     question: str,
     k: int = TOP_K,
     candidate_k: int = CANDIDATE_K,
-    expansion: str = "page",
+    expansion: str = DEFAULT_EXPANSION,
     min_confidence: float = DEFAULT_MIN_CONFIDENCE,
     generate: bool = False,
 ) -> Answer:
