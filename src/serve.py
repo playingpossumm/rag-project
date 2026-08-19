@@ -37,6 +37,8 @@ from api import ask
 HOST, PORT = "127.0.0.1", 8000
 MAX_BODY = 64 * 1024  # a question is small; refuse anything that clearly is not
 UI_FILE = Path(__file__).parent.parent / "ui" / "index.html"
+AMBIENT_FILE = Path(__file__).parent.parent / "ui" / "ambient.html"
+EVAL_FILE = Path(__file__).parent.parent / "eval" / "results.json"
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -219,6 +221,21 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, UI_FILE.read_bytes(), "text/html; charset=utf-8")
 
+        elif route == "/ambient":
+            if not AMBIENT_FILE.exists():
+                self._send(404, {"error": "ui/ambient.html is missing"})
+                return
+            self._raw(200, AMBIENT_FILE.read_bytes(), "text/html; charset=utf-8")
+
+        elif route == "/api/eval":
+            # Static passthrough of what evaluate.py wrote. The UI shows measured
+            # numbers rather than restating them, so a stale README cannot make
+            # the interface lie; if the file is absent the view says so.
+            if not EVAL_FILE.exists():
+                self._send(404, {"error": "eval/results.json is missing -- run python src/evaluate.py"})
+                return
+            self._raw(200, EVAL_FILE.read_bytes(), "application/json; charset=utf-8")
+
         elif route == "/api/corpus":
             self._send(200, {**RES.corpus(), "examples": EXAMPLES})
 
@@ -301,6 +318,7 @@ def main():
     stats = RES.corpus()
     print(f"Ready on http://{host}:{port}")
     print(f"  inspector  http://{host}:{port}/")
+    print(f"  ambient    http://{host}:{port}/ambient   (generative options, side by side)")
     print(f"  api        POST /ask, POST /api/trace")
     print(f"  corpus     {stats['chunks']} chunks from {stats['documents']} documents")
     if host not in ("127.0.0.1", "localhost"):

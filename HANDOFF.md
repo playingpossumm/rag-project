@@ -200,9 +200,21 @@ skill is a standalone copy).
    files already work today via `RAG_DATA_DIR`.
 6. **No permissions model.** Fine for a local single-user tool; would matter if
    this ever served more than one person.
+7. **The isometric architecture map is requested but not built.** The owner asked
+   for this directly — "I want to implement that kind of visual thing of the
+   architecture map" — and the `architecture-map` skill was installed for it.
+   Nothing has been built yet. It is a *separate* piece of work from the UI
+   redesign: it maps the repo's own structure (27 modules across ingestion,
+   caching, retrieval, serving and evaluation), not the retrieval interface.
+   Strong portfolio value for the same reason the Inspector has it — it shows the
+   system rather than claiming things about it. The skill's own rule matches this
+   project's discipline: *prose, groups and flows are authored; counts, coverage
+   and geometry are measured* — so give it `README.md` and `HANDOFF.md` for the
+   authored half rather than letting it invent one.
 
 Ranked by value: **(1) is worth more than everything else combined**, and only the
-owner can unblock it.
+owner can unblock it. **(7) is the next most valuable** — it is explicitly wanted,
+fully unblocked, and needs nothing from anyone.
 
 ---
 
