@@ -5,285 +5,284 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Retrieval Inspector</title>
 <style>
+/* ---------------------------------------------------------------- type
+   Inter and DM Mono, served from this repo. No CDN, no external request: the
+   corpus this indexes may be private, and a page about private documents
+   should not announce itself to a font host on load. */
+@font-face{font-family:Inter;src:url("/fonts/Inter-400_700.woff2") format("woff2");
+  font-weight:400 700;font-display:swap;font-style:normal}
+@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-400.woff2") format("woff2");
+  font-weight:400;font-display:swap;font-style:normal}
+@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-500.woff2") format("woff2");
+  font-weight:500;font-display:swap;font-style:normal}
+
 /* ============================================================== tokens
+   Light ground, monochrome discipline. The greys are a single neutral ramp so
+   nothing competes with the data; the only colour on the page belongs to
+   documents, and only to documents that reached an answer.
+
    Series colours are NOT hand-picked. They are the first three slots of a
-   documented categorical palette, validated with the all-pairs check against
-   the two surfaces below -- lines can sit anywhere, so an adjacent-only check
-   would hide a collapse. Worst CVD dE 9.2 light / 9.4 dark; normal-vision
-   24.0 / 20.9. Only three: no ordering of more clears the all-pairs floor, so
-   a fourth document folds to grey and is identified by its direct label. */
+   documented categorical palette, validated all-pairs against this page's
+   surfaces -- lines can sit anywhere, so an adjacent-only check would hide a
+   collapse. Worst CVD dE 9.2, normal vision 24.0. Only three: no ordering of
+   more clears the all-pairs floor, so a fourth document folds to grey and is
+   identified by its direct label. */
 :root{
-  --ground:#F6F7F9; --panel:#FFFFFF; --sunk:#EDEFF3;
-  --ink:#151A21; --muted:#5D6875; --faint:#8A94A1;
-  --line:#DFE3E9; --line-soft:#EAEDF1;
+  --bg:#F4F5F6;
+  --panel:#FFFFFF;
+  --sunk:#ECEEEF;
+  --ink:#0E1011;
+  --soft:#3C4142;
+  --muted:#6E7476;
+  --faint:#9AA0A2;
+  --line:#E2E4E6;
+  --rule:#CDD1D3;
+
   --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
-  --series-other:#8A94A1;
+  --series-other:#9AA0A2;
+  --good:#0ca30c; --critical:#d03b3b; --serious:#b3705f;
 
-  /* Status is fixed, never themed, and never reused for a series. */
-  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
-
-  --serif:"Iowan Old Style",Charter,Cambria,"Palatino Linotype",Georgia,serif;
-  --sans:system-ui,-apple-system,"Segoe UI Variable Text","Segoe UI",sans-serif;
-  --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
-  --shadow:0 1px 2px rgba(20,26,34,.04);
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --ground:#0E1216; --panel:#151A20; --sunk:#1B2128;
-  --ink:#E7EBEF; --muted:#95A0AD; --faint:#6C7885;
-  --line:#242C35; --line-soft:#1E252D;
-  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
-  --series-other:#6C7885;
-  --shadow:0 1px 2px rgba(0,0,0,.35);
-}}
-:root[data-theme="dark"]{
-  --ground:#0E1216; --panel:#151A20; --sunk:#1B2128;
-  --ink:#E7EBEF; --muted:#95A0AD; --faint:#6C7885;
-  --line:#242C35; --line-soft:#1E252D;
-  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
-  --series-other:#6C7885;
-  --shadow:0 1px 2px rgba(0,0,0,.35);
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --max:1280px;
+  --pad:clamp(1.25rem,4vw,3.25rem);
 }
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
-  font-size:15px;line-height:1.6}
-.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-h1,h2,h3{margin:0;font-family:var(--serif);font-weight:600;letter-spacing:-.012em;
-  text-wrap:balance}
-a{color:var(--series-1)}
-button{font:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;letter-spacing:-.006em;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.022em;line-height:1.08}
+button{font:inherit;color:inherit}
 
-.wrap{max-width:1220px;margin:0 auto;padding:0 30px 100px}
+/* The micro-label. Used on every panel, axis and field on the page -- it is
+   the single device that makes a screen read as an instrument. */
+.lab{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
-/* ---------------------------------------------------------- masthead */
-header{position:relative;border-bottom:1px solid var(--line);background:var(--panel);
-  overflow:hidden}
-header canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.head{position:relative;max-width:1220px;margin:0 auto;padding:20px 30px;
-  display:flex;align-items:center;gap:22px;flex-wrap:wrap}
-.head h1{font-size:21px;flex:0 0 auto}
-.head .readout{font-family:var(--mono);font-size:11px;color:var(--faint);
-  letter-spacing:.05em;line-height:1.5;margin-left:auto;text-align:right}
-.themer{border:1px solid var(--line);background:var(--panel);color:var(--muted);
-  border-radius:3px;padding:6px 12px;font-size:12.5px;cursor:pointer}
-.themer:hover{color:var(--ink);border-color:var(--faint)}
+/* ------------------------------------------------------------- masthead
+   A folio line, not a navbar: it names the artifact and gets out of the way. */
+.folio{border-bottom:1px solid var(--rule);background:var(--panel)}
+.folio-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:54px;
+  display:flex;align-items:center;gap:22px}
+.folio .name{font-size:14px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.folio .rule{flex:1;height:1px;background:var(--rule)}
 
-/* ------------------------------------------------------------- steps */
-.step{margin:34px 0 0}
-.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--faint);margin:0 0 8px}
-.step > h2{font-size:23px;margin-bottom:6px}
-.step > p.lede{margin:0 0 18px;color:var(--muted);font-size:14.5px;max-width:70ch}
+.seg{display:flex;gap:0}
+.seg button{border:0;background:none;padding:6px 0;margin-left:22px;cursor:pointer;
+  font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);position:relative;white-space:nowrap}
+.seg button:hover{color:var(--soft)}
+.seg button[aria-pressed="true"]{color:var(--ink)}
+.seg button[aria-pressed="true"]::after{content:"";position:absolute;left:0;right:0;
+  bottom:-1px;height:1px;background:var(--ink)}
+.seg .lock{opacity:.55}
 
-.sources{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
-.source{position:relative;text-align:left;background:var(--panel);border:1px solid var(--line);
-  border-radius:3px;padding:18px 18px 16px;cursor:pointer;color:inherit}
-.source:hover{border-color:var(--faint)}
-.source[aria-pressed="true"]{border-color:var(--series-1);box-shadow:inset 0 0 0 1px var(--series-1)}
-.source h3{font-size:16px;margin-bottom:4px}
-.source p{margin:0;color:var(--muted);font-size:13px}
-.source .meta{font-family:var(--mono);font-size:10.5px;color:var(--faint);
-  margin-top:10px;letter-spacing:.05em}
-.badge{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--serious);border:1px solid currentColor;
-  border-radius:2px;padding:1px 5px;margin-left:8px;vertical-align:2px}
+.hint{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+.hint > div{border-top:1px solid var(--line);padding:8px 0;font-size:12.5px;color:var(--muted)}
+.hint b{color:var(--serious);font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;margin-right:10px;font-weight:500}
 
-/* --------------------------------------------------------------- ask */
-.ask{display:flex;gap:10px;flex-wrap:wrap}
-.ask input{flex:1 1 320px;min-width:0;padding:13px 15px;border:1px solid var(--line);
-  border-radius:3px;background:var(--panel);color:var(--ink);font:inherit;font-size:15px}
-.ask input:focus{outline:2px solid var(--series-1);outline-offset:-1px;border-color:transparent}
-.btn{padding:13px 24px;border:0;border-radius:3px;background:var(--ink);color:var(--ground);
-  font-weight:600;cursor:pointer;white-space:nowrap}
-.btn:hover{opacity:.88}
-.btn:disabled{opacity:.45;cursor:default}
-.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:500}
+/* ---------------------------------------------------------------- shell */
+.wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 96px}
 
-.suggest{margin:16px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
-.sug{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:3px;
-  padding:12px 14px;cursor:pointer;color:inherit}
-.sug:hover{border-color:var(--series-1)}
-.sug b{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
-  text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:5px}
-.sug span{font-size:13.5px;color:var(--ink);line-height:1.45}
+.ask{display:flex;border:1px solid var(--rule);background:var(--panel)}
+.ask input{flex:1;min-width:0;padding:16px 18px;border:0;background:none;color:var(--ink);
+  font:inherit;font-size:16px;letter-spacing:-.008em}
+.ask input:focus{outline:0}
+.ask:focus-within{border-color:var(--ink)}
+.ask button{border:0;background:var(--ink);color:var(--panel);padding:0 26px;
+  font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.ask button:disabled{opacity:.35;cursor:default}
 
-/* -------------------------------------------------------------- city */
-figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:3px;
-  overflow:hidden;box-shadow:var(--shadow)}
-.transport{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-  padding:11px 16px;border-bottom:1px solid var(--line-soft)}
-.transport button{border:1px solid var(--line);background:var(--panel);color:var(--ink);
-  border-radius:3px;padding:6px 13px;font-size:12.5px;cursor:pointer}
-.transport input[type=range]{flex:1;min-width:140px;accent-color:var(--series-1)}
-.transport .meta{font-family:var(--mono);font-size:11px;color:var(--faint)}
-#city{display:block;width:100%;height:360px}
-.caption{border-top:1px solid var(--line-soft);padding:14px 18px;color:var(--muted);
-  font-size:14px;min-height:58px}
-.caption b{color:var(--ink);font-weight:600;font-family:var(--serif);font-size:15px}
+/* Suggestions as typographic rows, not chips. */
+.sugs{margin-top:2px;border-top:1px solid var(--line)}
+.sug{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:baseline;
+  width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);
+  padding:11px 2px;cursor:pointer}
+.sug:hover{background:var(--panel)}
+.sug span{font-size:14.5px;color:var(--soft);letter-spacing:-.008em}
+.sug:hover span{color:var(--ink)}
 
-/* ------------------------------------------------------------ answer */
-.answer{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--good);
-  border-radius:3px;padding:22px 24px;box-shadow:var(--shadow)}
-.answer.declined{border-left-color:var(--critical)}
-.verdict{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
-  font-weight:700;color:var(--good);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.answer.declined .verdict{color:var(--critical)}
-.answer blockquote{margin:14px 0 0;font-family:var(--serif);font-size:18px;line-height:1.62;
-  border-left:2px solid var(--line);padding-left:16px}
-.cite{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:9px;
-  display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.cite i{width:9px;height:9px;border-radius:2px;display:inline-block}
-.answer .why{margin:14px 0 0;color:var(--muted);font-size:14px;max-width:74ch}
+/* --------------------------------------------------------------- panel */
+.panel{border:1px solid var(--rule);background:var(--panel);margin-top:26px}
+.phead{display:flex;align-items:center;gap:16px;padding:10px 16px;
+  border-bottom:1px solid var(--line);flex-wrap:wrap}
+.phead .right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.phead button{border:1px solid var(--rule);background:var(--panel);padding:5px 12px;
+  font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;cursor:pointer}
+.phead button:hover{border-color:var(--soft)}
+.phead input[type=range]{width:180px;accent-color:var(--ink)}
 
-details.more{margin-top:18px;border-top:1px solid var(--line-soft);padding-top:14px}
-details.more summary{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--series-1);list-style:none}
-details.more summary::-webkit-details-marker{display:none}
-details.more summary::before{content:"+ ";font-weight:700}
-details.more[open] summary::before{content:"\2212 "}
+#city{display:block;width:100%;height:430px}
+.caption{border-top:1px solid var(--line);padding:14px 16px;color:var(--muted);
+  font-size:13.5px;min-height:54px}
+.caption b{color:var(--ink);font-weight:600}
 
-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px}
-th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;
-  letter-spacing:.09em;color:var(--faint);font-weight:600;padding:0 12px 7px 0;
-  border-bottom:1px solid var(--line)}
-th.r,td.r{text-align:right;padding-left:18px;padding-right:0}
-td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line-soft);vertical-align:top}
+/* ---------------------------------------------- the answer — the climax */
+.answer{border-top:2px solid var(--good)}
+.answer.declined{border-top-color:var(--critical)}
+.abody{padding:26px 28px}
+.verdict{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.verdict .v{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--good)}
+.answer.declined .verdict .v{color:var(--critical)}
+.verdict .score{font-family:var(--mono);font-size:11px;color:var(--faint)}
+blockquote{margin:20px 0 0;font-size:21px;line-height:1.5;letter-spacing:-.018em;
+  max-width:34em;font-weight:400}
+.credit{display:flex;align-items:center;gap:10px;margin-top:16px;
+  font-family:var(--mono);font-size:10.5px;color:var(--muted);flex-wrap:wrap;
+  letter-spacing:.04em}
+.credit i{width:8px;height:8px;flex:none}
+.why{margin:16px 0 0;color:var(--muted);font-size:13.5px;max-width:64ch}
+.why b{color:var(--soft);font-weight:600}
+
+/* Typographic rows: label, thin rule, value, right-aligned status. */
+.rows{margin-top:24px;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:1fr 76px 1fr 70px;gap:16px;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--line)}
+.row .name{display:flex;align-items:center;gap:9px;font-size:13.5px;min-width:0}
+.row .name i{width:8px;height:8px;flex:none}
+.row .bar{height:2px;background:var(--sunk);position:relative}
+.row .bar i{position:absolute;inset:0 auto 0 0}
+.row .n,.row .s{font-family:var(--mono);font-size:10.5px;color:var(--faint);
+  letter-spacing:.04em}
+.row .s{text-align:right}
+
+details.more{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+details.more > summary{cursor:pointer;list-style:none;font-family:var(--mono);font-size:10px;
+  font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--soft)}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"+ "}
+details.more[open] > summary::before{content:"\2212 "}
+details.more > summary:hover{color:var(--ink)}
+
+/* -------------------------------------------------------------- tables */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-family:var(--mono);font-size:9.5px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.13em;color:var(--faint);
+  padding:0 14px 8px 0;border-bottom:1px solid var(--rule)}
+th.r,td.r{text-align:right;padding-left:20px;padding-right:0}
+td{padding:9px 14px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
 tr:last-child td{border-bottom:0}
-tr.out td{opacity:.55}
-.src{white-space:nowrap;font-size:12.5px}
-.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px}
-.loc{color:var(--faint);font-size:11px;font-family:var(--mono)}
-.snip{color:var(--muted);font-size:12.5px;line-height:1.5;
+tr.out{color:var(--faint)}
+tr.out .snip{opacity:.6}
+.src{white-space:nowrap;font-size:12.5px;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;flex:none}
+.loc{color:var(--faint);font-size:10px;font-family:var(--mono);margin-top:3px;
+  letter-spacing:.04em}
+.snip{color:var(--muted);font-size:12px;line-height:1.5;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .scroll{overflow-x:auto}
 
-/* ---------------------------------------------------------- settings */
-.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.setting{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:15px 16px}
-.setting h3{font-size:14.5px;margin-bottom:3px}
-.setting p{margin:0 0 10px;color:var(--muted);font-size:12.5px}
-.setting .val{font-family:var(--mono);font-size:12px;color:var(--faint)}
-.switch{display:flex;gap:6px;margin-top:8px}
-.switch button{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--muted);
-  border-radius:3px;padding:6px;font-size:12px;cursor:pointer}
-.switch button[aria-pressed="true"]{border-color:var(--series-1);color:var(--series-1)}
+/* ------------------------------------------------------------ settings */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+@media (max-width:960px){.grid2{grid-template-columns:1fr}}
+.settings{padding:4px 16px 12px}
+.setting{border-bottom:1px solid var(--line);padding:13px 0}
+.setting:last-child{border-bottom:0}
+.setting .top{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.setting h3{font-size:13px;font-weight:600;letter-spacing:-.008em}
+.setting .unit{margin-left:auto}
+.opts{display:flex;gap:0}
+.opt{background:none;border:0;border-left:1px solid var(--line);padding:3px 12px;
+  cursor:pointer;text-align:left;color:var(--faint);display:flex;flex-direction:column;gap:2px}
+.opt:first-child{border-left:0;padding-left:0}
+.opt:hover{color:var(--soft)}
+.opt[aria-pressed="true"]{color:var(--ink)}
+.opt .k{font-size:12px;white-space:nowrap}
+.opt .v{font-family:var(--mono);font-size:12px;letter-spacing:.02em}
+.opt[aria-pressed="true"] .v{font-weight:500}
 
-.notice{background:var(--sunk);border:1px solid var(--line-soft);border-radius:3px;
-  padding:12px 15px;color:var(--muted);font-size:13px;margin-top:14px}
-.notice b{color:var(--ink)}
+/* ---------------------------------------------------------- inspection */
+.stage{border-bottom:1px solid var(--line)}
+.stage:last-child{border-bottom:0}
+.stage > summary{cursor:pointer;list-style:none;padding:12px 16px;
+  display:grid;grid-template-columns:22px 1fr;gap:14px;align-items:baseline}
+.stage > summary::-webkit-details-marker{display:none}
+.stage > summary:hover{background:var(--sunk)}
+.stage .t{font-size:13px;font-weight:600;letter-spacing:-.008em}
+.stage .note{display:block;margin-top:3px}
+.stage .body{padding:0 16px 18px 52px}
+.stage .body > p{margin:0 0 14px;color:var(--muted);font-size:12.5px;max-width:74ch}
 
-.status{color:var(--muted);font-size:14px;padding:40px 0;text-align:center}
 .err{color:var(--critical)}
 .hide{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-@media (max-width:720px){.wrap,.head{padding-left:18px;padding-right:18px}
-  .head .readout{margin-left:0;text-align:left;width:100%}}
+@media (max-width:760px){
+  .folio-in{height:auto;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+  .folio .rule{display:none}
+  .seg button{margin-left:0;margin-right:20px}
+  .sug{grid-template-columns:1fr;gap:3px}
+  .row{grid-template-columns:1fr 60px}
+  .row .bar,.row .s{display:none}
+  .abody{padding:20px}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <canvas id="band" aria-hidden="true"></canvas>
-  <div class="head">
-    <h1>Retrieval Inspector</h1>
-    <div class="readout" id="readout">loading the index…</div>
-    <button class="themer" id="themer" type="button">Theme</button>
+<div class="folio">
+  <div class="folio-in">
+    <span class="name">Retrieval Inspector</span>
+    <span class="rule"></span>
+    <div class="seg" role="group" aria-label="Source">
+      <button id="src-sample" aria-pressed="true" type="button">Sample corpus</button>
+      <button id="src-folder" aria-pressed="false" type="button">Local folder <span class="lock">◇</span></button>
+      <button id="src-drive" aria-pressed="false" type="button">Drive <span class="lock">◇</span></button>
+    </div>
+    <span class="lab" id="readout">loading</span>
   </div>
-</header>
+  <div class="hint hide" id="hint"><div></div></div>
+</div>
 
 <div class="wrap">
 
-  <!-- 1 ................................................ choose a source -->
-  <section class="step" id="step-source">
-    <p class="eyebrow">Step one</p>
-    <h2>Where should it read from?</h2>
-    <p class="lede">Point it at documents you already have. Everything after this is the same
-      whichever you choose — the pipeline does not care where the files came from.</p>
-    <div class="sources">
-      <button class="source" id="src-sample" aria-pressed="true" type="button">
-        <h3>The sample corpus</h3>
-        <p>Twenty machine-learning papers, deliberately similar to one another so retrieval
-          has to tell close things apart.</p>
-        <div class="meta" id="src-sample-meta">—</div>
-      </button>
-      <button class="source" id="src-folder" aria-pressed="false" type="button">
-        <h3>A folder on this machine <span class="badge">not wired</span></h3>
-        <p>Point at any folder, including a synced Drive mount. A browser cannot read a real
-          filesystem path from a picker, so this needs a pasted path or drag-and-drop.</p>
-        <div class="meta">interface only · nothing is read</div>
-      </button>
-      <button class="source" id="src-drive" aria-pressed="false" type="button">
-        <h3>A Google Drive link <span class="badge">not wired</span></h3>
-        <p>Native Docs are pointers, not files, so this needs the Drive export API. Uploaded
-          PDFs and Office files already work through a synced folder.</p>
-        <div class="meta">interface only · nothing is fetched</div>
-      </button>
-    </div>
-    <div class="notice hide" id="mock-notice"></div>
-  </section>
+  <form class="ask" id="form">
+    <input id="q" placeholder="Ask a question about these documents" autocomplete="off"
+           aria-label="Your question">
+    <button id="go" type="submit">Trace</button>
+  </form>
+  <div class="sugs" id="sugs"></div>
 
-  <!-- 2 ....................................................... the ask -->
-  <section class="step" id="step-ask">
-    <p class="eyebrow">Step two</p>
-    <h2>Ask it something</h2>
-    <p class="lede">Type a question, or take one of these — they are chosen to show the
-      three behaviours worth seeing, including one the corpus cannot answer at all.</p>
-    <form class="ask" id="form">
-      <input id="q" placeholder="Ask a question about these documents…" autocomplete="off"
-             aria-label="Your question">
-      <button class="btn" id="go" type="submit">Trace it</button>
-    </form>
-    <div class="suggest" id="suggest"></div>
-  </section>
-
-  <!-- 3 ...................................................... the city -->
-  <section class="step" id="step-city">
-    <p class="eyebrow">Step three</p>
-    <h2>What the system did</h2>
-    <p class="lede">The whole city is here before you ask anything: every block is a document,
-      every road is a path a passage can take. A question lights a route through it.</p>
-    <figure>
-      <div class="transport">
+  <section class="panel">
+    <div class="phead">
+      <span class="lab">The pipeline</span>
+      <div class="right">
         <button id="play" type="button">Replay</button>
-        <span class="meta">Stage</span>
         <input type="range" id="p" min="0" max="100" value="0" aria-label="Stage">
-        <span class="meta" id="elapsed">idle</span>
+        <span class="lab num" id="elapsed">idle</span>
       </div>
-      <canvas id="city"></canvas>
-      <div class="caption" id="cap">Nothing traced yet. The city is at rest.</div>
-    </figure>
-  </section>
-
-  <!-- 4 .................................................... the answer -->
-  <section class="step hide" id="step-answer">
-    <p class="eyebrow">Step four</p>
-    <h2>The answer</h2>
-    <div id="answer"></div>
-  </section>
-
-  <!-- 5 .................................................... settings -->
-  <section class="step hide" id="step-settings">
-    <p class="eyebrow">Step five</p>
-    <h2>Change how it works</h2>
-    <p class="lede">Every one of these defaults was chosen by measurement, and the number that
-      chose it is printed underneath. Toggling re-lights the city from the trace you already
-      have; it does not re-run retrieval yet.</p>
-    <div class="settings" id="settings"></div>
-    <div class="notice">
-      <b>Not wired.</b> Re-running the pipeline with different settings needs an endpoint that
-      does not exist yet. Until it does, these controls change what the city shows, not what
-      the system did.
     </div>
+    <canvas id="city"></canvas>
+    <div class="caption" id="cap">Every block is a document, every road a path a passage can
+      take. Ask something and it lights a route.</div>
   </section>
 
-  <!-- 6 .................................................... inspection -->
-  <section class="step hide" id="step-inspect">
-    <p class="eyebrow">Step six</p>
-    <h2>Every stage, with its numbers</h2>
-    <p class="lede">The city is the summary. This is the same run with nothing left out.</p>
-    <div id="stages"></div>
+  <section class="panel answer hide" id="panel-answer">
+    <div class="phead"><span class="lab">Answer</span>
+      <div class="right"><span class="lab num" id="ansmeta"></span></div></div>
+    <div class="abody" id="answer"></div>
   </section>
+
+  <div class="grid2">
+    <section class="panel hide" id="panel-settings">
+      <div class="phead"><span class="lab">Settings</span>
+        <div class="right"><span class="lab">84 labelled cases</span></div></div>
+      <div class="settings" id="settings"></div>
+      <div class="caption" style="min-height:0;font-size:12px">
+        <b>Not wired.</b> The numbers are measured; the controls do not yet re-run retrieval.</div>
+    </section>
+
+    <section class="panel hide" id="panel-stages">
+      <div class="phead"><span class="lab">Stages</span>
+        <div class="right"><span class="lab">nothing dropped</span></div></div>
+      <div id="stages"></div>
+    </section>
+  </div>
 
 </div>
 
@@ -300,30 +299,26 @@ const nf = n => Number(n).toLocaleString();
 const clean = s => String(s).replace(/<br\s*\/?>/gi, " ").replace(/\s+/g, " ").trim();
 
 /* Chunks are cut on a token boundary, not a sentence one, so a passage
-   routinely starts and ends mid-word. Marking both ends says "this is a
-   fragment of something longer", which is what it is -- unmarked, it just
-   looks like the text is broken. */
+   routinely starts and ends mid-word. Marking both ends says "a fragment of
+   something longer", which is what it is -- unmarked it just looks broken. */
 const fragment = s => {
   const t = clean(s);
   if (!t) return t;
-  const head = /^[A-Z0-9"“(\[]/.test(t) ? "" : "… ";
-  const tail = /[.!?"”)\]]$/.test(t) ? "" : " …";
-  return head + t + tail;
+  return (/^[A-Z0-9"“(\[]/.test(t) ? "" : "… ") + t + (/[.!?"”)\]]$/.test(t) ? "" : " …");
 };
 
 const readInk = () => {
   const cs = getComputedStyle(document.body);
   const v = n => cs.getPropertyValue(n).trim();
   return { ink: v("--ink"), muted: v("--muted"), faint: v("--faint"), line: v("--line"),
-    lineSoft: v("--line-soft"), panel: v("--panel"), sunk: v("--sunk"),
+    lineSoft: v("--line"), panel: v("--panel"), sunk: v("--sunk"), rule: v("--rule"),
     s1: v("--series-1"), s2: v("--series-2"), s3: v("--series-3"),
     other: v("--series-other"), good: v("--good"), critical: v("--critical") };
 };
 
-let CITY = null, RUN = null, INK = readInk(), TRACE = null, CORPUS = null;
+let CITY = null, RUN = null, INK = readInk(), EVAL = null;
 const REPLAY_MS = 8000;
 
-/* ------------------------------------------------------------- canvas */
 const cv = $("#city"), ctx = cv.getContext("2d");
 function size() {
   const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -337,63 +332,49 @@ function render() {
   drawScene(ctx, CITY, RUN, INK, w, h, Number($("#p").value) / 100);
 }
 addEventListener("resize", render);
-
-/* ------------------------------------------------------------ ambient
-   Lattice in the masthead, at the intensity chosen after seeing all four
-   fields side by side. Purely decorative, so it fails silently. */
-import("/ambient-fields.js").then(() => {
-  if (window.AMBIENT) window.AMBIENT.lattice($("#band"), { seed: 7 });
-}).catch(() => {});
+// Webfonts land after first paint; the canvas draws its own labels, so it has
+// to be told to redraw or every label stays in the fallback face.
+if (document.fonts) document.fonts.ready.then(render);
 
 /* -------------------------------------------------------------- boot */
 Promise.all([
   fetch("/api/chunks").then(r => r.json()),
   fetch("/api/corpus").then(r => r.json()),
-]).then(([chunks, corpus]) => {
-  CITY = buildCity(chunks);
-  CORPUS = corpus;
-  $("#readout").innerHTML =
-    `${nf(corpus.chunks)} chunks · ${corpus.documents} documents<br>index loaded`;
-  $("#src-sample-meta").textContent =
-    `${corpus.documents} documents · ${nf(corpus.chunks)} chunks · indexed`;
-  renderSuggestions(corpus.examples || []);
-  render();
-}).catch(() => {
-  $("#readout").textContent = "could not reach the server";
-  $("#cap").innerHTML = `<span class="err">The server is not responding. Start it with
-    <code class="mono">.venv\\Scripts\\python.exe src\\serve.py</code>.</span>`;
-});
-
-function renderSuggestions(examples) {
-  $("#suggest").innerHTML = examples.map(x =>
+  fetch("/api/eval").then(r => r.ok ? r.json() : null).catch(() => null),
+]).then(([chunks, corpus, evalData]) => {
+  CITY = buildCity(chunks); EVAL = evalData;
+  $("#readout").textContent = `${nf(corpus.chunks)} chunks / ${corpus.documents} docs`;
+  $("#sugs").innerHTML = (corpus.examples || []).map(x =>
     `<button class="sug" type="button" data-q="${esc(x.q)}">
-       <b>${esc(x.label)}</b><span>${esc(x.q)}</span></button>`).join("");
-  $("#suggest").querySelectorAll(".sug").forEach(b => {
+       <span class="lab">${esc(x.label)}</span><span>${esc(x.q)}</span></button>`).join("");
+  $("#sugs").querySelectorAll(".sug").forEach(b => {
     b.onclick = () => { $("#q").value = b.dataset.q; run(b.dataset.q); };
   });
-}
+  render();
+}).catch(() => {
+  $("#readout").textContent = "server unreachable";
+  $("#cap").innerHTML = `<span class="err">Start the server:
+    <span class="num">.venv\\Scripts\\python.exe src\\serve.py</span></span>`;
+});
 
-/* ------------------------------------------------------- source picker
-   Only the sample corpus does anything. The other two are staged, and say so
-   rather than pretending -- a Drive field that silently does nothing is the
-   one thing a mockup must not ship. */
-const SOURCES = {
-  "src-sample": null,
-  "src-folder": `<b>Not wired.</b> Reading a local folder needs either a pasted path or
-    drag-and-drop that copies files into <code class="mono">data/</code> — a browser cannot
-    take a real filesystem path from a file picker. The pipeline itself already accepts any
-    directory through <code class="mono">RAG_DATA_DIR</code>.`,
-  "src-drive": `<b>Not wired.</b> A native Google Doc is a pointer with no content, so this
-    needs the Drive export API in <code class="mono">loaders.py</code>. PDFs and Office files
-    already work today through a synced Drive folder.`,
+/* -------------------------------------------------------- source picker
+   Selecting is selecting. The two unbuilt sources say so in one line and never
+   become the selection, so the app is never left in a dead state. */
+const LOCKED = {
+  "src-folder": "Reading a local folder needs a pasted path or drag-and-drop; a browser cannot take a filesystem path from a picker.",
+  "src-drive": "Native Google Docs are pointers, not files, so this needs the Drive export path.",
 };
-for (const id of Object.keys(SOURCES)) {
+for (const id of ["src-sample", "src-folder", "src-drive"]) {
   $("#" + id).onclick = () => {
-    for (const other of Object.keys(SOURCES))
-      $("#" + other).setAttribute("aria-pressed", String(other === id));
-    const note = SOURCES[id];
-    $("#mock-notice").className = note ? "notice" : "notice hide";
-    if (note) $("#mock-notice").innerHTML = note;
+    const locked = LOCKED[id];
+    if (!locked) {
+      for (const o of ["src-sample", "src-folder", "src-drive"])
+        $("#" + o).setAttribute("aria-pressed", String(o === id));
+      $("#hint").classList.add("hide");
+      return;
+    }
+    $("#hint").classList.remove("hide");
+    $("#hint").firstElementChild.innerHTML = `<b>not wired</b>${esc(locked)}`;
   };
 }
 
@@ -403,7 +384,7 @@ $("#form").onsubmit = e => { e.preventDefault(); run($("#q").value.trim()); };
 async function run(q) {
   if (!q || !CITY) return;
   $("#go").disabled = true;
-  $("#cap").textContent = "Running the pipeline…";
+  $("#cap").textContent = "Running";
   const t0 = performance.now();
   try {
     const r = await fetch("/api/trace", {
@@ -413,30 +394,23 @@ async function run(q) {
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || r.statusText);
     const ms = performance.now() - t0;
-    TRACE = data;
     INK = readInk();
     RUN = buildRun(data, CITY, INK);
-    $("#elapsed").textContent =
-      `pipeline ran in ${ms.toFixed(0)} ms · replayed ${(REPLAY_MS / ms).toFixed(0)}× slower`;
-    renderAnswer(data);
-    renderSettings();
-    renderStages(data);
-    for (const id of ["step-answer", "step-settings", "step-inspect"])
+    $("#elapsed").textContent = `${ms.toFixed(0)}ms · replay ${(REPLAY_MS / ms).toFixed(0)}×`;
+    renderAnswer(data); renderSettings(); renderStages(data);
+    for (const id of ["panel-answer", "panel-settings", "panel-stages"])
       $("#" + id).classList.remove("hide");
     play();
   } catch (err) {
     $("#cap").innerHTML = `<span class="err">${esc(err.message)}</span>`;
-  } finally {
-    $("#go").disabled = false;
-  }
+  } finally { $("#go").disabled = false; }
 }
 
 /* ---------------------------------------------------------- playback */
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 let raf = 0, playing = false;
-
 function setProgress(v, moveSlider = true) {
-  v = Math.max(0, Math.min(1, v));       // rAF can hand back a pre-start stamp
+  v = Math.max(0, Math.min(1, v));     // rAF can hand back a pre-start timestamp
   if (moveSlider) $("#p").value = Math.round(v * 100);
   render();
   if (!RUN) return;
@@ -449,7 +423,7 @@ function stopPlay() { playing = false; cancelAnimationFrame(raf); $("#play").tex
 function play() {
   stopPlay();
   if (reduced()) { setProgress(1); return; }
-  playing = true; $("#play").textContent = "Playing…";
+  playing = true; $("#play").textContent = "Playing";
   const t0 = performance.now();
   const step = now => {
     if (!playing) return;
@@ -466,116 +440,129 @@ $("#p").oninput = e => { stopPlay(); setProgress(Number(e.target.value) / 100, f
 function renderAnswer(data) {
   const v = data.verdict;
   const sel = data.stages[data.stages.length - 1].items;
-  const top = sel[0];
-  const ok = v.confident;
-  const colour = RUN.colour;
+  const ranked = data.stages.find(s => s.name === "reranked")?.items || [];
+  const top = sel[0], ok = v.confident, colour = RUN.colour;
 
-  const rows = (items, extra) => items.map(i => `
+  $("#panel-answer").className = "panel answer" + (ok ? "" : " declined");
+  $("#ansmeta").textContent = ok
+    ? `${sel.length} passages / ${new Set(sel.map(i => i.source)).size} docs` : "nothing returned";
+
+  /* Which documents answered, and how strongly -- grouped from what survived,
+     so it reports what was returned rather than what was merely considered. */
+  const byDoc = new Map();
+  for (const i of sel) {
+    const d = byDoc.get(i.source) || { source: i.source, n: 0, best: -Infinity };
+    d.n += 1; d.best = Math.max(d.best, i.score); byDoc.set(i.source, d);
+  }
+  const docs = [...byDoc.values()].sort((a, b) => b.best - a.best);
+  const lo = Math.min(...ranked.map(i => i.score), 0);
+  const hi = Math.max(...docs.map(d => d.best), lo + 1);
+  const rows = docs.map(d => `
+    <div class="row">
+      <div class="name"><i style="background:${colour(d.source)}"></i>${esc(shortDoc(d.source))}</div>
+      <div class="n">${d.n} psg</div>
+      <div class="bar"><i style="width:${Math.max(4, Math.round((d.best - lo) / (hi - lo) * 100))}%;
+        background:${colour(d.source)}"></i></div>
+      <div class="s">${d.best > 0 ? "+" : ""}${d.best.toFixed(2)}</div>
+    </div>`).join("");
+
+  const cand = ranked.map(i => `
     <tr class="${sel.some(s => s.chunk_id === i.chunk_id) ? "" : "out"}">
-      <td class="r mono" style="color:var(--faint)">${i.rank}</td>
+      <td class="r num">${i.rank}</td>
       <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(shortDoc(i.source))}</div>
           <div class="loc">${esc(i.locator)}</div></td>
       <td><div class="snip">${esc(clean(i.text))}</div></td>
-      <td class="r mono">${typeof i.score === "number" ? i.score : ""}</td>
-      <td class="r mono" style="color:var(--faint)">${extra(i)}</td>
+      <td class="r num">${typeof i.score === "number" ? i.score : ""}</td>
+      <td class="r num">${i.delta > 0 ? "+" + i.delta : i.delta < 0 ? i.delta : "·"}</td>
     </tr>`).join("");
 
-  const ranked = data.stages.find(s => s.name === "reranked")?.items || [];
-
   $("#answer").innerHTML = `
-    <div class="answer ${ok ? "" : "declined"}">
-      <div class="verdict">${ok ? "Answering" : "Declined — below the threshold"}
-        <span class="mono" style="color:var(--faint);letter-spacing:0;text-transform:none">
-          ${v.confidence > 0 ? "+" : ""}${v.confidence} against a threshold of ${v.threshold.toFixed(1)}
-        </span>
-      </div>
-      ${ok ? `
-        <blockquote>${esc(fragment(top.text))}</blockquote>
-        <div class="cite"><i style="background:${colour(top.source)}"></i>
-          ${esc(shortDoc(top.source))} · ${esc(top.locator)}</div>
-        <p class="why">Returned <b>verbatim</b>, not summarised — which is why it cannot
-          invent anything. Writing these passages into prose is an optional layer that has
-          never run here for want of API credit, so nothing on this page is generated.</p>
-      ` : `
-        <p class="why">${esc(v.explanation)}</p>
-        <p class="why">The passages below are what came closest. They are shown as
-          <b>rejected candidates</b>, not as an answer — returning the nearest topical match
-          to a question the corpus cannot answer is the failure this gate exists to prevent.</p>
-      `}
-      <details class="more">
-        <summary>Know more — every candidate the pipeline weighed</summary>
-        <p class="why" style="margin-top:12px">All ${ranked.length} candidates after reranking,
-          in the order the cross-encoder put them. The ${sel.length} that survived the diversity
-          cap are solid; the rest were considered and dropped.</p>
-        <div class="scroll"><table>
-          <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th>
-            <th class="r">Score</th><th class="r">Moved</th></tr></thead>
-          <tbody>${rows(ranked, i => (i.delta > 0 ? "↑" + i.delta : i.delta < 0 ? "↓" + -i.delta : "–"))}</tbody>
-        </table></div>
-      </details>
-    </div>`;
+    <div class="verdict"><span class="v">${ok ? "Answering" : "Declined"}</span>
+      <span class="score">${v.confidence > 0 ? "+" : ""}${v.confidence} against threshold ${v.threshold.toFixed(1)}</span>
+    </div>
+    ${ok ? `
+      <blockquote>${esc(fragment(top.text))}</blockquote>
+      <div class="credit"><i style="background:${colour(top.source)}"></i>
+        ${esc(shortDoc(top.source))} · ${esc(top.locator)}</div>
+      <p class="why">Returned <b>verbatim</b>, not summarised, which is why it cannot invent
+        anything. Writing these into prose is an optional layer that has never run here for
+        want of API credit.</p>
+    ` : `
+      <blockquote style="font-size:19px">The corpus does not contain this.</blockquote>
+      <p class="why">${esc(v.explanation)}</p>
+      <p class="why">The passages below came closest and are shown as <b>rejected
+        candidates</b>. Returning the nearest topical match to a question the corpus cannot
+        answer is the failure this gate exists to prevent.</p>
+    `}
+    ${docs.length ? `<div class="rows">${rows}</div>` : ""}
+    <details class="more">
+      <summary>Every candidate weighed</summary>
+      <p class="why">All ${ranked.length} after reranking, in the cross-encoder's order.
+        The ${sel.length} that survived the cap are solid; the rest were dropped.</p>
+      <div class="scroll"><table>
+        <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th>
+          <th class="r">Score</th><th class="r">Move</th></tr></thead>
+        <tbody>${cand}</tbody></table></div>
+    </details>`;
 }
 
-/* ---------------------------------------------------------- settings */
+/* ---------------------------------------------------------- settings
+   Each option carries the number that chose it, read from eval/results.json
+   rather than typed here -- a hard-coded 0.848 goes stale the next time the
+   harness runs and nobody notices. */
 function renderSettings() {
+  const e2e = EVAL?.end_to_end || {}, exp = EVAL?.expansion || {};
+  const g = (o, k) => (o && o[k] != null ? o[k].toFixed(3) : "—");
   const S = [
-    { h: "Reranking", p: "Re-scores the shortlist by reading question and passage together.",
-      v: "MRR 0.601 → 0.710; hit rate unchanged", opts: ["On", "Off"] },
-    { h: "Fusion", p: "How the two retrievers' rankings are combined.",
-      v: "RRF: +7.6 points of hit rate over dense alone", opts: ["RRF", "Weighted", "Dense only"] },
-    { h: "Diversity cap", p: "Most passages allowed from any one document.",
-      v: "2/src: +3.1 source recall for −1.6 any-hit", opts: ["2", "1", "None"] },
-    { h: "Context", p: "How far around each hit is returned.",
-      v: "window ±1: 0.833 recall at half page's tokens", opts: ["Window", "Page", "None"] },
+    { h: "Reranking", u: "MRR", opts: [
+        ["On", g(e2e["dense + rerank"], "mrr")], ["Off", g(e2e["dense, no rerank"], "mrr")]] },
+    { h: "Fusion", u: "hit rate", opts: [
+        ["RRF", g(e2e["rrf + rerank"], "hit_rate")],
+        ["Weighted", g(e2e["weighted + rerank"], "hit_rate")],
+        ["Dense", g(e2e["dense + rerank"], "hit_rate")]] },
+    { h: "Diversity cap", u: "source recall", opts: [
+        ["2/src", g(e2e["+ diversity 2/src"], "src_recall")],
+        ["1/src", g(e2e["+ diversity 1/src"], "src_recall")],
+        ["None", g(e2e["rrf + rerank"], "src_recall")]] },
+    { h: "Context", u: "context recall", opts: [
+        ["Window", g(exp["window +/-1"], "context_recall")],
+        ["Page", g(exp["page"], "context_recall")],
+        ["None", g(exp["none (chunks)"], "context_recall")]] },
   ];
   $("#settings").innerHTML = S.map((s, i) => `
     <div class="setting">
-      <h3>${s.h}</h3><p>${s.p}</p>
-      <div class="switch">${s.opts.map((o, k) =>
-        `<button type="button" aria-pressed="${k === 0}" data-g="${i}">${o}</button>`).join("")}</div>
-      <div class="val" style="margin-top:9px">${s.v}</div>
+      <div class="top"><h3>${s.h}</h3><span class="lab unit">${s.u}</span></div>
+      <div class="opts">${s.opts.map(([k, val], n) => `
+        <button class="opt" type="button" aria-pressed="${n === 0}" data-g="${i}">
+          <span class="k">${k}</span><span class="v">${val}</span></button>`).join("")}</div>
     </div>`).join("");
-  $("#settings").querySelectorAll("button").forEach(b => {
-    b.onclick = () => {
-      $("#settings").querySelectorAll(`button[data-g="${b.dataset.g}"]`)
-        .forEach(o => o.setAttribute("aria-pressed", String(o === b)));
-    };
+  $("#settings").querySelectorAll(".opt").forEach(b => {
+    b.onclick = () => $("#settings").querySelectorAll(`.opt[data-g="${b.dataset.g}"]`)
+      .forEach(o => o.setAttribute("aria-pressed", String(o === b)));
   });
 }
 
 /* -------------------------------------------------------- inspection */
 function renderStages(data) {
   $("#stages").innerHTML = data.stages.map((s, n) => `
-    <details class="more" style="background:var(--panel);border:1px solid var(--line);
-      border-radius:3px;padding:14px 18px;margin-bottom:10px;border-top:1px solid var(--line)">
-      <summary style="color:var(--ink);text-transform:none;letter-spacing:0;
-        font-family:var(--serif);font-size:16px">
-        ${n + 1}. ${esc(s.title)}
-        <span class="mono" style="color:var(--faint);font-size:11px">${esc(s.note)}</span>
-      </summary>
-      <p class="why" style="color:var(--muted);font-size:13.5px;margin:12px 0 0;max-width:78ch">
-        ${esc(s.detail)}</p>
-      <div class="scroll"><table>
-        <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th><th class="r">Score</th></tr></thead>
-        <tbody>${s.items.slice(0, 10).map(i => `
-          <tr><td class="r mono" style="color:var(--faint)">${i.rank}</td>
-            <td><div class="src"><span class="dot" style="background:${RUN.colour(i.source)}"></span>${esc(shortDoc(i.source))}</div>
-                <div class="loc">${esc(i.locator)}</div></td>
-            <td><div class="snip">${esc(clean(i.text))}</div></td>
-            <td class="r mono">${typeof i.score === "number" ? i.score : ""}</td></tr>`).join("")}
-        </tbody></table></div>
+    <details class="stage">
+      <summary><span class="lab num">${String(n + 1).padStart(2, "0")}</span>
+        <span><span class="t">${esc(s.title)}</span>
+          <span class="lab note">${esc(s.note)}</span></span></summary>
+      <div class="body">
+        <p>${esc(s.detail)}</p>
+        <div class="scroll"><table>
+          <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th><th class="r">Score</th></tr></thead>
+          <tbody>${s.items.slice(0, 8).map(i => `
+            <tr><td class="r num">${i.rank}</td>
+              <td><div class="src"><span class="dot" style="background:${RUN.colour(i.source)}"></span>${esc(shortDoc(i.source))}</div>
+                  <div class="loc">${esc(i.locator)}</div></td>
+              <td><div class="snip">${esc(clean(i.text))}</div></td>
+              <td class="r num">${typeof i.score === "number" ? i.score : ""}</td></tr>`).join("")}
+          </tbody></table></div>
+      </div>
     </details>`).join("");
 }
-
-/* --------------------------------------------------------------- theme */
-$("#themer").onclick = () => {
-  const now = document.documentElement.getAttribute("data-theme")
-    || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
-  document.documentElement.setAttribute("data-theme", now === "dark" ? "light" : "dark");
-  INK = readInk();
-  if (TRACE && CITY) RUN = buildRun(TRACE, CITY, INK);
-  render();
-};
 </script>
 </body>
 </html>

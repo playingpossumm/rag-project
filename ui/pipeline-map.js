@@ -322,10 +322,13 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
   /* 1 — roads. Always drawn, at rest and in use. */
   for (const r of city.roads) {
     const a = project(r.from.gx, r.from.gy, 0.2), b = project(r.to.gx, r.to.gy, 0.2);
-    ctx.strokeStyle = ink.line; ctx.lineWidth = 2.2; ctx.globalAlpha = 0.9;
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    ctx.strokeStyle = ink.panel; ctx.lineWidth = 1.1; ctx.globalAlpha = 1;
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    const n = Math.max(8, Math.round(len / 4));
+    ctx.fillStyle = ink.rule || ink.line; ctx.globalAlpha = 0.85;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      ctx.fillRect(a.x + (b.x - a.x) * t - 0.6, a.y + (b.y - a.y) * t - 0.6, 1.2, 1.2);
+    }
   }
   ctx.globalAlpha = 1;
 
@@ -366,12 +369,15 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
       const ph = legPhase(r.b === "index" ? "dense" : r.b);
       if (ph <= 0 || !r.colours.length) continue;
       const a = project(r.from.gx, r.from.gy, 0.2), b = project(r.to.gx, r.to.gy, 0.2);
-      // The lit carriageway, drawn over the permanent road.
-      ctx.strokeStyle = r.colours[0]; ctx.globalAlpha = 0.5; ctx.lineWidth = 2.6;
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(a.x + (b.x - a.x) * ph, a.y + (b.y - a.y) * ph);
-      ctx.stroke();
+      // The lit carriageway: the same dotted road, brighter, as far as the
+      // traffic has travelled.
+      const len = Math.hypot(b.x - a.x, b.y - a.y);
+      const n = Math.max(8, Math.round(len / 4));
+      ctx.fillStyle = r.colours[0]; ctx.globalAlpha = 0.55;
+      for (let i = 0; i <= n * ph; i++) {
+        const t = i / n;
+        ctx.fillRect(a.x + (b.x - a.x) * t - 0.8, a.y + (b.y - a.y) * t - 0.8, 1.6, 1.6);
+      }
       ctx.globalAlpha = 1;
       r.colours.forEach((col, i) => {
         const t = Math.max(0, Math.min(1, ph - i * 0.05));
@@ -410,16 +416,29 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
   const toScreen = q => ({ x: ox + (q.x - cx) * scale, y: oy + (q.y - cy) * scale });
   const c = run?.counts;
+  /* Canvas has no letter-spacing, so a tracked micro-label is drawn one glyph
+     at a time. Worth the loop: the tracking IS the device. */
+  const tracked = (text, x, y, px) => {
+    const gap = px * 0.16;
+    let w = 0;
+    for (const ch of text) w += ctx.measureText(ch).width + gap;
+    let cx = x - (w - gap) / 2;
+    for (const ch of text) {
+      ctx.fillText(ch, cx + ctx.measureText(ch).width / 2, y);
+      cx += ctx.measureText(ch).width + gap;
+    }
+  };
+
   const label = (anchor, title, sub, colourOverride, alpha = 1) => {
     ctx.globalAlpha = alpha;
     ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
     ctx.fillStyle = colourOverride || ink.ink;
-    ctx.font = '600 12.5px "Iowan Old Style", Charter, Cambria, Georgia, serif';
+    ctx.font = '600 12px Inter, system-ui, sans-serif';
     ctx.fillText(title, anchor.x, anchor.y);
     if (sub) {
       ctx.fillStyle = ink.faint;
-      ctx.font = '10px ui-monospace, "Cascadia Mono", Consolas, monospace';
-      ctx.fillText(sub, anchor.x, anchor.y + 12);
+      ctx.font = '500 9px "DM Mono", ui-monospace, Consolas, monospace';
+      tracked(sub.toUpperCase(), anchor.x, anchor.y + 13, 9);
     }
     ctx.globalAlpha = 1;
   };

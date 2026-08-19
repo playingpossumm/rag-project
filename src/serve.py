@@ -249,6 +249,18 @@ class Handler(BaseHTTPRequestHandler):
             ctype = "text/html" if route == "/pipeline" else "text/javascript"
             self._raw(200, f.read_bytes(), f"{ctype}; charset=utf-8")
 
+        elif route.startswith("/fonts/"):
+            # Inter and DM Mono, served from the repo rather than a CDN. The
+            # corpus this tool indexes may be private, and a page about private
+            # documents should not announce itself to a font host on load --
+            # which is also why the whole UI has no external requests at all.
+            name = route.rsplit("/", 1)[-1]
+            f = UI_FILE.parent / "fonts" / name
+            if name not in {p.name for p in (UI_FILE.parent / "fonts").glob("*.woff2")}:
+                self._send(404, {"error": f"no font {name}"})
+                return
+            self._raw(200, f.read_bytes(), "font/woff2")
+
         elif route == "/ambient-fields.js":
             # One narrow static route rather than a static-file server: the
             # generative fields are shared by the inspector and the chooser
