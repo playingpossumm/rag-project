@@ -239,6 +239,16 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, ARCH_FILE.read_bytes(), "text/html; charset=utf-8")
 
+        elif route in ("/pipeline", "/pipeline-map.js"):
+            # Prototype surface for the isometric pipeline map, kept separate
+            # from the Inspector while the figure is still being designed.
+            f = (UI_FILE.parent / "pipeline.html") if route == "/pipeline"                 else (UI_FILE.parent / "pipeline-map.js")
+            if not f.exists():
+                self._send(404, {"error": f"ui/{f.name} is missing"})
+                return
+            ctype = "text/html" if route == "/pipeline" else "text/javascript"
+            self._raw(200, f.read_bytes(), f"{ctype}; charset=utf-8")
+
         elif route == "/ambient-fields.js":
             # One narrow static route rather than a static-file server: the
             # generative fields are shared by the inspector and the chooser

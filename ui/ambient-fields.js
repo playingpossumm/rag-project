@@ -66,6 +66,14 @@ function noiseField(seed) {
 /* ------------------------------------------------------------- plumbing */
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+/* How loud a field is allowed to be, as a multiplier on every alpha it sets.
+   0.6 rather than 1 because that is what was chosen after seeing all four at
+   full strength side by side: present enough to notice, quiet enough to read
+   dense tables over. It is the default rather than a caller's argument so the
+   chooser page and the Inspector cannot show different things. */
+const DEFAULT_INTENSITY = 0.6;
+const dial = opts => opts.intensity ?? DEFAULT_INTENSITY;
+
 function readInk(el) {
   const cs = getComputedStyle(el);
   const v = n => cs.getPropertyValue(n).trim();
@@ -131,11 +139,13 @@ function mount(canvas, build) {
    documents it is made of. The marks are marks; they do not stand for
    individual chunks and are not counted as such. */
 function basin(canvas, opts = {}) {
+  const K = dial(opts);
   const seed = opts.seed || 7;
   const BASINS = opts.basins || 20;   // documents in the corpus
-  const N = opts.marks || 520;
-
   return mount(canvas, (W, H, ink) => {
+    // Density, not count, is what the eye reads. A fixed 520 marks looked
+    // right in a 210px panel and collapsed to a scribble in a 104px band.
+    const N = opts.marks || Math.max(260, Math.min(900, Math.round((W * H) / 210)));
     const r = rng(seed), n = noiseField(seed);
     const wells = Array.from({ length: BASINS }, () => ({
       x: r() * W, y: r() * H, pull: 5 + r() * 11,
@@ -174,7 +184,7 @@ function basin(canvas, opts = {}) {
         ctx.globalCompositeOperation = "source-over";
         for (const q of p) {
           ctx.fillStyle = q.w > 0.94 ? ink.s1 : ink.faint;
-          ctx.globalAlpha = q.w > 0.94 ? 0.30 : 0.10 + q.w * 0.09;
+          ctx.globalAlpha = K * (q.w > 0.94 ? 0.30 : 0.10 + q.w * 0.09);
           ctx.fillRect(q.x, q.y, 1.4, 1.4);
         }
         ctx.globalAlpha = 1;
@@ -189,6 +199,7 @@ function basin(canvas, opts = {}) {
    the four, and the only one that reads as the same instrument as the page
    it sits on. */
 function lattice(canvas, opts = {}) {
+  const K = dial(opts);
   const seed = opts.seed || 7;
   const COLS = opts.cols || 5;        // stages in the pipeline
   const ROWS = opts.rows || 8;
@@ -197,7 +208,7 @@ function lattice(canvas, opts = {}) {
     const r = rng(seed);
     const rowY = i => (H * (i + 0.5)) / ROWS;
     const colX = i => (W * (i + 0.5)) / COLS;
-    const N = Math.max(3, Math.round(W / 150));
+    const N = Math.max(5, Math.round(W / 110));
     const travellers = Array.from({ length: N }, (_, i) => ({
       t: r() * COLS, speed: 0.10 + r() * 0.12,
       row: Math.floor(r() * ROWS), next: Math.floor(r() * ROWS),
@@ -217,12 +228,12 @@ function lattice(canvas, opts = {}) {
       },
       draw(ctx, W, H) {
         ctx.clearRect(0, 0, W, H);
-        ctx.strokeStyle = ink.line; ctx.lineWidth = 1; ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = ink.line; ctx.lineWidth = 1; ctx.globalAlpha = K * (0.5);
         for (let i = 0; i < ROWS; i++) {
           const y = Math.round(rowY(i)) + 0.5;
           ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
         }
-        ctx.globalAlpha = 0.30;
+        ctx.globalAlpha = K * (0.30);
         for (let i = 0; i < COLS; i++) {
           const x = Math.round(colX(i)) + 0.5;
           ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
@@ -234,14 +245,14 @@ function lattice(canvas, opts = {}) {
           const e = f * f * (3 - 2 * f);
           const x = x0 + (x1 - x0) * f, y = y0 + (y1 - y0) * e;
           ctx.strokeStyle = m.lit ? ink.s1 : ink.faint;
-          ctx.globalAlpha = m.lit ? 0.55 : 0.24;
+          ctx.globalAlpha = K * (m.lit ? 0.55 : 0.24);
           ctx.lineWidth = m.lit ? 1.6 : 1.1;
           ctx.beginPath();
           ctx.moveTo(x0, y0);
           ctx.bezierCurveTo(x0 + (x1 - x0) * 0.42, y0, x - (x1 - x0) * 0.42, y, x, y);
           ctx.stroke();
           ctx.fillStyle = m.lit ? ink.s1 : ink.faint;
-          ctx.globalAlpha = m.lit ? 0.8 : 0.35;
+          ctx.globalAlpha = K * (m.lit ? 0.8 : 0.35);
           ctx.beginPath(); ctx.arc(x, y, m.lit ? 2.4 : 1.7, 0, 6.284); ctx.fill();
         }
         ctx.globalAlpha = 1;
@@ -259,6 +270,7 @@ function lattice(canvas, opts = {}) {
    Rendered into a coarse ImageData grid and scaled up: a per-pixel field at
    full resolution costs an order of magnitude more for a blur nobody sees. */
 function fringe(canvas, opts = {}) {
+  const K = dial(opts);
   const seed = opts.seed || 7;
   const CELL = opts.cell || 5;
 
@@ -306,7 +318,7 @@ function fringe(canvas, opts = {}) {
             d[o]     = A[0] * lean + B[0] * (1 - lean);
             d[o + 1] = A[1] * lean + B[1] * (1 - lean);
             d[o + 2] = A[2] * lean + B[2] * (1 - lean);
-            d[o + 3] = Math.round(e * 150);
+            d[o + 3] = Math.round(e * 150 * K);
           }
         }
         ctx.clearRect(0, 0, W, H);
@@ -326,12 +338,13 @@ function fringe(canvas, opts = {}) {
    end state, which is its argument: it performs the sort once on load and
    then gets out of the way, rather than moving forever behind text. */
 function settle(canvas, opts = {}) {
+  const K = dial(opts);
   const seed = opts.seed || 7;
   const ROWS = opts.rows || 9;
 
   return mount(canvas, (W, H, ink) => {
     const r = rng(seed);
-    const N = Math.max(24, Math.round(W / 9));
+    const N = Math.max(40, Math.round(W / 6));
     const rowY = i => (H * (i + 0.6)) / ROWS;
     const p = Array.from({ length: N }, (_, i) => ({
       x: (i / N) * W + r() * 6,
@@ -357,7 +370,7 @@ function settle(canvas, opts = {}) {
       },
       draw(ctx, W, H) {
         ctx.clearRect(0, 0, W, H);
-        ctx.strokeStyle = ink.line; ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+        ctx.strokeStyle = ink.line; ctx.globalAlpha = K * (0.55); ctx.lineWidth = 1;
         for (let i = 0; i < ROWS; i++) {
           const y = Math.round(rowY(i)) + 0.5;
           ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
@@ -365,8 +378,8 @@ function settle(canvas, opts = {}) {
         for (const q of p) {
           if (q.y < -4) continue;
           ctx.fillStyle = q.lit ? ink.s1 : ink.faint;
-          ctx.globalAlpha = q.lit ? 0.62 : (q.rest ? 0.26 : 0.16);
-          ctx.fillRect(q.x, q.y - 1, 3, 2);
+          ctx.globalAlpha = K * (q.lit ? 0.75 : (q.rest ? 0.38 : 0.22));
+          ctx.fillRect(q.x, q.y - 1.25, 4, 2.5);
         }
         ctx.globalAlpha = 1;
       },
