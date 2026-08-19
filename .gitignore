@@ -4,3 +4,6 @@ __pycache__/
 .env
 *.index
 vector_store/
+
+# scratch dirs from UI verification runs
+.tmp-*/
