@@ -52,7 +52,7 @@ figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radi
 .stagebar i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px}
 .stagebar span{font-family:var(--mono);font-size:10.5px;color:var(--faint);
   letter-spacing:.05em;display:block;margin-top:2px}
-canvas{display:block;width:100%;height:430px}
+canvas{display:block;width:100%;height:400px}
 .caption{border-top:1px solid var(--line-soft);padding:14px 16px;color:var(--muted);
   font-size:13.5px;min-height:52px}
 .caption b{color:var(--ink);font-weight:600}
@@ -95,7 +95,7 @@ import { buildScene, drawScene, captions } from "/pipeline-map.js";
 
 const $ = s => document.querySelector(s);
 const cv = $("#c"), ctx = cv.getContext("2d");
-let CORPUS = null, SCENE = null, INK = null;
+let SCENE = null, INK = null;
 const REPLAY_MS_TOTAL = 7500;   // the replay is a replay, not a progress bar
 
 const readInk = () => {
@@ -121,19 +121,24 @@ function render() {
   drawScene(ctx, SCENE, INK, w, h, Number($("#p").value) / 100);
 }
 
-fetch("/api/corpus").then(r => r.json()).then(c => { CORPUS = c; });
 
 async function trace(q) {
   $("#cap").textContent = "Running…";
   const t0 = performance.now();
-  const r = await fetch("/api/trace", {
+  // Two requests, in parallel: the trace, and where every chunk sits relative
+  // to this question. They are separate endpoints so the trace payload stays
+  // exactly what pipeline_trace.py produces.
+  const post = (url) => fetch(url, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question: q }),
-  });
-  const data = await r.json();
-  const ms = performance.now() - t0;   // request only, not page load
+  }).then(r => r.json());
+  let ms = 0;
+  const timedTrace = post("/api/trace").then(d => { ms = performance.now() - t0; return d; });
+  const [data, space] = await Promise.all([timedTrace, post("/api/space")]);
+  // Timed on the trace alone: /api/space is a drawing aid the pipeline itself
+  // never computes, and folding it in would understate how fast retrieval is.
   INK = readInk();
-  SCENE = buildScene(data, CORPUS, INK);
+  SCENE = buildScene(data, space, INK);
   $("#elapsed").textContent =
     `round trip ${ms.toFixed(0)} ms · replayed ${(REPLAY_MS_TOTAL / ms).toFixed(0)}× slower`;
   // Stage names live on the canvas now; this strip carries document identity,
