@@ -7,3 +7,6 @@ vector_store/
 
 # scratch dirs from UI verification runs
 .tmp-*/
+
+# Node tooling for the architecture map only
+node_modules/

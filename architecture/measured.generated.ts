@@ -27,7 +27,7 @@ export const MEASURED: Record<string, { count: number; loc: number }> = {
   'probes': { count: 3, loc: 254 },
   'rerank': { count: 1, loc: 77 },
   'retrieve': { count: 1, loc: 158 },
-  'serve': { count: 1, loc: 343 },
+  'serve': { count: 1, loc: 356 },
   'trace': { count: 1, loc: 208 },
 }
 

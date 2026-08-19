@@ -18,7 +18,10 @@ import type { Footprint, GridPt } from './iso'
  */
 
 const PAD = 1.2
-const PAD_FRONT = 2.2
+// 3.2 rather than 2.2: the flag is a banner extending right from the front-left
+// corner, so a plot whose front row starts immediately at the pad had the label
+// lying across its own buildings. Still well inside DISTRICT_GAP (6).
+const PAD_FRONT = 3.2
 
 export type District = {
   id: string
@@ -55,7 +58,13 @@ function derive(group: Group, nodes: readonly ArchNode[]): District | null {
     id: group.id,
     label: group.label,
     rect,
-    flagAt: { gx: rect.gx + 0.35, gy: rect.gy + rect.d - 0.35 },
+    // Planted one cell diagonally forward of the plot's left corner. Advancing
+    // gx and gy together moves the flag straight *down* the screen without
+    // moving it sideways (x is a function of gx - gy), which is the only
+    // direction that clears the front row: the banner runs rightward in screen
+    // space, back across the plate, so widening the plot cannot get it out of
+    // the way -- only dropping it below the front edge can.
+    flagAt: { gx: rect.gx + 1.15, gy: rect.gy + rect.d + 0.45 },
     nodeIds: members.map((node) => node.id),
   }
 }

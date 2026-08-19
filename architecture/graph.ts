@@ -1,8 +1,8 @@
 /**
  * The authored half of the architecture map.
  *
- * The rule this file exists to keep: **prose, groups and flows are authored;
- * counts, coverage and geometry are measured.** Everything written by hand
+ * The rule this file exists to keep: prose, groups and flows are authored;
+ * counts, coverage and geometry are measured. Everything written by hand
  * here is something no scanner could produce -- what a subsystem is *for*, why
  * it was built the way it was, and which paths through it are worth walking.
  * Everything numeric comes from `measured.generated.ts`, which the sync script
@@ -29,9 +29,9 @@ import { MEASURED, UNCLAIMED } from './measured.generated'
    how any of it is shown to be true. */
 export const GROUPS: readonly Group[] = [
   { id: 'entry', label: 'Ways in' },
-  { id: 'ingestion', label: 'Getting documents in' },
-  { id: 'caching', label: 'What it refuses to redo' },
-  { id: 'retrieval', label: 'Answering a question' },
+  { id: 'ingestion', label: 'Documents in' },
+  { id: 'caching', label: 'Work it skips' },
+  { id: 'retrieval', label: 'Answering' },
   { id: 'evaluation', label: 'Proving it works' },
 ]
 
@@ -55,8 +55,8 @@ const AUTHORED: Authored[] = [
   {
     id: 'serve', code: 'SV', name: 'HTTP server', role: 'the local server', group: 'entry',
     whatItDoes:
-      'Serves two audiences from one process: `POST /ask` for another tool to embed, and ' +
-      'the [[Retrieval Inspector]] at `/`, which runs the same pipeline but shows every ' +
+      'Serves two audiences from one process: POST /ask for another tool to embed, and ' +
+      'the [[Retrieval Inspector]] at /, which runs the same pipeline but shows every ' +
       'intermediate ranking instead of only the five passages that survived.',
     howItsBuilt:
       'Standard library, not FastAPI. This is a thin adapter — parse JSON, call one ' +
@@ -72,7 +72,7 @@ const AUTHORED: Authored[] = [
       'Asks a question from a terminal. Readable output by default, JSON when piped ' +
       'somewhere that wants to parse it.',
     howItsBuilt:
-      'The third and last shell over `ask()`. Library, HTTP and CLI all call the same ' +
+      'The third and last shell over ask(). Library, HTTP and CLI all call the same ' +
       'function, so the three interfaces cannot drift apart in behaviour.',
     files: ['src/cli.py'],
   },
@@ -85,7 +85,7 @@ const AUTHORED: Authored[] = [
       'that?”]] an answerable question.',
     howItsBuilt:
       'A deliberate duplicate of the pipeline rather than debug flags threaded through ' +
-      '`retrieve()`: a serving path that carries debug state is one that eventually ships ' +
+      'retrieve(): a serving path that carries debug state is one that eventually ships ' +
       'it, and the two have opposite goals — one wants to be fast and forget, this one ' +
       'wants to be slow and remember. A test asserts both agree on the final result, which ' +
       'is what makes the duplication safe to keep.',
@@ -100,7 +100,7 @@ const AUTHORED: Authored[] = [
       'chunk, embed, write FAISS. Emits [[structured progress events]] as it goes, which is ' +
       'what lets the Inspector show a live re-index without a second code path.',
     howItsBuilt:
-      'Chunks are measured in **tokens, not words**, because the encoder\'s ceiling is a ' +
+      'Chunks are measured in tokens, not words, because the encoder\'s ceiling is a ' +
       'token count. Sizing in words let chunks reach ~1,200 tokens and everything past 256 ' +
       'was silently dropped before the encoder saw it — stored and citable, but invisible to ' +
       'search. Now 210 tokens with an assertion that refuses to build an index if any chunk ' +
@@ -115,7 +115,7 @@ const AUTHORED: Authored[] = [
       'format can honour: a PDF cites a page, PowerPoint a slide, Excel a sheet and row ' +
       'range, Word a [[section]].',
     howItsBuilt:
-      'Word is the awkward one and drove the design. A `.docx` has no fixed pages — ' +
+      'Word is the awkward one and drove the design. A .docx has no fixed pages — ' +
       'pagination is computed by the renderer and shifts with fonts and margins — so any ' +
       'page number would be wrong on the reader\'s copy. Sections are the unit that ' +
       'actually exists in the file. Note: only the PDF path has ever run on real files.',
@@ -206,7 +206,7 @@ const AUTHORED: Authored[] = [
     id: 'hybrid', code: 'HY', name: 'BM25 & fusion', role: 'the second opinion', group: 'retrieval',
     whatItDoes:
       'Adds a keyword retriever alongside the vector one and reconciles the two rankings. ' +
-      'Worth **+7.6 points of hit rate** over dense alone.',
+      'Worth +7.6 points of hit rate over dense alone.',
     howItsBuilt:
       'Fuses on [[rank, never score]]. A cosine similarity and a BM25 score live on ' +
       'incomparable scales, so anything that adds them needs per-query normalisation — ' +
@@ -237,8 +237,8 @@ const AUTHORED: Authored[] = [
     howItsBuilt:
       'A per-document cap rather than [[MMR]]: MMR diversifies on embedding distance, which ' +
       'conflates similar wording with same source and needs a lambda tuned per corpus. Here ' +
-      'the unit of redundancy is known exactly — it is the document. It is a **trade, not a ' +
-      'free win**: +3.1 source recall for −1.6 any-hit. An earlier, smaller golden set said ' +
+      'the unit of redundancy is known exactly — it is the document. It is a trade, not a ' +
+      'free win: +3.1 source recall for −1.6 any-hit. An earlier, smaller golden set said ' +
       'it was free; that was wrong.',
     files: ['src/diversify.py'],
   },
@@ -273,10 +273,10 @@ const AUTHORED: Authored[] = [
       'The optional step that would turn retrieved passages into a written answer with ' +
       'inline citations. Everything else works without it.',
     howItsBuilt:
-      '**Written but never executed** — the account has no credit, so no call has ever ' +
-      'completed. Two things follow: the code is evidence-free, and `api.py` reaches for it ' +
-      'with [[`from generate_answer import synthesize`]], a module that does not exist ' +
-      '(the module is `generate.py`, and it has no `synthesize`). A lazy import inside the ' +
+      'Written but never executed — the account has no credit, so no call has ever ' +
+      'completed. Two things follow: the code is evidence-free, and api.py reaches for it ' +
+      'with [[from generate_answer import synthesize]], a module that does not exist ' +
+      '(the module is generate.py, and it has no synthesize). A lazy import inside the ' +
       'optional branch is why nothing has ever raised.',
     files: ['src/generate.py'],
     stack: ['anthropic', 'claude-opus-5'],
@@ -292,7 +292,7 @@ const AUTHORED: Authored[] = [
     howItsBuilt:
       'Relevance is judged at [[page level]], not chunk level: coarser than ideal, but it ' +
       'is the granularity a human can label reliably and it stays stable when chunking ' +
-      'parameters change. Its own NDCG once printed **1.373** — impossible for a normalised ' +
+      'parameters change. Its own NDCG once printed 1.373 — impossible for a normalised ' +
       'metric — because several returned chunks shared one gold page. Caught only because ' +
       'the number violated a bound the metric is known to have.',
     files: ['src/evaluate.py'],
@@ -304,7 +304,7 @@ const AUTHORED: Authored[] = [
       'that each answer string actually occurs in the corpus [[as parsed]] rather than as ' +
       'the PDF renders it.',
     howItsBuilt:
-      'Labels are **derived, not written**. Each case declares a distinctive answer string ' +
+      'Labels are derived, not written. Each case declares a distinctive answer string ' +
       'and every location containing it *becomes* gold, so labels cannot drift from the ' +
       'corpus. That rule earned itself: when the corpus grew from 1 document to 20, twelve ' +
       'of sixteen adversarial cases had silently become answerable and nothing errored.',
@@ -320,7 +320,7 @@ const AUTHORED: Authored[] = [
       'an argument: where cross-document confusion actually happens, whether a bigger ' +
       'reranker fixes it, what reranking changes on a single query.',
     howItsBuilt:
-      'Each exists because one anecdote is not a problem statement. `diagnose_crossdoc` ' +
+      'Each exists because one anecdote is not a problem statement. diagnose_crossdoc ' +
       'classifies every failing case by *where* it fails, because the three modes need ' +
       'different fixes; it found real confusion is [[~15%]], not the 20% the raw count ' +
       'suggested, because derived labels are narrow and score a document that answers in ' +
@@ -330,8 +330,8 @@ const AUTHORED: Authored[] = [
 ]
 
 /* ---------------------------------------------------------------- edges
-   Every one of these is an `import` statement or a filesystem read/write that
-   exists in the source. The import graph was extracted with `ast`; nothing
+   Every one of these is an import statement or a filesystem read/write that
+   exists in the source. The import graph was extracted with ast; nothing
    here was copied from the diagram in HANDOFF.md, because that diagram is one
    of the things this map is meant to check. */
 const EDGE_SPEC: Omit<ArchEdge, 'flowIds'>[] = [
@@ -397,8 +397,8 @@ export const FLOWS: readonly ArchFlow[] = [
   },
   {
     id: 'inspect',
-    name: 'Inspect a question',
-    payload: 'every intermediate ranking',
+    name: 'Inspect a query',
+    payload: 'the rankings',
     summary:
       'The same pipeline again, keeping what serving throws away — the trace behind the ' +
       'Retrieval Inspector.',
@@ -418,7 +418,7 @@ export const FLOWS: readonly ArchFlow[] = [
   },
   {
     id: 'reindex',
-    name: 'Re-index after an edit',
+    name: 'Re-index',
     payload: 'one changed file',
     summary:
       'The same path with both caches warm. Nothing changed costs 0.76 s; one new document ' +
@@ -480,7 +480,7 @@ export const INTRO = {
     'answer, rather than returning the closest topical match.',
   howItsBuilt:
     'Twenty-seven Python modules, no framework. The shape worth noticing is that ' +
-    '**measurement is a subsystem, not a script**: the golden set, the harness and the ' +
+    'measurement is a subsystem, not a script: the golden set, the harness and the ' +
     'diagnostic probes are as much of this repo as the pipeline they judge, and the ' +
     'pipeline is duplicated once on purpose so it can be watched without being slowed down.',
 }

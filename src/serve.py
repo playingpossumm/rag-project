@@ -38,6 +38,7 @@ HOST, PORT = "127.0.0.1", 8000
 MAX_BODY = 64 * 1024  # a question is small; refuse anything that clearly is not
 UI_FILE = Path(__file__).parent.parent / "ui" / "index.html"
 AMBIENT_FILE = Path(__file__).parent.parent / "ui" / "ambient.html"
+ARCH_FILE = Path(__file__).parent.parent / "docs" / "architecture.html"
 EVAL_FILE = Path(__file__).parent.parent / "eval" / "results.json"
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -227,6 +228,17 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, AMBIENT_FILE.read_bytes(), "text/html; charset=utf-8")
 
+        elif route == "/~/architecture":
+            # A committed artifact, served rather than generated: it is built by
+            # `npm run architecture:build` and opens straight from docs/ with no
+            # server at all. The route exists so it is reachable from the running
+            # tool as well.
+            if not ARCH_FILE.exists():
+                self._send(404, {"error": "docs/architecture.html is missing -- "
+                                          "run npm run architecture:build"})
+                return
+            self._raw(200, ARCH_FILE.read_bytes(), "text/html; charset=utf-8")
+
         elif route == "/ambient-fields.js":
             # One narrow static route rather than a static-file server: the
             # generative fields are shared by the inspector and the chooser
@@ -329,6 +341,7 @@ def main():
     print(f"Ready on http://{host}:{port}")
     print(f"  inspector  http://{host}:{port}/")
     print(f"  ambient    http://{host}:{port}/ambient   (generative options, side by side)")
+    print(f"  map        http://{host}:{port}/~/architecture")
     print(f"  api        POST /ask, POST /api/trace")
     print(f"  corpus     {stats['chunks']} chunks from {stats['documents']} documents")
     if host not in ("127.0.0.1", "localhost"):

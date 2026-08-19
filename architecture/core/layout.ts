@@ -27,9 +27,19 @@ export type Measure = { count: number; loc: number }
 const MIN_HEIGHT = 1
 const MAX_HEIGHT = 6
 
+/**
+ * The knee of the ladder, in lines. Retuned from the stock 180: that value is
+ * calibrated for TypeScript modules, and this repo is Python averaging 147
+ * lines a file -- under the stock constant every one of the twenty-one
+ * buildings landed on height 1 or 2 and the city read as a car park. 70 spreads
+ * the same measurements across 1-4 without changing the rule, which is still a
+ * log ladder clamped to 1-6: a module ten times bigger is not ten times taller.
+ */
+const HEIGHT_KNEE = 70
+
 export function deriveHeight({ loc }: Measure): number {
   if (loc <= 0) return MIN_HEIGHT
-  const steps = Math.log2(loc / 180 + 1) * 1.25
+  const steps = Math.log2(loc / HEIGHT_KNEE + 1) * 1.25
   return Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, Math.round(steps)))
 }
 

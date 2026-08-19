@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { ArchEdge, ArchFlow, ArchNode, Group } from '../core/types'
 import { pauseClock, resumeClock, setClockSpeed, SPEEDS, useClockPlaying, useClockSpeed } from '../stores/useFlowClock'
 import { clearView, setActiveFlow, useMapView } from '../stores/useMapView'
 import IsoCanvas from './IsoCanvas'
 import { ExplainerPanel, LegendRail } from './SidePanels'
+import type { HistorySnapshot } from '../history.generated'
 import { motion, paint, type as typeface } from './theme'
 
 /**
@@ -29,6 +30,13 @@ export type ArchitectureData = {
   /** Files no module claims. Above zero means the map is behind the code. */
   unmapped: readonly string[]
   repo: string
+  /**
+   * Recorded measurements, oldest first. A local addition rather than part of
+   * the skill's component: the map is a portfolio artifact as much as a tool,
+   * and "how did this grow" is a question the geometry alone cannot answer.
+   * Optional, so the map still renders before any history exists.
+   */
+  history?: readonly HistorySnapshot[]
 }
 
 const LABEL: React.CSSProperties = {
@@ -49,6 +57,61 @@ function Cell({ label, value, accent }: { label: string; value: string; accent?:
       }}>
         {value}
       </span>
+    </div>
+  )
+}
+
+/**
+ * The growth readout. Files and lines only: those are the two numbers the
+ * scanner actually measures, and inventing a third ("complexity", "coupling")
+ * from them would be exactly the kind of confident-looking claim this map
+ * exists to avoid.
+ */
+function formatDelta(
+  now: { files: number; loc: number },
+  then: { files: number; loc: number },
+): string {
+  const files = now.files - then.files
+  const loc = now.loc - then.loc
+  if (files === 0 && loc === 0) return 'unchanged'
+  const sign = (n: number) => (n > 0 ? `+${n}` : String(n))
+  return `${sign(files)} files · ${sign(loc)} lines`
+}
+
+/**
+ * Picks a recorded measurement to read the current one against. Rendered as a
+ * native select on purpose -- it is a one-in-N choice in a dense header strip,
+ * and a custom listbox here would buy nothing and cost keyboard behaviour that
+ * already works.
+ */
+function HistoryPicker({
+  history, value, onChange,
+}: {
+  history: readonly HistorySnapshot[]
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', justifyContent: 'center',
+      padding: '0 12px', borderLeft: `1px solid ${paint.border}`, flexShrink: 0,
+    }}>
+      <label style={{ ...LABEL, whiteSpace: 'nowrap' }} htmlFor="arch-history">Compare with</label>
+      <select
+        id="arch-history"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          fontFamily: typeface.mono, fontSize: 12, fontWeight: 600,
+          color: value ? paint.accent : paint.inkPrimary,
+          background: paint.surface, border: 'none', padding: 0, cursor: 'pointer',
+        }}
+      >
+        <option value="">today only</option>
+        {history.slice(0, -1).map((h) => (
+          <option key={h.date} value={h.date}>{h.date}</option>
+        ))}
+      </select>
     </div>
   )
 }
@@ -78,6 +141,14 @@ export default function ArchitectureMap({ data }: { data: ArchitectureData }) {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [activeFlowId, playing])
+
+  // Which recorded snapshot the current measurements are being read against.
+  // Empty string means "today only", which is the honest default on a repo with
+  // one snapshot -- a dropdown that starts on a comparison nobody asked for
+  // would make the header report a delta of zero as though it meant something.
+  const [compareTo, setCompareTo] = useState('')
+  const baseline = data.history?.find((h) => h.date === compareTo)
+  const current = data.history?.at(-1)
 
   const activeFlow = data.flows.find((f) => f.id === activeFlowId)
   const selectedName =
@@ -109,6 +180,16 @@ export default function ArchitectureMap({ data }: { data: ArchitectureData }) {
           value={data.unmapped.length === 0 ? 'none' : String(data.unmapped.length)}
           accent={data.unmapped.length > 0}
         />
+        {baseline && current && (
+          <Cell
+            label={`Since ${baseline.date}`}
+            value={formatDelta(current.totals, baseline.totals)}
+            accent
+          />
+        )}
+        {data.history && data.history.length > 0 && (
+          <HistoryPicker history={data.history} value={compareTo} onChange={setCompareTo} />
+        )}
         <Cell label="Selected" value={selectedName} />
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 16 }}>

@@ -179,7 +179,7 @@ export function ExplainerPanel({
   const title = node?.name ?? (edge ? edge.label : intro.title)
   const lede = node
     ? node.loc
-      ? `${node.count} files · ~${node.loc.toLocaleString('en-US')} lines`
+      ? `${node.count} ${node.count === 1 ? 'file' : 'files'} · ~${node.loc.toLocaleString('en-US')} lines`
       : undefined
     : edge
       ? `${nodes.find((n) => n.id === edge.from)?.name} → ${nodes.find((n) => n.id === edge.to)?.name}`
