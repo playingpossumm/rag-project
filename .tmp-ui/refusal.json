@@ -1,0 +1,887 @@
+{
+  "query": "What is the airspeed velocity of an unladen swallow?",
+  "stages": [
+    {
+      "name": "dense",
+      "title": "Dense retrieval",
+      "detail": "Embeds the query and finds the nearest chunk vectors by cosine similarity. Matches meaning, so it survives paraphrase -- and misses rare tokens that carry meaning by identity, like model numbers.",
+      "items": [
+        {
+          "chunk_id": 2739,
+          "source": "word2vec.pdf",
+          "locator": "page 8",
+          "text": "br>50<br>100<br>80<br>640<br>50|660M<br>37M<br>37M<br>37M<br>37M<br>320M<br>320M<br>990M|9.3<br>1.4<br>1.4<br>1.8<br>3.3<br>4.9<br>8.6<br>13.3|12.3<br>2.6<br>2.2<br>9.1<br>13.2<br>18.4<br>36.5<br>11.6|11.0<br>2.1<br>1.8<br>5.8<br>8.8<br>12.7<br>24.6<br>12.3| |",
+          "rank": 1,
+          "score": 0.2905,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2446,
+          "source": "t5.pdf",
+          "locator": "page 53",
+          "text": "after a dive, resulting in bubbles of inert gas, mostly nitrogen and helium, forming in their blood. Increasing the pressure of O 2 as soon as possible is part of the treatment. ``` 53 -----",
+          "rank": 2,
+          "score": 0.2812,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2084,
+          "source": "sentence_bert.pdf",
+          "locator": "page 7",
+          "text": "<br>84.85<br>86.54<br>85.19|91.17<br>91.68<br>94.37<br>94.21<br>92.50<br>93.98|87.85<br>87.81<br>88.66<br>88.23<br>**90.38**<br>86.70|80.18<br>82.15<br>84.40<br>84.13<br>84.18<br>86.38|83.0<br>83.6<br>92.8<br>91.4<br>88.2<br>**93.2**|72.87<br>74.49<br>69.45<br",
+          "rank": 3,
+          "score": 0.2508,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 557,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 17",
+          "text": "br>travels back at 6 mph. That means<br>he travels for 3 * 6 = 18 miles. The<br>answer is 18. (Incorrect: semantic<br>understanding error)|540B Model Output<br>He travels at 10 mph from 1 to 4<br>PM. This means he travels 3 hours.<br>3 hours at 10 mph means he",
+          "rank": 4,
+          "score": 0.2458,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2074,
+          "source": "sentence_bert.pdf",
+          "locator": "page 5",
+          "text": "88.33**_ ±_ 0.19<br>85.35_ ±_ 0.17<br>84.79_ ±_ 0.38| |BERT-NLI-STSb-large<br>SBERT-NLI-STSb-large<br>SRoBERTa-NLI-STSb-large|**88.77**_ ±_ 0.46<br>86.10_ ±_ 0.13<br>86.15_ ±_ 0.35| -----",
+          "rank": 5,
+          "score": 0.2394,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 663,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 36",
+          "text": "Answer Choices: (a) 1/2 (b) 3/2 (c) 5/2 (d) 4/2 (e) 7/2 **A: If a / b = 3/4, then b = 4a / 3. So 8a + 5(4a / 3) = 22. This simplifies to 8a + 20a / 3 = 22, which means 44a / 3** = 22. So a is equal to 3/2. The answer is (b). **Q: A person is traveling at 20 km",
+          "rank": 6,
+          "score": 0.2376,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 139,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 9",
+          "text": ">4.91<br>25.8<br>5.01<br>25.4| |(B)|16<br>32|5.16<br>25.1<br>58<br>5.01<br>25.4<br>60| |(C)|2<br>4<br>8<br>256<br>32<br>32<br>1024<br>128<br>128<br>1024<br>4096|6.11<br>23.7<br>36<br>5.19<br>25.3<br>50<br>4.88<br>25.5<br>80<br>5.75<br>24.5<br>28<br>4.66<br>26.",
+          "rank": 7,
+          "score": 0.2368,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2732,
+          "source": "word2vec.pdf",
+          "locator": "page 7",
+          "text": "6|Col7| |---|---|---|---|---|---|---| |Dimensionality / Training words|24M|49M|98M|196M|391M|783M| |50<br>100<br>300<br>600|13.4<br>19.4<br>23.2<br>24.0|15.7<br>23.1<br>29.2<br>30.1|18.6<br>27.8<br>35.3<br>36.5|19.1<br>28.7<br>38.6<br>40.8|22.5<br>33.4<br>43.7",
+          "rank": 8,
+          "score": 0.2352,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1904,
+          "source": "resnet.pdf",
+          "locator": "page 7",
+          "text": "[35]<br>Highway [42, 43]<br>Highway [42, 43]|19<br>19<br>32|2.5M<br>2.3M<br>1.25M|8.39<br>7.54 (7.72_±_0.16)<br>8.80| |ResNet<br>ResNet<br>ResNet<br>ResNet<br>ResNet<br>ResNet|20<br>32<br>44<br>56<br>110<br>1202|0.27M<br>0.46M<br>0.66M<br>0.85M<br>1.7M<br>19.4",
+          "rank": 9,
+          "score": 0.233,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1327,
+          "source": "gpt3.pdf",
+          "locator": "page 58",
+          "text": "ies were flown in March 1941? A: 4,000 Q: When did the Luftwaffe fly inland missions? A: ``` `Target` `Completion` _→_ `only` `on` `moonlit` `nights` **Figure G.28:** Formatted dataset example for SQuADv2 `Context` _→_ `Normal` `force` `--` `In` `a` `simple` `",
+          "rank": 10,
+          "score": 0.2257,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2690,
+          "source": "vision_transformer.pdf",
+          "locator": "page 20",
+          "text": "---|---|---| |||||||Vi|T-B|/16|||||||| ||||||||||||||||| |||||||Axi|alV|iT-B|/32||||||| ||ViT-B|/32|||||||||AxialRes|Ne|t5|0|| ||||||||||||||||| ||||||||||||||||| |||ResNet50|||||||||||||| 10[2] Total compute [exaFLOPs] 10[3] 10[2] Peak inference speed [img/se",
+          "rank": 11,
+          "score": 0.216,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2742,
+          "source": "word2vec.pdf",
+          "locator": "page 8",
+          "text": "| |1 epoch CBOW<br>1 epoch CBOW<br>1 epoch CBOW|300<br>300<br>600|783M<br>1.6B<br>783M|13.8<br>16.1<br>15.4|49.9<br>52.6<br>53.3|33.6<br>36.1<br>36.2|0.3<br>0.6<br>0.7| |1 epoch Skip-gram<br>1 epoch Skip-gram<br>1 epoch Skip-gram|300<br>300<br>600|783M<br>1.6B",
+          "rank": 12,
+          "score": 0.215,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1374,
+          "source": "gpt3.pdf",
+          "locator": "page 63",
+          "text": "00 0.00 0.00 0.00 9.90 2Dx acc n/a 50 2.20 2.25 2.65 2.10 2.55 5.80 6.15 19.8 1.35 2.35 3.35 2.35 4.75 9.15 11.0 27.4 1.35 2.90 2.70 2.85 4.25 6.10 7.05 29.2 1DC acc n/a 50 1.25 2.95 2.75 0.05 0.30 2.35 0.75 9.75 1.90 2.80 2.85 3.65 6.45 9.15 8.20 14.3 1.70 2.",
+          "rank": 13,
+          "score": 0.214,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1370,
+          "source": "gpt3.pdf",
+          "locator": "page 63",
+          "text": "34.8 34.4 34.5 35.0 32.6 33.0 33.9 34.1 33.1 32.5 35.1 35.0 34.4 35.1 36.0 32.7 33.9 34.5 40.2 2D+ acc n/a 50 0.70 0.65 0.70 0.85 1.10 2.54 15.4 76.9 2.00 0.55 3.15 4.00 12.1 19.6 73.0 99.6 2.00 4.10 3.50 4.50 8.90 11.9 55.5 100.0 2D- acc n/a 50 1.25 1.25 1.25",
+          "rank": 14,
+          "score": 0.212,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1371,
+          "source": "gpt3.pdf",
+          "locator": "page 63",
+          "text": "0.95 1.45 1.95 3.85 11.5 44.6 86.4 1.15 1.45 2.25 2.70 7.35 13.6 52.4 98.9 3D+ acc n/a 50 0.10 0.10 0.05 0.10 0.10 0.25 1.40 34.2 0.15 0.00 0.10 0.30 0.45 0.95 15.4 65.5 0.15 0.45 0.30 0.55 0.75 0.90 8.40 80.4 3D- acc n/a 50 0.05 0.05 0.05 0.05 0.05 0.45 1.35 ",
+          "rank": 15,
+          "score": 0.2114,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1348,
+          "source": "gpt3.pdf",
+          "locator": "page 63",
+          "text": "68.0 15 42.7 54.3 60.4 63.6 67.1 70.3 72.5 76.2 22.0 47.1 52.6 58.3 61.1 65.4 69.0 72.5 22.0 40.4 63.2 57.0 78.1 79.1 81.3 86.4 LAMBADA ppl test 8.63 15 18.6 9.09 6.53 5.44 4.60 4.00 3.56 3.00 165.0 11.6 8.29 6.46 5.53 4.61 4.06 3.35 165.0 27.6 6.63 7.45 2.89 ",
+          "rank": 16,
+          "score": 0.2105,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 647,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 32",
+          "text": "the above choices, only momentum is built. So the answer is (d). ✓ **QUESTION:** Where are you likely to find a hamburger? Answer Choices: (a) fast food restaurant (b) pizza (c) ground up dead cows (d) mouth (e) cow carcus **MODEL** **ANSWER** **(CORRECT):** T",
+          "rank": 17,
+          "score": 0.2076,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2092,
+          "source": "sentence_bert.pdf",
+          "locator": "page 7",
+          "text": "**<br>69.92<br>86.62| |_Concatenation_|_Concatenation_|_Concatenation_| |(_u, v_)<br>(_|u −v|_)<br>(_u ∗v_)<br>(_|u −v|, u ∗v_)<br>(_u, v, u ∗v_)<br>(_u, v, |u −v|_)<br>(_u, v, |u −v|, u ∗v_)|66.04<br>69.78<br>70.54<br>78.37<br>77.44<br>**80.78**<br>80.44|-<br",
+          "rank": 18,
+          "score": 0.2069,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1705,
+          "source": "lora.pdf",
+          "locator": "page 23",
+          "text": "|r = 2<br>v<br>r = r = 1<br>q v<br>r = r = 2<br>q v<br>r = r = r = r = 1<br>q k v o<br>r = r = 4<br>q v<br>r = r = r = r = 2<br>q k v o<br>r = r = 8<br>q v<br>r = r = r = r = 4<br>q k v o<br>r = r = 64<br>q v<br>r = r = r = r = 64<br>q k v o|4.7 M<br>4.7 M<br>",
+          "rank": 19,
+          "score": 0.205,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1614,
+          "source": "lora.pdf",
+          "locator": "page 10",
+          "text": ">73.4 73.3 73.7 73.8 73.5<br>74.1 73.7 74.0 74.0 73.9| |---|---|---| |MultiNLI (±0.1%)|W<br>q<br>W , W<br>q v<br>W , W , W , W<br>q k v o|90.7 90.9 91.1 90.7 90.7<br>91.3 91.4 91.3 91.6 91.4<br>91.2 91.7 91.7 91.5 91.4| |---|---|---| -----",
+          "rank": 20,
+          "score": 0.2044,
+          "also_found_by": null
+        }
+      ],
+      "note": "all-MiniLM-L6-v2, 2768 chunks searched"
+    },
+    {
+      "name": "sparse",
+      "title": "Sparse retrieval (BM25)",
+      "detail": "Scores exact term overlap, weighting rare terms far above common ones. The exact inverse profile: strong on identifiers and acronyms, blind to paraphrase. Returns nothing when no query term appears at all.",
+      "items": [
+        {
+          "chunk_id": 1315,
+          "source": "gpt3.pdf",
+          "locator": "page 55",
+          "text": "uniainen, and surrounding commuter towns. It is the world’s northernmost metro area of over one million people, and the city is the northernmost capital of an EU member state. The Helsinki metropolitan area is the third largest metropolitan area in the Nordic ",
+          "rank": 1,
+          "score": 15.986,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 233,
+          "source": "bahdanau_attention.pdf",
+          "locator": "page 12",
+          "text": "_s˜i,_ where ◦ is an element-wise multiplication, and zi is the output of the update gates (see below). The proposed updated state ˜si is computed by _s˜i_ = tanh (We(yi−1) + U [ri ◦ _si−1] + Cci),_ where _e(yi−1)_ _∈_ R[m] is an _m-dimensional_ embedding of a",
+          "rank": 2,
+          "score": 14.791,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1059,
+          "source": "gpt3.pdf",
+          "locator": "page 7",
+          "text": "as one-shot except that no demonstrations are allowed, and the model is only given** a natural language instruction describing the task. This method provides maximum convenience, potential for robustness, and avoidance of spurious correlations (unless they occ",
+          "rank": 3,
+          "score": 14.458,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 650,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 33",
+          "text": "a Airlines? **MODEL ANSWER (INCORRECT): Harry Potter is a fictional character.** Thus, Harry Potter can do anything. So the answer is yes. \u0017 (Ground truth is “no”.) **QUESTION:** Would a sophist use an épée? **MODEL ANSWER** **(INCORRECT): A sophist is a perso",
+          "rank": 4,
+          "score": 14.45,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 675,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 38",
+          "text": "be something that used to do what Google Maps and GPS services do, which is to give** directions. Of the above choices, only atlases are used to give directions. So the answer is (d). **Q: Before getting a divorce, what did the wife feel who was doing all the ",
+          "rank": 5,
+          "score": 14.416,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 646,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 32",
+          "text": "not flip the coin. Dallas does not flip the coin. Is the coin still heads up? **MODEL ANSWER (INCORRECT): The coin was flipped by Kristian.** So the coin was flipped 1 time, which is an odd number. The coin started heads up, so after an odd number of flips, it",
+          "rank": 6,
+          "score": 14.403,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 672,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 38",
+          "text": "Table 24: Few-shot exemplars for full chain of thought prompt for CSQA. There are newlines between the answer choices that are omitted in the table for space reasons. **PROMPT** **FOR CSQA** **Q:** What do people use to absorb extra ink from a fountain pen? An",
+          "rank": 7,
+          "score": 14.093,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 681,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 39",
+          "text": "** What is the date 24 hours later in MM/DD/YYYY? **A: Today is 03/12/2002. So the date 24 hours later will be 03/13/2002. So the answer is 03/13/2002.** **Q: Jane was born on the last day of Feburary in 2001.** Today is her 16-year-old birthday. What is the d",
+          "rank": 8,
+          "score": 13.97,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1075,
+          "source": "gpt3.pdf",
+          "locator": "page 10",
+          "text": "(completionP (completion|answer|context)context)_ [, where] answer context is the string \"Answer: `\" or \"A:` `\" and is used to prompt that the completion should be an answer` but is otherwise generic. On tasks that involve binary classification, we give the op",
+          "rank": 9,
+          "score": 13.97,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 679,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 39",
+          "text": "before 01/01/2015 is 12/30/2014, so today** is 12/30/2014. So one week from today will be 01/05/2015. So the answer is 01/05/2015. **Q:** The first day of 2019 is a Tuesday, and today is the first Monday of 2019. What is the date today in MM/DD/YYYY? **A: If t",
+          "rank": 10,
+          "score": 13.897,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 651,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 33",
+          "text": "What is the date a month ago in MM/DD/YYYY? **MODEL ANSWER (CORRECT): May 6, 1992 is ten years ago, so today is May 6, 2002.** So a month ago will be April 6, 2002. So the answer is 04/06/2002. ✓ **QUESTION:** This is the last day of 1899. What is the date 24 ",
+          "rank": 11,
+          "score": 13.778,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1342,
+          "source": "gpt3.pdf",
+          "locator": "page 61",
+          "text": "and` `against` `the` `wishes` `of` `the` ``` peoples of Europe, to continue the negotiations for Turkey’s accession to the European Union, despite Turkey’s continuing refusal to recognise Cyprus and despite the fact that the democratic reforms are at a standst",
+          "rank": 12,
+          "score": 13.592,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 674,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 38",
+          "text": "answer must be a place with a lot of people. Of the above choices, only populated areas have a lot of** people. So the answer is (a). **Q: Where do you put your grapes just before checking out?** Answer Choices: (a) mouth (b) grocery cart (c)super market (d) f",
+          "rank": 13,
+          "score": 13.494,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1135,
+          "source": "gpt3.pdf",
+          "locator": "page 21",
+          "text": "[0, 100), phrased in** the form of a question, e.g. “Q: What is 48 plus 76? A: 124.” - **2 digit subtraction (2D-) – The model is asked to subtract two integers sampled uniformly from [0, 100); the** answer may be negative. Example: “Q: What is 34 minus 53? A:",
+          "rank": 14,
+          "score": 13.489,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 620,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 27",
+          "text": "as done in Cobbe et al. (2021), would make the chain of thought correct. An example of this type of error is shown in Table 10: “calculator error only”. Indeed, the solve rate of chain-of-thought prompting on for LaMDA 137B GSM8K went up from 14.3% to 17.3% wh",
+          "rank": 15,
+          "score": 13.382,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 613,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 26",
+          "text": "likely that models could arrive at the correct answer via an incorrect reasoning path (e.g., all the commmonsense reasoning datasets we evaluate). This is a limitation, and future work should perform an analysis of the factuality of such chains of thought. Tab",
+          "rank": 16,
+          "score": 13.342,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 652,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 33",
+          "text": "one week ago from today in MM/DD/YYYY? **MODEL** **ANSWER** **(INCORRECT): Tomorrow is 7/9/1972.** One week ago from today is 7/2/1972. So the answer is 7/2/1972. \u0017 (Ground truth is 07/01/1972.) **QUESTION:** Today is the palindrome day of 2020, because the MM",
+          "rank": 17,
+          "score": 13.099,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1748,
+          "source": "rag.pdf",
+          "locator": "page 5",
+          "text": "MSMARCO as an open-domain abstractive QA task. MSMARCO has some questions that cannot be answered in a way that matches the reference answer without access to the gold passages, such as “What is the weather in Volcano, CA?” so performance will be lower without",
+          "rank": 18,
+          "score": 12.869,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 619,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 27",
+          "text": "**D.2** **Incorrect Chain of Thought Analysis** We also manually analyze 50 randomly sampled outputs of the model that were incorrect on GSM8K for LaMDA 137B. There are many ways that a chain of thought can be incorrect, making the design of error categorizati",
+          "rank": 19,
+          "score": 12.854,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 490,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 9",
+          "text": "models can perform successfully—in other words, our work underscores that standard prompting only provides a lower bound on the capabilities of large language models. This observation likely raises more questions than it answers—for instance, how much more can",
+          "rank": 20,
+          "score": 12.739,
+          "also_found_by": null
+        }
+      ],
+      "note": "9 query terms: what is the airspeed velocity of an unladen swallow"
+    },
+    {
+      "name": "fused",
+      "title": "Reciprocal rank fusion",
+      "detail": "Combines the two rankings using only position, never raw score: each retriever contributes 1/(60+rank). Cosine similarity and BM25 live on incomparable scales, so anything that adds them needs normalisation and inherits its failure modes. RRF has no weight to tune.",
+      "items": [
+        {
+          "chunk_id": 2739,
+          "source": "word2vec.pdf",
+          "locator": "page 8",
+          "text": "br>50<br>100<br>80<br>640<br>50|660M<br>37M<br>37M<br>37M<br>37M<br>320M<br>320M<br>990M|9.3<br>1.4<br>1.4<br>1.8<br>3.3<br>4.9<br>8.6<br>13.3|12.3<br>2.6<br>2.2<br>9.1<br>13.2<br>18.4<br>36.5<br>11.6|11.0<br>2.1<br>1.8<br>5.8<br>8.8<br>12.7<br>24.6<br>12.3| |",
+          "rank": 1,
+          "score": 0.01639,
+          "dense_rank": 1,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 1315,
+          "source": "gpt3.pdf",
+          "locator": "page 55",
+          "text": "uniainen, and surrounding commuter towns. It is the world’s northernmost metro area of over one million people, and the city is the northernmost capital of an EU member state. The Helsinki metropolitan area is the third largest metropolitan area in the Nordic ",
+          "rank": 2,
+          "score": 0.01639,
+          "dense_rank": null,
+          "sparse_rank": 1,
+          "agreement": false
+        },
+        {
+          "chunk_id": 2446,
+          "source": "t5.pdf",
+          "locator": "page 53",
+          "text": "after a dive, resulting in bubbles of inert gas, mostly nitrogen and helium, forming in their blood. Increasing the pressure of O 2 as soon as possible is part of the treatment. ``` 53 -----",
+          "rank": 3,
+          "score": 0.01613,
+          "dense_rank": 2,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 233,
+          "source": "bahdanau_attention.pdf",
+          "locator": "page 12",
+          "text": "_s˜i,_ where ◦ is an element-wise multiplication, and zi is the output of the update gates (see below). The proposed updated state ˜si is computed by _s˜i_ = tanh (We(yi−1) + U [ri ◦ _si−1] + Cci),_ where _e(yi−1)_ _∈_ R[m] is an _m-dimensional_ embedding of a",
+          "rank": 4,
+          "score": 0.01613,
+          "dense_rank": null,
+          "sparse_rank": 2,
+          "agreement": false
+        },
+        {
+          "chunk_id": 2084,
+          "source": "sentence_bert.pdf",
+          "locator": "page 7",
+          "text": "<br>84.85<br>86.54<br>85.19|91.17<br>91.68<br>94.37<br>94.21<br>92.50<br>93.98|87.85<br>87.81<br>88.66<br>88.23<br>**90.38**<br>86.70|80.18<br>82.15<br>84.40<br>84.13<br>84.18<br>86.38|83.0<br>83.6<br>92.8<br>91.4<br>88.2<br>**93.2**|72.87<br>74.49<br>69.45<br",
+          "rank": 5,
+          "score": 0.01587,
+          "dense_rank": 3,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 1059,
+          "source": "gpt3.pdf",
+          "locator": "page 7",
+          "text": "as one-shot except that no demonstrations are allowed, and the model is only given** a natural language instruction describing the task. This method provides maximum convenience, potential for robustness, and avoidance of spurious correlations (unless they occ",
+          "rank": 6,
+          "score": 0.01587,
+          "dense_rank": null,
+          "sparse_rank": 3,
+          "agreement": false
+        },
+        {
+          "chunk_id": 557,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 17",
+          "text": "br>travels back at 6 mph. That means<br>he travels for 3 * 6 = 18 miles. The<br>answer is 18. (Incorrect: semantic<br>understanding error)|540B Model Output<br>He travels at 10 mph from 1 to 4<br>PM. This means he travels 3 hours.<br>3 hours at 10 mph means he",
+          "rank": 7,
+          "score": 0.01562,
+          "dense_rank": 4,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 650,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 33",
+          "text": "a Airlines? **MODEL ANSWER (INCORRECT): Harry Potter is a fictional character.** Thus, Harry Potter can do anything. So the answer is yes. \u0017 (Ground truth is “no”.) **QUESTION:** Would a sophist use an épée? **MODEL ANSWER** **(INCORRECT): A sophist is a perso",
+          "rank": 8,
+          "score": 0.01562,
+          "dense_rank": null,
+          "sparse_rank": 4,
+          "agreement": false
+        },
+        {
+          "chunk_id": 2074,
+          "source": "sentence_bert.pdf",
+          "locator": "page 5",
+          "text": "88.33**_ ±_ 0.19<br>85.35_ ±_ 0.17<br>84.79_ ±_ 0.38| |BERT-NLI-STSb-large<br>SBERT-NLI-STSb-large<br>SRoBERTa-NLI-STSb-large|**88.77**_ ±_ 0.46<br>86.10_ ±_ 0.13<br>86.15_ ±_ 0.35| -----",
+          "rank": 9,
+          "score": 0.01538,
+          "dense_rank": 5,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 675,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 38",
+          "text": "be something that used to do what Google Maps and GPS services do, which is to give** directions. Of the above choices, only atlases are used to give directions. So the answer is (d). **Q: Before getting a divorce, what did the wife feel who was doing all the ",
+          "rank": 10,
+          "score": 0.01538,
+          "dense_rank": null,
+          "sparse_rank": 5,
+          "agreement": false
+        },
+        {
+          "chunk_id": 663,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 36",
+          "text": "Answer Choices: (a) 1/2 (b) 3/2 (c) 5/2 (d) 4/2 (e) 7/2 **A: If a / b = 3/4, then b = 4a / 3. So 8a + 5(4a / 3) = 22. This simplifies to 8a + 20a / 3 = 22, which means 44a / 3** = 22. So a is equal to 3/2. The answer is (b). **Q: A person is traveling at 20 km",
+          "rank": 11,
+          "score": 0.01515,
+          "dense_rank": 6,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 646,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 32",
+          "text": "not flip the coin. Dallas does not flip the coin. Is the coin still heads up? **MODEL ANSWER (INCORRECT): The coin was flipped by Kristian.** So the coin was flipped 1 time, which is an odd number. The coin started heads up, so after an odd number of flips, it",
+          "rank": 12,
+          "score": 0.01515,
+          "dense_rank": null,
+          "sparse_rank": 6,
+          "agreement": false
+        },
+        {
+          "chunk_id": 139,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 9",
+          "text": ">4.91<br>25.8<br>5.01<br>25.4| |(B)|16<br>32|5.16<br>25.1<br>58<br>5.01<br>25.4<br>60| |(C)|2<br>4<br>8<br>256<br>32<br>32<br>1024<br>128<br>128<br>1024<br>4096|6.11<br>23.7<br>36<br>5.19<br>25.3<br>50<br>4.88<br>25.5<br>80<br>5.75<br>24.5<br>28<br>4.66<br>26.",
+          "rank": 13,
+          "score": 0.01493,
+          "dense_rank": 7,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 672,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 38",
+          "text": "Table 24: Few-shot exemplars for full chain of thought prompt for CSQA. There are newlines between the answer choices that are omitted in the table for space reasons. **PROMPT** **FOR CSQA** **Q:** What do people use to absorb extra ink from a fountain pen? An",
+          "rank": 14,
+          "score": 0.01493,
+          "dense_rank": null,
+          "sparse_rank": 7,
+          "agreement": false
+        },
+        {
+          "chunk_id": 2732,
+          "source": "word2vec.pdf",
+          "locator": "page 7",
+          "text": "6|Col7| |---|---|---|---|---|---|---| |Dimensionality / Training words|24M|49M|98M|196M|391M|783M| |50<br>100<br>300<br>600|13.4<br>19.4<br>23.2<br>24.0|15.7<br>23.1<br>29.2<br>30.1|18.6<br>27.8<br>35.3<br>36.5|19.1<br>28.7<br>38.6<br>40.8|22.5<br>33.4<br>43.7",
+          "rank": 15,
+          "score": 0.01471,
+          "dense_rank": 8,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 681,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 39",
+          "text": "** What is the date 24 hours later in MM/DD/YYYY? **A: Today is 03/12/2002. So the date 24 hours later will be 03/13/2002. So the answer is 03/13/2002.** **Q: Jane was born on the last day of Feburary in 2001.** Today is her 16-year-old birthday. What is the d",
+          "rank": 16,
+          "score": 0.01471,
+          "dense_rank": null,
+          "sparse_rank": 8,
+          "agreement": false
+        },
+        {
+          "chunk_id": 1904,
+          "source": "resnet.pdf",
+          "locator": "page 7",
+          "text": "[35]<br>Highway [42, 43]<br>Highway [42, 43]|19<br>19<br>32|2.5M<br>2.3M<br>1.25M|8.39<br>7.54 (7.72_±_0.16)<br>8.80| |ResNet<br>ResNet<br>ResNet<br>ResNet<br>ResNet<br>ResNet|20<br>32<br>44<br>56<br>110<br>1202|0.27M<br>0.46M<br>0.66M<br>0.85M<br>1.7M<br>19.4",
+          "rank": 17,
+          "score": 0.01449,
+          "dense_rank": 9,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 1075,
+          "source": "gpt3.pdf",
+          "locator": "page 10",
+          "text": "(completionP (completion|answer|context)context)_ [, where] answer context is the string \"Answer: `\" or \"A:` `\" and is used to prompt that the completion should be an answer` but is otherwise generic. On tasks that involve binary classification, we give the op",
+          "rank": 18,
+          "score": 0.01449,
+          "dense_rank": null,
+          "sparse_rank": 9,
+          "agreement": false
+        },
+        {
+          "chunk_id": 1327,
+          "source": "gpt3.pdf",
+          "locator": "page 58",
+          "text": "ies were flown in March 1941? A: 4,000 Q: When did the Luftwaffe fly inland missions? A: ``` `Target` `Completion` _→_ `only` `on` `moonlit` `nights` **Figure G.28:** Formatted dataset example for SQuADv2 `Context` _→_ `Normal` `force` `--` `In` `a` `simple` `",
+          "rank": 19,
+          "score": 0.01429,
+          "dense_rank": 10,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 679,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 39",
+          "text": "before 01/01/2015 is 12/30/2014, so today** is 12/30/2014. So one week from today will be 01/05/2015. So the answer is 01/05/2015. **Q:** The first day of 2019 is a Tuesday, and today is the first Monday of 2019. What is the date today in MM/DD/YYYY? **A: If t",
+          "rank": 20,
+          "score": 0.01429,
+          "dense_rank": null,
+          "sparse_rank": 10,
+          "agreement": false
+        }
+      ],
+      "note": "20 candidates, 0 found by both retrievers"
+    },
+    {
+      "name": "reranked",
+      "title": "Cross-encoder reranking",
+      "detail": "Re-scores every candidate by reading the query and the passage together in one pass, so it can weigh how they relate rather than comparing two independently-made vectors. Far more accurate, and impossible to precompute -- which is why it only runs on the shortlist.",
+      "items": [
+        {
+          "chunk_id": 557,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 17",
+          "text": "br>travels back at 6 mph. That means<br>he travels for 3 * 6 = 18 miles. The<br>answer is 18. (Incorrect: semantic<br>understanding error)|540B Model Output<br>He travels at 10 mph from 1 to 4<br>PM. This means he travels 3 hours.<br>3 hours at 10 mph means he",
+          "rank": 1,
+          "score": -10.462,
+          "was": 7,
+          "delta": 6
+        },
+        {
+          "chunk_id": 663,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 36",
+          "text": "Answer Choices: (a) 1/2 (b) 3/2 (c) 5/2 (d) 4/2 (e) 7/2 **A: If a / b = 3/4, then b = 4a / 3. So 8a + 5(4a / 3) = 22. This simplifies to 8a + 20a / 3 = 22, which means 44a / 3** = 22. So a is equal to 3/2. The answer is (b). **Q: A person is traveling at 20 km",
+          "rank": 2,
+          "score": -10.538,
+          "was": 11,
+          "delta": 9
+        },
+        {
+          "chunk_id": 2074,
+          "source": "sentence_bert.pdf",
+          "locator": "page 5",
+          "text": "88.33**_ ±_ 0.19<br>85.35_ ±_ 0.17<br>84.79_ ±_ 0.38| |BERT-NLI-STSb-large<br>SBERT-NLI-STSb-large<br>SRoBERTa-NLI-STSb-large|**88.77**_ ±_ 0.46<br>86.10_ ±_ 0.13<br>86.15_ ±_ 0.35| -----",
+          "rank": 3,
+          "score": -10.753,
+          "was": 9,
+          "delta": 6
+        },
+        {
+          "chunk_id": 2084,
+          "source": "sentence_bert.pdf",
+          "locator": "page 7",
+          "text": "<br>84.85<br>86.54<br>85.19|91.17<br>91.68<br>94.37<br>94.21<br>92.50<br>93.98|87.85<br>87.81<br>88.66<br>88.23<br>**90.38**<br>86.70|80.18<br>82.15<br>84.40<br>84.13<br>84.18<br>86.38|83.0<br>83.6<br>92.8<br>91.4<br>88.2<br>**93.2**|72.87<br>74.49<br>69.45<br",
+          "rank": 4,
+          "score": -10.862,
+          "was": 5,
+          "delta": 1
+        },
+        {
+          "chunk_id": 2732,
+          "source": "word2vec.pdf",
+          "locator": "page 7",
+          "text": "6|Col7| |---|---|---|---|---|---|---| |Dimensionality / Training words|24M|49M|98M|196M|391M|783M| |50<br>100<br>300<br>600|13.4<br>19.4<br>23.2<br>24.0|15.7<br>23.1<br>29.2<br>30.1|18.6<br>27.8<br>35.3<br>36.5|19.1<br>28.7<br>38.6<br>40.8|22.5<br>33.4<br>43.7",
+          "rank": 5,
+          "score": -10.915,
+          "was": 15,
+          "delta": 10
+        },
+        {
+          "chunk_id": 2739,
+          "source": "word2vec.pdf",
+          "locator": "page 8",
+          "text": "br>50<br>100<br>80<br>640<br>50|660M<br>37M<br>37M<br>37M<br>37M<br>320M<br>320M<br>990M|9.3<br>1.4<br>1.4<br>1.8<br>3.3<br>4.9<br>8.6<br>13.3|12.3<br>2.6<br>2.2<br>9.1<br>13.2<br>18.4<br>36.5<br>11.6|11.0<br>2.1<br>1.8<br>5.8<br>8.8<br>12.7<br>24.6<br>12.3| |",
+          "rank": 6,
+          "score": -10.966,
+          "was": 1,
+          "delta": -5
+        },
+        {
+          "chunk_id": 1904,
+          "source": "resnet.pdf",
+          "locator": "page 7",
+          "text": "[35]<br>Highway [42, 43]<br>Highway [42, 43]|19<br>19<br>32|2.5M<br>2.3M<br>1.25M|8.39<br>7.54 (7.72_±_0.16)<br>8.80| |ResNet<br>ResNet<br>ResNet<br>ResNet<br>ResNet<br>ResNet|20<br>32<br>44<br>56<br>110<br>1202|0.27M<br>0.46M<br>0.66M<br>0.85M<br>1.7M<br>19.4",
+          "rank": 7,
+          "score": -11.118,
+          "was": 17,
+          "delta": 10
+        },
+        {
+          "chunk_id": 139,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 9",
+          "text": ">4.91<br>25.8<br>5.01<br>25.4| |(B)|16<br>32|5.16<br>25.1<br>58<br>5.01<br>25.4<br>60| |(C)|2<br>4<br>8<br>256<br>32<br>32<br>1024<br>128<br>128<br>1024<br>4096|6.11<br>23.7<br>36<br>5.19<br>25.3<br>50<br>4.88<br>25.5<br>80<br>5.75<br>24.5<br>28<br>4.66<br>26.",
+          "rank": 8,
+          "score": -11.131,
+          "was": 13,
+          "delta": 5
+        },
+        {
+          "chunk_id": 1327,
+          "source": "gpt3.pdf",
+          "locator": "page 58",
+          "text": "ies were flown in March 1941? A: 4,000 Q: When did the Luftwaffe fly inland missions? A: ``` `Target` `Completion` _→_ `only` `on` `moonlit` `nights` **Figure G.28:** Formatted dataset example for SQuADv2 `Context` _→_ `Normal` `force` `--` `In` `a` `simple` `",
+          "rank": 9,
+          "score": -11.219,
+          "was": 19,
+          "delta": 10
+        },
+        {
+          "chunk_id": 1315,
+          "source": "gpt3.pdf",
+          "locator": "page 55",
+          "text": "uniainen, and surrounding commuter towns. It is the world’s northernmost metro area of over one million people, and the city is the northernmost capital of an EU member state. The Helsinki metropolitan area is the third largest metropolitan area in the Nordic ",
+          "rank": 10,
+          "score": -11.296,
+          "was": 2,
+          "delta": -8
+        },
+        {
+          "chunk_id": 1059,
+          "source": "gpt3.pdf",
+          "locator": "page 7",
+          "text": "as one-shot except that no demonstrations are allowed, and the model is only given** a natural language instruction describing the task. This method provides maximum convenience, potential for robustness, and avoidance of spurious correlations (unless they occ",
+          "rank": 11,
+          "score": -11.32,
+          "was": 6,
+          "delta": -5
+        },
+        {
+          "chunk_id": 1075,
+          "source": "gpt3.pdf",
+          "locator": "page 10",
+          "text": "(completionP (completion|answer|context)context)_ [, where] answer context is the string \"Answer: `\" or \"A:` `\" and is used to prompt that the completion should be an answer` but is otherwise generic. On tasks that involve binary classification, we give the op",
+          "rank": 12,
+          "score": -11.352,
+          "was": 18,
+          "delta": 6
+        },
+        {
+          "chunk_id": 233,
+          "source": "bahdanau_attention.pdf",
+          "locator": "page 12",
+          "text": "_s˜i,_ where ◦ is an element-wise multiplication, and zi is the output of the update gates (see below). The proposed updated state ˜si is computed by _s˜i_ = tanh (We(yi−1) + U [ri ◦ _si−1] + Cci),_ where _e(yi−1)_ _∈_ R[m] is an _m-dimensional_ embedding of a",
+          "rank": 13,
+          "score": -11.357,
+          "was": 4,
+          "delta": -9
+        },
+        {
+          "chunk_id": 2446,
+          "source": "t5.pdf",
+          "locator": "page 53",
+          "text": "after a dive, resulting in bubbles of inert gas, mostly nitrogen and helium, forming in their blood. Increasing the pressure of O 2 as soon as possible is part of the treatment. ``` 53 -----",
+          "rank": 14,
+          "score": -11.389,
+          "was": 3,
+          "delta": -11
+        },
+        {
+          "chunk_id": 679,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 39",
+          "text": "before 01/01/2015 is 12/30/2014, so today** is 12/30/2014. So one week from today will be 01/05/2015. So the answer is 01/05/2015. **Q:** The first day of 2019 is a Tuesday, and today is the first Monday of 2019. What is the date today in MM/DD/YYYY? **A: If t",
+          "rank": 15,
+          "score": -11.391,
+          "was": 20,
+          "delta": 5
+        },
+        {
+          "chunk_id": 681,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 39",
+          "text": "** What is the date 24 hours later in MM/DD/YYYY? **A: Today is 03/12/2002. So the date 24 hours later will be 03/13/2002. So the answer is 03/13/2002.** **Q: Jane was born on the last day of Feburary in 2001.** Today is her 16-year-old birthday. What is the d",
+          "rank": 16,
+          "score": -11.395,
+          "was": 16,
+          "delta": 0
+        },
+        {
+          "chunk_id": 650,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 33",
+          "text": "a Airlines? **MODEL ANSWER (INCORRECT): Harry Potter is a fictional character.** Thus, Harry Potter can do anything. So the answer is yes. \u0017 (Ground truth is “no”.) **QUESTION:** Would a sophist use an épée? **MODEL ANSWER** **(INCORRECT): A sophist is a perso",
+          "rank": 17,
+          "score": -11.402,
+          "was": 8,
+          "delta": -9
+        },
+        {
+          "chunk_id": 675,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 38",
+          "text": "be something that used to do what Google Maps and GPS services do, which is to give** directions. Of the above choices, only atlases are used to give directions. So the answer is (d). **Q: Before getting a divorce, what did the wife feel who was doing all the ",
+          "rank": 18,
+          "score": -11.428,
+          "was": 10,
+          "delta": -8
+        },
+        {
+          "chunk_id": 646,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 32",
+          "text": "not flip the coin. Dallas does not flip the coin. Is the coin still heads up? **MODEL ANSWER (INCORRECT): The coin was flipped by Kristian.** So the coin was flipped 1 time, which is an odd number. The coin started heads up, so after an odd number of flips, it",
+          "rank": 19,
+          "score": -11.438,
+          "was": 12,
+          "delta": -7
+        },
+        {
+          "chunk_id": 672,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 38",
+          "text": "Table 24: Few-shot exemplars for full chain of thought prompt for CSQA. There are newlines between the answer choices that are omitted in the table for space reasons. **PROMPT** **FOR CSQA** **Q:** What do people use to absorb extra ink from a fountain pen? An",
+          "rank": 20,
+          "score": -11.454,
+          "was": 14,
+          "delta": -6
+        }
+      ],
+      "note": "largest move: t5.pdf -11 places"
+    },
+    {
+      "name": "selected",
+      "title": "Per-document diversity cap",
+      "detail": "Takes at most 2 passages from any one document. Rerankers score each passage independently, so a single strong document takes every slot -- which ranking metrics score as perfect, and which is wrong when the goal is to compile every relevant source rather than find one.",
+      "items": [
+        {
+          "chunk_id": 557,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 17",
+          "text": "br>travels back at 6 mph. That means<br>he travels for 3 * 6 = 18 miles. The<br>answer is 18. (Incorrect: semantic<br>understanding error)|540B Model Output<br>He travels at 10 mph from 1 to 4<br>PM. This means he travels 3 hours.<br>3 hours at 10 mph means he",
+          "rank": 1,
+          "score": -10.462,
+          "was": 7,
+          "delta": 6
+        },
+        {
+          "chunk_id": 663,
+          "source": "chain_of_thought.pdf",
+          "locator": "page 36",
+          "text": "Answer Choices: (a) 1/2 (b) 3/2 (c) 5/2 (d) 4/2 (e) 7/2 **A: If a / b = 3/4, then b = 4a / 3. So 8a + 5(4a / 3) = 22. This simplifies to 8a + 20a / 3 = 22, which means 44a / 3** = 22. So a is equal to 3/2. The answer is (b). **Q: A person is traveling at 20 km",
+          "rank": 2,
+          "score": -10.538,
+          "was": 11,
+          "delta": 9
+        },
+        {
+          "chunk_id": 2074,
+          "source": "sentence_bert.pdf",
+          "locator": "page 5",
+          "text": "88.33**_ ±_ 0.19<br>85.35_ ±_ 0.17<br>84.79_ ±_ 0.38| |BERT-NLI-STSb-large<br>SBERT-NLI-STSb-large<br>SRoBERTa-NLI-STSb-large|**88.77**_ ±_ 0.46<br>86.10_ ±_ 0.13<br>86.15_ ±_ 0.35| -----",
+          "rank": 3,
+          "score": -10.753,
+          "was": 9,
+          "delta": 6
+        },
+        {
+          "chunk_id": 2084,
+          "source": "sentence_bert.pdf",
+          "locator": "page 7",
+          "text": "<br>84.85<br>86.54<br>85.19|91.17<br>91.68<br>94.37<br>94.21<br>92.50<br>93.98|87.85<br>87.81<br>88.66<br>88.23<br>**90.38**<br>86.70|80.18<br>82.15<br>84.40<br>84.13<br>84.18<br>86.38|83.0<br>83.6<br>92.8<br>91.4<br>88.2<br>**93.2**|72.87<br>74.49<br>69.45<br",
+          "rank": 4,
+          "score": -10.862,
+          "was": 5,
+          "delta": 1
+        },
+        {
+          "chunk_id": 2732,
+          "source": "word2vec.pdf",
+          "locator": "page 7",
+          "text": "6|Col7| |---|---|---|---|---|---|---| |Dimensionality / Training words|24M|49M|98M|196M|391M|783M| |50<br>100<br>300<br>600|13.4<br>19.4<br>23.2<br>24.0|15.7<br>23.1<br>29.2<br>30.1|18.6<br>27.8<br>35.3<br>36.5|19.1<br>28.7<br>38.6<br>40.8|22.5<br>33.4<br>43.7",
+          "rank": 5,
+          "score": -10.915,
+          "was": 15,
+          "delta": 10
+        }
+      ],
+      "note": "cap not reached; nothing displaced"
+    }
+  ],
+  "verdict": {
+    "confident": false,
+    "confidence": -10.462,
+    "threshold": 0.0,
+    "documents": [
+      "chain_of_thought.pdf",
+      "sentence_bert.pdf",
+      "word2vec.pdf"
+    ],
+    "multi_document": true,
+    "explanation": "Top passage scores -10.46 against a threshold of +0.00. Below threshold -- the corpus likely does not contain this, so the honest response is to say so rather than return the closest topical match."
+  }
+}

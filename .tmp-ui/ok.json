@@ -1,0 +1,887 @@
+{
+  "query": "What BLEU score did the Transformer achieve on WMT 2014 English-to-German?",
+  "stages": [
+    {
+      "name": "dense",
+      "title": "Dense retrieval",
+      "detail": "Embeds the query and finds the nearest chunk vectors by cosine similarity. Matches meaning, so it survives paraphrase -- and misses rare tokens that carry meaning by identity, like model numbers.",
+      "items": [
+        {
+          "chunk_id": 127,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests at a fraction of the training cost. BLEU Training Cost (FLOPs) Model EN-DE EN-FR EN-DE EN-FR ByteNet [1",
+          "rank": 1,
+          "score": 0.6478,
+          "also_found_by": 14
+        },
+        {
+          "chunk_id": 129,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "] to the output of each sub-layer, before it is added to the sub-layer input and normalized. In addition, we apply dropout to the sums of the embeddings and the positional encodings in both the encoder and decoder stacks. For the base model, we use a rate of _",
+          "rank": 2,
+          "score": 0.6381,
+          "also_found_by": 2
+        },
+        {
+          "chunk_id": 130,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "outperforms the best previously reported models (including ensembles) by more than 2.0 BLEU, establishing a new state-of-the-art BLEU score of 28.4. The configuration of this model is listed in the bottom line of Table 3. Training took 3.5 days on 8 P100 GPUs.",
+          "rank": 3,
+          "score": 0.5863,
+          "also_found_by": 5
+        },
+        {
+          "chunk_id": 133,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 9",
+          "text": "Table 3: Variations on the Transformer architecture. Unlisted values are identical to those of the base model. All metrics are on the English-to-German translation development set, newstest2013. Listed perplexities are per-wordpiece, according to our byte-pair",
+          "rank": 4,
+          "score": 0.5745,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2160,
+          "source": "seq2seq.pdf",
+          "locator": "page 5",
+          "text": "a speed of 6,300 (both English and French) words per second with a minibatch size of 128. Training took about a ten days with this implementation. **3.6** **Experimental Results** We used the cased BLEU score [24] to evaluate the quality of our translations. W",
+          "rank": 5,
+          "score": 0.5488,
+          "also_found_by": 13
+        },
+        {
+          "chunk_id": 2162,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "**Method** **test BLEU score (ntst14)** Bahdanau et al. [2] 28.45 Baseline System [29] 33.30 Single forward LSTM, beam size 12 26.17 Single reversed LSTM, beam size 12 30.59 Ensemble of 5 reversed LSTMs, beam size 1 33.00 Ensemble of 2 reversed LSTMs, beam siz",
+          "rank": 6,
+          "score": 0.5445,
+          "also_found_by": 18
+        },
+        {
+          "chunk_id": 1103,
+          "source": "gpt3.pdf",
+          "locator": "page 15",
+          "text": ".2 14.1 19.9 GPT-3 One-Shot 28.3 33.7 26.2 30.4 20.6 38.6 GPT-3 Few-Shot 32.6 39.2 29.7 40.6 21.0 39.5 **Table** **3.4:** **Few-shot** **GPT-3** **outperforms** **previous** **unsupervised** **NMT** **work** **by** **5** **BLEU** **when** **translating** **int",
+          "rank": 7,
+          "score": 0.5337,
+          "also_found_by": 20
+        },
+        {
+          "chunk_id": 97,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 1",
+          "text": "lutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 Englishto-German translation",
+          "rank": 8,
+          "score": 0.5332,
+          "also_found_by": 1
+        },
+        {
+          "chunk_id": 2135,
+          "source": "seq2seq.pdf",
+          "locator": "page 1",
+          "text": "to map the input sequence to a vector of a fixed dimensionality, and then another deep LSTM to decode the target sequence from the vector. Our main result is that on an English to French translation task from the WMT’14 dataset, the translations produced by th",
+          "rank": 9,
+          "score": 0.5008,
+          "also_found_by": 4
+        },
+        {
+          "chunk_id": 2163,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "single LSTM with a beam of size 12. **Method** **test BLEU score (ntst14)** Baseline System [29] 33.30 Cho et al. [5] 34.54 Best WMT’14 result [9] **37.0** Rescoring the baseline 1000-best with a single forward LSTM 35.61 Rescoring the baseline 1000-best with ",
+          "rank": 10,
+          "score": 0.4918,
+          "also_found_by": 12
+        },
+        {
+          "chunk_id": 2251,
+          "source": "t5.pdf",
+          "locator": "page 14",
+          "text": "how much pre-training benefits our model in the baseline setting. When reporting results in the main text, we only report a subset of the scores across all the benchmarks to conserve space and ease interpretation. For GLUE and SuperGLUE, we report the average ",
+          "rank": 11,
+          "score": 0.4894,
+          "also_found_by": 7
+        },
+        {
+          "chunk_id": 2161,
+          "source": "seq2seq.pdf",
+          "locator": "page 5",
+          "text": ", which is greater than the 35.8 reported by ``` statmt.org\\matrix. ``` The results are presented in tables 1 and 2. Our best results are obtained with an ensemble of LSTMs that differ in their random initializations and in the random order of minibatches. Whi",
+          "rank": 12,
+          "score": 0.4856,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2368,
+          "source": "t5.pdf",
+          "locator": "page 38",
+          "text": "**Beam** **search** All of our previous results were reported using greedy decoding. For tasks with long output sequences, we found improved performance from using beam search (Sutskever et al., 2014). Specifically, we use a beam width of 4 and a length penalt",
+          "rank": 13,
+          "score": 0.4808,
+          "also_found_by": 15
+        },
+        {
+          "chunk_id": 1598,
+          "source": "lora.pdf",
+          "locator": "page 8",
+          "text": "---|---|---|---| |||||||||| |||||||Method<br>||| |||||||Fine-Tu<br>PrefixE<br>PrefixL|ne<br>mbed<br>yer|| |||||||Adapte<br>|r(H)|| |||||||LoRA||| 6 7 8 9 10 11 log10 # Trainable Parameters 6 7 8 9 10 11 log10 # Trainable Parameters Figure 2: GPT-3 175B validat",
+          "rank": 14,
+          "score": 0.4763,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2383,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "particularly in the low-resource setting. We did not achieve state-of-the-art performance on any of the WMT translation tasks. This may be in part due to our use of an English-only unlabeled data set. We also note that most of the best results on these tasks u",
+          "rank": 15,
+          "score": 0.465,
+          "also_found_by": 6
+        },
+        {
+          "chunk_id": 132,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": ", and an estimate of the sustained single-precision floating-point capacity of each GPU [5]. **6.2** **Model Variations** To evaluate the importance of different components of the Transformer, we varied our base model in different ways, measuring the change in",
+          "rank": 16,
+          "score": 0.4528,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 193,
+          "source": "bahdanau_attention.pdf",
+          "locator": "page 5",
+          "text": "-30<br>~~enc-50~~||||| |RN|RN|Nenc-30||||| |RN|RN|||||| 0 10 20 30 40 50 60 Sentence length Figure 2: The BLEU scores of the generated translations on the test set with respect to the lengths of the sentences. The results are on the full test set which include",
+          "rank": 17,
+          "score": 0.4508,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1104,
+          "source": "gpt3.pdf",
+          "locator": "page 15",
+          "text": "**as** **an** **English** **LM.** We report BLEU scores on the WMT’14 Fr↔En, WMT’16 De↔En, and WMT’16 Ro↔En datasets as measured by `multi-bleu.perl` with XLM’s tokenization in order to compare most closely with prior unsupervised NMT work. SacreBLEU[f] [Pos18",
+          "rank": 18,
+          "score": 0.4382,
+          "also_found_by": 17
+        },
+        {
+          "chunk_id": 1264,
+          "source": "gpt3.pdf",
+          "locator": "page 45",
+          "text": "/BLEU” we use the metric specified in “Metric”. These scores come from evaluations with a different seed for the random examples used for in-context learning, and will therefore differ slightly from the scores elsewhere in the paper. -----",
+          "rank": 19,
+          "score": 0.4373,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2221,
+          "source": "t5.pdf",
+          "locator": "page 8",
+          "text": ". SQuAD (Rajpurkar et al., 2016) is a common question-answering benchmark. In our experiments, the model is fed the question and its context and asked to generate the answer token-by-token. For WMT English to German, we use the same training data as (Vaswani e",
+          "rank": 20,
+          "score": 0.4352,
+          "also_found_by": 9
+        }
+      ],
+      "note": "all-MiniLM-L6-v2, 2768 chunks searched"
+    },
+    {
+      "name": "sparse",
+      "title": "Sparse retrieval (BM25)",
+      "detail": "Scores exact term overlap, weighting rare terms far above common ones. The exact inverse profile: strong on identifiers and acronyms, blind to paraphrase. Returns nothing when no query term appears at all.",
+      "items": [
+        {
+          "chunk_id": 97,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 1",
+          "text": "lutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 Englishto-German translation",
+          "rank": 1,
+          "score": 35.275,
+          "also_found_by": 8
+        },
+        {
+          "chunk_id": 129,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "] to the output of each sub-layer, before it is added to the sub-layer input and normalized. In addition, we apply dropout to the sums of the embeddings and the positional encodings in both the encoder and decoder stacks. For the base model, we use a rate of _",
+          "rank": 2,
+          "score": 34.513,
+          "also_found_by": 2
+        },
+        {
+          "chunk_id": 144,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 10",
+          "text": "Recurrent Neural Network Grammar [8]. In contrast to RNN sequence-to-sequence models [37], the Transformer outperforms the BerkeleyParser [29] even when training only on the WSJ training set of 40K sentences. ### 7 Conclusion In this work, we presented the Tra",
+          "rank": 3,
+          "score": 31.923,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2135,
+          "source": "seq2seq.pdf",
+          "locator": "page 1",
+          "text": "to map the input sequence to a vector of a fixed dimensionality, and then another deep LSTM to decode the target sequence from the vector. Our main result is that on an English to French translation task from the WMT’14 dataset, the translations produced by th",
+          "rank": 4,
+          "score": 31.502,
+          "also_found_by": 9
+        },
+        {
+          "chunk_id": 130,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "outperforms the best previously reported models (including ensembles) by more than 2.0 BLEU, establishing a new state-of-the-art BLEU score of 28.4. The configuration of this model is listed in the bottom line of Table 3. Training took 3.5 days on 8 P100 GPUs.",
+          "rank": 5,
+          "score": 28.454,
+          "also_found_by": 3
+        },
+        {
+          "chunk_id": 2383,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "particularly in the low-resource setting. We did not achieve state-of-the-art performance on any of the WMT translation tasks. This may be in part due to our use of an English-only unlabeled data set. We also note that most of the best results on these tasks u",
+          "rank": 6,
+          "score": 27.64,
+          "also_found_by": 15
+        },
+        {
+          "chunk_id": 2251,
+          "source": "t5.pdf",
+          "locator": "page 14",
+          "text": "how much pre-training benefits our model in the baseline setting. When reporting results in the main text, we only report a subset of the scores across all the benchmarks to conserve space and ease interpretation. For GLUE and SuperGLUE, we report the average ",
+          "rank": 7,
+          "score": 27.407,
+          "also_found_by": 11
+        },
+        {
+          "chunk_id": 2447,
+          "source": "t5.pdf",
+          "locator": "page 54",
+          "text": "**Original** **target:** `carbon` `monoxide` **Processed** **target:** `carbon` `monoxide` **D.16** **WMT** **English** **to** **German** **Original** **input:** `\"Luigi` `often` `said` `to` `me` `that` `he` `never` `wanted` `the` `brothers` `to` `end` ``` up ",
+          "rank": 8,
+          "score": 24.238,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2221,
+          "source": "t5.pdf",
+          "locator": "page 8",
+          "text": ". SQuAD (Rajpurkar et al., 2016) is a common question-answering benchmark. In our experiments, the model is fed the question and its context and asked to generate the answer token-by-token. For WMT English to German, we use the same training data as (Vaswani e",
+          "rank": 9,
+          "score": 24.086,
+          "also_found_by": 20
+        },
+        {
+          "chunk_id": 2384,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "best results on English to German `newstest2014` set use the much larger training set from WMT 2018 (Edunov et al., 2018), making direct comparison to our results difficult. Finally, on CNN/Daily Mail we attain state-of-the-art performance, though only by a si",
+          "rank": 10,
+          "score": 23.752,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 124,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 7",
+          "text": "in the appendix. Not only do individual attention heads clearly learn to perform different tasks, many appear to exhibit behavior related to the syntactic and semantic structure of the sentences. ### 5 Training This section describes the training regime for ou",
+          "rank": 11,
+          "score": 23.672,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 2163,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "single LSTM with a beam of size 12. **Method** **test BLEU score (ntst14)** Baseline System [29] 33.30 Cho et al. [5] 34.54 Best WMT’14 result [9] **37.0** Rescoring the baseline 1000-best with a single forward LSTM 35.61 Rescoring the baseline 1000-best with ",
+          "rank": 12,
+          "score": 23.559,
+          "also_found_by": 10
+        },
+        {
+          "chunk_id": 2160,
+          "source": "seq2seq.pdf",
+          "locator": "page 5",
+          "text": "a speed of 6,300 (both English and French) words per second with a minibatch size of 128. Training took about a ten days with this implementation. **3.6** **Experimental Results** We used the cased BLEU score [24] to evaluate the quality of our translations. W",
+          "rank": 13,
+          "score": 22.995,
+          "also_found_by": 5
+        },
+        {
+          "chunk_id": 127,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests at a fraction of the training cost. BLEU Training Cost (FLOPs) Model EN-DE EN-FR EN-DE EN-FR ByteNet [1",
+          "rank": 14,
+          "score": 22.367,
+          "also_found_by": 1
+        },
+        {
+          "chunk_id": 2368,
+          "source": "t5.pdf",
+          "locator": "page 38",
+          "text": "**Beam** **search** All of our previous results were reported using greedy decoding. For tasks with long output sequences, we found improved performance from using beam search (Sutskever et al., 2014). Specifically, we use a beam width of 4 and a length penalt",
+          "rank": 15,
+          "score": 22.362,
+          "also_found_by": 13
+        },
+        {
+          "chunk_id": 2355,
+          "source": "t5.pdf",
+          "locator": "page 35",
+          "text": "various scaling methods is shown in Table 13. Unsurprisingly, increasing the training time and/or model size consistently improves the baseline. There was no clear winner between training for 4× as many steps or using a 4× larger batch size, though both were b",
+          "rank": 16,
+          "score": 21.235,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1104,
+          "source": "gpt3.pdf",
+          "locator": "page 15",
+          "text": "**as** **an** **English** **LM.** We report BLEU scores on the WMT’14 Fr↔En, WMT’16 De↔En, and WMT’16 Ro↔En datasets as measured by `multi-bleu.perl` with XLM’s tokenization in order to compare most closely with prior unsupervised NMT work. SacreBLEU[f] [Pos18",
+          "rank": 17,
+          "score": 21.167,
+          "also_found_by": 18
+        },
+        {
+          "chunk_id": 2162,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "**Method** **test BLEU score (ntst14)** Bahdanau et al. [2] 28.45 Baseline System [29] 33.30 Single forward LSTM, beam size 12 26.17 Single reversed LSTM, beam size 12 30.59 Ensemble of 5 reversed LSTMs, beam size 1 33.00 Ensemble of 2 reversed LSTMs, beam siz",
+          "rank": 18,
+          "score": 20.746,
+          "also_found_by": 6
+        },
+        {
+          "chunk_id": 2382,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "of 84.6 (Liu et al., 2019c) to 88.9). SuperGLUE was designed to include tasks that were “beyond the scope of current state-of-the-art systems, but solvable by most college-educated English speakers” (Wang et al., 2019b). We nearly match the human performance o",
+          "rank": 19,
+          "score": 20.28,
+          "also_found_by": null
+        },
+        {
+          "chunk_id": 1103,
+          "source": "gpt3.pdf",
+          "locator": "page 15",
+          "text": ".2 14.1 19.9 GPT-3 One-Shot 28.3 33.7 26.2 30.4 20.6 38.6 GPT-3 Few-Shot 32.6 39.2 29.7 40.6 21.0 39.5 **Table** **3.4:** **Few-shot** **GPT-3** **outperforms** **previous** **unsupervised** **NMT** **work** **by** **5** **BLEU** **when** **translating** **int",
+          "rank": 20,
+          "score": 19.951,
+          "also_found_by": 7
+        }
+      ],
+      "note": "13 query terms: what bleu score did the transformer achieve on wmt 2014 english to"
+    },
+    {
+      "name": "fused",
+      "title": "Reciprocal rank fusion",
+      "detail": "Combines the two rankings using only position, never raw score: each retriever contributes 1/(60+rank). Cosine similarity and BM25 live on incomparable scales, so anything that adds them needs normalisation and inherits its failure modes. RRF has no weight to tune.",
+      "items": [
+        {
+          "chunk_id": 129,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "] to the output of each sub-layer, before it is added to the sub-layer input and normalized. In addition, we apply dropout to the sums of the embeddings and the positional encodings in both the encoder and decoder stacks. For the base model, we use a rate of _",
+          "rank": 1,
+          "score": 0.03226,
+          "dense_rank": 2,
+          "sparse_rank": 2,
+          "agreement": true
+        },
+        {
+          "chunk_id": 130,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "outperforms the best previously reported models (including ensembles) by more than 2.0 BLEU, establishing a new state-of-the-art BLEU score of 28.4. The configuration of this model is listed in the bottom line of Table 3. Training took 3.5 days on 8 P100 GPUs.",
+          "rank": 2,
+          "score": 0.03126,
+          "dense_rank": 3,
+          "sparse_rank": 5,
+          "agreement": true
+        },
+        {
+          "chunk_id": 97,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 1",
+          "text": "lutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 Englishto-German translation",
+          "rank": 3,
+          "score": 0.0311,
+          "dense_rank": 8,
+          "sparse_rank": 1,
+          "agreement": true
+        },
+        {
+          "chunk_id": 2135,
+          "source": "seq2seq.pdf",
+          "locator": "page 1",
+          "text": "to map the input sequence to a vector of a fixed dimensionality, and then another deep LSTM to decode the target sequence from the vector. Our main result is that on an English to French translation task from the WMT’14 dataset, the translations produced by th",
+          "rank": 4,
+          "score": 0.03012,
+          "dense_rank": 9,
+          "sparse_rank": 4,
+          "agreement": true
+        },
+        {
+          "chunk_id": 127,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests at a fraction of the training cost. BLEU Training Cost (FLOPs) Model EN-DE EN-FR EN-DE EN-FR ByteNet [1",
+          "rank": 5,
+          "score": 0.02991,
+          "dense_rank": 1,
+          "sparse_rank": 14,
+          "agreement": true
+        },
+        {
+          "chunk_id": 2160,
+          "source": "seq2seq.pdf",
+          "locator": "page 5",
+          "text": "a speed of 6,300 (both English and French) words per second with a minibatch size of 128. Training took about a ten days with this implementation. **3.6** **Experimental Results** We used the cased BLEU score [24] to evaluate the quality of our translations. W",
+          "rank": 6,
+          "score": 0.02908,
+          "dense_rank": 5,
+          "sparse_rank": 13,
+          "agreement": true
+        },
+        {
+          "chunk_id": 2251,
+          "source": "t5.pdf",
+          "locator": "page 14",
+          "text": "how much pre-training benefits our model in the baseline setting. When reporting results in the main text, we only report a subset of the scores across all the benchmarks to conserve space and ease interpretation. For GLUE and SuperGLUE, we report the average ",
+          "rank": 7,
+          "score": 0.02901,
+          "dense_rank": 11,
+          "sparse_rank": 7,
+          "agreement": true
+        },
+        {
+          "chunk_id": 2383,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "particularly in the low-resource setting. We did not achieve state-of-the-art performance on any of the WMT translation tasks. This may be in part due to our use of an English-only unlabeled data set. We also note that most of the best results on these tasks u",
+          "rank": 8,
+          "score": 0.02848,
+          "dense_rank": 15,
+          "sparse_rank": 6,
+          "agreement": true
+        },
+        {
+          "chunk_id": 2163,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "single LSTM with a beam of size 12. **Method** **test BLEU score (ntst14)** Baseline System [29] 33.30 Cho et al. [5] 34.54 Best WMT’14 result [9] **37.0** Rescoring the baseline 1000-best with a single forward LSTM 35.61 Rescoring the baseline 1000-best with ",
+          "rank": 9,
+          "score": 0.02817,
+          "dense_rank": 10,
+          "sparse_rank": 12,
+          "agreement": true
+        },
+        {
+          "chunk_id": 2162,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "**Method** **test BLEU score (ntst14)** Bahdanau et al. [2] 28.45 Baseline System [29] 33.30 Single forward LSTM, beam size 12 26.17 Single reversed LSTM, beam size 12 30.59 Ensemble of 5 reversed LSTMs, beam size 1 33.00 Ensemble of 2 reversed LSTMs, beam siz",
+          "rank": 10,
+          "score": 0.02797,
+          "dense_rank": 6,
+          "sparse_rank": 18,
+          "agreement": true
+        },
+        {
+          "chunk_id": 1103,
+          "source": "gpt3.pdf",
+          "locator": "page 15",
+          "text": ".2 14.1 19.9 GPT-3 One-Shot 28.3 33.7 26.2 30.4 20.6 38.6 GPT-3 Few-Shot 32.6 39.2 29.7 40.6 21.0 39.5 **Table** **3.4:** **Few-shot** **GPT-3** **outperforms** **previous** **unsupervised** **NMT** **work** **by** **5** **BLEU** **when** **translating** **int",
+          "rank": 11,
+          "score": 0.02743,
+          "dense_rank": 7,
+          "sparse_rank": 20,
+          "agreement": true
+        },
+        {
+          "chunk_id": 2368,
+          "source": "t5.pdf",
+          "locator": "page 38",
+          "text": "**Beam** **search** All of our previous results were reported using greedy decoding. For tasks with long output sequences, we found improved performance from using beam search (Sutskever et al., 2014). Specifically, we use a beam width of 4 and a length penalt",
+          "rank": 12,
+          "score": 0.02703,
+          "dense_rank": 13,
+          "sparse_rank": 15,
+          "agreement": true
+        },
+        {
+          "chunk_id": 2221,
+          "source": "t5.pdf",
+          "locator": "page 8",
+          "text": ". SQuAD (Rajpurkar et al., 2016) is a common question-answering benchmark. In our experiments, the model is fed the question and its context and asked to generate the answer token-by-token. For WMT English to German, we use the same training data as (Vaswani e",
+          "rank": 13,
+          "score": 0.02699,
+          "dense_rank": 20,
+          "sparse_rank": 9,
+          "agreement": true
+        },
+        {
+          "chunk_id": 1104,
+          "source": "gpt3.pdf",
+          "locator": "page 15",
+          "text": "**as** **an** **English** **LM.** We report BLEU scores on the WMT’14 Fr↔En, WMT’16 De↔En, and WMT’16 Ro↔En datasets as measured by `multi-bleu.perl` with XLM’s tokenization in order to compare most closely with prior unsupervised NMT work. SacreBLEU[f] [Pos18",
+          "rank": 14,
+          "score": 0.02581,
+          "dense_rank": 18,
+          "sparse_rank": 17,
+          "agreement": true
+        },
+        {
+          "chunk_id": 144,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 10",
+          "text": "Recurrent Neural Network Grammar [8]. In contrast to RNN sequence-to-sequence models [37], the Transformer outperforms the BerkeleyParser [29] even when training only on the WSJ training set of 40K sentences. ### 7 Conclusion In this work, we presented the Tra",
+          "rank": 15,
+          "score": 0.01587,
+          "dense_rank": null,
+          "sparse_rank": 3,
+          "agreement": false
+        },
+        {
+          "chunk_id": 133,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 9",
+          "text": "Table 3: Variations on the Transformer architecture. Unlisted values are identical to those of the base model. All metrics are on the English-to-German translation development set, newstest2013. Listed perplexities are per-wordpiece, according to our byte-pair",
+          "rank": 16,
+          "score": 0.01562,
+          "dense_rank": 4,
+          "sparse_rank": null,
+          "agreement": false
+        },
+        {
+          "chunk_id": 2447,
+          "source": "t5.pdf",
+          "locator": "page 54",
+          "text": "**Original** **target:** `carbon` `monoxide` **Processed** **target:** `carbon` `monoxide` **D.16** **WMT** **English** **to** **German** **Original** **input:** `\"Luigi` `often` `said` `to` `me` `that` `he` `never` `wanted` `the` `brothers` `to` `end` ``` up ",
+          "rank": 17,
+          "score": 0.01471,
+          "dense_rank": null,
+          "sparse_rank": 8,
+          "agreement": false
+        },
+        {
+          "chunk_id": 2384,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "best results on English to German `newstest2014` set use the much larger training set from WMT 2018 (Edunov et al., 2018), making direct comparison to our results difficult. Finally, on CNN/Daily Mail we attain state-of-the-art performance, though only by a si",
+          "rank": 18,
+          "score": 0.01429,
+          "dense_rank": null,
+          "sparse_rank": 10,
+          "agreement": false
+        },
+        {
+          "chunk_id": 124,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 7",
+          "text": "in the appendix. Not only do individual attention heads clearly learn to perform different tasks, many appear to exhibit behavior related to the syntactic and semantic structure of the sentences. ### 5 Training This section describes the training regime for ou",
+          "rank": 19,
+          "score": 0.01408,
+          "dense_rank": null,
+          "sparse_rank": 11,
+          "agreement": false
+        },
+        {
+          "chunk_id": 2161,
+          "source": "seq2seq.pdf",
+          "locator": "page 5",
+          "text": ", which is greater than the 35.8 reported by ``` statmt.org\\matrix. ``` The results are presented in tables 1 and 2. Our best results are obtained with an ensemble of LSTMs that differ in their random initializations and in the random order of minibatches. Whi",
+          "rank": 20,
+          "score": 0.01389,
+          "dense_rank": 12,
+          "sparse_rank": null,
+          "agreement": false
+        }
+      ],
+      "note": "20 candidates, 14 found by both retrievers"
+    },
+    {
+      "name": "reranked",
+      "title": "Cross-encoder reranking",
+      "detail": "Re-scores every candidate by reading the query and the passage together in one pass, so it can weigh how they relate rather than comparing two independently-made vectors. Far more accurate, and impossible to precompute -- which is why it only runs on the shortlist.",
+      "items": [
+        {
+          "chunk_id": 97,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 1",
+          "text": "lutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 Englishto-German translation",
+          "rank": 1,
+          "score": 9.266,
+          "was": 3,
+          "delta": 2
+        },
+        {
+          "chunk_id": 130,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "outperforms the best previously reported models (including ensembles) by more than 2.0 BLEU, establishing a new state-of-the-art BLEU score of 28.4. The configuration of this model is listed in the bottom line of Table 3. Training took 3.5 days on 8 P100 GPUs.",
+          "rank": 2,
+          "score": 7.754,
+          "was": 2,
+          "delta": 0
+        },
+        {
+          "chunk_id": 127,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests at a fraction of the training cost. BLEU Training Cost (FLOPs) Model EN-DE EN-FR EN-DE EN-FR ByteNet [1",
+          "rank": 3,
+          "score": 6.993,
+          "was": 5,
+          "delta": 2
+        },
+        {
+          "chunk_id": 129,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "] to the output of each sub-layer, before it is added to the sub-layer input and normalized. In addition, we apply dropout to the sums of the embeddings and the positional encodings in both the encoder and decoder stacks. For the base model, we use a rate of _",
+          "rank": 4,
+          "score": 5.038,
+          "was": 1,
+          "delta": -3
+        },
+        {
+          "chunk_id": 144,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 10",
+          "text": "Recurrent Neural Network Grammar [8]. In contrast to RNN sequence-to-sequence models [37], the Transformer outperforms the BerkeleyParser [29] even when training only on the WSJ training set of 40K sentences. ### 7 Conclusion In this work, we presented the Tra",
+          "rank": 5,
+          "score": 4.707,
+          "was": 15,
+          "delta": 10
+        },
+        {
+          "chunk_id": 2135,
+          "source": "seq2seq.pdf",
+          "locator": "page 1",
+          "text": "to map the input sequence to a vector of a fixed dimensionality, and then another deep LSTM to decode the target sequence from the vector. Our main result is that on an English to French translation task from the WMT’14 dataset, the translations produced by th",
+          "rank": 6,
+          "score": 4.223,
+          "was": 4,
+          "delta": -2
+        },
+        {
+          "chunk_id": 133,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 9",
+          "text": "Table 3: Variations on the Transformer architecture. Unlisted values are identical to those of the base model. All metrics are on the English-to-German translation development set, newstest2013. Listed perplexities are per-wordpiece, according to our byte-pair",
+          "rank": 7,
+          "score": 3.081,
+          "was": 16,
+          "delta": 9
+        },
+        {
+          "chunk_id": 2162,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "**Method** **test BLEU score (ntst14)** Bahdanau et al. [2] 28.45 Baseline System [29] 33.30 Single forward LSTM, beam size 12 26.17 Single reversed LSTM, beam size 12 30.59 Ensemble of 5 reversed LSTMs, beam size 1 33.00 Ensemble of 2 reversed LSTMs, beam siz",
+          "rank": 8,
+          "score": 2.038,
+          "was": 10,
+          "delta": 2
+        },
+        {
+          "chunk_id": 2160,
+          "source": "seq2seq.pdf",
+          "locator": "page 5",
+          "text": "a speed of 6,300 (both English and French) words per second with a minibatch size of 128. Training took about a ten days with this implementation. **3.6** **Experimental Results** We used the cased BLEU score [24] to evaluate the quality of our translations. W",
+          "rank": 9,
+          "score": 1.045,
+          "was": 6,
+          "delta": -3
+        },
+        {
+          "chunk_id": 2384,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "best results on English to German `newstest2014` set use the much larger training set from WMT 2018 (Edunov et al., 2018), making direct comparison to our results difficult. Finally, on CNN/Daily Mail we attain state-of-the-art performance, though only by a si",
+          "rank": 10,
+          "score": 0.948,
+          "was": 18,
+          "delta": 8
+        },
+        {
+          "chunk_id": 1104,
+          "source": "gpt3.pdf",
+          "locator": "page 15",
+          "text": "**as** **an** **English** **LM.** We report BLEU scores on the WMT’14 Fr↔En, WMT’16 De↔En, and WMT’16 Ro↔En datasets as measured by `multi-bleu.perl` with XLM’s tokenization in order to compare most closely with prior unsupervised NMT work. SacreBLEU[f] [Pos18",
+          "rank": 11,
+          "score": 0.746,
+          "was": 14,
+          "delta": 3
+        },
+        {
+          "chunk_id": 2383,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "particularly in the low-resource setting. We did not achieve state-of-the-art performance on any of the WMT translation tasks. This may be in part due to our use of an English-only unlabeled data set. We also note that most of the best results on these tasks u",
+          "rank": 12,
+          "score": 0.69,
+          "was": 8,
+          "delta": -4
+        },
+        {
+          "chunk_id": 2163,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "single LSTM with a beam of size 12. **Method** **test BLEU score (ntst14)** Baseline System [29] 33.30 Cho et al. [5] 34.54 Best WMT’14 result [9] **37.0** Rescoring the baseline 1000-best with a single forward LSTM 35.61 Rescoring the baseline 1000-best with ",
+          "rank": 13,
+          "score": 0.314,
+          "was": 9,
+          "delta": -4
+        },
+        {
+          "chunk_id": 2251,
+          "source": "t5.pdf",
+          "locator": "page 14",
+          "text": "how much pre-training benefits our model in the baseline setting. When reporting results in the main text, we only report a subset of the scores across all the benchmarks to conserve space and ease interpretation. For GLUE and SuperGLUE, we report the average ",
+          "rank": 14,
+          "score": 0.203,
+          "was": 7,
+          "delta": -7
+        },
+        {
+          "chunk_id": 2368,
+          "source": "t5.pdf",
+          "locator": "page 38",
+          "text": "**Beam** **search** All of our previous results were reported using greedy decoding. For tasks with long output sequences, we found improved performance from using beam search (Sutskever et al., 2014). Specifically, we use a beam width of 4 and a length penalt",
+          "rank": 15,
+          "score": -0.587,
+          "was": 12,
+          "delta": -3
+        },
+        {
+          "chunk_id": 2221,
+          "source": "t5.pdf",
+          "locator": "page 8",
+          "text": ". SQuAD (Rajpurkar et al., 2016) is a common question-answering benchmark. In our experiments, the model is fed the question and its context and asked to generate the answer token-by-token. For WMT English to German, we use the same training data as (Vaswani e",
+          "rank": 16,
+          "score": -0.857,
+          "was": 13,
+          "delta": -3
+        },
+        {
+          "chunk_id": 124,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 7",
+          "text": "in the appendix. Not only do individual attention heads clearly learn to perform different tasks, many appear to exhibit behavior related to the syntactic and semantic structure of the sentences. ### 5 Training This section describes the training regime for ou",
+          "rank": 17,
+          "score": -1.213,
+          "was": 19,
+          "delta": 2
+        },
+        {
+          "chunk_id": 2161,
+          "source": "seq2seq.pdf",
+          "locator": "page 5",
+          "text": ", which is greater than the 35.8 reported by ``` statmt.org\\matrix. ``` The results are presented in tables 1 and 2. Our best results are obtained with an ensemble of LSTMs that differ in their random initializations and in the random order of minibatches. Whi",
+          "rank": 18,
+          "score": -2.765,
+          "was": 20,
+          "delta": 2
+        },
+        {
+          "chunk_id": 1103,
+          "source": "gpt3.pdf",
+          "locator": "page 15",
+          "text": ".2 14.1 19.9 GPT-3 One-Shot 28.3 33.7 26.2 30.4 20.6 38.6 GPT-3 Few-Shot 32.6 39.2 29.7 40.6 21.0 39.5 **Table** **3.4:** **Few-shot** **GPT-3** **outperforms** **previous** **unsupervised** **NMT** **work** **by** **5** **BLEU** **when** **translating** **int",
+          "rank": 19,
+          "score": -4.131,
+          "was": 11,
+          "delta": -8
+        },
+        {
+          "chunk_id": 2447,
+          "source": "t5.pdf",
+          "locator": "page 54",
+          "text": "**Original** **target:** `carbon` `monoxide` **Processed** **target:** `carbon` `monoxide` **D.16** **WMT** **English** **to** **German** **Original** **input:** `\"Luigi` `often` `said` `to` `me` `that` `he` `never` `wanted` `the` `brothers` `to` `end` ``` up ",
+          "rank": 20,
+          "score": -7.076,
+          "was": 17,
+          "delta": -3
+        }
+      ],
+      "note": "largest move: attention_is_all_you_need.pdf +10 places"
+    },
+    {
+      "name": "selected",
+      "title": "Per-document diversity cap",
+      "detail": "Takes at most 2 passages from any one document. Rerankers score each passage independently, so a single strong document takes every slot -- which ranking metrics score as perfect, and which is wrong when the goal is to compile every relevant source rather than find one.",
+      "items": [
+        {
+          "chunk_id": 97,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 1",
+          "text": "lutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 Englishto-German translation",
+          "rank": 1,
+          "score": 9.266,
+          "was": 3,
+          "delta": 2
+        },
+        {
+          "chunk_id": 130,
+          "source": "attention_is_all_you_need.pdf",
+          "locator": "page 8",
+          "text": "outperforms the best previously reported models (including ensembles) by more than 2.0 BLEU, establishing a new state-of-the-art BLEU score of 28.4. The configuration of this model is listed in the bottom line of Table 3. Training took 3.5 days on 8 P100 GPUs.",
+          "rank": 2,
+          "score": 7.754,
+          "was": 2,
+          "delta": 0
+        },
+        {
+          "chunk_id": 2135,
+          "source": "seq2seq.pdf",
+          "locator": "page 1",
+          "text": "to map the input sequence to a vector of a fixed dimensionality, and then another deep LSTM to decode the target sequence from the vector. Our main result is that on an English to French translation task from the WMT’14 dataset, the translations produced by th",
+          "rank": 3,
+          "score": 4.223,
+          "was": 4,
+          "delta": -2
+        },
+        {
+          "chunk_id": 2162,
+          "source": "seq2seq.pdf",
+          "locator": "page 6",
+          "text": "**Method** **test BLEU score (ntst14)** Bahdanau et al. [2] 28.45 Baseline System [29] 33.30 Single forward LSTM, beam size 12 26.17 Single reversed LSTM, beam size 12 30.59 Ensemble of 5 reversed LSTMs, beam size 1 33.00 Ensemble of 2 reversed LSTMs, beam siz",
+          "rank": 4,
+          "score": 2.038,
+          "was": 10,
+          "delta": 2
+        },
+        {
+          "chunk_id": 2384,
+          "source": "t5.pdf",
+          "locator": "page 40",
+          "text": "best results on English to German `newstest2014` set use the much larger training set from WMT 2018 (Edunov et al., 2018), making direct comparison to our results difficult. Finally, on CNN/Daily Mail we attain state-of-the-art performance, though only by a si",
+          "rank": 5,
+          "score": 0.948,
+          "was": 18,
+          "delta": 8
+        }
+      ],
+      "note": "5 passage(s) displaced by the cap"
+    }
+  ],
+  "verdict": {
+    "confident": true,
+    "confidence": 9.266,
+    "threshold": 0.0,
+    "documents": [
+      "attention_is_all_you_need.pdf",
+      "seq2seq.pdf",
+      "t5.pdf"
+    ],
+    "multi_document": true,
+    "explanation": "Top passage scores +9.27 against a threshold of +0.00. Answering."
+  }
+}
