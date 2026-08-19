@@ -91,11 +91,11 @@ canvas{display:block;width:100%;height:400px}
 </div>
 
 <script type="module">
-import { buildScene, drawScene, captions } from "/pipeline-map.js";
+import { buildCity, buildRun, drawScene, captions } from "/pipeline-map.js";
 
 const $ = s => document.querySelector(s);
 const cv = $("#c"), ctx = cv.getContext("2d");
-let SCENE = null, INK = null;
+let CITY = null, RUN = null, INK = null;
 const REPLAY_MS_TOTAL = 7500;   // the replay is a replay, not a progress bar
 
 const readInk = () => {
@@ -117,9 +117,15 @@ function size() {
 
 function render() {
   const { w, h } = size();
-  if (!SCENE) { ctx.clearRect(0, 0, w, h); return; }
-  drawScene(ctx, SCENE, INK, w, h, Number($("#p").value) / 100);
+  drawScene(ctx, CITY, RUN, INK, w, h, Number($("#p").value) / 100);
 }
+
+// The city exists before any question does, so it is drawn on load.
+INK = readInk();
+fetch("/api/chunks").then(r => r.json()).then(c => {
+  CITY = buildCity(c);
+  render();
+});
 
 
 async function trace(q) {
@@ -128,17 +134,14 @@ async function trace(q) {
   // Two requests, in parallel: the trace, and where every chunk sits relative
   // to this question. They are separate endpoints so the trace payload stays
   // exactly what pipeline_trace.py produces.
-  const post = (url) => fetch(url, {
+  const post = url => fetch(url, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question: q }),
   }).then(r => r.json());
-  let ms = 0;
-  const timedTrace = post("/api/trace").then(d => { ms = performance.now() - t0; return d; });
-  const [data, space] = await Promise.all([timedTrace, post("/api/space")]);
-  // Timed on the trace alone: /api/space is a drawing aid the pipeline itself
-  // never computes, and folding it in would understate how fast retrieval is.
+  const data = await post("/api/trace");
+  const ms = performance.now() - t0;
   INK = readInk();
-  SCENE = buildScene(data, space, INK);
+  RUN = buildRun(data, CITY, INK);
   $("#elapsed").textContent =
     `round trip ${ms.toFixed(0)} ms · replayed ${(REPLAY_MS_TOTAL / ms).toFixed(0)}× slower`;
   // Stage names live on the canvas now; this strip carries document identity,
@@ -146,12 +149,11 @@ async function trace(q) {
   // On a decline nothing reached an answer, so the legend must not say it did.
   // The documents keep their colours -- you can still see which came closest --
   // but the caption is the difference between "returned" and "rejected".
-  const reached = SCENE.confident ? "reached the answer" : "came closest · rejected";
-  $("#stagebar").innerHTML = SCENE.order.map(d =>
-    `<div><b><i style="background:${SCENE.colour(d)}"></i>${d.replace(/\.pdf$/, "")}</b>` +
+  const reached = RUN.confident ? "reached the answer" : "came closest · rejected";
+  $("#stagebar").innerHTML = RUN.order.map(d =>
+    `<div><b><i style="background:${RUN.colour(d)}"></i>${d.replace(/\.pdf$/, "")}</b>` +
     `<span>${reached}</span></div>`).join("")
     || `<div><b>Nothing survived</b><span>the gate stayed shut</span></div>`;
-  const v = SCENE.verdict;
   play();
 }
 
@@ -177,8 +179,8 @@ function setProgress(v, updateSlider = true) {
   if (updateSlider) $("#p").value = Math.round(v * 100);
   $("#pv").textContent = Math.round(v * 100) + "%";
   render();
-  if (!SCENE) return;
-  const caps = captions(SCENE);
+  if (!RUN) return;
+  const caps = captions(RUN);
   const c = caps[Math.max(0, Math.min(caps.length - 1, Math.floor(v * caps.length)))];
   $("#cap").innerHTML = `<b>${c.title}.</b> ${c.text}`;
 }
@@ -186,7 +188,7 @@ function setProgress(v, updateSlider = true) {
 function stop() { playing = false; cancelAnimationFrame(raf); $("#play").textContent = "Replay"; }
 
 function play() {
-  if (!SCENE) return;
+  if (!RUN) return;
   stop();
   if (reduced()) { setProgress(1); return; }   // no motion: show the settled figure
   playing = true;
@@ -209,7 +211,7 @@ $("#themer").onclick = () => {
   const now = document.documentElement.getAttribute("data-theme")
     || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", now === "dark" ? "light" : "dark");
-  if (SCENE) { INK = readInk(); SCENE = null; trace($("#q").value); }
+  INK = readInk(); if (CITY) render(); if (RUN) trace($("#q").value);
 };
 addEventListener("resize", render);
 trace($("#q").value);

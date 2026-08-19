@@ -268,6 +268,26 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, EVAL_FILE.read_bytes(), "application/json; charset=utf-8")
 
+        elif route == "/api/chunks":
+            # Which document each chunk belongs to, so the UI can draw the index
+            # as one block per document at its true size. Dividing the total
+            # evenly across twenty documents was close enough to look right and
+            # wrong in a way nobody would ever catch, which is the worst kind.
+            #
+            # An earlier version of this returned each chunk's cosine similarity
+            # to the question too, to place chunks by distance from it. That
+            # layout was dropped in favour of city blocks, so the similarity
+            # work went with it rather than being left to rot -- and with the
+            # question gone this is a plain GET.
+            try:
+                with RES.lock:
+                    sources = sorted({c["source"] for c in RES.metadata})
+                    order = {s: i for i, s in enumerate(sources)}
+                    doc = [order[c["source"]] for c in RES.metadata]
+                self._send(200, {"n": len(doc), "sources": sources, "doc": doc})
+            except Exception as exc:  # noqa: BLE001 - report rather than drop
+                self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
+
         elif route == "/api/corpus":
             self._send(200, {**RES.corpus(), "examples": EXAMPLES})
 
@@ -297,54 +317,6 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(202, {"state": "running"})
             else:
                 self._send(409, {"error": "an indexing run is already in progress"})
-            return
-
-        if route == "/api/space":
-            # Where every chunk sits relative to THIS question.
-            #
-            # The inspector draws the index as a field around the query, and a
-            # picture that places chunks by proximity has to earn that
-            # proximity or it is decoration. A 2-D PCA of the 384-dimension
-            # embedding space carries only 17% of the variance here, so
-            # "near on screen" would routinely disagree with "near to the
-            # model" -- the exact kind of confident-looking wrongness this
-            # project exists to avoid.
-            #
-            # So one true number per chunk instead: its cosine similarity to
-            # this query, which is precisely the quantity dense retrieval ranks
-            # on. The UI maps it to radius, leaves the angle meaningless, and
-            # says so. "Dense retrieval takes the innermost ring" is then
-            # literally true rather than a helpful-looking fiction.
-            payload = self._body()
-            if payload is None:
-                return
-            question = (payload.get("question") or "").strip()
-            if not question:
-                self._send(400, {"error": "field 'question' is required"})
-                return
-            try:
-                import numpy as np
-
-                with RES.lock:
-                    qv = RES.model.encode([question], convert_to_numpy=True)
-                    import faiss
-
-                    faiss.normalize_L2(qv)
-                    # Vectors are already L2-normalised in the index, so an
-                    # inner product IS the cosine similarity.
-                    mat = RES.index.reconstruct_n(0, RES.index.ntotal)
-                    sims = (mat @ qv[0].astype(np.float32))
-                    sources = sorted({c["source"] for c in RES.metadata})
-                    order = {s: i for i, s in enumerate(sources)}
-                    doc = [order[c["source"]] for c in RES.metadata]
-                self._send(200, {
-                    "n": int(RES.index.ntotal),
-                    "sources": sources,
-                    "doc": doc,
-                    "sims": [round(float(x), 4) for x in sims],
-                })
-            except Exception as exc:  # noqa: BLE001 - report rather than drop
-                self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
             return
 
         if route not in ("/ask", "/api/trace"):
