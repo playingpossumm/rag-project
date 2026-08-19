@@ -41,7 +41,7 @@
 /* ---------------------------------------------------------- projection */
 const TW = 9.4;
 const TH = 5.6;
-const SZ = 17;                       // px per floor of height
+const SZ = 26;                       // px per floor of height
 
 const project = (gx, gy, z = 0) => ({
   x: (gx - gy) * TW,
@@ -63,17 +63,17 @@ function palette(finalSources, ink) {
 /* ----------------------------------------------------------- the plan */
 const FLOORS = 10;                   // ranks a tower can show
 const TOWERS = [
-  { id: "dense",    u: 40, v: -16, label: "Dense",         sub: "meaning" },
-  { id: "sparse",   u: 40, v: 16,  label: "BM25",          sub: "exact words" },
-  { id: "fused",    u: 58, v: 0,   label: "Fusion",        sub: "merged by rank" },
-  { id: "reranked", u: 73, v: 0,   label: "Reranking",     sub: "read together" },
-  { id: "selected", u: 87, v: 0,   label: "Diversity cap", sub: "2 per document" },
+  { id: "dense",    u: 34, v: -19, label: "Dense",         sub: "meaning" },
+  { id: "sparse",   u: 34, v: 19,  label: "BM25",          sub: "exact words" },
+  { id: "fused",    u: 50, v: 0,   label: "Fusion",        sub: "merged by rank" },
+  { id: "reranked", u: 63, v: 0,   label: "Reranking",     sub: "read together" },
+  { id: "selected", u: 75, v: 0,   label: "Diversity cap", sub: "2 per document" },
 ];
-const GATE = { id: "gate", u: 100, v: 0, label: "The gate" };
-const ANSWER = { id: "answer", u: 113, v: 0, label: "The answer" };
+const GATE = { id: "gate", u: 86, v: 0, label: "The gate" };
+const ANSWER = { id: "answer", u: 97, v: 0, label: "The answer" };
 const INDEX = { id: "index", u: 0, v: 0, label: "The index" };
 
-const TOWER_W = 2.5;                 // half-width of a tower's footprint
+const TOWER_W = 3;                 // half-width of a tower's footprint
 const ROADS = [
   ["index", "dense"], ["index", "sparse"],
   ["dense", "fused"], ["sparse", "fused"],
@@ -92,7 +92,7 @@ export function buildCity(chunks) {
   const counts = sources.map(() => 0);
   for (const d of doc) counts[d] += 1;
 
-  const cols = 5;
+  const cols = 4;
   const rows = Math.max(1, Math.ceil(sources.length / cols));
   const CELL = 12, GAP = 2.6;
 
@@ -241,7 +241,7 @@ function drawTower(ctx, t, ink, lit) {
       ctx.globalAlpha = 1;
       ctx.strokeStyle = m.colour; ctx.lineWidth = m.survives ? 1.4 : 1;
     } else {
-      ctx.strokeStyle = ink.line; ctx.lineWidth = 1;
+      ctx.strokeStyle = ink.rule || ink.line; ctx.lineWidth = 1;
     }
     ctx.stroke();
   }
@@ -254,11 +254,12 @@ function drawTower(ctx, t, ink, lit) {
     project(t.gx - TOWER_W, t.gy - TOWER_W, FLOORS - 1), project(t.gx + TOWER_W, t.gy - TOWER_W, FLOORS - 1),
     project(t.gx + TOWER_W, t.gy + TOWER_W, FLOORS - 1), project(t.gx - TOWER_W, t.gy + TOWER_W, FLOORS - 1),
   ];
-  ctx.strokeStyle = ink.line; ctx.lineWidth = 1;
+  ctx.strokeStyle = ink.muted; ctx.globalAlpha = .5; ctx.lineWidth = 1;
   for (const i of [1, 2, 3]) {
     ctx.beginPath();
     ctx.moveTo(c0[i].x, c0[i].y); ctx.lineTo(cT[i].x, cT[i].y); ctx.stroke();
   }
+  ctx.globalAlpha = 1;
 }
 
 function drawGate(ctx, g, ink, run) {
@@ -297,16 +298,20 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
 
   const xs = [], ys = [];
   const note = (gx, gy, z) => { const q = project(gx, gy, z); xs.push(q.x); ys.push(q.y); };
+  // All four corners, not two. In this projection x = (gx - gy) * TW, so the
+  // corners (gx-w, gy-w) and (gx+w, gy+w) share the block's centre x -- they
+  // are its top and bottom points. Sampling only those made every block appear
+  // to have zero width, and the index district clipped off the left edge.
   for (const b of city.blocks) {
-    note(b.centre.gx - b.half, b.centre.gy - b.half, 0);
-    note(b.centre.gx + b.half, b.centre.gy + b.half, 0);
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]])
+      note(b.centre.gx + sx * b.half, b.centre.gy + sy * b.half, 0);
   }
   for (const t of [...city.towers, city.gate, city.answer]) {
     note(t.gx - 5, t.gy - 5, 0); note(t.gx + 5, t.gy + 5, FLOORS);
   }
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const PAD = { l: 26, r: 96, t: 46, b: 40 };
+  const PAD = { l: 16, r: 104, t: 38, b: 22 };
   const scale = Math.min((W - PAD.l - PAD.r) / (maxX - minX), (H - PAD.t - PAD.b) / (maxY - minY));
   const ox = W / 2 + (PAD.l - PAD.r) / 2, oy = H / 2 + (PAD.t - PAD.b) / 2;
 
@@ -324,7 +329,7 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
     const a = project(r.from.gx, r.from.gy, 0.2), b = project(r.to.gx, r.to.gy, 0.2);
     const len = Math.hypot(b.x - a.x, b.y - a.y);
     const n = Math.max(8, Math.round(len / 4));
-    ctx.fillStyle = ink.rule || ink.line; ctx.globalAlpha = 0.85;
+    ctx.fillStyle = ink.muted; ctx.globalAlpha = 0.55;
     for (let i = 0; i <= n; i++) {
       const t = i / n;
       ctx.fillRect(a.x + (b.x - a.x) * t - 0.6, a.y + (b.y - a.y) * t - 0.6, 1.2, 1.2);
@@ -335,13 +340,12 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
   /* 2 — the index: one block per document, every chunk a window. */
   for (const b of city.blocks) {
     diamond(ctx, b.centre.gx, b.centre.gy, b.half, b.half, 0);
-    ctx.fillStyle = ink.panel; ctx.globalAlpha = 0.85; ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = ink.line; ctx.lineWidth = 1.2; ctx.stroke();
-    ctx.fillStyle = ink.faint; ctx.globalAlpha = 0.5;
+    ctx.fillStyle = ink.panel; ctx.globalAlpha = 1; ctx.fill();
+    ctx.strokeStyle = ink.rule || ink.line; ctx.lineWidth = 1.1; ctx.stroke();
+    ctx.fillStyle = ink.muted; ctx.globalAlpha = 0.85;
     for (const w of b.windows) {
       const q = project(w.gx, w.gy, 0.12);
-      ctx.fillRect(q.x, q.y, 1.4, 1.4);
+      ctx.fillRect(q.x, q.y, 1.8, 1.8);
     }
     ctx.globalAlpha = 1;
   }
@@ -446,16 +450,18 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
   const topOf = t => toScreen(project(t.gx, t.gy - TOWER_W, FLOORS + 0.6));
   label(toScreen(project(city.index.gx, city.index.gy - 20, 0)), "The index",
         `${city.total.toLocaleString()} chunks · ${city.sources.length} documents`);
-  for (const t of city.towers) {
+  city.towers.forEach((t, ti) => {
     const sub = !c ? t.sub
-      : t.id === "dense" ? `${c.dense} candidates`
-      : t.id === "sparse" ? `${c.sparse} candidates`
-      : t.id === "fused" ? `${c.both} of ${c.fused} found by both`
+      : t.id === "dense" ? `${c.dense} found`
+      : t.id === "sparse" ? `${c.sparse} found`
+      : t.id === "fused" ? `${c.both} by both`
       : t.id === "reranked" ? `${c.reranked} rescored`
-      : c.displaced ? `${c.displaced} displaced · ${c.selected} kept` : `${c.selected} kept`;
+      : c.displaced ? `${c.selected} kept, ${c.displaced} cut` : `${c.selected} kept`;
     const a = topOf(t);
-    label({ x: a.x, y: a.y - 12 }, t.label, sub);
-  }
+    // Spine towers alternate height; the two retrievers sit off-spine already.
+    const lift = (t.id === "dense" || t.id === "sparse") ? 0 : (ti % 2 ? 0 : 22);
+    label({ x: a.x, y: a.y - 12 - lift }, t.label, sub);
+  });
   const g = toScreen(project(city.gate.gx, city.gate.gy - 4.6, 5));
   label({ x: g.x, y: g.y - 12 },
         run ? (run.confident ? "Answering" : "Declined") : "The gate",

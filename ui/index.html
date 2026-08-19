@@ -31,12 +31,13 @@
   --bg:#F4F5F6;
   --panel:#FFFFFF;
   --sunk:#ECEEEF;
-  --ink:#0E1011;
+  --ink:#000000;
+  --near:#111416;
   --soft:#3C4142;
   --muted:#6E7476;
   --faint:#9AA0A2;
   --line:#E2E4E6;
-  --rule:#CDD1D3;
+  --rule:#C3C9CC;
 
   --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
   --series-other:#9AA0A2;
@@ -44,7 +45,8 @@
 
   --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
-  --max:1280px;
+  --ease-out:cubic-bezier(0.23,1,0.32,1);
+  --max:1240px;
   --pad:clamp(1.25rem,4vw,3.25rem);
 }
 
@@ -95,29 +97,39 @@ button{font:inherit;color:inherit}
 .ask button{border:0;background:var(--ink);color:var(--panel);padding:0 26px;
   font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.16em;
   text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.ask button{transition:transform 160ms var(--ease-out),opacity 160ms var(--ease-out)}
+.ask button:active{transform:scale(.97)}
 .ask button:disabled{opacity:.35;cursor:default}
 
-/* Suggestions as typographic rows, not chips. */
-.sugs{margin-top:2px;border-top:1px solid var(--line)}
-.sug{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:baseline;
-  width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);
-  padding:11px 2px;cursor:pointer}
-.sug:hover{background:var(--panel)}
-.sug span{font-size:14.5px;color:var(--soft);letter-spacing:-.008em}
-.sug:hover span{color:var(--ink)}
+/* Suggestions: short labels, the full question on hover. */
+.sugs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.sug{background:none;border:1px solid var(--rule);padding:6px 12px;cursor:pointer;
+  font-size:12.5px;color:var(--muted);
+  transition:color 160ms var(--ease-out),border-color 160ms var(--ease-out),
+             transform 160ms var(--ease-out)}
+.sug:hover{color:var(--ink);border-color:var(--ink)}
+.sug:active{transform:scale(.97)}
+.sug .lab{display:none}
 
 /* --------------------------------------------------------------- panel */
-.panel{border:1px solid var(--rule);background:var(--panel);margin-top:26px}
+.panel{border:1px solid var(--rule);background:var(--panel);margin-top:24px}
+.panel.enter{animation:rise 380ms var(--ease-out) both}
+.panel.enter:nth-of-type(2){animation-delay:60ms}
+.panel.enter:nth-of-type(3){animation-delay:120ms}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.panel.enter{animation:none}}
 .phead{display:flex;align-items:center;gap:16px;padding:10px 16px;
   border-bottom:1px solid var(--line);flex-wrap:wrap}
 .phead .right{margin-left:auto;display:flex;align-items:center;gap:14px}
 .phead button{border:1px solid var(--rule);background:var(--panel);padding:5px 12px;
   font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.13em;
   text-transform:uppercase;cursor:pointer}
-.phead button:hover{border-color:var(--soft)}
+.phead button{transition:transform 160ms var(--ease-out),border-color 160ms var(--ease-out)}
+.phead button:hover{border-color:var(--ink)}
+.phead button:active{transform:scale(.97)}
 .phead input[type=range]{width:180px;accent-color:var(--ink)}
 
-#city{display:block;width:100%;height:430px}
+#city{display:block;width:100%;height:clamp(360px,42vw,520px)}
 .caption{border-top:1px solid var(--line);padding:14px 16px;color:var(--muted);
   font-size:13.5px;min-height:54px}
 .caption b{color:var(--ink);font-weight:600}
@@ -131,8 +143,9 @@ button{font:inherit;color:inherit}
   text-transform:uppercase;color:var(--good)}
 .answer.declined .verdict .v{color:var(--critical)}
 .verdict .score{font-family:var(--mono);font-size:11px;color:var(--faint)}
-blockquote{margin:20px 0 0;font-size:21px;line-height:1.5;letter-spacing:-.018em;
-  max-width:34em;font-weight:400}
+blockquote{margin:22px 0 0;font-size:30px;line-height:1.34;letter-spacing:-.028em;
+  max-width:22em;font-weight:400;color:var(--ink)}
+@media (max-width:760px){blockquote{font-size:22px}}
 .credit{display:flex;align-items:center;gap:10px;margin-top:16px;
   font-family:var(--mono);font-size:10.5px;color:var(--muted);flex-wrap:wrap;
   letter-spacing:.04em}
@@ -179,7 +192,8 @@ tr.out .snip{opacity:.6}
 .scroll{overflow-x:auto}
 
 /* ------------------------------------------------------------ settings */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;margin-top:24px}
+.grid2 .panel{margin-top:0;border-color:var(--line)}
 @media (max-width:960px){.grid2{grid-template-columns:1fr}}
 .settings{padding:4px 16px 12px}
 .setting{border-bottom:1px solid var(--line);padding:13px 0}
@@ -345,8 +359,7 @@ Promise.all([
   CITY = buildCity(chunks); EVAL = evalData;
   $("#readout").textContent = `${nf(corpus.chunks)} chunks / ${corpus.documents} docs`;
   $("#sugs").innerHTML = (corpus.examples || []).map(x =>
-    `<button class="sug" type="button" data-q="${esc(x.q)}">
-       <span class="lab">${esc(x.label)}</span><span>${esc(x.q)}</span></button>`).join("");
+    `<button class="sug" type="button" data-q="${esc(x.q)}" title="${esc(x.q)}">${esc(x.label)}</button>`).join("");
   $("#sugs").querySelectorAll(".sug").forEach(b => {
     b.onclick = () => { $("#q").value = b.dataset.q; run(b.dataset.q); };
   });
@@ -398,8 +411,11 @@ async function run(q) {
     RUN = buildRun(data, CITY, INK);
     $("#elapsed").textContent = `${ms.toFixed(0)}ms · replay ${(REPLAY_MS / ms).toFixed(0)}×`;
     renderAnswer(data); renderSettings(); renderStages(data);
-    for (const id of ["panel-answer", "panel-settings", "panel-stages"])
-      $("#" + id).classList.remove("hide");
+    for (const id of ["panel-answer", "panel-settings", "panel-stages"]) {
+      const el = $("#" + id);
+      el.classList.remove("hide");
+      el.classList.remove("enter"); void el.offsetWidth; el.classList.add("enter");
+    }
     play();
   } catch (err) {
     $("#cap").innerHTML = `<span class="err">${esc(err.message)}</span>`;
@@ -457,12 +473,16 @@ function renderAnswer(data) {
   const docs = [...byDoc.values()].sort((a, b) => b.best - a.best);
   const lo = Math.min(...ranked.map(i => i.score), 0);
   const hi = Math.max(...docs.map(d => d.best), lo + 1);
+  /* The bar is scaled within this query, so on a decline -- where every score
+     sits far below the threshold -- the best of a bad set would still fill it
+     and read as confidence. The numbers already say rejected; the bar is
+     dropped rather than allowed to contradict them. */
   const rows = docs.map(d => `
     <div class="row">
       <div class="name"><i style="background:${colour(d.source)}"></i>${esc(shortDoc(d.source))}</div>
       <div class="n">${d.n} psg</div>
-      <div class="bar"><i style="width:${Math.max(4, Math.round((d.best - lo) / (hi - lo) * 100))}%;
-        background:${colour(d.source)}"></i></div>
+      <div class="bar">${ok ? `<i style="width:${Math.max(4, Math.round((d.best - lo) / (hi - lo) * 100))}%;
+        background:${colour(d.source)}"></i>` : ""}</div>
       <div class="s">${d.best > 0 ? "+" : ""}${d.best.toFixed(2)}</div>
     </div>`).join("");
 
@@ -494,7 +514,9 @@ function renderAnswer(data) {
         candidates</b>. Returning the nearest topical match to a question the corpus cannot
         answer is the failure this gate exists to prevent.</p>
     `}
-    ${docs.length ? `<div class="rows">${rows}</div>` : ""}
+    ${docs.length ? `<div class="lab" style="margin-top:26px">${
+      ok ? "Documents that answered" : "Closest, and rejected"}</div>
+      <div class="rows">${rows}</div>` : ""}
     <details class="more">
       <summary>Every candidate weighed</summary>
       <p class="why">All ${ranked.length} after reranking, in the cross-encoder's order.
