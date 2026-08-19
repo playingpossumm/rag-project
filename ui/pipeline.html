@@ -75,7 +75,8 @@ canvas{display:block;width:100%;height:430px}
     <button id="themer" type="button">Theme</button>
   </div>
   <div class="bar">
-    <label for="p">Progress</label>
+    <button id="play" type="button">Replay</button>
+    <label for="p">Stage</label>
     <input type="range" id="p" min="0" max="100" value="100">
     <span class="meta" id="pv">100%</span>
     <span style="flex:1"></span>
@@ -95,7 +96,7 @@ import { buildScene, drawScene, captions } from "/pipeline-map.js";
 const $ = s => document.querySelector(s);
 const cv = $("#c"), ctx = cv.getContext("2d");
 let CORPUS = null, SCENE = null, INK = null;
-const REPLAY_MS = 5200;   // how long the staged reveal takes to play
+const REPLAY_MS_TOTAL = 7500;   // the replay is a replay, not a progress bar
 
 const readInk = () => {
   const cs = getComputedStyle(document.body);
@@ -134,7 +135,7 @@ async function trace(q) {
   INK = readInk();
   SCENE = buildScene(data, CORPUS, INK);
   $("#elapsed").textContent =
-    `round trip ${ms.toFixed(0)} ms · replay is ${(REPLAY_MS / ms).toFixed(0)}× slower`;
+    `round trip ${ms.toFixed(0)} ms · replayed ${(REPLAY_MS_TOTAL / ms).toFixed(0)}× slower`;
   // Stage names live on the canvas now; this strip carries document identity,
   // which colour alone must never do.
   // On a decline nothing reached an answer, so the legend must not say it did.
@@ -146,10 +147,7 @@ async function trace(q) {
     `<span>${reached}</span></div>`).join("")
     || `<div><b>Nothing survived</b><span>the gate stayed shut</span></div>`;
   const v = SCENE.verdict;
-  $("#cap").innerHTML = v.confident
-    ? `<b>Answering.</b> Top passage scores ${v.confidence > 0 ? "+" : ""}${v.confidence} against a threshold of ${v.threshold.toFixed(1)}.`
-    : `<b>Declined.</b> Top passage scores ${v.confidence} against a threshold of ${v.threshold.toFixed(1)} — the corpus likely does not contain this.`;
-  render();
+  play();
 }
 
 $("#go").onclick = () => trace($("#q").value.trim());
@@ -157,15 +155,51 @@ $("#refuse").onclick = () => {
   $("#q").value = "What is the airspeed velocity of an unladen swallow?";
   trace($("#q").value);
 };
-$("#p").oninput = e => {
-  $("#pv").textContent = e.target.value + "%";
+/* ------------------------------------------------------------ playback
+   The pipeline finished in ~60 ms, so this is a replay, not a progress bar.
+   It plays once and rests on the whole figure -- the settled state is a
+   diagram you can read, not a frame you happened to stop on. */
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+let raf = 0, playing = false;
+
+function setProgress(v, updateSlider = true) {
+  // Clamped at the door. requestAnimationFrame hands back the timestamp of the
+  // frame that had already begun, which can precede the performance.now() the
+  // clock started from -- so the first frame's progress can be negative, and an
+  // unclamped index reaches caps[-1]. It fires intermittently, which is worse
+  // than always.
+  v = Math.max(0, Math.min(1, v));
+  if (updateSlider) $("#p").value = Math.round(v * 100);
+  $("#pv").textContent = Math.round(v * 100) + "%";
   render();
   if (!SCENE) return;
   const caps = captions(SCENE);
-  const i = Math.min(caps.length - 1, Math.floor(Number(e.target.value) / 100 * caps.length));
-  const c = caps[i];
+  const c = caps[Math.max(0, Math.min(caps.length - 1, Math.floor(v * caps.length)))];
   $("#cap").innerHTML = `<b>${c.title}.</b> ${c.text}`;
-};
+}
+
+function stop() { playing = false; cancelAnimationFrame(raf); $("#play").textContent = "Replay"; }
+
+function play() {
+  if (!SCENE) return;
+  stop();
+  if (reduced()) { setProgress(1); return; }   // no motion: show the settled figure
+  playing = true;
+  $("#play").textContent = "Playing…";
+  const t0 = performance.now();
+  const step = now => {
+    if (!playing) return;
+    const v = Math.min(1, (now - t0) / REPLAY_MS_TOTAL);
+    setProgress(v);
+    if (v < 1) raf = requestAnimationFrame(step);
+    else stop();
+  };
+  raf = requestAnimationFrame(step);
+}
+
+// Touching the scrubber takes over from the replay rather than fighting it.
+$("#p").oninput = e => { stop(); setProgress(Number(e.target.value) / 100, false); };
+$("#play").onclick = play;
 $("#themer").onclick = () => {
   const now = document.documentElement.getAttribute("data-theme")
     || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");

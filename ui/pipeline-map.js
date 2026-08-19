@@ -116,6 +116,7 @@ export function buildScene(trace, corpus, ink) {
      clusters because the corpus holds twenty documents. Seeded, so the pool
      looks the same on every reload of the same corpus. */
   const pool = [];
+  const clusters = new Map();          // source -> where its marks live in `pool`
   const sources = corpus?.sources || [];
   const total = corpus?.chunks || 0;
   if (total && sources.length) {
@@ -129,14 +130,16 @@ export function buildScene(trace, corpus, ink) {
       const cy = (Math.floor(i / cols) / Math.max(rows - 1, 1) - 0.5) * 1.55;
       const n = i === sources.length - 1 ? total - per * (sources.length - 1) : per;
       const lit = order.includes(src);
+      const start = pool.length;
       for (let k = 0; k < n; k++) {
         const a = r() * Math.PI * 2, rad = (r() + r() + r()) / 3;
         pool.push({
           gx: P.gx + cx * P.w + Math.cos(a) * rad * 3.1,
           gy: P.gy + cy * P.d + Math.sin(a) * rad * 3.1,
-          lit, src,
+          lit, src, drawn: false,
         });
       }
+      clusters.set(src, { start, n });
     });
   }
 
@@ -197,15 +200,25 @@ export function buildScene(trace, corpus, ink) {
   const kept = new Set(sQ.map(m => m.chunk_id));
   const displaced = rQ.filter(m => !kept.has(m.chunk_id) && m.rank <= 6);
 
-  /* The fork: streams of marks leaving the index for each retriever. Drawn as
-     particles on a path rather than a solid arrow, because what leaves the
-     index is many chunks, not one signal. */
-  const forks = ["dense", "sparse"].map(id => {
-    const P = byId.get(id);
-    const a = uv(PLAN[0].u + 11, 0, 0.3);
-    const b = uv(PLAN.find(p => p.id === id).u - 6, PLAN.find(p => p.id === id).v, 0.3);
-    return { id, a, b };
-  });
+  /* The fork: one path per retrieved chunk, from its dot in the index to the
+     retriever that found it. A chunk found by both retrievers is drawn twice,
+     which is the point -- that is what fusion is about to reward. */
+  const forks = [];
+  const pickDot = (chunkId, src) => {
+    const c = clusters.get(src);
+    if (!c || !c.n) return null;
+    // Stable, so the same chunk leaves from the same dot on every replay.
+    const h = (Math.imul(chunkId ^ 0x9e3779b9, 0x85ebca6b) >>> 0) % c.n;
+    return pool[c.start + h];
+  };
+  for (const pid of ["dense", "sparse"]) {
+    for (const m of (queues.get(pid) || [])) {
+      const dot = pickDot(m.chunk_id, m.source);
+      if (!dot) continue;
+      dot.drawn = true;
+      forks.push({ id: pid, from: dot, to: m, colour: m.colour, survives: m.survives });
+    }
+  }
 
   return {
     platforms, byId, pool, queues, links, displaced, forks,
@@ -400,28 +413,36 @@ export function drawScene(ctx, scene, ink, W, H, progress = 1) {
     drawPlatform(ctx, scene.byId.get("pool"), ink, { alpha: pp });
     for (const m of scene.pool) {
       const q = project(m.gx, m.gy, 0.22);
-      ctx.globalAlpha = (m.lit ? 0.75 : 0.28) * pp;
+      if (m.drawn) continue;                       // drawn again, louder, below
+      ctx.globalAlpha = (m.lit ? 0.42 : 0.20) * pp;
       ctx.fillStyle = m.lit ? scene.colour(m.src) : ink.faint;
       ctx.fillRect(q.x, q.y, 1.5, 1.5);
+    }
+    for (const m of scene.pool) {
+      if (!m.drawn) continue;
+      const q = project(m.gx, m.gy, 0.22);
+      ctx.globalAlpha = pp;
+      ctx.fillStyle = scene.colour(m.src);
+      ctx.fillRect(q.x - 1, q.y - 1, 3.4, 3.4);
     }
     ctx.globalAlpha = 1;
   }
 
-  // 2 — the fork: chunks leaving the index for both retrievers at once
+  // 2 — the fork: every retrieved chunk, drawn leaving its own dot in the index
+  //     for the retriever that found it. Both branches at once.
   const fp = phase("dense");
   if (fp > 0) {
-    const r = rng(99);
     for (const f of scene.forks) {
-      for (let i = 0; i < 34; i++) {
-        const t = (i + 0.5) / 34;
-        if (t > fp) continue;
-        const cx = f.a.x + (f.b.x - f.a.x) * 0.55;
-        const x = (1 - t) ** 2 * f.a.x + 2 * (1 - t) * t * cx + t * t * f.b.x;
-        const y = (1 - t) ** 2 * f.a.y + 2 * (1 - t) * t * f.a.y + t * t * f.b.y;
-        ctx.globalAlpha = 0.30 * fp;
-        ctx.fillStyle = ink.faint;
-        ctx.fillRect(x + (r() - 0.5) * 5, y + (r() - 0.5) * 5, 1.5, 1.5);
-      }
+      const a = project(f.from.gx, f.from.gy, 0.22);
+      const b = project(f.to.gx, f.to.gy, f.to.z);
+      const x = a.x + (b.x - a.x) * fp, y = a.y + (b.y - a.y) * fp;
+      ctx.strokeStyle = f.survives ? f.colour : ink.faint;
+      ctx.globalAlpha = f.survives ? 0.55 : 0.20;
+      ctx.lineWidth = f.survives ? 1.2 : 0.9;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.bezierCurveTo(a.x + (b.x - a.x) * 0.5, a.y, x - (b.x - a.x) * 0.42, y, x, y);
+      ctx.stroke();
     }
     ctx.globalAlpha = 1;
   }
