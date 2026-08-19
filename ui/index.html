@@ -5,17 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Retrieval Inspector</title>
 <style>
-/* ------------------------------------------------------------------ tokens
-   Two hues carry meaning and are never decorative: teal is the dense
-   (semantic) retriever, amber is the sparse (lexical) one. Everything the
-   page says about agreement, disagreement and promotion is said in those
-   two colours, so they are defined once and used everywhere. */
+/* ============================================================== tokens
+   Series colours are NOT hand-picked. They are the first three slots of a
+   documented categorical palette, validated with the all-pairs check against
+   the two surfaces below -- lines can sit anywhere, so an adjacent-only check
+   would hide a collapse. Worst CVD dE 9.2 light / 9.4 dark; normal-vision
+   24.0 / 20.9. Only three: no ordering of more clears the all-pairs floor, so
+   a fourth document folds to grey and is identified by its direct label. */
 :root{
   --ground:#F6F7F9; --panel:#FFFFFF; --sunk:#EDEFF3;
   --ink:#151A21; --muted:#5D6875; --faint:#8A94A1;
   --line:#DFE3E9; --line-soft:#EAEDF1;
-  --dense:#0B7A85; --sparse:#B0611A;
-  --up:#1F7A4D; --down:#AA3A3F;
+  --grid:#E1E0D9; --baseline:#C3C2B7;
+
+  --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+  --series-other:#8A94A1;
+
+  /* Status is fixed, never themed, and never reused for a series. */
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+
   --shadow:0 1px 2px rgba(20,26,34,.05),0 8px 24px -12px rgba(20,26,34,.18);
 }
 @media (prefers-color-scheme:dark){
@@ -23,8 +31,9 @@
     --ground:#0E1216; --panel:#151A20; --sunk:#1B2128;
     --ink:#E7EBEF; --muted:#95A0AD; --faint:#6C7885;
     --line:#242C35; --line-soft:#1E252D;
-    --dense:#3FC2C9; --sparse:#E39A46;
-    --up:#4FB77C; --down:#E0696D;
+    --grid:#2C2C2A; --baseline:#383835;
+    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+    --series-other:#6C7885;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.7);
   }
 }
@@ -32,8 +41,9 @@
   --ground:#0E1216; --panel:#151A20; --sunk:#1B2128;
   --ink:#E7EBEF; --muted:#95A0AD; --faint:#6C7885;
   --line:#242C35; --line-soft:#1E252D;
-  --dense:#3FC2C9; --sparse:#E39A46;
-  --up:#4FB77C; --down:#E0696D;
+  --grid:#2C2C2A; --baseline:#383835;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+  --series-other:#6C7885;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.7);
 }
 
@@ -41,67 +51,69 @@
 html{-webkit-text-size-adjust:100%}
 body{
   margin:0; background:var(--ground); color:var(--ink);
-  font-family:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",sans-serif;
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
   font-size:15px; line-height:1.55;
 }
-.mono{font-family:"Cascadia Mono","JetBrains Mono","SF Mono",ui-monospace,Consolas,monospace;
+.mono{font-family:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
       font-variant-numeric:tabular-nums}
 h1,h2,h3{margin:0; text-wrap:balance; font-weight:620; letter-spacing:-.011em}
 
-/* ------------------------------------------------------------------ shell */
 .wrap{max-width:1180px; margin:0 auto; padding:0 28px 96px}
-header{border-bottom:1px solid var(--line); background:var(--panel); margin-bottom:34px}
-.head-in{max-width:1180px; margin:0 auto; padding:22px 28px 24px;
+header{border-bottom:1px solid var(--line); background:var(--panel)}
+.head-in{max-width:1180px; margin:0 auto; padding:22px 28px 0;
   display:flex; align-items:flex-start; gap:24px; flex-wrap:wrap}
 .brand{flex:1 1 320px; min-width:0}
 .brand h1{font-size:20px; display:flex; align-items:center; gap:10px}
 .brand p{margin:5px 0 0; color:var(--muted); font-size:13.5px; max-width:62ch}
-.spark{width:26px;height:14px;flex:none;color:var(--dense)}
-
+.spark{width:26px;height:14px;flex:none;color:var(--series-1)}
 .themer{border:1px solid var(--line); background:var(--panel); color:var(--muted);
   border-radius:7px; padding:7px 12px; font:inherit; font-size:12.5px; cursor:pointer}
 .themer:hover{color:var(--ink); border-color:var(--faint)}
 
-/* ------------------------------------------------------------------ query */
-.query{display:flex; gap:10px; width:100%; margin-top:4px}
-.query input{
-  flex:1; padding:13px 15px; border:1px solid var(--line); border-radius:9px;
-  background:var(--ground); color:var(--ink); font:inherit; min-width:0}
-.query input:focus{outline:2px solid var(--dense); outline-offset:-1px; border-color:transparent}
-.query button{
-  padding:13px 22px; border:0; border-radius:9px; background:var(--ink);
-  color:var(--ground); font:inherit; font-weight:600; cursor:pointer; white-space:nowrap}
-.query button:hover{opacity:.87}
-.query button:disabled{opacity:.45; cursor:default}
+.views{display:flex; gap:2px; width:100%; margin-top:18px}
+.view-btn{border:0; border-bottom:2px solid transparent; background:none;
+  color:var(--muted); font:inherit; font-size:14px; font-weight:560;
+  padding:9px 15px; cursor:pointer}
+.view-btn[aria-selected="true"]{color:var(--ink); border-bottom-color:var(--series-1)}
+.view-btn:hover{color:var(--ink)}
+.view-btn:focus-visible{outline:2px solid var(--series-1); outline-offset:2px}
 
-.examples{display:flex; gap:7px; flex-wrap:wrap; margin-top:11px; width:100%}
+.query{display:flex; gap:10px; width:100%; margin:22px 0 0}
+.query input{flex:1; padding:13px 15px; border:1px solid var(--line); border-radius:9px;
+  background:var(--ground); color:var(--ink); font:inherit; min-width:0}
+.query input:focus{outline:2px solid var(--series-1); outline-offset:-1px; border-color:transparent}
+.btn{padding:13px 22px; border:0; border-radius:9px; background:var(--ink);
+  color:var(--ground); font:inherit; font-weight:600; cursor:pointer; white-space:nowrap}
+.btn:hover{opacity:.87}
+.btn:disabled{opacity:.45; cursor:default}
+.btn.ghost{background:transparent; color:var(--ink); border:1px solid var(--line)}
+.examples{display:flex; gap:7px; flex-wrap:wrap; margin:11px 0 22px; width:100%}
 .examples span{color:var(--faint); font-size:12px; padding:4px 0}
 .chip{border:1px solid var(--line); background:transparent; color:var(--muted);
   border-radius:20px; padding:4px 11px; font:inherit; font-size:12px; cursor:pointer}
-.chip:hover{border-color:var(--dense); color:var(--dense)}
+.chip:hover{border-color:var(--series-1); color:var(--series-1)}
 
-/* ------------------------------------------------------------------ verdict */
+.stack{padding-top:30px}
+.stale{opacity:.45; transition:opacity .15s}
+
 .verdict{display:flex; gap:18px; align-items:stretch; flex-wrap:wrap;
-  background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--dense);
+  background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--good);
   border-radius:11px; padding:18px 20px; margin-bottom:26px; box-shadow:var(--shadow)}
-.verdict.abstain{border-left-color:var(--down)}
+.verdict.abstain{border-left-color:var(--critical)}
 .v-main{flex:1 1 380px; min-width:0}
 .v-tag{font-size:11px; letter-spacing:.09em; text-transform:uppercase;
-  font-weight:700; color:var(--dense)}
-.verdict.abstain .v-tag{color:var(--down)}
-.v-main p{margin:5px 0 0; color:var(--muted); font-size:13.5px}
+  font-weight:700; color:var(--good); display:flex; align-items:center; gap:6px}
+.verdict.abstain .v-tag{color:var(--critical)}
+.v-main p{margin:6px 0 0; color:var(--muted); font-size:13.5px}
 .v-docs{margin-top:10px; display:flex; gap:6px; flex-wrap:wrap}
 .doc-pill{font-size:11.5px; padding:3px 9px; border-radius:5px;
   background:var(--sunk); border:1px solid var(--line-soft)}
-.doc-pill i{display:inline-block;width:7px;height:7px;border-radius:2px;
-  margin-right:6px;vertical-align:1px}
-
-/* confidence gauge: the threshold is a real position, not a label */
-.gauge{flex:0 0 232px}
+.doc-pill i{display:inline-block;width:8px;height:8px;border-radius:2px;
+  margin-right:6px;vertical-align:0}
+.gauge{flex:0 0 236px}
 .gauge-l{font-size:11px; color:var(--faint); text-transform:uppercase;
   letter-spacing:.08em; font-weight:600; margin-bottom:7px}
 
-/* ------------------------------------------------------------------ figure */
 figure{margin:0 0 26px; background:var(--panel); border:1px solid var(--line);
   border-radius:11px; padding:20px 22px 16px; box-shadow:var(--shadow)}
 figure h2{font-size:15.5px}
@@ -109,23 +121,30 @@ figure h2{font-size:15.5px}
 .scroll{overflow-x:auto}
 figcaption{color:var(--faint); font-size:12px; margin-top:12px;
   padding-top:12px; border-top:1px solid var(--line-soft); max-width:80ch}
-
-.legend{display:flex; gap:16px; flex-wrap:wrap; margin:0 0 14px; font-size:12px; color:var(--muted)}
-.legend b{font-weight:500; color:var(--ink)}
+.legend{display:flex; gap:15px; flex-wrap:wrap; margin:0 0 14px; font-size:12px; color:var(--muted)}
 .key{display:inline-flex; align-items:center; gap:6px}
-.key i{width:14px; height:0; border-top-width:2px; border-top-style:solid; display:inline-block}
+.key i{width:15px; height:3px; border-radius:2px; display:inline-block}
 
-/* ------------------------------------------------------------------ stages */
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+  gap:12px; margin-bottom:22px}
+.kpi{background:var(--panel); border:1px solid var(--line); border-radius:11px;
+  padding:15px 17px; box-shadow:var(--shadow)}
+.kpi .k-l{font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--faint); font-weight:650}
+.kpi .k-v{font-size:27px; font-weight:640; letter-spacing:-.02em; margin-top:5px; line-height:1.15}
+.kpi .k-s{font-size:12px; color:var(--muted); margin-top:3px}
+
 .stage{background:var(--panel); border:1px solid var(--line); border-radius:11px;
   margin-bottom:12px; overflow:hidden; box-shadow:var(--shadow)}
 .stage summary{list-style:none; cursor:pointer; padding:15px 20px;
   display:flex; align-items:center; gap:14px}
 .stage summary::-webkit-details-marker{display:none}
 .stage summary:hover{background:var(--sunk)}
+.stage summary:focus-visible{outline:2px solid var(--series-1); outline-offset:-2px}
 .n{flex:none; width:23px; height:23px; border-radius:6px; background:var(--sunk);
   color:var(--muted); font-size:11.5px; font-weight:700;
   display:grid; place-items:center; border:1px solid var(--line-soft)}
-.stage[open] .n{background:var(--dense); color:var(--panel); border-color:transparent}
+.stage[open] .n{background:var(--series-1); color:#fff; border-color:transparent}
 .s-t{flex:1; min-width:0}
 .s-t h3{font-size:14.5px}
 .s-t p{margin:2px 0 0; color:var(--faint); font-size:12.5px;
@@ -146,18 +165,32 @@ tr:last-child td{border-bottom:0}
 .snip{color:var(--muted); font-size:12.3px; line-height:1.45;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 .delta{font-size:12px; font-weight:650}
-.delta.u{color:var(--up)} .delta.d{color:var(--down)} .delta.z{color:var(--faint); font-weight:400}
-.both{color:var(--dense); font-weight:600}
-.dot{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:7px;vertical-align:1px}
+.delta.u{color:var(--good)} .delta.d{color:var(--critical)} .delta.z{color:var(--faint); font-weight:400}
+.both{color:var(--series-1); font-weight:600}
+.dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px;vertical-align:0}
+
+/* status: colour never alone -- always icon + label */
+.st{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; white-space:nowrap}
+.st svg{flex:none}
+.st.ok{color:var(--good)} .st.warn{color:var(--serious)}
+.st.bad{color:var(--critical)} .st.idle{color:var(--faint)}
+
+.meter-l{display:flex; justify-content:space-between; font-size:12px;
+  color:var(--muted); margin-bottom:6px}
+.meter{height:9px; border-radius:5px; background:var(--sunk); overflow:hidden}
+.meter i{display:block; height:100%; border-radius:5px; background:var(--series-1);
+  transition:width .3s}
 
 .empty{color:var(--faint); font-size:13px; padding:14px 0; font-style:italic}
 .status{color:var(--muted); font-size:13.5px; padding:40px 0; text-align:center}
-.err{color:var(--down)}
+.err{color:var(--critical)}
+.tip{position:fixed; pointer-events:none; z-index:9; background:var(--panel);
+  border:1px solid var(--line); border-radius:8px; padding:8px 11px; font-size:12px;
+  box-shadow:var(--shadow); max-width:290px; opacity:0; transition:opacity .12s}
+.tip b{display:block; margin-bottom:2px}
+.tip span{color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
-@media (max-width:720px){
-  .wrap,.head-in{padding-left:18px; padding-right:18px}
-  .gauge{flex:1 1 100%}
-}
+@media (max-width:720px){ .wrap,.head-in{padding-left:18px; padding-right:18px} .gauge{flex:1 1 100%} }
 </style>
 </head>
 <body>
@@ -173,61 +206,100 @@ tr:last-child td{border-bottom:0}
         </svg>
         Retrieval Inspector
       </h1>
-      <p>Every stage of the pipeline, and what each one changed. Ask something the
-         corpus covers &mdash; or something it doesn&rsquo;t, and watch it decline to answer.</p>
+      <p>Every stage of the pipeline, and what each one changed.</p>
     </div>
     <button class="themer" id="themer" type="button">Theme</button>
 
-    <form class="query" id="form">
-      <input id="q" placeholder="Ask a question about the corpus&hellip;" autocomplete="off"
-             aria-label="Question">
-      <button id="go" type="submit">Trace</button>
-    </form>
-    <div class="examples" id="examples"><span>Try:</span></div>
+    <div class="views" role="tablist" aria-label="Views">
+      <button class="view-btn" role="tab" id="v-ask" aria-controls="p-ask" aria-selected="true" type="button">Inspect a question</button>
+      <button class="view-btn" role="tab" id="v-corpus" aria-controls="p-corpus" aria-selected="false" tabindex="-1" type="button">Corpus &amp; indexing</button>
+    </div>
   </div>
 </header>
 
 <div class="wrap">
-  <div id="out"><div class="status" id="status">Loading corpus&hellip;</div></div>
+  <div id="p-ask" role="tabpanel" aria-labelledby="v-ask">
+    <form class="query" id="form">
+      <input id="q" placeholder="Ask a question about the corpus&hellip;" autocomplete="off" aria-label="Question">
+      <button class="btn" id="go" type="submit">Trace</button>
+    </form>
+    <div class="examples" id="examples"><span>Try:</span></div>
+    <div id="out"><div class="status" id="status">Loading corpus&hellip;</div></div>
+  </div>
+
+  <div id="p-corpus" role="tabpanel" aria-labelledby="v-corpus" hidden>
+    <div class="stack" id="corpus-out"></div>
+  </div>
 </div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
 
 <script>
 "use strict";
 const $ = s => document.querySelector(s);
-const out = $("#out");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const short = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
+const nf = n => Number(n).toLocaleString();
 
-/* --------------------------------------------------------------- theme */
-const themer = $("#themer");
-themer.onclick = () => {
+const ICON = {
+  ok:   '<svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  bad:  '<svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.4v5M8 11.6v.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  warn: '<svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.2l6 11.3H2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6.6v3M8 11.6v.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  idle: '<svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 2.2"/></svg>'
+};
+
+/* ---------------------------------------------------------------- theme */
+$("#themer").onclick = () => {
   const now = document.documentElement.getAttribute("data-theme")
     || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", now === "dark" ? "light" : "dark");
-  if (window.__last) render(window.__last);   // repaint SVG in the new palette
+  if (window.__last) renderTrace(window.__last);
 };
 
-/* Documents get stable colours so a passage is recognisable across every
-   stage of the chart. Hues are spaced around the wheel and kept mid-chroma
-   so they stay legible on both grounds. */
-const HUES = [188, 32, 258, 148, 12, 212, 88, 320, 168, 52, 278, 108];
-const docColor = (() => {
-  const seen = new Map();
-  return name => {
-    if (!seen.has(name)) {
-      const h = HUES[seen.size % HUES.length];
-      const dark = (document.documentElement.getAttribute("data-theme")
-        || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light")) === "dark";
-      seen.set(name, `hsl(${h} ${dark ? "62% 60%" : "68% 36%"})`);
-    }
-    return seen.get(name);
+/* ---------------------------------------------------------------- views */
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+tabs.forEach(t => {
+  t.onclick = () => {
+    tabs.forEach(o => {
+      const on = o === t;
+      o.setAttribute("aria-selected", on ? "true" : "false");
+      o.tabIndex = on ? 0 : -1;
+      document.getElementById(o.getAttribute("aria-controls")).hidden = !on;
+    });
+    if (t.id === "v-corpus") loadCorpusView();
   };
-})();
-const esc = s => String(s).replace(/[&<>"]/g, c =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const short = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
+});
 
-/* --------------------------------------------------------------- corpus */
+/* ------------------------------------------------------- series colours
+   Emphasis, not identity-for-everyone. Only documents reaching the final
+   answer are coloured, and only the first three -- past that no ordering
+   clears the all-pairs CVD floor, so the fourth is grey and carries its name
+   as a direct label. Colour follows the document, never its rank. */
+const SLOTS = ["var(--series-1)", "var(--series-2)", "var(--series-3)"];
+function palette(finalSources) {
+  const m = new Map();
+  finalSources.forEach((s, i) => m.set(s, i < SLOTS.length ? SLOTS[i] : "var(--series-other)"));
+  return src => m.get(src) || "var(--series-other)";
+}
+
+/* ------------------------------------------------------------- tooltip */
+const tip = $("#tip");
+function showTip(html, ev) {
+  tip.innerHTML = html; tip.style.opacity = "1";
+  const r = tip.getBoundingClientRect();
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => tip.style.opacity = "0";
+
+/* -------------------------------------------------------------- corpus */
+let CORPUS = null;
 fetch("/api/corpus").then(r => r.json()).then(c => {
-  $("#status").textContent = `${c.chunks.toLocaleString()} chunks from ${c.documents} documents. Ask a question to begin.`;
+  CORPUS = c;
+  $("#status").textContent =
+    `${nf(c.chunks)} chunks from ${c.documents} documents. Ask a question to begin.`;
   const box = $("#examples");
   (c.examples || []).forEach(x => {
     const b = document.createElement("button");
@@ -237,46 +309,53 @@ fetch("/api/corpus").then(r => r.json()).then(c => {
   });
 }).catch(() => $("#status").textContent = "Could not reach the server.");
 
-/* --------------------------------------------------------------- submit */
+/* --------------------------------------------------------------- query */
 $("#form").onsubmit = async e => {
   e.preventDefault();
   const q = $("#q").value.trim();
   if (!q) return;
   $("#go").disabled = true;
-  out.innerHTML = `<div class="status">Running the pipeline&hellip;</div>`;
+  const out = $("#out");
+  if (window.__last) out.classList.add("stale");
+  else out.innerHTML = `<div class="status">Running the pipeline&hellip;</div>`;
   try {
     const r = await fetch("/api/trace", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: q })
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({question: q})
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || r.statusText);
     window.__last = data;
-    render(data);
+    renderTrace(data);
   } catch (err) {
     out.innerHTML = `<div class="status err">${esc(err.message)}</div>`;
   } finally {
+    out.classList.remove("stale");
     $("#go").disabled = false;
   }
 };
 
-/* --------------------------------------------------------------- render */
-function render(data) {
+function renderTrace(data) {
+  const out = $("#out");
+  const final = data.stages[data.stages.length - 1].items;
+  const order = [...new Set(final.map(i => i.source))];
+  const color = palette(order);
   out.innerHTML = "";
-  out.appendChild(verdictEl(data.verdict));
-  out.appendChild(flowFigure(data.stages));
-  data.stages.forEach((s, i) => out.appendChild(stageEl(s, i + 1)));
+  out.appendChild(verdictEl(data.verdict, color));
+  out.appendChild(flowFigure(data.stages, color, order));
+  data.stages.forEach((s, i) => out.appendChild(stageEl(s, i + 1, color)));
 }
 
-function verdictEl(v) {
+function verdictEl(v, color) {
   const el = document.createElement("section");
-  el.className = "verdict" + (v.confident ? "" : " abstain");
+  const ok = v.confident;
+  el.className = "verdict" + (ok ? "" : " abstain");
   el.innerHTML = `
     <div class="v-main">
-      <div class="v-tag">${v.confident ? "Answering" : "Declined — below threshold"}</div>
+      <div class="v-tag">${ok ? ICON.ok : ICON.bad}${ok ? "Answering" : "Declined — below threshold"}</div>
       <p>${esc(v.explanation)}</p>
       <div class="v-docs">${(v.documents || []).map(d =>
-        `<span class="doc-pill"><i style="background:${docColor(d)}"></i>${esc(short(d))}</span>`).join("")}</div>
+        `<span class="doc-pill"><i style="background:${color(d)}"></i>${esc(short(d))}</span>`).join("")}</div>
     </div>
     <div class="gauge">
       <div class="gauge-l">Confidence</div>
@@ -285,110 +364,122 @@ function verdictEl(v) {
   return el;
 }
 
-/* Gauge, not a number: the point is where the score sits RELATIVE to the
-   threshold, which a bare figure never conveys. */
+/* A meter, not a chart: one value against a limit. The threshold sits at its
+   true position, because a score means nothing without knowing the line. */
 function gauge(score, threshold) {
-  const LO = -12, HI = 12, W = 232, H = 46;
+  if (score === null || score === undefined) return "";
+  const LO = -12, HI = 12, W = 236, H = 48;
   const x = v => ((Math.max(LO, Math.min(HI, v)) - LO) / (HI - LO)) * (W - 2) + 1;
   const ok = score >= threshold;
-  const col = ok ? "var(--up)" : "var(--down)";
+  const col = ok ? "var(--good)" : "var(--critical)";
   return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img"
-       aria-label="Score ${score} against threshold ${threshold}">
-    <rect x="1" y="8" width="${W - 2}" height="7" rx="3.5" fill="var(--sunk)"/>
-    <rect x="${x(threshold)}" y="8" width="${Math.max(0, x(score) - x(threshold))}"
-          height="7" rx="3.5" fill="${col}" opacity=".85"/>
-    <line x1="${x(threshold)}" y1="3" x2="${x(threshold)}" y2="20"
+       aria-label="Confidence ${score.toFixed(2)} against threshold ${threshold.toFixed(1)}; ${ok ? "above" : "below"}">
+    <rect x="1" y="9" width="${W - 2}" height="8" rx="4" fill="var(--sunk)"/>
+    <rect x="${Math.min(x(threshold), x(score))}" y="9"
+          width="${Math.abs(x(score) - x(threshold))}" height="8" rx="4" fill="${col}"/>
+    <line x1="${x(threshold)}" y1="4" x2="${x(threshold)}" y2="22"
           stroke="var(--ink)" stroke-width="1.5"/>
-    <text x="${x(threshold)}" y="31" font-size="9.5" fill="var(--faint)"
-          text-anchor="middle" font-family="system-ui">threshold ${threshold.toFixed(1)}</text>
-    <circle cx="${x(score)}" cy="11.5" r="5" fill="${col}" stroke="var(--panel)" stroke-width="2"/>
-    <text x="${x(score)}" y="45" font-size="12" fill="${col}" text-anchor="middle"
-          font-weight="700" font-family="ui-monospace,monospace">${score > 0 ? "+" : ""}${score.toFixed(2)}</text>
+    <text x="${x(threshold)}" y="33" font-size="10" fill="var(--faint)" text-anchor="middle">threshold ${threshold.toFixed(1)}</text>
+    <circle cx="${x(score)}" cy="13" r="5.5" fill="${col}" stroke="var(--panel)" stroke-width="2"/>
+    <text x="${x(score)}" y="47" font-size="12.5" fill="${col}" text-anchor="middle"
+          font-weight="700">${score > 0 ? "+" : ""}${score.toFixed(2)}</text>
   </svg>`;
 }
 
-/* ---------------------------------------------------- the bump chart
-   Columns are stages, vertical position is rank, and each line is one
-   passage travelling through the pipeline. A line that climbs steeply
-   between two columns is exactly the case that stage exists to catch. */
-function flowFigure(stages) {
+/* ------------------------------------------------------------ bump chart */
+function flowFigure(stages, color, order) {
   const fig = document.createElement("figure");
   const DEPTH = 12;
   const cols = stages.map(s => ({
-    name: s.title.replace(/ \(.*\)/, ""),
+    name: s.title.replace(/ \(.*\)/, "").replace(/^Reciprocal rank /, "").replace(/^Cross-encoder /, ""),
     rank: new Map(s.items.slice(0, DEPTH).map(i => [i.chunk_id, i.rank])),
-    all: new Map(s.items.map(i => [i.chunk_id, i]))
+    all:  new Map(s.items.map(i => [i.chunk_id, i]))
   }));
-
-  // Draw only passages that reach the final selection, plus anything that
-  // ever cracked the top few -- drawing all twenty is noise, not information.
-  const finalIds = [...cols[cols.length - 1].rank.keys()];
+  const lastCol = cols[cols.length - 1];
+  const finalIds = [...lastCol.rank.keys()];
   const notable = new Set(finalIds);
   cols.forEach(c => c.rank.forEach((r, id) => { if (r <= 3) notable.add(id); }));
 
-  const W = 940, PAD_L = 8, PAD_R = 8, TOP = 44, ROW = 25, H = TOP + ROW * DEPTH + 34;
-  const cw = (W - PAD_L - PAD_R) / cols.length;
-  const cx = i => PAD_L + cw * i + cw / 2;
+  const W = 980, L = 26, R = 172, TOP = 46, ROW = 25, H = TOP + ROW * DEPTH + 26;
+  const cw = (W - L - R) / cols.length;
+  const cx = i => L + cw * i + cw / 2;
   const cy = r => TOP + (r - 0.5) * ROW;
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:760px;height:auto"
-      role="img" aria-label="Rank of each passage across the five pipeline stages">`;
-
-  // grid + headers
+  let g = "";
   cols.forEach((c, i) => {
-    svg += `<text x="${cx(i)}" y="18" text-anchor="middle" font-size="11.5"
-      font-weight="700" fill="var(--ink)" font-family="system-ui">${esc(c.name)}</text>`;
-    svg += `<text x="${cx(i)}" y="32" text-anchor="middle" font-size="10"
-      fill="var(--faint)" font-family="system-ui">${c.all.size} items</text>`;
+    g += `<text x="${cx(i)}" y="18" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">${esc(c.name)}</text>`;
+    g += `<text x="${cx(i)}" y="33" text-anchor="middle" font-size="10" fill="var(--faint)">${c.all.size} items</text>`;
   });
   for (let r = 1; r <= DEPTH; r++) {
-    svg += `<line x1="${PAD_L}" y1="${cy(r)}" x2="${W - PAD_R}" y2="${cy(r)}"
-      stroke="var(--line-soft)" stroke-width="1"/>`;
-    svg += `<text x="${PAD_L + 2}" y="${cy(r) + 3.5}" font-size="9" fill="var(--faint)"
-      font-family="ui-monospace,monospace">${r}</text>`;
+    g += `<line x1="${L}" y1="${cy(r)}" x2="${W - R}" y2="${cy(r)}" stroke="var(--grid)" stroke-width="1"/>`;
+    g += `<text x="${L - 6}" y="${cy(r) + 3.5}" font-size="9.5" fill="var(--faint)" text-anchor="end" class="mono">${r}</text>`;
   }
 
-  // one polyline per passage, broken where it drops out of the top DEPTH
-  notable.forEach(id => {
+  // Context lines first, so survivors draw on top of them.
+  const ids = [...notable].sort((a, b) => (finalIds.includes(a) ? 1 : 0) - (finalIds.includes(b) ? 1 : 0));
+  const labels = [];
+  ids.forEach(id => {
     const pts = [];
     cols.forEach((c, i) => { const r = c.rank.get(id); if (r) pts.push([cx(i), cy(r), i]); });
     if (!pts.length) return;
     const meta = cols.find(c => c.all.has(id)).all.get(id);
-    const col = docColor(meta.source);
-    const isFinal = cols[cols.length - 1].rank.has(id);
+    const isFinal = lastCol.rank.has(id);
+    const col = isFinal ? color(meta.source) : "var(--series-other)";
+    const w = isFinal ? 2.2 : 1.1, op = isFinal ? 1 : .3;
 
     for (let j = 0; j < pts.length - 1; j++) {
       const [x1, y1, i1] = pts[j], [x2, y2, i2] = pts[j + 1];
-      const gap = i2 - i1 > 1;   // was absent from an intermediate stage
-      svg += `<path d="M${x1} ${y1} C ${x1 + cw * .42} ${y1}, ${x2 - cw * .42} ${y2}, ${x2} ${y2}"
-        fill="none" stroke="${col}" stroke-width="${isFinal ? 2.1 : 1.2}"
-        opacity="${isFinal ? .95 : .38}" ${gap ? 'stroke-dasharray="3 3"' : ""}/>`;
+      g += `<path d="M${x1} ${y1} C ${x1 + cw * .42} ${y1}, ${x2 - cw * .42} ${y2}, ${x2} ${y2}"
+        fill="none" stroke="${col}" stroke-width="${w}" opacity="${op}"
+        ${i2 - i1 > 1 ? 'stroke-dasharray="3 3"' : ""}/>`;
     }
     pts.forEach(([x, y]) => {
-      svg += `<circle cx="${x}" cy="${y}" r="${isFinal ? 3.6 : 2.4}" fill="${col}"
-        opacity="${isFinal ? 1 : .5}"><title>${esc(short(meta.source))} — ${esc(meta.locator)}</title></circle>`;
+      g += `<circle cx="${x}" cy="${y}" r="${isFinal ? 4 : 2.4}" fill="${col}" opacity="${op}"
+        stroke="var(--panel)" stroke-width="${isFinal ? 2 : 0}"
+        data-src="${esc(meta.source)}" data-loc="${esc(meta.locator)}" data-txt="${esc(meta.text.slice(0,150))}"
+        style="cursor:crosshair"/>`;
     });
+    if (isFinal) {
+      const [lx, ly] = pts[pts.length - 1];
+      labels.push({y: ly, x: lx, col, name: short(meta.source), loc: meta.locator});
+    }
   });
-  svg += "</svg>";
+  // Nudge overlapping labels apart rather than letting them collide.
+  labels.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < labels.length; i++)
+    if (labels[i].y - labels[i - 1].y < 15) labels[i].y = labels[i - 1].y + 15;
+  labels.forEach(l => {
+    g += `<line x1="${l.x + 7}" y1="${l.y}" x2="${W - R + 8}" y2="${l.y}" stroke="${l.col}" stroke-width="1" opacity=".4"/>`;
+    g += `<text x="${W - R + 13}" y="${l.y - 1}" font-size="11.5" font-weight="640" fill="${l.col}">${esc(l.name.slice(0, 22))}</text>`;
+    g += `<text x="${W - R + 13}" y="${l.y + 11}" font-size="10" fill="var(--faint)">${esc(l.loc)}</text>`;
+  });
 
-  const docs = [...new Set(finalIds.map(id => cols[cols.length - 1].all.get(id).source))];
+  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:820px;height:auto"
+      role="img" aria-label="Rank of each passage across the five pipeline stages. Lines that rise were promoted. The per-stage tables below list every value shown here.">${g}</svg>`;
+
   fig.innerHTML = `
     <h2>Where each passage travelled</h2>
-    <p class="fig-sub">Vertical position is rank. Each line is one passage moving through the
-      pipeline &mdash; solid lines are the ones that survived into the final answer, faded lines
-      were overtaken along the way. A dashed segment means the passage was outside the top
-      ${DEPTH} at that stage.</p>
+    <p class="fig-sub">Vertical position is rank. Solid coloured lines are the passages that survived
+      into the final answer; grey lines were overtaken along the way. A dashed segment means the
+      passage sat outside the top ${DEPTH} at that stage.</p>
     <div class="legend">
-      ${docs.map(d => `<span class="key"><i style="border-top-color:${docColor(d)}"></i><b>${esc(short(d))}</b></span>`).join("")}
+      ${order.map(d => `<span class="key"><i style="background:${color(d)}"></i>${esc(short(d))}</span>`).join("")}
+      <span class="key"><i style="background:var(--series-other);opacity:.4"></i>did not survive</span>
     </div>
     <div class="scroll">${svg}</div>
-    <figcaption>Steep climbs are the pipeline earning its keep: a passage that enters at rank
-      10 and leaves at rank 1 was found by the cheap stage and correctly promoted by the
-      expensive one.</figcaption>`;
+    <figcaption>Steep climbs are the pipeline earning its keep: a passage found by the cheap stage
+      and promoted by the expensive one. Every value here also appears in the per-stage tables below.</figcaption>`;
+
+  fig.querySelectorAll("circle[data-src]").forEach(c => {
+    c.addEventListener("mousemove", e => showTip(
+      `<b>${esc(short(c.dataset.src))}</b><span>${esc(c.dataset.loc)}</span>
+       <span style="display:block;margin-top:5px">${esc(c.dataset.txt)}…</span>`, e));
+    c.addEventListener("mouseleave", hideTip);
+  });
   return fig;
 }
 
-function stageEl(s, n) {
+function stageEl(s, n, color) {
   const el = document.createElement("details");
   el.className = "stage";
   if (n === 1) el.open = true;
@@ -403,18 +494,14 @@ function stageEl(s, n) {
       ? `<td class="r mono">${i.dense_rank ? "d" + i.dense_rank : "–"} / ${i.sparse_rank ? "s" + i.sparse_rank : "–"}</td>` : "";
     return `<tr>
       <td class="r mono" style="color:var(--faint)">${i.rank}</td>
-      <td><div class="src"><span class="dot" style="background:${docColor(i.source)}"></span>${esc(short(i.source))}</div>
+      <td><div class="src"><span class="dot" style="background:${color(i.source)}"></span>${esc(short(i.source))}</div>
           <div class="loc">${esc(i.locator)}</div></td>
       <td><div class="snip">${esc(i.text)}</div></td>
       ${cross}${agree}${move}
       <td class="r mono">${typeof i.score === "number" ? (i.score > 0 && s.name === "reranked" ? "+" : "") + i.score : ""}</td>
     </tr>`;
   }).join("");
-
-  const hasX = s.items[0] && s.items[0].also_found_by !== undefined;
-  const hasA = s.items[0] && s.items[0].agreement !== undefined;
-  const hasD = s.items[0] && s.items[0].delta !== undefined;
-
+  const f = s.items[0] || {};
   el.innerHTML = `
     <summary>
       <span class="n">${n}</span>
@@ -426,16 +513,122 @@ function stageEl(s, n) {
     <div class="s-body">
       <p class="s-why">${esc(s.detail)}</p>
       ${s.items.length ? `<div class="scroll"><table>
-        <thead><tr>
-          <th class="r">#</th><th>Document</th><th>Passage</th>
-          ${hasX ? '<th class="r">Other</th>' : ""}
-          ${hasA ? '<th class="r">d / s</th>' : ""}
-          ${hasD ? '<th class="r">Move</th>' : ""}
-          <th class="r">Score</th>
-        </tr></thead><tbody>${rows}</tbody></table></div>`
+        <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th>
+          ${f.also_found_by !== undefined ? '<th class="r">Other</th>' : ""}
+          ${f.agreement !== undefined ? '<th class="r">d / s</th>' : ""}
+          ${f.delta !== undefined ? '<th class="r">Move</th>' : ""}
+          <th class="r">Score</th></tr></thead>
+        <tbody>${rows}</tbody></table></div>`
       : `<div class="empty">No results — no query term appears anywhere in the corpus.</div>`}
     </div>`;
   return el;
+}
+
+/* ================================================== corpus & indexing view */
+let poll = null;
+
+function loadCorpusView() {
+  renderCorpus(window.__idx || null);
+  fetch("/api/index/status").then(r => r.json()).then(s => { window.__idx = s; renderCorpus(s); }).catch(() => {});
+}
+
+$("#p-corpus").addEventListener("click", async e => {
+  const btn = e.target.closest("#rebuild");
+  if (!btn) return;
+  btn.disabled = true;
+  const r = await fetch("/api/index/start", {method: "POST"});
+  if (r.status === 409) { btn.disabled = false; return; }
+  if (!poll) poll = setInterval(tick, 700);
+  tick();
+});
+
+async function tick() {
+  try {
+    const s = await (await fetch("/api/index/status")).json();
+    window.__idx = s;
+    renderCorpus(s);
+    if (s.state !== "running") {
+      if (poll) { clearInterval(poll); poll = null; }
+      // The corpus changed underneath us; refresh the document list.
+      const c = await (await fetch("/api/corpus")).json();
+      CORPUS = c; renderCorpus(s);
+    }
+  } catch { if (poll) { clearInterval(poll); poll = null; } }
+}
+
+function renderCorpus(s) {
+  const box = $("#corpus-out");
+  const c = CORPUS || {chunks: 0, documents: 0, sources: []};
+  const running = s && s.state === "running";
+  const done = s && s.state === "done" && s.summary;
+  const cache = s && s.totals && s.totals.cache;
+  const scan = s && s.totals && s.totals.scan;
+
+  const seen = s ? s.files.length : 0;
+  const total = scan ? scan.documents : (c.documents || 0);
+  const pct = total ? Math.round(seen / total * 100) : 0;
+  const reusePct = cache && cache.requested ? Math.round(cache.reused / cache.requested * 100) : null;
+  const failed = s ? s.files.filter(f => f.status === "FAIL").length : 0;
+  const warned = s ? s.files.filter(f => f.status === "WARN").length : 0;
+
+  box.innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><div class="k-l">Documents</div><div class="k-v">${nf(total)}</div>
+        <div class="k-s">${failed ? failed + " unreadable" : "all readable"}${warned ? ", " + warned + " partial" : ""}</div></div>
+      <div class="kpi"><div class="k-l">Chunks</div><div class="k-v">${nf(done ? s.summary.chunks : c.chunks)}</div>
+        <div class="k-s">searchable passages</div></div>
+      <div class="kpi"><div class="k-l">Work reused</div>
+        <div class="k-v">${reusePct === null ? "–" : reusePct + "%"}</div>
+        <div class="k-s">${cache ? nf(cache.reused) + " of " + nf(cache.requested) + " embeddings" : "re-index to measure"}</div></div>
+      <div class="kpi"><div class="k-l">Last run</div>
+        <div class="k-v">${done ? s.summary.seconds.toFixed(1) + "s" : running ? s.elapsed.toFixed(1) + "s" : "–"}</div>
+        <div class="k-s">${done ? (s.summary.model_loaded ? "model was loaded" : "model never loaded") : running ? "in progress" : "not run this session"}</div></div>
+    </div>
+
+    <figure>
+      <h2>Indexing</h2>
+      <p class="fig-sub">Re-indexing skips any document whose bytes have not changed, so this is
+        fast unless you have actually added or edited something. Drop files into
+        <code>data/</code> first, then re-index.</p>
+      ${s && s.state !== "idle" ? `
+        <div class="meter-l"><span>${running ? "Processing" : "Complete"} — ${seen} of ${total} documents</span><span class="mono">${pct}%</span></div>
+        <div class="meter"><i style="width:${pct}%;${done ? "background:var(--good)" : ""}"></i></div>` : ""}
+      ${s && s.error ? `<p class="err" style="margin-top:12px">${esc(s.error)}</p>` : ""}
+      <div style="margin-top:16px"><button class="btn ghost" id="rebuild" ${running ? "disabled" : ""}>
+        ${running ? "Indexing…" : "Re-index the corpus"}</button></div>
+    </figure>
+
+    ${s && s.files.length ? `<figure>
+      <h2>Per document</h2>
+      <p class="fig-sub">A document that fails is left out of the index entirely — adding chunks
+        that can never be retrieved would quietly lower every metric with no visible cause.</p>
+      <div class="scroll"><table>
+        <thead><tr><th class="r">#</th><th>Document</th><th>Status</th><th class="r">Units</th><th class="r">Chunks</th><th>Detail</th></tr></thead>
+        <tbody>${s.files.map(f => `<tr>
+          <td class="r mono" style="color:var(--faint)">${f.index || "–"}</td>
+          <td>${esc(short(f.document))}</td>
+          <td>${statusCell(f.status)}</td>
+          <td class="r mono">${f.units == null ? "–" : nf(f.units)}</td>
+          <td class="r mono">${f.chunks == null ? "–" : nf(f.chunks)}</td>
+          <td class="snip" style="max-width:280px">${esc(f.detail)}</td></tr>`).join("")}</tbody>
+      </table></div>
+    </figure>` : ""}
+
+    <figure>
+      <h2>Documents in the index</h2>
+      <p class="fig-sub">${nf(c.chunks)} chunks across ${c.documents} documents.</p>
+      <div class="scroll"><table>
+        <thead><tr><th class="r">#</th><th>Document</th></tr></thead>
+        <tbody>${(c.sources || []).map((d, i) =>
+          `<tr><td class="r mono" style="color:var(--faint)">${i + 1}</td><td>${esc(short(d))}</td></tr>`).join("")}</tbody>
+      </table></div>
+    </figure>`;
+}
+
+function statusCell(st) {
+  const map = {ok: ["ok", "Indexed"], WARN: ["warn", "Partial"], FAIL: ["bad", "Unreadable"], SKIP: ["idle", "Skipped"]};
+  const [cls, label] = map[st] || ["idle", String(st)];
+  return `<span class="st ${cls}">${ICON[cls]}${label}</span>`;
 }
 </script>
 </body>

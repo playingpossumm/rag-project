@@ -28,6 +28,7 @@ not the default.
 import json
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -67,12 +68,107 @@ class Resources:
         self.bm25 = build_bm25(self.metadata)
         self._loaded = True
 
+    def reload(self):
+        """Re-read the index after a rebuild, so serving matches what is on disk."""
+        with self.lock:
+            self._loaded = False
+            self.load()
+
     def corpus(self) -> dict:
         docs = sorted({c["source"] for c in self.metadata})
         return {"chunks": len(self.metadata), "documents": len(docs), "sources": docs}
 
 
 RES = Resources()
+
+
+class IndexRun:
+    """A single indexing run, driven in the background so the UI stays live.
+
+    build_index() already emits structured events for every stage; nothing has
+    ever consumed them. This collects them into a snapshot the browser can poll,
+    which is why the CLI and the UI cannot drift apart -- there is one event
+    source, not a second code path written to match the first.
+
+    Polling rather than a websocket or SSE: the whole point of the stdlib server
+    is that it stays a thin adapter, and a run emits on the order of one event
+    per document. Poll pressure is not the bottleneck; parsing is.
+    """
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.reset()
+
+    def reset(self):
+        self.state = "idle"      # idle | running | done | error
+        self.events: list[dict] = []
+        self.files: dict[str, dict] = {}
+        self.summary: dict | None = None
+        self.error: str | None = None
+        self.started: float | None = None
+
+    def _on_event(self, event: dict):
+        with self.lock:
+            self.events.append(event)
+            stage = event.get("stage")
+            # Per-document rows, keyed by name so a re-emitted document updates
+            # in place rather than appending a duplicate row.
+            if stage == "parse":
+                self.files[event["document"]] = {
+                    "document": event["document"], "status": event["status"],
+                    "detail": event.get("detail") or "", "units": event.get("units"),
+                    "chunks": event.get("chunks"), "index": event.get("current"),
+                }
+            elif stage == "skip_unsupported":
+                self.files[event["document"]] = {
+                    "document": event["document"], "status": "SKIP",
+                    "detail": event.get("reason") or "unsupported format",
+                    "units": None, "chunks": None, "index": None,
+                }
+
+    def start(self, data_dir=None) -> bool:
+        """Begin a run. Returns False if one is already in flight."""
+        with self.lock:
+            if self.state == "running":
+                return False
+            self.reset()
+            self.state = "running"
+            self.started = time.time()
+        threading.Thread(target=self._run, args=(data_dir,), daemon=True).start()
+        return True
+
+    def _run(self, data_dir):
+        try:
+            from ingest import DATA_DIR, build_index
+
+            summary = build_index(data_dir or DATA_DIR, progress=self._on_event)
+            # Retrieval holds the OLD index in memory. Leaving it would serve
+            # answers from a corpus that no longer matches what the UI reports.
+            RES.reload()
+            with self.lock:
+                self.summary, self.state = summary, "done"
+        except Exception as exc:  # noqa: BLE001 - surface it in the UI
+            with self.lock:
+                self.error = f"{type(exc).__name__}: {exc}"
+                self.state = "error"
+
+    def snapshot(self) -> dict:
+        with self.lock:
+            totals = {}
+            for e in self.events:
+                if e.get("stage") in ("scan", "guard", "embed", "cache"):
+                    totals[e["stage"]] = {k: v for k, v in e.items() if k != "stage"}
+            return {
+                "state": self.state,
+                "elapsed": round(time.time() - self.started, 1) if self.started else 0.0,
+                "files": list(self.files.values()),
+                "totals": totals,
+                "summary": self.summary,
+                "error": self.error,
+            }
+
+
+INDEX_RUN = IndexRun()
 
 # Chosen to demonstrate the three behaviours worth seeing: a fact only lexical
 # matching finds reliably, a question whose distinguishing clause the ranking
@@ -126,6 +222,9 @@ class Handler(BaseHTTPRequestHandler):
         elif route == "/api/corpus":
             self._send(200, {**RES.corpus(), "examples": EXAMPLES})
 
+        elif route == "/api/index/status":
+            self._send(200, INDEX_RUN.snapshot())
+
         elif route == "/health":
             self._send(200, {
                 "status": "ok",
@@ -143,6 +242,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         route = self.path.rstrip("/")
+
+        if route == "/api/index/start":
+            if INDEX_RUN.start():
+                self._send(202, {"state": "running"})
+            else:
+                self._send(409, {"error": "an indexing run is already in progress"})
+            return
+
         if route not in ("/ask", "/api/trace"):
             self._send(404, {"error": f"no route {self.path}"})
             return
