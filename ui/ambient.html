@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ambient options — Retrieval Inspector</title>
+<style>
+/* Same tokens as the inspector, deliberately: the point of this page is to
+   judge each field in the surface it will actually sit on. Series colours are
+   the validated three; nothing here introduces a hue. */
+:root{
+  --ground:#F6F7F9; --panel:#FFFFFF; --sunk:#EDEFF3;
+  --ink:#151A21; --muted:#5D6875; --faint:#8A94A1;
+  --line:#DFE3E9; --line-soft:#EAEDF1;
+  --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+  --good:#0ca30c; --critical:#d03b3b;
+  --serif:"Iowan Old Style","Charter",Cambria,"Palatino Linotype",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI Variable Text","Segoe UI",sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E1216; --panel:#151A20; --sunk:#1B2128;
+  --ink:#E7EBEF; --muted:#95A0AD; --faint:#6C7885;
+  --line:#242C35; --line-soft:#1E252D;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+}}
+:root[data-theme="dark"]{
+  --ground:#0E1216; --panel:#151A20; --sunk:#1B2128;
+  --ink:#E7EBEF; --muted:#95A0AD; --faint:#6C7885;
+  --line:#242C35; --line-soft:#1E252D;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+a{color:var(--series-1)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 110px}
+
+header{border-bottom:1px solid var(--line);background:var(--panel);margin-bottom:36px}
+.hin{max-width:1080px;margin:0 auto;padding:26px 28px 24px;
+  display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.hin h1{font-family:var(--serif);font-weight:600;font-size:27px;margin:0;
+  letter-spacing:-.012em;flex:1 1 auto}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);margin:0 0 6px}
+.hin p{margin:8px 0 0;color:var(--muted);font-size:14px;max-width:66ch;flex:1 1 100%}
+.themer{border:1px solid var(--line);background:var(--panel);color:var(--muted);
+  border-radius:3px;padding:7px 13px;font:inherit;font-size:12.5px;cursor:pointer}
+.themer:hover{color:var(--ink);border-color:var(--faint)}
+
+.opt{margin:0 0 44px;border-top:1px solid var(--line);padding-top:22px}
+.opt-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.opt-key{font-family:var(--mono);font-size:12px;color:var(--faint);
+  letter-spacing:.1em;flex:none}
+.opt h2{font-family:var(--serif);font-weight:600;font-size:22px;margin:0;
+  letter-spacing:-.01em}
+.opt .claim{margin:0;color:var(--muted);font-size:14.5px;max-width:74ch}
+.opt .claim b{color:var(--ink);font-weight:600}
+
+.frames{margin:18px 0 0}
+.frame-l{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);margin:0 0 7px}
+/* Masthead band: the field runs edge to edge behind the wordmark, the way it
+   would on the inspector. */
+.band{position:relative;height:104px;border:1px solid var(--line);
+  border-radius:3px;background:var(--panel);overflow:hidden;margin-bottom:20px}
+.band canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.band .over{position:relative;height:100%;display:flex;align-items:center;
+  justify-content:space-between;padding:0 22px;pointer-events:none}
+.band .wm{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
+.band .rd{font-family:var(--mono);font-size:11px;color:var(--faint);
+  letter-spacing:.06em;text-align:right}
+
+/* Idle backdrop: the field fills the empty state behind the search box, then
+   is replaced by results. Shown at reduced height. */
+.idle{position:relative;height:210px;border:1px solid var(--line);border-radius:3px;
+  background:var(--panel);overflow:hidden}
+.idle canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.idle .over{position:relative;height:100%;display:grid;place-items:center;padding:0 26px}
+.idle .box{width:min(520px,100%);pointer-events:none}
+.idle .fake{display:flex;gap:9px}
+.idle .fake i{flex:1;height:44px;border:1px solid var(--line);border-radius:3px;
+  background:var(--panel);display:flex;align-items:center;padding:0 14px;
+  color:var(--faint);font-size:14px;font-style:normal}
+.idle .fake b{flex:none;height:44px;border-radius:3px;background:var(--ink);
+  color:var(--ground);display:grid;place-items:center;padding:0 22px;font-size:14px}
+.idle .cap{text-align:center;color:var(--faint);font-size:12.5px;margin-top:12px;
+  font-family:var(--mono)}
+
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:0 34px;margin-top:18px;
+  border-top:1px solid var(--line-soft);padding-top:14px}
+.notes div{font-size:13.5px;color:var(--muted)}
+.notes dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+.notes .warn{color:var(--ink)}
+@media (max-width:760px){.notes{grid-template-columns:1fr;gap:16px}}
+
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:20px 0 30px;
+  padding:13px 16px;background:var(--panel);border:1px solid var(--line);border-radius:3px}
+.bar label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint)}
+.bar input[type=range]{width:170px;accent-color:var(--series-1)}
+.bar .seedv{font-family:var(--mono);font-size:13px;min-width:3.5em}
+.bar button{border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  border-radius:3px;padding:6px 13px;font:inherit;font-size:12.5px;cursor:pointer}
+.bar button:hover{border-color:var(--faint)}
+
+.verdict{border:1px solid var(--line);border-left:3px solid var(--series-1);
+  border-radius:3px;background:var(--panel);padding:20px 24px;margin-top:8px}
+.verdict h2{font-family:var(--serif);font-size:19px;margin:0 0 8px;font-weight:600}
+.verdict p{margin:0 0 10px;color:var(--muted);font-size:14px;max-width:76ch}
+.verdict p:last-child{margin-bottom:0}
+.verdict strong{color:var(--ink)}
+kbd{font-family:var(--mono);font-size:12px;background:var(--sunk);
+  border:1px solid var(--line-soft);border-radius:3px;padding:1px 5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hin">
+    <div style="flex:1 1 auto">
+      <p class="eyebrow">Retrieval Inspector · design decision</p>
+      <h1>Four ambient fields, side by side</h1>
+    </div>
+    <button class="themer" id="themer" type="button">Switch theme</button>
+    <p>The brief left the ambient visual undecided and asked to see the options together.
+      Each one below is generative, seeded and deterministic, and takes its structure from
+      something true about the pipeline rather than being decoration with a lab coat on.
+      Each is shown twice: as a masthead band that is always present, and as a backdrop
+      for the idle state that gives way once results arrive.
+      <a href="/">Back to the inspector</a>.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="bar">
+    <label for="seed">Seed</label>
+    <input type="range" id="seed" min="1" max="60" value="7" step="1">
+    <span class="seedv mono" id="seedv">7</span>
+    <button id="prev" type="button">Previous</button>
+    <button id="next" type="button">Next</button>
+    <button id="rand" type="button">Random</button>
+    <span style="flex:1"></span>
+    <span style="color:var(--faint);font-size:12.5px">Same seed, same field, every time.</span>
+  </div>
+
+  <section class="opt" data-field="basin">
+    <div class="opt-head"><span class="opt-key">OPTION A</span><h2>Basin</h2></div>
+    <p class="claim">Marks drift on a noise field and are drawn toward <b>twenty basins — one per
+      document in the corpus</b>. Read: an embedding space settling into the documents it is
+      made of. The marks are marks; they do not stand for individual chunks.</p>
+    <div class="frames">
+      <p class="frame-l">As a masthead band</p>
+      <div class="band"><canvas></canvas><div class="over">
+        <span class="wm">Retrieval Inspector</span>
+        <span class="rd">2,768 chunks · 20 documents<br>index loaded</span></div></div>
+      <p class="frame-l">As the idle backdrop</p>
+      <div class="idle"><canvas></canvas><div class="over"><div class="box">
+        <div class="fake"><i>Ask a question about the corpus…</i><b>Trace</b></div>
+        <p class="cap">nothing traced yet</p></div></div></div>
+    </div>
+    <dl class="notes">
+      <div><dt>What it argues</dt>Retrieval is geometry. The corpus has shape, and a query
+        lands somewhere in it.</div>
+      <div><dt>Where it is weak</dt><span class="warn">Closest of the four to a stock
+        particle flow field.</span> Its specificity is in the basin count, which nobody
+        reads off the screen. Motion never stops, so it competes with the charts.</div>
+    </dl>
+  </section>
+
+  <section class="opt" data-field="lattice">
+    <div class="opt-head"><span class="opt-key">OPTION B</span><h2>Lattice</h2></div>
+    <p class="claim"><b>Five stage columns and eight rank rows</b> — the bump chart with the
+      data taken out. Marks advance a stage at a time and change rank as they go. The
+      quietest of the four, and the only one that reads as the same instrument as the
+      page it sits on.</p>
+    <div class="frames">
+      <p class="frame-l">As a masthead band</p>
+      <div class="band"><canvas></canvas><div class="over">
+        <span class="wm">Retrieval Inspector</span>
+        <span class="rd">2,768 chunks · 20 documents<br>index loaded</span></div></div>
+      <p class="frame-l">As the idle backdrop</p>
+      <div class="idle"><canvas></canvas><div class="over"><div class="box">
+        <div class="fake"><i>Ask a question about the corpus…</i><b>Trace</b></div>
+        <p class="cap">nothing traced yet</p></div></div></div>
+    </div>
+    <dl class="notes">
+      <div><dt>What it argues</dt>Rank is the unit of this system. It rehearses how to read
+        the bump chart before you meet one.</div>
+      <div><dt>Where it is weak</dt><span class="warn">It rhymes with the real chart closely
+        enough to be mistaken for one.</span> A visual that looks like data but is not
+        is the one failure mode this page cannot afford.</div>
+    </dl>
+  </section>
+
+  <section class="opt" data-field="fringe">
+    <div class="opt-head"><span class="opt-key">OPTION C</span><h2>Fringe</h2></div>
+    <p class="claim">Two wave sources, <b>one per retriever</b>, and the interference between
+      them. Where the crests coincide the field brightens — which is what reciprocal rank
+      fusion rewards: the passages both retrievers found. The only field of the four that
+      depicts the idea the pipeline is built on.</p>
+    <div class="frames">
+      <p class="frame-l">As a masthead band</p>
+      <div class="band"><canvas></canvas><div class="over">
+        <span class="wm">Retrieval Inspector</span>
+        <span class="rd">2,768 chunks · 20 documents<br>index loaded</span></div></div>
+      <p class="frame-l">As the idle backdrop</p>
+      <div class="idle"><canvas></canvas><div class="over"><div class="box">
+        <div class="fake"><i>Ask a question about the corpus…</i><b>Trace</b></div>
+        <p class="cap">nothing traced yet</p></div></div></div>
+    </div>
+    <dl class="notes">
+      <div><dt>What it argues</dt>Two retrievers, and the answer is where they agree. It is
+        the thesis of the pipeline rendered as a physical process.</div>
+      <div><dt>Where it is weak</dt><span class="warn">It carries the most colour of the
+        four</span>, and it uses the same two hues the charts use for documents — a viewer
+        could read meaning into the hue that is not there.</div>
+    </dl>
+  </section>
+
+  <section class="opt" data-field="settle">
+    <div class="opt-head"><span class="opt-key">OPTION D</span><h2>Settle</h2></div>
+    <p class="claim">Marks fall and stack into ranked rows, <b>then stop</b>. The only field
+      with an end state, which is its argument: it performs the sort once on load and then
+      gets out of the way, rather than moving forever behind text.</p>
+    <div class="frames">
+      <p class="frame-l">As a masthead band</p>
+      <div class="band"><canvas></canvas><div class="over">
+        <span class="wm">Retrieval Inspector</span>
+        <span class="rd">2,768 chunks · 20 documents<br>index loaded</span></div></div>
+      <p class="frame-l">As the idle backdrop</p>
+      <div class="idle"><canvas></canvas><div class="over"><div class="box">
+        <div class="fake"><i>Ask a question about the corpus…</i><b>Trace</b></div>
+        <p class="cap">nothing traced yet</p></div></div></div>
+    </div>
+    <dl class="notes">
+      <div><dt>What it argues</dt>Ranking is the job, and it finishes. Motion that ends
+        respects the reading that follows it.</div>
+      <div><dt>Where it is weak</dt>After the first two seconds it is a static rule pattern,
+        so it stops paying for itself on a page you keep open.
+        <span class="warn">Re-running it on every query would be motion pretending to be
+        progress.</span></div>
+    </dl>
+  </section>
+
+  <div class="verdict">
+    <h2>The recommendation, if you want one</h2>
+    <p><strong>Option B (Lattice) for the masthead, Option C (Fringe) for the idle backdrop.</strong>
+      They do different jobs, and using both is not a compromise between them.</p>
+    <p>The masthead is permanent and sits above real charts all day, so it has to be the
+      thing that never competes — that is B, which is nearly all hairline and moves at a
+      pace you notice only if you look for it. Its weakness (looking like the real chart) is
+      answerable by keeping it small and unlabelled, which a masthead band already is.</p>
+    <p>The idle state is the opposite case: it exists precisely because there is nothing to
+      read yet, and it is gone the moment there is. That is where C earns its colour — it
+      is the one field that teaches something before you have asked anything, and it never
+      shares the screen with the charts it could be confused with.</p>
+    <p>Against the brief, <strong>A is the one to drop.</strong> It is the closest to a
+      default particle field, and its only claim to specificity is a basin count no viewer
+      can see. D is a real idea, but a load animation more than an ambient one.</p>
+    <p style="color:var(--faint)">Scrub the seed above and look again before deciding —
+      the fields differ more between seeds than they do between the light and dark themes.
+      Tell me a letter and a placement and I will wire it in; the inspector currently ships
+      with this recommendation applied.</p>
+  </div>
+</div>
+
+<script src="/ambient-fields.js"></script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+$("#themer").onclick = () => {
+  const now = document.documentElement.getAttribute("data-theme")
+    || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", now === "dark" ? "light" : "dark");
+  build();                 // fields read their ink once, so re-read it
+};
+
+let handles = [];
+function build() {
+  handles.forEach(h => h.stop());
+  handles = [];
+  const seed = Number($("#seed").value);
+  document.querySelectorAll(".opt").forEach(sec => {
+    const kind = sec.dataset.field;
+    sec.querySelectorAll("canvas").forEach(c => {
+      handles.push(window.AMBIENT[kind](c, {seed}));
+    });
+  });
+}
+
+const setSeed = v => {
+  const n = Math.max(1, Math.min(60, v));
+  $("#seed").value = n; $("#seedv").textContent = n; build();
+};
+$("#seed").oninput = e => { $("#seedv").textContent = e.target.value; build(); };
+$("#prev").onclick = () => setSeed(Number($("#seed").value) - 1);
+$("#next").onclick = () => setSeed(Number($("#seed").value) + 1);
+$("#rand").onclick = () => setSeed(1 + Math.floor(Math.random() * 60));
+build();
+</script>
+</body>
+</html>

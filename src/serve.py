@@ -227,6 +227,16 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, AMBIENT_FILE.read_bytes(), "text/html; charset=utf-8")
 
+        elif route == "/ambient-fields.js":
+            # One narrow static route rather than a static-file server: the
+            # generative fields are shared by the inspector and the chooser
+            # page, and duplicating them in both would let them drift.
+            f = UI_FILE.parent / "ambient-fields.js"
+            if not f.exists():
+                self._send(404, {"error": "ui/ambient-fields.js is missing"})
+                return
+            self._raw(200, f.read_bytes(), "text/javascript; charset=utf-8")
+
         elif route == "/api/eval":
             # Static passthrough of what evaluate.py wrote. The UI shows measured
             # numbers rather than restating them, so a stale README cannot make

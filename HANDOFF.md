@@ -218,7 +218,29 @@ fully unblocked, and needs nothing from anyone.
 
 ---
 
-## 8. Where to read more
+## 8. Published artifacts — update, never re-publish
+
+Two pages are published to the owner's Claude account. Their **source is in this
+repo**; the published copies live in the cloud and are not carried by any session.
+
+| Artifact | Source file | URL |
+|---|---|---|
+| Anatomy of a Retrieval Pipeline (Phases 1–3) | `docs/phase-1-field-notes.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 |
+| Retrieval System Status | `docs/project-status.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 |
+
+**To update one, pass its URL.** Publishing the source file without the `url`
+creates a *second, separate* artifact instead of updating the existing one, and
+the owner's existing link silently goes stale. This is the single easiest way to
+break something here, and nothing in the file itself warns you — which is why the
+URLs are recorded here.
+
+Both carry a banner scoping Phase 1–2 figures as historical. Phase 3 reflects the
+system as it stands. If Phase 4 is added, extend that banner rather than letting it
+disclaim current work.
+
+---
+
+## 9. Where to read more
 
 | File | What it holds |
 |---|---|

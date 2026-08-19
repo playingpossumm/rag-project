@@ -1,0 +1,41 @@
+{
+  "$note": "Which files each building on the architecture map is made of. Every file matched by `sources` in architecture.config.json must be claimed exactly once; anything nobody claims shows up as UNCLAIMED in the generated file and as a drift count on the page. Keys beginning with $ are notes, not modules.",
+
+  "$folding": "Nineteen of the twenty-seven modules stand on their own. The remaining eight are folded into two buildings -- `goldenset` and `probes` -- because they are genuinely one job each (constructing the labelled set; investigating a measured failure) and twenty-seven separate buildings stops being readable. The partition is still total: every module is claimed.",
+
+  "api":        { "owns": ["src/api.py"] },
+  "serve":      { "owns": ["src/serve.py"] },
+  "cli":        { "owns": ["src/cli.py"] },
+  "trace":      { "owns": ["src/pipeline_trace.py"] },
+
+  "ingest":     { "owns": ["src/ingest.py"] },
+  "loaders":    { "owns": ["src/loaders.py"] },
+  "ocr":        { "owns": ["src/ocr.py"] },
+  "health":     { "owns": ["src/corpus_health.py"] },
+  "fetch":      { "owns": ["src/fetch_corpus.py"] },
+
+  "parsecache": { "owns": ["src/parse_cache.py"] },
+  "embedcache": { "owns": ["src/embedding_cache.py"] },
+
+  "retrieve":   { "owns": ["src/retrieve.py"] },
+  "hybrid":     { "owns": ["src/hybrid.py"] },
+  "rerank":     { "owns": ["src/rerank.py"] },
+  "diversify":  { "owns": ["src/diversify.py"] },
+  "parent":     { "owns": ["src/parent.py"] },
+  "abstain":    { "owns": ["src/abstain.py"] },
+  "generate":   { "owns": ["src/generate.py"] },
+
+  "evaluate":   { "owns": ["src/evaluate.py"] },
+  "goldenset":  { "owns": [
+    "src/build_golden_set.py",
+    "src/check_answers.py",
+    "src/verify_candidates.py",
+    "src/audit_golden_set.py",
+    "src/label_multisource.py"
+  ] },
+  "probes":     { "owns": [
+    "src/diagnose_crossdoc.py",
+    "src/compare_rerankers.py",
+    "src/eval_probe.py"
+  ] }
+}
