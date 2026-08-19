@@ -41,7 +41,7 @@
 /* ---------------------------------------------------------- projection */
 const TW = 9.4;
 const TH = 5.6;
-const SZ = 13;                       // px per floor of height
+const SZ = 17;                       // px per floor of height
 
 const project = (gx, gy, z = 0) => ({
   x: (gx - gy) * TW,
@@ -63,17 +63,17 @@ function palette(finalSources, ink) {
 /* ----------------------------------------------------------- the plan */
 const FLOORS = 10;                   // ranks a tower can show
 const TOWERS = [
-  { id: "dense",    u: 46, v: -15, label: "Dense",         sub: "meaning" },
-  { id: "sparse",   u: 46, v: 15,  label: "BM25",          sub: "exact words" },
-  { id: "fused",    u: 68, v: 0,   label: "Fusion",        sub: "merged by rank" },
-  { id: "reranked", u: 86, v: 0,   label: "Reranking",     sub: "read together" },
-  { id: "selected", u: 102, v: 0,  label: "Diversity cap", sub: "2 per document" },
+  { id: "dense",    u: 40, v: -16, label: "Dense",         sub: "meaning" },
+  { id: "sparse",   u: 40, v: 16,  label: "BM25",          sub: "exact words" },
+  { id: "fused",    u: 58, v: 0,   label: "Fusion",        sub: "merged by rank" },
+  { id: "reranked", u: 73, v: 0,   label: "Reranking",     sub: "read together" },
+  { id: "selected", u: 87, v: 0,   label: "Diversity cap", sub: "2 per document" },
 ];
-const GATE = { id: "gate", u: 117, v: 0, label: "The gate" };
-const ANSWER = { id: "answer", u: 132, v: 0, label: "The answer" };
+const GATE = { id: "gate", u: 100, v: 0, label: "The gate" };
+const ANSWER = { id: "answer", u: 113, v: 0, label: "The answer" };
 const INDEX = { id: "index", u: 0, v: 0, label: "The index" };
 
-const TOWER_W = 3.4;                 // half-width of a tower's footprint
+const TOWER_W = 2.5;                 // half-width of a tower's footprint
 const ROADS = [
   ["index", "dense"], ["index", "sparse"],
   ["dense", "fused"], ["sparse", "fused"],
@@ -332,10 +332,10 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
   /* 2 — the index: one block per document, every chunk a window. */
   for (const b of city.blocks) {
     diamond(ctx, b.centre.gx, b.centre.gy, b.half, b.half, 0);
-    ctx.fillStyle = ink.panel; ctx.globalAlpha = 0.5; ctx.fill();
+    ctx.fillStyle = ink.panel; ctx.globalAlpha = 0.85; ctx.fill();
     ctx.globalAlpha = 1;
-    ctx.strokeStyle = ink.line; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = ink.faint; ctx.globalAlpha = 0.34;
+    ctx.strokeStyle = ink.line; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = ink.faint; ctx.globalAlpha = 0.5;
     for (const w of b.windows) {
       const q = project(w.gx, w.gy, 0.12);
       ctx.fillRect(q.x, q.y, 1.4, 1.4);
