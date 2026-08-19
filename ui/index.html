@@ -157,7 +157,8 @@ figcaption{color:var(--faint); font-size:12px; margin-top:12px;
 table{width:100%; border-collapse:collapse; font-size:13px}
 th{text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.075em;
   color:var(--faint); font-weight:700; padding:0 10px 7px 0; border-bottom:1px solid var(--line)}
-th.r,td.r{text-align:right; padding-right:0}
+th.r,td.r{text-align:right; padding-left:16px; padding-right:0}
+th.r:last-child,td.r:last-child{padding-left:18px}
 td{padding:8px 10px 8px 0; border-bottom:1px solid var(--line-soft); vertical-align:top}
 tr:last-child td{border-bottom:0}
 .src{white-space:nowrap; font-size:12.5px}
@@ -389,16 +390,26 @@ function gauge(score, threshold) {
 /* ------------------------------------------------------------ bump chart */
 function flowFigure(stages, color, order) {
   const fig = document.createElement("figure");
-  const DEPTH = 12;
   const cols = stages.map(s => ({
     name: s.title.replace(/ \(.*\)/, "").replace(/^Reciprocal rank /, "").replace(/^Cross-encoder /, ""),
-    rank: new Map(s.items.slice(0, DEPTH).map(i => [i.chunk_id, i.rank])),
+    rank: new Map(s.items.map(i => [i.chunk_id, i.rank])),
     all:  new Map(s.items.map(i => [i.chunk_id, i]))
   }));
   const lastCol = cols[cols.length - 1];
   const finalIds = [...lastCol.rank.keys()];
   const notable = new Set(finalIds);
   cols.forEach(c => c.rank.forEach((r, id) => { if (r <= 3) notable.add(id); }));
+
+  // Depth follows the lines actually drawn, not the candidate count. Fixed at
+  // 12 it rendered five empty rows on every real query, because the passages
+  // worth showing all sit near the top. Derived AFTER `notable` is known --
+  // computing it from s.items.length just measured the shortlist size (20).
+  let deepest = 1;
+  cols.forEach(c => c.rank.forEach((r, id) => {
+    if (notable.has(id) && r <= 12 && r > deepest) deepest = r;
+  }));
+  const DEPTH = Math.min(12, Math.max(5, deepest));
+  cols.forEach(c => { for (const [id, r] of c.rank) if (r > DEPTH) c.rank.delete(id); });
 
   const W = 980, L = 26, R = 172, TOP = 46, ROW = 25, H = TOP + ROW * DEPTH + 26;
   const cw = (W - L - R) / cols.length;
@@ -441,7 +452,14 @@ function flowFigure(stages, color, order) {
     });
     if (isFinal) {
       const [lx, ly] = pts[pts.length - 1];
-      labels.push({y: ly, x: lx, col, name: short(meta.source), loc: meta.locator});
+      const existing = labels.find(l => l.src === meta.source);
+      if (existing) {                     // same document, second passage
+        existing.locs.push(meta.locator);
+        existing.y = Math.min(existing.y, ly);
+      } else {
+        labels.push({y: ly, x: lx, col, src: meta.source,
+                     name: short(meta.source), locs: [meta.locator]});
+      }
     }
   });
   // Nudge overlapping labels apart rather than letting them collide.
@@ -449,9 +467,12 @@ function flowFigure(stages, color, order) {
   for (let i = 1; i < labels.length; i++)
     if (labels[i].y - labels[i - 1].y < 15) labels[i].y = labels[i - 1].y + 15;
   labels.forEach(l => {
+    // Truncate on a word boundary rather than mid-token, and only if needed.
+    let nm = l.name;
+    if (nm.length > 24) nm = nm.slice(0, 23).replace(/[_\-. ][^_\-. ]*$/, "") + "…";
     g += `<line x1="${l.x + 7}" y1="${l.y}" x2="${W - R + 8}" y2="${l.y}" stroke="${l.col}" stroke-width="1" opacity=".4"/>`;
-    g += `<text x="${W - R + 13}" y="${l.y - 1}" font-size="11.5" font-weight="640" fill="${l.col}">${esc(l.name.slice(0, 22))}</text>`;
-    g += `<text x="${W - R + 13}" y="${l.y + 11}" font-size="10" fill="var(--faint)">${esc(l.loc)}</text>`;
+    g += `<text x="${W - R + 13}" y="${l.y - 1}" font-size="11.5" font-weight="640" fill="${l.col}">${esc(nm)}</text>`;
+    g += `<text x="${W - R + 13}" y="${l.y + 11}" font-size="10" fill="var(--faint)">${esc(l.locs.join(", "))}</text>`;
   });
 
   const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:820px;height:auto"
