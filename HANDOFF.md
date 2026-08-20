@@ -126,6 +126,26 @@ Other hard-won corrections worth not repeating:
 Rewritten in the session of 2026-08-19/20. `ui/index.html` is now an **app**, not
 the two-tab inspector this section used to describe.
 
+### Direction as of 2026-08-20 — dial the UI back
+
+The owner's current instruction, and it supersedes the ambition recorded below:
+**keep the UI clean and simple, and put the effort into the technicals.**
+
+The UI went through four visual passes in one session and landed somewhere the
+owner was not happy with. Read that as a signal about sequencing rather than
+taste: the interface was being designed ahead of the capabilities it is meant to
+expose, so each pass was decorating a demo instead of surfacing a tool.
+
+What this means for the next session:
+
+- **Do not start another whole-page visual pass.** Simplify what is there.
+- **The isometric city is the most elaborate thing on the page and is a fair
+  candidate for simplification or removal.** It is genuinely good at explaining
+  the mechanism, but it cost most of a session and the page works without it.
+  Ask before deleting; do not expand it unasked.
+- Prefer plain, legible, conventional components over anything bespoke.
+- Technical work below (§7) now outranks anything visual.
+
 ### What it is
 
 One page, served at `/`. A folio bar (source tabs + corpus readout), a search
