@@ -1,5 +1,14 @@
 # UI design brief
 
+> **Superseded in part, 2026-08-20.** This records a design interview and is kept
+> because the reasoning is still worth reading — but the UI was rebuilt after the
+> owner found a reference they preferred (`JearDesuss/compute-debt-obligations`).
+> **Where this file and `HANDOFF.md` §5 disagree, §5 is current.** Specifically
+> dead: *serif headings* (now all-sans Inter), *follow the system theme* (now
+> light only), and *ambient placement undecided* (decided, then orphaned in the
+> rewrite — see §5). The direction that survived: layered density, mono data,
+> and refusals made prominent and explained.
+
 Answers from a design interview on 2026-08-19, recorded so the direction survives
 a session restart. These are the user's stated preferences, not inferences.
 

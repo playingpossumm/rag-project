@@ -123,25 +123,117 @@ Other hard-won corrections worth not repeating:
 
 ## 5. UI state
 
-`ui/index.html` — self-contained, no CDN, both themes. Served by `serve.py` at `/`.
-Two views: **Inspect a question** (verdict + bump chart + per-stage tables) and
-**Corpus & indexing** (stat tiles, progress meter, per-document status).
+Rewritten in the session of 2026-08-19/20. `ui/index.html` is now an **app**, not
+the two-tab inspector this section used to describe.
 
-**The chart palette is load-bearing.** Document colours are the first three slots
-of a documented categorical palette, validated *all-pairs* (lines can sit
-anywhere) against this UI's own surfaces: light CVD ΔE 9.2 / normal 24.0; dark
-9.4 / 20.9 — both pass. Only three: no ordering of more clears the all-pairs
-floor. A fourth document folds to grey and is identified by a direct label.
-The previous code generated hues by cycling HSL and failed at ΔE 1.6 — two
-documents the same colour for a deuteranopic reader. **Do not "improve" this by
-adding a fourth hue without re-running the validator.**
+### What it is
 
-Design direction for the redesign lives in **`docs/ui-brief.md`** — read it before
-touching the UI. Short version: editorial × laboratory instrument, "elegant and
-complex yet easy to understand and follow", Stripe docs / Observable as
-reference, serif headings + sans body + mono data, layered density, system
-theme, prominent explained refusals. One thing deliberately left undecided: the
-**owner wants to see several ambient/generative options side by side** before choosing.
+One page, served at `/`. A folio bar (source tabs + corpus readout), a search
+field, then three panels that appear once you trace: **the pipeline** (the city),
+**the answer**, and a two-up of **settings** and **stages**.
+
+| File | What it is |
+|---|---|
+| `ui/index.html` | the app |
+| `ui/pipeline-map.js` | the city — `buildCity` (corpus only), `buildRun` (one query), `drawScene`, `captions` |
+| `ui/fonts/*.woff2` | Inter + DM Mono, latin subsets, 78 KB, served from `/fonts/` |
+| `ui/pipeline.html` | **superseded** prototype at `/pipeline`; same renderer as the app. Delete it or keep it as a bare test harness, but do not evolve both |
+| `ui/ambient.html`, `ui/ambient-fields.js` | the four ambient fields and their chooser at `/ambient`. **Orphaned** — see below |
+
+### Design direction — supersedes docs/ui-brief.md
+
+The brief was written before the owner saw a reference they liked
+(`JearDesuss/compute-debt-obligations`, a near-black editorial explainer). Where
+the two disagree, this list wins and the brief is marked stale:
+
+- **Light only.** The dark palette was deleted, not disabled. The owner
+  considered going dark to match the reference and chose to stay light.
+- **All sans.** Inter for everything, DM Mono for every label and number. The
+  brief's "serif headings" is dead.
+- **Tracked mono micro-labels** on every panel, axis and field. This is the
+  single device that makes the screen read as an instrument.
+- **Typographic rows, not cards.**
+- **No CDN, ever.** Fonts are bundled precisely because the corpus may be
+  private and a page about private documents should not call a font host.
+- **The answer is the visual climax** — 30px against 10px labels.
+
+Motion follows the `emil-design-eng` skill: custom `cubic-bezier(.23,1,.32,1)`
+rather than the weak built-in eases, `scale(.97)` press feedback, 60 ms staggered
+panel entry, specific transition properties, reduced-motion honoured.
+
+### The city
+
+Stages are places, and **the city is always fully drawn** — every block, tower
+and road exists before a question is asked; a query changes lighting and nothing
+else. This is load-bearing and was arrived at the hard way: an earlier draft grew
+the roads as results arrived and the owner's verdict was that it "pops out",
+because structure appearing as a consequence of the question is backwards.
+
+- The index is one block per document, sized by that document's **real** chunk
+  count from `/api/chunks`. An even split looked right and was wrong.
+- Dense and BM25 are two towers on two forked roads, because they run **at the
+  same moment**. The old bump chart drew them as column 1 and column 2, which
+  taught a sequence that does not exist.
+- Every tower is ten floors and **a floor is a rank**, floor one on top, so
+  reranking visibly reshuffles the building. That is the bump chart's logic,
+  kept.
+- The replay is a **replay**, and says so: a trace finishes in 30–120 ms, so an
+  8-second playback is labelled `NNms · replay NNN×`. Animating during the wait
+  would be motion pretending to be progress.
+
+### Still true, and still load-bearing
+
+**The chart palette.** Document colours are the first three slots of a documented
+categorical palette, validated *all-pairs* (lines can sit anywhere): light CVD
+ΔE 9.2 / normal 24.0. Only three: no ordering of more clears the floor, so a
+fourth document folds to grey with a direct label. The previous code cycled HSL
+and failed at ΔE 1.6 — two documents the same colour for a deuteranopic reader.
+**Do not add a fourth hue without re-running the validator.** Note the dark-mode
+validation is now moot; if anyone reintroduces dark, it must be re-run.
+
+### Ambient fields — decided, then orphaned
+
+The owner asked to see generative options side by side, saw four at `/ambient`,
+and chose **Lattice for the masthead, Fringe for the idle backdrop, at 0.6
+intensity**. That decision was implemented and then **lost in the app rewrite** —
+`ui/index.html` no longer references `ambient-fields.js` at all. Either wire the
+lattice back into the folio bar or delete the two files; leaving them served but
+unused is the worst of both.
+
+---
+
+## 5b. The architecture map — built
+
+`docs/architecture.html`, a self-contained 241 KB page. Opens from the filesystem
+with no server; also served at `/~/architecture`.
+
+Built with the `architecture-map` skill and follows its rule: **prose, groups and
+flows are authored; counts, coverage and geometry are measured.** 21 buildings
+cover all 27 modules in `src/`, so the drift counter reads zero and means it.
+
+```
+npm run architecture:sync     # re-measure after changing src/
+npm run architecture:build    # re-bundle docs/architecture.html
+npm run architecture:check    # CI-style staleness check
+```
+
+- `architecture/graph.ts` is the authored half — every module's prose, the five
+  neighbourhood names, the five flows. Edit this; nothing else needs to change.
+- `architecture/coverage.json` says which files each building owns.
+- `scripts/architecture-sync.mjs` is vendored **byte-identical to the skill** so
+  it can be replaced on update. `scripts/architecture-history.mjs` is the local
+  addition; it reuses the sync script's exported `measure()`.
+- Node tooling (`package.json`, `tsconfig.json`, `node_modules/`) exists only for
+  this. The project itself is still pure Python.
+
+**The prose is a first draft.** The geometry and numbers are derived and correct,
+but "what this subsystem does" is where one pass is weakest. Worth the owner's
+editing pass.
+
+**A finding it surfaced, still unfixed:** `src/api.py:152` does
+`from generate_answer import synthesize`. No such module — it is `generate.py`,
+and it has no `synthesize`. A lazy import inside the optional generation branch,
+and generation has never run for lack of credit, so it has never raised.
 
 ---
 
@@ -150,6 +242,9 @@ theme, prominent explained refusals. One thing deliberately left undecided: the
 - Windows 11. Project at `C:\Users\owner\Desktop\rag-project`.
 - venv at `.venv` — **always use `.venv\Scripts\python.exe`**, not bare `python`.
 - Run the server: `.venv\Scripts\python.exe src\serve.py` → http://127.0.0.1:8000/
+- Routes: `/` the app · `/~/architecture` the map · `/ambient` the field chooser ·
+  `/pipeline` the superseded prototype · `/api/trace` · `/api/chunks` ·
+  `/api/corpus` · `/api/eval` · `/api/index/*` · `/fonts/*` · `/health`
 - Playwright + Chromium installed in that venv. Use it; see §4.
 - `node` v24 available (the dataviz palette validator and architecture-map need it).
 - Console is cp1252 — scripts printing corpus text must
@@ -169,11 +264,15 @@ explicitly did not want their work email on this repo — do not change it.
 the change, including measurements that refuted the original plan.
 
 **Skills installed** (`~/.claude/skills/`): `frontend-design`, `design-anti-slop`,
-`algorithmic-art`, `hyperframes-animation`, `webapp-testing`, `architecture-map`.
-Installed as copies, not symlinks — Windows blocks symlinks without Developer Mode,
-so `git pull` will not update them. Sources are in `~/.claude/external-skills/`
-(note: the `hyperframes` clone there is 1.4 GB and can be deleted; the installed
-skill is a standalone copy).
+`algorithmic-art`, `hyperframes-animation`, `webapp-testing`, `architecture-map`,
+`dataviz`, plus all eleven from `emilkowalski/skills` — notably `emil-design-eng`
+(the UI-polish philosophy the current motion follows), `animate`,
+`review-animations`, `apple-design` and `prototype` (builds several genuinely
+different versions behind a picker, which is the right tool when a design
+direction is being guessed at rather than known).
+
+Installed as **copies, not symlinks** — Windows blocks symlinks without Developer
+Mode, so `git pull` in a skills repo will not update them; re-copy instead.
 
 ---
 
@@ -200,21 +299,26 @@ skill is a standalone copy).
    files already work today via `RAG_DATA_DIR`.
 6. **No permissions model.** Fine for a local single-user tool; would matter if
    this ever served more than one person.
-7. **The isometric architecture map is requested but not built.** The owner asked
-   for this directly — "I want to implement that kind of visual thing of the
-   architecture map" — and the `architecture-map` skill was installed for it.
-   Nothing has been built yet. It is a *separate* piece of work from the UI
-   redesign: it maps the repo's own structure (27 modules across ingestion,
-   caching, retrieval, serving and evaluation), not the retrieval interface.
-   Strong portfolio value for the same reason the Inspector has it — it shows the
-   system rather than claiming things about it. The skill's own rule matches this
-   project's discipline: *prose, groups and flows are authored; counts, coverage
-   and geometry are measured* — so give it `README.md` and `HANDOFF.md` for the
-   authored half rather than letting it invent one.
+7. **Folder and Drive intake is interface-only.** The app shows both as source
+   tabs badged `not wired`; clicking one explains what is missing and never
+   takes the selection, so the app is never in a dead state. Reading a local
+   folder needs a pasted path or drag-and-drop; Drive needs the export API.
+8. **The settings controls do not re-run retrieval.** The numbers beside each
+   option are real, read from `eval/results.json`, but toggling changes nothing.
+   This needs an endpoint that accepts pipeline options and returns a fresh
+   trace — the single highest-value UI thing left, and the owner's own brief
+   called it the strongest differentiator.
+9. **Three pieces of the agreed journey were never built**: the pool visibly
+   growing as documents are added, the 84-case "swarm" showing the golden set
+   running through the pipeline, and Act 1 (documents becoming the index).
+   `evaluate.py` already computes per-case outcomes behind `--per-case`; the
+   swarm needs a small script to write them to JSON, not a change to the
+   harness.
 
 Ranked by value: **(1) is worth more than everything else combined**, and only the
-owner can unblock it. **(7) is the next most valuable** — it is explicitly wanted,
-fully unblocked, and needs nothing from anyone.
+owner can unblock it. **(8) is the next most valuable** — it turns the inspector
+into an experiment bench, and it is the thing a closed product structurally
+cannot offer.
 
 ---
 
