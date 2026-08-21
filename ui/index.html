@@ -291,20 +291,21 @@ tr.out td{color:var(--faint)}
 
 <div class="wrap">
   <section class="hero" id="hero">
-    <h1>Ask your documents.<br><em>Watch it think.</em></h1>
-    <p>Every answer shows the search behind it — what each retriever found, what the
-      reranker moved, and what was thrown away before you saw it.</p>
+    <h1>Ask your documents.<br><em>See how it answered.</em></h1>
+    <p>It searches your files two ways at once, picks the passages that fit best, and
+      shows you each step. If the answer is not in there, it says so instead of
+      guessing.</p>
     <div class="heroviz"><canvas id="idle"></canvas></div>
     <form class="field" id="form">
-      <textarea id="q" rows="1" placeholder="Ask a question about these documents"
+      <textarea id="q" rows="1" placeholder="Ask something about your documents"
                 aria-label="Your question"></textarea>
       <button class="go" id="goBtn" type="submit">Ask</button>
     </form>
     <div class="chips" id="chips"></div>
     <div class="genrow" id="genrow">
       <button class="toggle" id="gen" type="button" aria-pressed="false">
-        <span class="sw"></span><span>Write prose</span></button>
-      <span class="lab" id="genhint">off · answers returned verbatim</span>
+        <span class="sw"></span><span>Write it out as prose</span></button>
+      <span class="lab" id="genhint">off · you get the passage itself</span>
     </div>
   </section>
 
@@ -410,8 +411,8 @@ $("#gen").onclick = () => {
   GENERATE = !GENERATE;
   $("#gen").setAttribute("aria-pressed", String(GENERATE));
   $("#genhint").textContent = GENERATE
-    ? "on · needs API credit, falls back to verbatim"
-    : "off · answers returned verbatim";
+    ? "on · needs credit, falls back to the passage"
+    : "off · you get the passage itself";
 };
 
 function submit() {
@@ -468,7 +469,7 @@ function newTurn(question) {
     <div class="q"><span class="lab" style="padding-top:6px">You</span>
       <span class="t">${esc(question)}</span></div>
     <div class="card"><div class="slot">
-      <div class="thinking"><span class="bar"></span>searching ${nf(CITY.total)} passages</div>
+      <div class="thinking"><span class="bar"></span>looking through ${nf(CITY.total)} passages</div>
     </div></div>`;
   $("#thread").appendChild(el);
   return el;
@@ -499,16 +500,16 @@ function renderTurn(turn, question, data, opts) {
   const top = sel[0];
   const gen = data.generation || { state: "off" };
 
-  const label = !gated ? "No gate" : v.confident ? "Answered" : "Declined";
+  const label = !gated ? "Can't tell" : v.confident ? "Answered" : "Not in your files";
   const score = !gated
-    ? `top ${Number(v.confidence).toFixed(4)} on the fusion scale — not comparable to the threshold`
-    : `${sig(v.confidence)} against a threshold of ${v.threshold.toFixed(1)}`;
+    ? "no confidence score on this setting, so it cannot judge itself"
+    : `${sig(v.confidence)} · it needs ${v.threshold.toFixed(1)} to answer at all`;
 
   const answerHTML = gen.state === "ok"
     ? `<div class="answer prose">${gen.text.split(/\n{2,}/)
         .map(p => `<p>${esc(p.trim())}</p>`).join("")}</div>`
     : v.confident === false
-      ? `<p class="answer">Nothing in these documents answers this.</p>`
+      ? `<p class="answer">Your files do not cover this.</p>`
       : `<p class="answer">${esc(fragment(top ? top.text : ""))}</p>`;
 
   turn.querySelector(".slot").innerHTML = `
@@ -523,20 +524,19 @@ function renderTurn(turn, question, data, opts) {
         <i style="background:${colour(top.source)}"></i>
         ${esc(shortDoc(top.source))} · ${esc(top.locator)}</div>` : ""}
       ${gen.state === "unavailable" ? `<div class="warnbox">
-        <span class="k">prose unavailable</span>
-        The generation call was attempted and failed, so the passage above is returned
-        verbatim instead — the default behaviour, not an error.
+        <span class="k">could not write it out</span>
+        It could not write this one out, so you are getting the passage itself.
+        That is the normal fallback, not a failure.
         <br><code>${esc(gen.reason || "")}</code></div>` : ""}
       ${v.confident === false
-        ? `<p class="note">${esc(v.explanation)}</p>
-           <p class="note">The closest passages are below as <b>rejected candidates</b>.
-           Returning the nearest topical match to a question the corpus cannot answer is
-           the failure this gate exists to prevent.</p>`
+        ? `<p class="note">The closest matches are below, but none of them actually
+           answer the question. Handing you the nearest thing it found would be
+           <b>worse than saying nothing</b>.</p>`
         : gen.state === "ok"
-          ? `<p class="note">Written from the ${sel.length} passages below and nothing
-             else, each carrying the source it came from.</p>`
-          : `<p class="note">Returned <b>verbatim</b>, not summarised, which is why it
-             cannot invent anything.</p>`}
+          ? `<p class="note">Written using only the ${sel.length} passages below. Every
+             claim shows the file it came from.</p>`
+          : `<p class="note">This is the text from your file, <b>word for word</b>.
+             Nothing was rewritten, so nothing can be made up.</p>`}
       <div class="pills">
         ${docs.map(d => `<span class="pill"><i style="background:${colour(d.source)}"></i>
           ${esc(shortDoc(d.source))} <b>${d.n}</b></span>`).join("")}
@@ -546,10 +546,10 @@ function renderTurn(turn, question, data, opts) {
     </div>
 
     <div class="viz">
-      <div class="vizhead"><span class="lab">How it got there</span>
+      <div class="vizhead"><span class="lab">How it found this</span>
         <span class="legend">
-          <span><i style="background:${colour(docs[0]?.source || "")}"></i>in your answer</span>
-          <span><i class="w"></i>considered, dropped</span>
+          <span><i style="background:${colour(docs[0]?.source || "")}"></i>used</span>
+          <span><i class="w"></i>looked at, not used</span>
         </span>
       </div>
       <canvas class="city"></canvas>
@@ -561,7 +561,7 @@ function renderTurn(turn, question, data, opts) {
     </div>
 
     <details class="more"><summary><span class="lab">Candidates</span>
-      <span class="hint">all ${ranked.length} weighed, ${sel.length} kept</span></summary>
+      <span class="hint">${ranked.length} looked at, ${sel.length} used</span></summary>
       <div class="inner"><div class="scroll"><table>
         <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th>
           <th class="r">Score</th><th class="r">Move</th></tr></thead>
@@ -576,8 +576,8 @@ function renderTurn(turn, question, data, opts) {
           </tr>`).join("")}</tbody></table></div></div>
     </details>
 
-    <details class="more"><summary><span class="lab">Stages</span>
-      <span class="hint">what each step did</span></summary>
+    <details class="more"><summary><span class="lab">Each step</span>
+      <span class="hint">what happened, in order</span></summary>
       <div class="inner">${data.stages.map((s, n) => `
         <div class="stage"><h4>${String(n + 1).padStart(2, "0")} · ${esc(s.title)}</h4>
           <span class="lab">${esc(s.skipped || s.note)}</span>
@@ -595,7 +595,7 @@ function renderTurn(turn, question, data, opts) {
     </details>
 
     <details class="more"><summary><span class="lab">Settings</span>
-      <span class="hint">change one to re-run this question</span></summary>
+      <span class="hint">change one and this question runs again</span></summary>
       <div class="inner"><div class="sets">${settingsHTML(opts)}</div>
         <div class="cmp"></div></div>
     </details>`;
@@ -697,8 +697,8 @@ function renderCompare(turn, data, opts) {
   const box = turn.querySelector(".cmp");
   if (!box) return;
   if (JSON.stringify(opts) === JSON.stringify(DEFAULTS) || !BASELINE) {
-    box.innerHTML = `<span class="lab">at defaults</span> — change any setting above and
-      this question re-runs, reporting only what actually differs.`;
+    box.innerHTML = `<span class="lab">defaults</span> These are the settings it
+      normally uses. Change one and the question runs again, showing only what moved.`;
     return;
   }
   const ids = s => new Set(s.stages[s.stages.length - 1].items.map(i => i.chunk_id));
@@ -720,8 +720,8 @@ function renderCompare(turn, data, opts) {
     <tbody>${rows.map(([k, x, y]) =>
       `<tr><td>${esc(k)}</td><td class="r num">${esc(x)}</td><td class="r num">${esc(y)}</td></tr>`
     ).join("")}</tbody></table>
-    ${rows.length <= 1 ? `<p class="lab" style="margin-top:12px">same passages, same order —
-      this setting changed nothing for this question</p>` : ""}`;
+    ${rows.length <= 1 ? `<p class="lab" style="margin-top:12px">same passages, same
+      order. this setting made no difference here</p>` : ""}`;
 }
 </script>
 </body>

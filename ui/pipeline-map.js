@@ -30,25 +30,39 @@ const KY = Math.sin(Math.PI / 6);     // 0.5
 const project = (u, v, z) => ({ x: (u - v) * KX, y: (u + v) * KY - z });
 
 /* ------------------------------------------------------------- the plan
- * u/v are ground coordinates, z is altitude. Dense and sparse share a z and
- * differ only in u/v, which is what puts them side by side rather than in
- * sequence. Plate width shrinks as the pipeline narrows, so the funnel is
- * visible as geometry rather than asserted in a caption. */
+ * The pipeline reads LEFT TO RIGHT, the way a process is read. Each stage steps
+ * along the flow axis (u up, v down by the same amount), which in isometric
+ * moves right on screen without changing height.
+ *
+ * "By meaning" and "By keyword" sit at the SAME step and are separated by
+ * height instead. They run at the same moment; putting one after the other
+ * would teach a sequence that does not exist.
+ *
+ * Plate width shrinks along the flow, so the narrowing is something you can
+ * see rather than something a caption claims.
+ *
+ * Stages are numbered because they genuinely are a sequence -- 01 happens
+ * before 02 -- not because numbering looks technical.
+ */
+const FLOW = 20;
+const at = (step, lift) => ({ u: step * FLOW, v: -step * FLOW, z: lift });
+
 const PLATES = [
-  { id: "corpus",   u: 0,   v: 0,   z: 0,   w: 30, grid: 13,
-    label: "The index",     sub: c => `${c.total.toLocaleString()} passages · ${c.docs} documents` },
-  { id: "dense",    u: -11, v: 11,  z: 20,  w: 11, grid: 5, side: -1,
-    label: "Dense",         sub: () => "meaning" },
-  { id: "sparse",   u: 11,  v: -11, z: 20,  w: 11, grid: 5,
-    label: "BM25",          sub: () => "exact words" },
-  { id: "fused",    u: 0,   v: 0,   z: 38,  w: 13, grid: 5,
-    label: "Fusion",        sub: () => "merged by rank" },
-  { id: "reranked", u: 0,   v: 0,   z: 54,  w: 13, grid: 5,
-    label: "Reranking",     sub: () => "read together" },
-  { id: "selected", u: 0,   v: 0,   z: 70,  w: 8,  grid: 3,
-    label: "Selection",     sub: () => "capped per document" },
-  { id: "answer",   u: 0,   v: 0,   z: 84,  w: 6,  grid: 2,
-    label: "The answer",    sub: () => "cited passages" },
+  { id: "corpus", n: "01", ...at(0, 0), w: 14, grid: 9, cap: "above",
+    label: "Your documents",
+    term: c => c.total.toLocaleString() + " passages, " + c.docs + " files" },
+  { id: "dense", n: "02", ...at(1, 16), w: 7, grid: 4, cap: "above",
+    label: "Search by meaning", term: () => "finds similar wording" },
+  { id: "sparse", n: "02", ...at(1, -16), w: 7, grid: 4, cap: "below",
+    label: "Search by keyword", term: () => "finds your exact words" },
+  { id: "fused", n: "03", ...at(2, 0), w: 8, grid: 4, cap: "above",
+    label: "Both lists merged", term: () => "ranked together" },
+  { id: "reranked", n: "04", ...at(3, 0), w: 8, grid: 4, cap: "above",
+    label: "Read again, properly", term: () => "beside your question" },
+  { id: "selected", n: "05", ...at(4, 0), w: 6, grid: 3, cap: "above",
+    label: "Trimmed", term: () => "max 2 from one file" },
+  { id: "answer", n: "06", ...at(5, 0), w: 5, grid: 2, cap: "above",
+    label: "Your answer", term: () => "with its sources" },
 ];
 
 const THICK = 1.6;      // plate edge, so a sheet reads as a solid object
@@ -257,6 +271,33 @@ function drawPlate(ctx, T, plate, ink, alpha, dimmed) {
   return top;
 }
 
+function label(ctx, T, plate, city, run, ink, alpha, dim) {
+  const above = plate.cap !== "below";
+  // A plate's topmost point sits w above its centre, so clearance has to scale
+  // with the plate, not be a fixed nudge -- at w=14 a 0.55 factor put the label
+  // straight through the corpus.
+  const p = T(plate.u, plate.v,
+              plate.z + (above ? plate.w + 11 : -plate.w - 19));
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  ctx.fillStyle = ink.other;
+  ctx.font = "500 9px 'DM Mono', ui-monospace, monospace";
+  ctx.fillText(plate.n, p.x, p.y - 18);
+
+  ctx.fillStyle = dim ? ink.faint : ink.ink;
+  ctx.font = "600 12.5px Inter, system-ui, sans-serif";
+  ctx.fillText(plate.label, p.x, p.y - 4);
+
+  ctx.fillStyle = ink.muted;
+  ctx.font = "500 9.5px 'DM Mono', ui-monospace, monospace";
+  const sub = dim ? "not used" : (run ? runSub(plate.id, run) : plate.term(city));
+  ctx.fillText(String(sub).toUpperCase(), p.x, p.y + 10);
+  ctx.restore();
+}
+
 function diamond(ctx, p, r, fill, stroke, alpha) {
   ctx.save(); ctx.globalAlpha = alpha;
   ctx.beginPath();
@@ -286,9 +327,11 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
   // Labels sit to the right of most plates, so the room they need is reserved
   // on that side only. Padding both sides shrank the drawing twice and left a
   // dead column on the left.
-  const padL = 18, padR = 165, padY = 22;
-  const s = Math.min((W - padL - padR) / (maxX - minX), (H - padY * 2) / (maxY - minY));
-  const ox = padL + (W - padL - padR - (maxX - minX) * s) / 2 - minX * s;
+  // Labels sit above and below the plates now, so the room they need is
+  // vertical and the horizontal padding can go back to being even.
+  const padX = 26, padY = 40;
+  const s = Math.min((W - padX * 2) / (maxX - minX), (H - padY * 2) / (maxY - minY));
+  const ox = W / 2 - ((minX + maxX) / 2) * s;
   const oy = H / 2 - ((minY + maxY) / 2) * s;
   const T = (u, v, z) => { const p = project(u, v, z); return { x: ox + p.x * s, y: oy + p.y * s }; };
 
@@ -354,38 +397,12 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
               m.lives ? null : ink.other, a * (m.lives ? 1 : 0.5));
     }
 
-    // Label on the plate's OWN side: Dense sits left of BM25, so a
-    // right-hand label was drawn underneath its neighbour and unreadable.
-    const left = plate.side === -1;
-    const anchor = top.reduce((b, c) => ((left ? c.x < b.x : c.x > b.x) ? c : b), top[0]);
-    const dx = left ? -14 : 14;
-    ctx.save();
-    ctx.globalAlpha = a;
-    ctx.textAlign = left ? "right" : "left"; ctx.textBaseline = "middle";
-    ctx.fillStyle = dim ? ink.faint : ink.ink;
-    ctx.font = "600 12px Inter, system-ui, sans-serif";
-    ctx.fillText(plate.label, anchor.x + dx, anchor.y - 6);
-    ctx.fillStyle = ink.muted;
-    ctx.font = "500 9.5px 'DM Mono', ui-monospace, monospace";
-    const sub = dim ? "not run" : (run ? runSub(plate.id, run) : plate.sub(city));
-    ctx.fillText(String(sub).toUpperCase(), anchor.x + dx, anchor.y + 8);
-    ctx.restore();
+    // Above or below, never beside: with the flow running left to right a
+    // side label lands on top of the next plate.
+    label(ctx, T, plate, city, run, ink, a, dim);
   });
 
-  // ---- the corpus label --------------------------------------------------
-  if (a0 > 0) {
-    const c = T(corpus.u + corpus.w, corpus.v + corpus.w, 0);
-    ctx.save();
-    ctx.globalAlpha = a0;
-    ctx.textAlign = "left"; ctx.textBaseline = "middle";
-    ctx.fillStyle = ink.ink;
-    ctx.font = "600 12px Inter, system-ui, sans-serif";
-    ctx.fillText(corpus.label, c.x + 14, c.y - 6);
-    ctx.fillStyle = ink.muted;
-    ctx.font = "500 9.5px 'DM Mono', ui-monospace, monospace";
-    ctx.fillText(corpus.sub(city).toUpperCase(), c.x + 14, c.y + 8);
-    ctx.restore();
-  }
+  if (a0 > 0) label(ctx, T, corpus, city, run, ink, a0, false);
 
   // ---- the verdict, at the top -------------------------------------------
   if (run && reveal(PLATES.length - 1) > 0.4) {
@@ -404,14 +421,15 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
 function runSub(id, run) {
   const c = run.counts;
   switch (id) {
-    case "dense": return `${c.dense} found`;
-    case "sparse": return c.sparse ? `${c.sparse} found` : "no term matched";
-    case "fused": return `${c.both} found by both`;
+    case "corpus": return run.city.total.toLocaleString() + " passages";
+    case "dense": return c.dense + " found";
+    case "sparse": return c.sparse ? c.sparse + " found" : "nothing matched";
+    case "fused": return c.both + " in both lists";
     case "reranked": return c.biggest && c.biggest.delta
-      ? `largest move ${c.biggest.delta > 0 ? "+" : ""}${c.biggest.delta}`
-      : `${c.reranked} rescored`;
-    case "selected": return `${c.selected} kept`;
-    case "answer": return `${c.selected} cited`;
+      ? "one moved up " + Math.abs(c.biggest.delta)
+      : c.reranked + " re-read";
+    case "selected": return c.selected + " kept";
+    case "answer": return c.selected + " passages";
     default: return "";
   }
 }
@@ -420,21 +438,32 @@ function runSub(id, run) {
 export function captions(run) {
   if (!run) return [];
   const c = run.counts;
-  const v = run.verdict || {};
+  const big = c.biggest && c.biggest.delta ? c.biggest : null;
   return [
-    { title: "The index",
-      text: `Every passage in the corpus, already there before the question — ${run.city.total.toLocaleString()} of them across ${run.city.docs} documents.` },
+    { title: "Your documents",
+      text: "All " + run.city.total.toLocaleString() + " passages across " +
+            run.city.docs + " files. They were indexed before you asked, so "
+            + "nothing is being read from scratch now." },
     { title: "Two searches at once",
-      text: `Meaning and exact words run at the same moment, not one after the other. ${c.dense} and ${c.sparse} candidates.` },
-    { title: "Fusion",
-      text: `The two rankings merged by position rather than score — ${c.both} passages were found by both, which is the strongest signal available.` },
-    { title: "Reranking",
-      text: c.biggest && c.biggest.delta
-        ? `A model reads the question and each passage together. Largest move: ${shortDoc(c.biggest.source)} ${c.biggest.delta > 0 ? "+" : ""}${c.biggest.delta} places.`
-        : "A model reads the question and each passage together, and this time barely reordered them." },
-    { title: "Selection",
-      text: `At most two passages from any one document, so a single strong source cannot take every slot. ${c.selected} kept.` },
-    { title: run.confident ? "Answering" : "Declined",
-      text: v.explanation || "" },
+      text: "One looks for similar wording and found " + c.dense +
+            ". The other looks for your exact words and found " + c.sparse +
+            ". Each misses what the other catches, so both run." },
+    { title: "The lists get merged",
+      text: c.both + " passages showed up in both searches. Turning up twice "
+            + "counts for more than topping one list alone." },
+    { title: "Everything gets read again",
+      text: big
+        ? "A slower, more careful model reads each passage beside your question. "
+          + "One jumped up " + Math.abs(big.delta) + " places: " + shortDoc(big.source) + "."
+        : "A slower, more careful model reads each passage beside your question. "
+          + "This time it barely changed the order." },
+    { title: "Trimmed to a spread",
+      text: "At most two passages from any one file, so a single document cannot "
+            + "take every slot. " + c.selected + " kept." },
+    { title: run.confident ? "Answered" : "Nothing to answer with",
+      text: run.confident
+        ? "The best passage scored well clear of the cut-off, so it answers."
+        : "Everything came in under the cut-off, so it says nothing rather than "
+          + "handing you the closest thing it found." },
   ];
 }
