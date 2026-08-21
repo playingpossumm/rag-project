@@ -10,3 +10,7 @@ vector_store/
 
 # Node tooling for the architecture map only
 node_modules/
+
+# Topic corpora, rebuildable with src/fetch_topic.py -- not worth 100MB in git
+data-quant/
+data-birds/

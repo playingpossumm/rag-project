@@ -243,7 +243,19 @@ def load_xlsx(path: Path) -> list[dict]:
         if not rows:
             continue
 
-        header, body = rows[0], rows[1:]
+        # The header is FOUND, not assumed to be row 1. Real spreadsheets open
+        # with a title spanning the sheet, and taking that as the header made
+        # every row read "Q3 sales report: 41200" -- the title repeated as a
+        # column name, the actual column names demoted to data, and the values
+        # unlabelled. Measured on a generated workbook whose first row is a
+        # title, which is the common case, not an exotic one.
+        #
+        # A title row is one with a single filled cell; a header row is the
+        # first with at least two. Falls back to row 1 when nothing qualifies,
+        # which is the old behaviour and correct for a single-column sheet.
+        head_at = next((i for i, r in enumerate(rows)
+                        if sum(1 for c in r if c) >= 2), 0)
+        header, body = rows[head_at], rows[head_at + 1:]
         if not body:  # header-only sheet
             units.append({
                 "locator": {"kind": "sheet", "value": sheet.title},
@@ -263,7 +275,9 @@ def load_xlsx(path: Path) -> list[dict]:
                 if pairs:
                     lines.append("; ".join(pairs))
             if lines:
-                first, last = start + 2, start + len(block) + 1  # 1-indexed, +header
+                # 1-indexed, and offset past whatever was skipped above the header
+                first = head_at + start + 2
+                last = head_at + start + len(block) + 1
                 units.append({
                     "locator": {"kind": "sheet", "value": sheet.title,
                                 "rows": f"{first}-{last}"},
