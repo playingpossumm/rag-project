@@ -12,7 +12,7 @@
   "loaders":    { "owns": ["src/loaders.py"] },
   "ocr":        { "owns": ["src/ocr.py"] },
   "health":     { "owns": ["src/corpus_health.py"] },
-  "fetch":      { "owns": ["src/fetch_corpus.py"] },
+  "fetch":      { "owns": ["src/fetch_corpus.py", "src/fetch_topic.py", "src/make_documents.py"] },
 
   "parsecache": { "owns": ["src/parse_cache.py"] },
   "embedcache": { "owns": ["src/embedding_cache.py"] },
@@ -29,6 +29,7 @@
 
   "evaluate":   { "owns": ["src/evaluate.py", "src/per_case.py", "src/failure_overlap.py",
                          "src/hard_cases.py", "src/calibrate_threshold.py",
+                         "src/test_loaders.py",
                          "src/test_metrics.py"] },
   "goldenset":  { "owns": [
     "src/build_golden_set.py",

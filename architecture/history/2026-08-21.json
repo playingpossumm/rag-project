@@ -1,8 +1,8 @@
 {
   "date": "2026-08-21",
   "totals": {
-    "files": 38,
-    "loc": 6079
+    "files": 41,
+    "loc": 6612
   },
   "nodes": {
     "api": {
@@ -38,8 +38,8 @@
       "loc": 101
     },
     "fetch": {
-      "count": 1,
-      "loc": 82
+      "count": 3,
+      "loc": 487
     },
     "parsecache": {
       "count": 1,
@@ -78,8 +78,8 @@
       "loc": 158
     },
     "evaluate": {
-      "count": 6,
-      "loc": 1117
+      "count": 7,
+      "loc": 1245
     },
     "goldenset": {
       "count": 5,
