@@ -2,514 +2,774 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=JetBrains+Mono:wght@400;500&display=swap">
 
 <style>
   :root{
-    --bg:#0b0c0d; --panel:#141618; --sunk:#1b1e21; --raise:#232729;
-    --ink:#f4f6f7; --near:#dfe3e5; --soft:#aab1b6; --muted:#828a90; --faint:#5f676c;
-    --line:#22262a; --rule:#2f3439;
+    --bg:#0c0d0e; --panel:#141517; --sunk:#1b1d1f; --hair:#26282b; --edge:#33363a;
+    --ink:#f3f3f1; --near:#dcdedf; --soft:#a8adb1; --muted:#7f858a; --faint:#5d6367;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70;
     --good:#3fb950; --bad:#f0685f; --warn:#d9a441;
-    --display:"Instrument Serif",Georgia,serif;
     --body:Newsreader,Georgia,"Times New Roman",serif;
     --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
-    font-size:18px;line-height:1.68;font-optical-sizing:auto;padding:0 20px 120px;
+    font-size:18.5px;line-height:1.7;font-optical-sizing:auto;padding:0 20px 140px;
     -webkit-font-smoothing:antialiased}
-  .page{max-width:820px;margin:0 auto}
-  .wide{max-width:1040px;margin:0 auto}
+  .page{max-width:790px;margin:0 auto}
 
-  /* ------------------------------------------------------------ masthead */
-  header.mast{padding:76px 0 32px;border-bottom:1px solid var(--rule)}
-  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--s1);margin:0 0 18px}
-  h1{font-family:var(--display);font-weight:400;font-size:clamp(40px,7vw,68px);
-    line-height:1.02;letter-spacing:-.02em;margin:0 0 22px;text-wrap:balance}
-  .dek{font-size:20px;color:var(--soft);max-width:60ch;margin:0 0 26px}
+  /* ------------------------------------------------------------- masthead */
+  header.mast{padding:70px 0 30px;border-bottom:1px solid var(--edge)}
+  .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--s1);margin:0 0 20px}
+  h1{font-weight:500;font-size:clamp(36px,6.4vw,60px);line-height:1.04;
+    letter-spacing:-.03em;margin:0 0 20px;text-wrap:balance}
+  .dek{font-size:20px;color:var(--soft);max-width:58ch;margin:0 0 28px}
   .dek b{color:var(--ink);font-weight:600}
-  .runsheet{display:flex;flex-wrap:wrap;border:1px solid var(--line);
-    font-family:var(--mono);font-size:11.5px;background:var(--panel)}
-  .runsheet div{padding:10px 15px;border-right:1px solid var(--line);color:var(--muted)}
-  .runsheet div:last-child{border-right:0}
-  .runsheet b{color:var(--near);font-weight:400}
+  .facts{display:flex;flex-wrap:wrap;border:1px solid var(--hair);
+    font-family:var(--mono);font-size:11px;background:var(--panel)}
+  .facts div{padding:9px 14px;border-right:1px solid var(--hair);color:var(--muted)}
+  .facts div:last-child{border-right:0}
+  .facts b{color:var(--near);font-weight:400}
 
-  /* -------------------------------------------------------------- reading */
-  h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,4vw,40px);
-    line-height:1.1;letter-spacing:-.015em;margin:76px 0 6px;text-wrap:balance}
-  h2 .n{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--s1);
-    display:block;margin-bottom:12px;font-weight:500}
-  h3{font-family:var(--body);font-weight:600;font-size:21px;margin:38px 0 8px;
-    letter-spacing:-.01em}
-  .sub{color:var(--muted);font-size:17px;margin:0 0 26px;max-width:62ch}
-  p{margin:0 0 17px;max-width:66ch}
+  /* --------------------------------------------------------------- toc */
+  nav.toc{margin:44px 0 0;border:1px solid var(--hair);background:var(--panel)}
+  nav.toc h2{font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--faint);margin:0;padding:14px 18px;
+    border-bottom:1px solid var(--hair);font-weight:500}
+  nav.toc ol{margin:0;padding:8px 0;list-style:none;counter-reset:c}
+  nav.toc li{counter-increment:c}
+  nav.toc a{display:flex;gap:14px;padding:7px 18px;text-decoration:none;color:var(--near);
+    font-size:16px;align-items:baseline}
+  nav.toc a:hover{background:var(--sunk);color:var(--ink)}
+  nav.toc a::before{content:counter(c,decimal-leading-zero);font-family:var(--mono);
+    font-size:11px;color:var(--s1);flex:none;width:20px}
+  nav.toc a span{color:var(--muted);font-size:14px;margin-left:auto;text-align:right}
+
+  /* ------------------------------------------------------------ chapters */
+  section{scroll-margin-top:20px}
+  h2.ch{font-weight:500;font-size:clamp(26px,3.8vw,36px);line-height:1.12;
+    letter-spacing:-.02em;margin:78px 0 6px;text-wrap:balance;
+    padding-top:26px;border-top:1px solid var(--hair)}
+  h2.ch .n{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+    color:var(--s1);margin-bottom:14px}
+  h3{font-weight:600;font-size:20px;margin:40px 0 8px;letter-spacing:-.012em}
+  h4{font-weight:600;font-size:17px;margin:28px 0 6px;color:var(--near)}
+  .lede{color:var(--muted);font-size:17.5px;margin:0 0 26px;max-width:60ch}
+  p{margin:0 0 17px;max-width:65ch}
+  ul,ol{max-width:64ch;padding-left:22px}
+  li{margin:0 0 9px}
   em{font-style:italic;color:var(--near)}
   strong{font-weight:600;color:var(--ink)}
-  code{font-family:var(--mono);font-size:.84em;background:var(--sunk);
-    padding:2px 6px;border:1px solid var(--line);color:var(--near)}
-  a{color:var(--s1)}
+  code{font-family:var(--mono);font-size:.82em;background:var(--sunk);
+    padding:2px 6px;border:1px solid var(--hair);color:var(--near)}
 
-  /* the three-part concept block: plain terms, the word, why it is there */
-  .concept{border:1px solid var(--line);background:var(--panel);margin:30px 0;
-    display:grid;grid-template-columns:1fr;overflow:hidden}
-  .concept > div{padding:20px 24px;border-bottom:1px solid var(--line)}
-  .concept > div:last-child{border-bottom:0}
-  .concept .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;
-    text-transform:uppercase;display:block;margin-bottom:10px}
-  .plain .k{color:var(--s3)}
-  .term .k{color:var(--s1)}
-  .why .k{color:var(--warn)}
-  .concept p{margin:0 0 12px;font-size:16.5px;max-width:64ch}
-  .concept p:last-child{margin-bottom:0}
-  .concept .say{font-family:var(--mono);font-size:14px;color:var(--near);
-    background:var(--sunk);border:1px solid var(--line);padding:11px 14px;margin-top:12px}
-  .concept .say::before{content:"say it like this — ";color:var(--faint);font-size:11px;
-    letter-spacing:.08em;text-transform:uppercase}
+  /* --------------------------------------------------------------- terms */
+  .term{border-left:2px solid var(--s1);background:var(--panel);
+    padding:16px 20px;margin:24px 0}
+  .term .w{font-family:var(--mono);font-size:13px;color:var(--s1);
+    display:block;margin-bottom:6px}
+  .term p{margin:0;font-size:16.5px;color:var(--soft);max-width:62ch}
+  .term p + p{margin-top:10px}
+  .say{font-family:var(--mono);font-size:13.5px;color:var(--near);
+    background:var(--sunk);border:1px solid var(--hair);padding:11px 14px;margin-top:12px}
+  .say::before{content:"out loud — ";color:var(--faint);font-size:10.5px;
+    letter-spacing:.1em;text-transform:uppercase}
 
-  /* ------------------------------------------------------------ apparatus */
-  .figure{margin:34px 0;border:1px solid var(--line);background:var(--panel);
-    padding:22px 22px 10px;overflow-x:auto}
-  .figure svg{display:block;max-width:100%;height:auto;min-width:640px}
-  figcaption{font-size:14.5px;color:var(--muted);border-top:1px solid var(--line);
-    padding:14px 2px 8px;margin-top:14px;max-width:74ch}
+  /* -------------------------------------------------------------- figure */
+  figure{margin:34px 0;border:1px solid var(--hair);background:var(--panel);
+    padding:0;overflow:hidden}
+  figure .fignum{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+    color:var(--faint);padding:10px 16px;border-bottom:1px solid var(--hair)}
+  figure .plot{padding:20px 16px;overflow-x:auto}
+  figure svg{display:block;max-width:100%;height:auto}
+  figcaption{font-size:14.5px;color:var(--muted);border-top:1px solid var(--hair);
+    padding:13px 16px;max-width:none}
 
-  .tablewrap{overflow-x:auto;margin:26px 0}
+  /* -------------------------------------------------------------- tables */
+  .tw{overflow-x:auto;margin:26px 0}
   table{width:100%;border-collapse:collapse;font-size:15px;
-    font-variant-numeric:tabular-nums;font-family:var(--body)}
-  th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+    font-variant-numeric:tabular-nums}
+  th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.13em;
     text-transform:uppercase;color:var(--faint);font-weight:500;
-    padding:0 14px 10px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+    padding:0 14px 10px 0;border-bottom:1px solid var(--edge);white-space:nowrap}
   th.r,td.r{text-align:right;padding-left:18px;padding-right:0}
-  td{padding:11px 14px 11px 0;border-bottom:1px solid var(--line);color:var(--near)}
+  td{padding:10px 14px 10px 0;border-bottom:1px solid var(--hair);color:var(--near)}
   tr:last-child td{border-bottom:0}
   tr.hi td{color:var(--ink);font-weight:600}
-  .mono{font-family:var(--mono);font-size:13.5px}
+  .m{font-family:var(--mono);font-size:13px}
 
-  .callout{border-left:2px solid var(--s1);background:var(--panel);
-    padding:18px 22px;margin:28px 0}
-  .callout.warn{border-left-color:var(--warn)}
-  .callout.bad{border-left-color:var(--bad)}
-  .callout .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;
+  /* ------------------------------------------------------------ callouts */
+  .note{border:1px solid var(--hair);background:var(--panel);padding:18px 20px;margin:26px 0}
+  .note.warn{border-left:2px solid var(--warn)}
+  .note.bad{border-left:2px solid var(--bad)}
+  .note.good{border-left:2px solid var(--good)}
+  .note .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;
     text-transform:uppercase;color:var(--s1);display:block;margin-bottom:9px}
-  .callout.warn .k{color:var(--warn)}
-  .callout.bad .k{color:var(--bad)}
-  .callout p{font-size:16.5px;margin-bottom:11px}
-  .callout p:last-child{margin-bottom:0}
+  .note.warn .k{color:var(--warn)} .note.bad .k{color:var(--bad)}
+  .note.good .k{color:var(--good)}
+  .note p{font-size:16.5px;margin-bottom:11px;max-width:62ch}
+  .note p:last-child{margin-bottom:0}
 
-  .glossary{border:1px solid var(--line);margin:30px 0}
-  .gl{display:grid;grid-template-columns:210px 1fr;gap:0;border-bottom:1px solid var(--line)}
-  .gl:last-child{border-bottom:0}
-  .gl dt{font-family:var(--mono);font-size:13px;color:var(--s1);padding:14px 18px;
-    border-right:1px solid var(--line);background:var(--panel)}
-  .gl dd{margin:0;padding:14px 18px;font-size:15.5px;color:var(--soft)}
-  @media (max-width:640px){.gl{grid-template-columns:1fr}
-    .gl dt{border-right:0;border-bottom:1px solid var(--line)}}
+  /* ------------------------------------------------------------ glossary */
+  dl.gl{border:1px solid var(--hair);margin:28px 0}
+  dl.gl > div{display:grid;grid-template-columns:200px 1fr;border-bottom:1px solid var(--hair)}
+  dl.gl > div:last-child{border-bottom:0}
+  dl.gl dt{font-family:var(--mono);font-size:12.5px;color:var(--s1);padding:13px 16px;
+    border-right:1px solid var(--hair);background:var(--panel)}
+  dl.gl dd{margin:0;padding:13px 16px;font-size:15.5px;color:var(--soft)}
+  @media (max-width:620px){dl.gl > div{grid-template-columns:1fr}
+    dl.gl dt{border-right:0;border-bottom:1px solid var(--hair)}}
 
-  footer{margin-top:90px;padding-top:24px;border-top:1px solid var(--rule);
-    font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+  footer{margin-top:90px;padding-top:24px;border-top:1px solid var(--edge);
+    font-family:var(--mono);font-size:12px;color:var(--muted)}
+  a{color:var(--s1)}
 </style>
 
 <div class="page">
 <header class="mast">
-  <p class="eyebrow">A complete guide · retrieval-augmented generation</p>
+  <p class="kicker">Complete guide · retrieval-augmented generation</p>
   <h1>Understanding this retrieval system</h1>
-  <p class="dek">Everything this system does, why each piece is there, and what it
-    actually costs — written so you can <b>follow it yourself</b> and then
-    <b>hold your own with an engineer</b>. Every number is measured, not estimated.
-    Where a measurement contradicted the plan, that is recorded too.</p>
-  <div class="runsheet">
-    <div>corpus <b>20 docs / 2,768 chunks</b></div>
+  <p class="dek">Every part of the system, why it is there, and what it measurably
+    costs. Written to be read start to finish — <b>you should be able to follow it
+    without a technical background, and argue about it with an engineer
+    afterwards</b>. Every figure is measured from the running system.</p>
+  <div class="facts">
+    <div>corpus <b>20 documents · 2,768 passages</b></div>
     <div>test set <b>84 questions</b></div>
-    <div>retrieval <b>dense + BM25, RRF</b></div>
-    <div>rerank <b>cross-encoder</b></div>
     <div>hit rate <b>0.848</b></div>
+    <div>source recall <b>0.773</b></div>
   </div>
 </header>
 
-<h2><span class="n">§ 01</span>The problem this solves</h2>
-<p class="sub">Why you cannot simply paste your documents into a chatbot.</p>
+<nav class="toc">
+  <h2>Chapters</h2>
+  <ol>
+    <li><a href="#c1">The problem<span>why not just paste it in</span></a></li>
+    <li><a href="#c2">Turning documents into something searchable<span>parse, split, embed</span></a></li>
+    <li><a href="#c3">Searching two ways at once<span>dense and sparse</span></a></li>
+    <li><a href="#c4">Merging two rankings that disagree<span>RRF</span></a></li>
+    <li><a href="#c5">Reading the question and the passage together<span>reranking</span></a></li>
+    <li><a href="#c6">Stopping one document taking every slot<span>diversity</span></a></li>
+    <li><a href="#c7">Growing the passage back out<span>context</span></a></li>
+    <li><a href="#c8">Knowing when to refuse<span>abstention</span></a></li>
+    <li><a href="#c9">How any of this is judged<span>metrics and the golden set</span></a></li>
+    <li><a href="#c10">Five times measurement beat the plan<span>including two tool bugs</span></a></li>
+    <li><a href="#c11">What is still wrong with it<span>stated plainly</span></a></li>
+    <li><a href="#c12">Why build it at all<span>against NotebookLM</span></a></li>
+    <li><a href="#c13">Glossary<span>every term in one place</span></a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================== 01 -->
+<section id="c1">
+<h2 class="ch"><span class="n">Chapter 01</span>The problem</h2>
+<p class="lede">Why you cannot simply paste your documents into a chatbot.</p>
 
 <p>A language model knows what was in its training data. It does not know what is in
-<em>your</em> files, and it cannot be told everything — there is a hard limit on how
-much text you can hand it at once, called the <strong>context window</strong>. Twenty
-research papers is already far past that limit for most practical purposes, and a real
-document set is far bigger.</p>
+<em>your</em> files, and it cannot be handed everything — there is a hard limit on how
+much text it can read at once, called the <strong>context window</strong>. Twenty
+research papers already exceeds any practical budget, and a real document set is far
+larger.</p>
 
-<p>So you cannot give the model everything. You have to give it <em>the right few
-pages</em>. Finding those pages, before the model ever runs, is the entire job of this
-system. The pattern has a name:</p>
+<p>So the model has to be given <em>the right few pages</em>. Finding those pages,
+before the model runs at all, is the whole job of this system.</p>
 
-<div class="concept">
-  <div class="plain"><span class="k">In plain terms</span>
-    <p>Search your documents first. Take only the handful of passages that look
-    relevant. Hand <em>those</em> to the model and tell it to answer from them and
-    nothing else — and to say so if the answer is not there.</p></div>
-  <div class="term"><span class="k">The term</span>
-    <p><strong>Retrieval-Augmented Generation (RAG)</strong>. "Retrieval" is the search
-    half; "augmented generation" is the model writing an answer from what was
-    retrieved rather than from memory.</p>
-    <div class="say">"It's a RAG pipeline — retrieve first, then generate strictly
-    from the retrieved context."</div></div>
-  <div class="why"><span class="k">Why it matters</span>
-    <p>It is the difference between a model that <em>recalls</em> and one that
-    <em>cites</em>. Because the answer is assembled from passages you can point at,
-    every claim has a source, and a wrong answer is diagnosable: either retrieval
-    failed to find the evidence, or generation mishandled evidence it was given.
-    Those are different bugs with different fixes.</p></div>
+<div class="term"><span class="w">Retrieval-Augmented Generation (RAG)</span>
+  <p>Search the documents first. Take the handful of passages that look relevant. Hand
+  only those to the model, and instruct it to answer from them and nothing else.</p>
+  <div class="say">"It's a RAG pipeline — retrieve first, then generate strictly from
+  the retrieved context."</div>
 </div>
 
-<div class="callout">
-  <span class="k">The design choice that defines this build</span>
-  <p><strong>Generation is optional here, and off by default.</strong> Ask a question
-  and you get the source passages back <em>verbatim</em>, with citations — no model
-  writes anything. That costs nothing, requires no API key, and
-  <strong>cannot hallucinate</strong>, because nothing is being composed.</p>
-  <p>For contracts, policies and specifications this is often the better answer
-  anyway: the exact wording <em>is</em> the thing that matters, and a paraphrase is
-  a downgrade. Writing prose is a layer on top that you switch on.</p>
-</div>
+<p>The consequence is not just economy. It is the difference between a model that
+<em>recalls</em> and one that <em>cites</em>. Because the answer is assembled from
+passages you can point at, every claim has a source, and a wrong answer becomes
+diagnosable: either retrieval failed to surface the evidence, or generation mishandled
+evidence it was given. Different bugs, different fixes.</p>
 
-<h2><span class="n">§ 02</span>How a document becomes searchable</h2>
-<p class="sub">Everything expensive happens once, offline. Asking a question never
+<div class="note good"><span class="k">The choice that defines this build</span>
+  <p><strong>Generation is optional here and off by default.</strong> Ask a question and
+  you get the source passages back verbatim, with citations. No model writes anything.
+  It costs nothing, needs no API key, and <strong>cannot hallucinate</strong>, because
+  nothing is being composed.</p>
+  <p>For contracts, policies and specifications that is often the better answer anyway:
+  the exact wording <em>is</em> the thing that matters, and a paraphrase is a downgrade.
+  Writing prose is a layer switched on top.</p>
+</div>
+</section>
+
+<!-- ============================================================== 02 -->
+<section id="c2">
+<h2 class="ch"><span class="n">Chapter 02</span>Turning documents into something searchable</h2>
+<p class="lede">All the expensive work happens once, offline. Asking a question never
 touches your PDFs.</p>
 
-<div class="figure">
-<svg viewBox="0 0 980 200" role="img" aria-label="A pipeline: a PDF is parsed into pages, split into overlapping chunks, each chunk turned into a vector, and the vectors written to an index alongside a metadata file that records which document and page each chunk came from.">
-  <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#828a90"/></marker></defs>
-  <g font-family="Newsreader, Georgia, serif" font-size="14" fill="#dfe3e5">
-    <rect x="4" y="52" width="124" height="62" fill="none" stroke="#2f3439"/>
-    <text x="66" y="78" text-anchor="middle">Your PDF</text>
-    <text x="66" y="97" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#828a90">15 pages</text>
-    <line x1="128" y1="83" x2="164" y2="83" stroke="#828a90" marker-end="url(#a)"/>
-    <text x="146" y="72" text-anchor="middle" font-size="10.5" fill="#828a90">parse</text>
+<figure>
+  <div class="fignum">FIG. 01 — THE INDEXING PATH, RUN ONCE PER DOCUMENT</div>
+  <div class="plot">
+  <svg viewBox="0 0 740 168" role="img" aria-label="A PDF is parsed into pages, split into overlapping passages of 210 tokens, each turned into a 384-number vector, and written to an index alongside a metadata file recording which document and page each passage came from.">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7f858a"/></marker></defs>
+    <g font-family="Newsreader, Georgia, serif" font-size="13" fill="#dcdedf">
+      <rect x="2" y="40" width="104" height="56" fill="none" stroke="#33363a"/>
+      <text x="54" y="63" text-anchor="middle">Your PDF</text>
+      <text x="54" y="81" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#7f858a">15 pages</text>
+      <line x1="106" y1="68" x2="136" y2="68" stroke="#7f858a" marker-end="url(#ar)"/>
+      <text x="121" y="58" text-anchor="middle" font-size="9.5" fill="#7f858a">parse</text>
 
-    <rect x="168" y="52" width="124" height="62" fill="none" stroke="#2f3439"/>
-    <text x="230" y="78" text-anchor="middle">Text + page</text>
-    <text x="230" y="97" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#828a90">per page</text>
-    <line x1="292" y1="83" x2="328" y2="83" stroke="#828a90" marker-end="url(#a)"/>
-    <text x="310" y="72" text-anchor="middle" font-size="10.5" fill="#828a90">chunk</text>
+      <rect x="140" y="40" width="104" height="56" fill="none" stroke="#33363a"/>
+      <text x="192" y="63" text-anchor="middle">Text + page</text>
+      <text x="192" y="81" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#7f858a">per page</text>
+      <line x1="244" y1="68" x2="274" y2="68" stroke="#7f858a" marker-end="url(#ar)"/>
+      <text x="259" y="58" text-anchor="middle" font-size="9.5" fill="#7f858a">split</text>
 
-    <rect x="332" y="52" width="124" height="62" fill="none" stroke="#2f3439"/>
-    <text x="394" y="78" text-anchor="middle">Chunks</text>
-    <text x="394" y="97" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#828a90">210 tokens each</text>
-    <line x1="456" y1="83" x2="492" y2="83" stroke="#828a90" marker-end="url(#a)"/>
-    <text x="474" y="72" text-anchor="middle" font-size="10.5" fill="#828a90">embed</text>
+      <rect x="278" y="40" width="104" height="56" fill="none" stroke="#33363a"/>
+      <text x="330" y="63" text-anchor="middle">Passages</text>
+      <text x="330" y="81" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#7f858a">210 tokens each</text>
+      <line x1="382" y1="68" x2="412" y2="68" stroke="#7f858a" marker-end="url(#ar)"/>
+      <text x="397" y="58" text-anchor="middle" font-size="9.5" fill="#7f858a">embed</text>
 
-    <rect x="496" y="52" width="124" height="62" fill="none" stroke="#2f3439"/>
-    <text x="558" y="78" text-anchor="middle">Vectors</text>
-    <text x="558" y="97" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#828a90">384 numbers</text>
-    <line x1="620" y1="83" x2="656" y2="83" stroke="#828a90" marker-end="url(#a)"/>
+      <rect x="416" y="40" width="104" height="56" fill="none" stroke="#33363a"/>
+      <text x="468" y="63" text-anchor="middle">Vectors</text>
+      <text x="468" y="81" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#7f858a">384 numbers</text>
+      <line x1="520" y1="68" x2="550" y2="68" stroke="#7f858a" marker-end="url(#ar)"/>
 
-    <rect x="660" y="34" width="180" height="98" fill="#1b1e21" stroke="#3987e5"/>
-    <text x="750" y="62" text-anchor="middle" font-size="15">The index</text>
-    <text x="750" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#828a90">index.faiss</text>
-    <text x="750" y="101" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#828a90">metadata.json</text>
-    <text x="750" y="120" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#5f676c">aligned row by row</text>
-  </g>
-  <text x="4" y="176" font-family="JetBrains Mono, monospace" font-size="10.5" fill="#5f676c">RUNS ONCE PER DOCUMENT · NO NETWORK · NO COST</text>
-</svg>
-<figcaption>The only thing connecting indexing and asking is the index. A question
-never re-reads your PDF. Changing the embedding model invalidates everything and
-forces a full rebuild, because vectors made by one model are meaningless to another.</figcaption>
-</div>
+      <rect x="554" y="26" width="182" height="84" fill="#1b1d1f" stroke="#3987e5"/>
+      <text x="645" y="52" text-anchor="middle" font-size="14">The index</text>
+      <text x="645" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#7f858a">index.faiss</text>
+      <text x="645" y="88" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#7f858a">metadata.json</text>
+      <text x="645" y="104" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" fill="#5d6367">aligned row by row</text>
+    </g>
+    <text x="2" y="146" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#5d6367">NO NETWORK · NO COST · 432 s COLD, 0.76 s WHEN NOTHING CHANGED</text>
+  </svg>
+  </div>
+  <figcaption>The only channel between indexing and asking is the index itself. A
+  question never re-reads your PDF. Changing the embedding model invalidates everything
+  and forces a full rebuild, because vectors made by one model are meaningless to
+  another.</figcaption>
+</figure>
 
 <h3>Splitting: why documents get cut up</h3>
-<div class="concept">
-  <div class="plain"><span class="k">In plain terms</span>
-    <p>A whole document is too big to be a useful search result — you would get back
-    "it's in this 40-page paper somewhere". So each document is cut into overlapping
-    passages of a few hundred words, and those become the things you search.</p>
-    <p>They overlap deliberately. A definition sitting exactly on a cut would be sliced
-    in half; the overlap means it survives whole in the neighbouring passage.</p></div>
-  <div class="term"><span class="k">The term</span>
-    <p><strong>Chunking</strong>, with a <strong>stride</strong> and an
-    <strong>overlap</strong>. Here: 210 <strong>tokens</strong> per chunk, 40 overlap.
-    A token is roughly ¾ of a word — it is how models actually count text.</p>
-    <div class="say">"Chunked at 210 tokens with 40 overlap, page-scoped so citations
-    stay unambiguous."</div></div>
-  <div class="why"><span class="k">Why those numbers, and a warning</span>
-    <p>Not preference — a hard ceiling. The model that turns text into vectors accepts
-    <strong>256 tokens</strong> and <em>silently discards</em> everything past it. No
-    error, no warning.</p>
-    <p>This system shipped that bug once. Chunks were sized at 500 <em>words</em>,
-    which is about 626 tokens, so the median chunk lost <strong>370 tokens</strong>
-    before it was ever indexed. The text was still stored and still displayed — it
-    simply could not influence whether its own passage was ever found. Roughly 60% of
-    the corpus was <em>unfindable but not unusable</em>, which is exactly the kind of
-    failure nobody notices.</p></div>
+<p>A whole document is a useless search result — you would get back "it's somewhere in
+this 40-page paper". So each document is cut into overlapping passages of a few hundred
+words, and those become the searchable units.</p>
+
+<p>They overlap deliberately. A definition sitting exactly on a cut would be sliced in
+half; the overlap means it survives whole inside the neighbouring passage.</p>
+
+<div class="term"><span class="w">Chunking, with a stride and an overlap</span>
+  <p>Here: <strong>210 tokens</strong> per passage with <strong>40 tokens</strong> of
+  overlap, so each new passage starts 170 tokens after the last. A token is roughly
+  three-quarters of a word — it is how models actually count text.</p>
+  <div class="say">"Chunked at 210 tokens, 40 overlap, page-scoped so citations stay
+  unambiguous."</div>
+</div>
+
+<div class="note bad"><span class="k">The bug this system already shipped</span>
+  <p>Those numbers are not preference, they are a ceiling. The model that turns text
+  into vectors accepts <strong>256 tokens</strong> and <em>silently discards</em>
+  everything past it. No error, no warning.</p>
+  <p>Passages were originally sized at 500 <em>words</em> — about 626 tokens — so the
+  median passage lost <strong>370 tokens</strong> before it was ever indexed. That text
+  was still stored, still displayed, still returned once its passage was selected. It
+  simply could not influence whether that passage was ever <em>found</em>. Roughly 60%
+  of the corpus was <strong>unfindable but not unusable</strong>: the exact kind of
+  failure that produces no symptom.</p>
+  <p>Fixed by measuring in tokens, and by an assertion that now refuses to build an
+  index at all if any passage exceeds the ceiling.</p>
 </div>
 
 <h3>Embedding: turning meaning into coordinates</h3>
-<div class="concept">
-  <div class="plain"><span class="k">In plain terms</span>
-    <p>Each passage is converted into a list of 384 numbers. Think of it as a position
-    on a map, where the map is arranged by meaning: passages about similar things end
-    up near each other, even when they share no words at all.</p>
-    <p>"Revenue increased" and "sales grew" land as close neighbours despite having
-    nothing in common letter by letter.</p></div>
-  <div class="term"><span class="k">The term</span>
-    <p>An <strong>embedding</strong> or <strong>dense vector</strong>, produced by a
-    <strong>bi-encoder</strong> — so called because it encodes the question and the
-    passage <em>separately</em>. Similarity is <strong>cosine similarity</strong>: the
-    angle between two of these positions.</p>
-    <div class="say">"Bi-encoder embeddings, 384 dimensions, cosine similarity over a
-    FAISS flat index."</div></div>
-  <div class="why"><span class="k">Why it has a ceiling</span>
-    <p>Because the passage is squashed into one point <em>before anyone asks a
-    question</em>, everything it says is averaged together. A long precise passage gets
-    diluted by its own surrounding prose, while a short passage repeating the topic
-    word looks intensely relevant.</p>
-    <p>That is the structural weakness the next three stages exist to correct, and it
-    is why the system does not stop here.</p></div>
+<p>Each passage is converted into a list of 384 numbers — a position in a space
+arranged by meaning, where passages about similar things land near each other even when
+they share no words at all. "Revenue increased" and "sales grew" are near neighbours
+despite zero overlapping vocabulary.</p>
+
+<div class="term"><span class="w">Embedding · dense vector · bi-encoder</span>
+  <p>The vector is the <strong>embedding</strong>. The model producing it is a
+  <strong>bi-encoder</strong> — so called because it encodes the question and the
+  passage <em>separately</em>. Closeness is <strong>cosine similarity</strong>: the
+  angle between two positions.</p>
+  <div class="say">"Bi-encoder embeddings, 384 dimensions, cosine similarity over a
+  FAISS flat index."</div>
 </div>
 
-<h2><span class="n">§ 03</span>What happens when you ask</h2>
-<p class="sub">Six stages, each fixing a specific weakness in the one before it. The app
-shows you all six for every answer.</p>
+<p><strong>This is also where the ceiling on quality comes from.</strong> Because the
+passage is compressed into one point <em>before anyone asks a question</em>, everything
+it says is averaged together. A long, precise passage gets diluted by its own
+surrounding prose, while a short passage that repeats the topic word looks intensely
+relevant. Every stage after this exists to correct that.</p>
+</section>
 
-<h3>Two searches at once, not one</h3>
+<!-- ============================================================== 03 -->
+<section id="c3">
+<h2 class="ch"><span class="n">Chapter 03</span>Searching two ways at once</h2>
+<p class="lede">Two methods with opposite blind spots, run in parallel.</p>
+
 <p>Embeddings are strong at meaning and weak at <em>identity</em>. A model number like
-<code>P100</code>, a dataset name like <code>WMT 2014</code>, an acronym — these carry
-meaning by being exactly themselves, and averaging them into 384 numbers washes them
-out. So a second, completely different search runs at the same time.</p>
+<code>P100</code>, a dataset name like <code>WMT 2014</code>, an acronym — these mean
+something by being exactly themselves, and averaging them into 384 numbers washes them
+out.</p>
 
-<div class="concept">
-  <div class="plain"><span class="k">In plain terms</span>
-    <p>The second search counts word overlap, weighting rare words far above common
-    ones. It cannot understand paraphrase at all — but it never loses a rare term.
-    The two searches have opposite blind spots, so running both covers each one's gap.</p></div>
-  <div class="term"><span class="k">The terms</span>
-    <p><strong>Dense</strong> (meaning) and <strong>sparse</strong> (exact words)
-    retrieval; the sparse one is <strong>BM25</strong>, weighted by
-    <strong>IDF</strong> — inverse document frequency, i.e. rarity. Running both is
-    <strong>hybrid search</strong>.</p>
-    <div class="say">"Hybrid — dense plus BM25, fused with RRF."</div></div>
-  <div class="why"><span class="k">Measured</span>
-    <p>Adding the second retriever moved hit rate from <strong>0.788 to 0.864</strong>
-    — the largest single gain in the system.</p></div>
+<p>So a second, completely different search runs at the same moment. It counts word
+overlap, weighting rare words far above common ones. It cannot understand paraphrase at
+all, and it never loses a rare term.</p>
+
+<figure>
+  <div class="fignum">FIG. 02 — WHERE EACH SEARCH FAILS</div>
+  <div class="plot">
+  <svg viewBox="0 0 700 210" role="img" aria-label="Two columns comparing dense and sparse retrieval. Dense retrieval succeeds on a paraphrased query and fails on a rare identifier. Sparse BM25 retrieval fails on the paraphrase and succeeds on the identifier.">
+    <g font-family="Newsreader, Georgia, serif" font-size="13">
+      <text x="4" y="16" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#3987e5">DENSE · BY MEANING</text>
+      <rect x="4" y="30" width="320" height="66" fill="#1b1d1f" stroke="#26282b"/>
+      <text x="18" y="52" fill="#dcdedf">"how fast does it train"</text>
+      <text x="18" y="72" fill="#7f858a" font-size="12">→ finds "step time was 1.0 seconds"</text>
+      <text x="18" y="88" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#3fb950">SHARES NO WORDS. FOUND ANYWAY.</text>
+
+      <rect x="4" y="106" width="320" height="66" fill="#1b1d1f" stroke="#26282b"/>
+      <text x="18" y="128" fill="#dcdedf">"results on WMT 2014"</text>
+      <text x="18" y="148" fill="#7f858a" font-size="12">→ the identifier is averaged away</text>
+      <text x="18" y="164" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#f0685f">MISSES THE ONE THING THAT MATTERED.</text>
+
+      <text x="376" y="16" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#d95926">SPARSE · BY EXACT WORDS</text>
+      <rect x="376" y="30" width="320" height="66" fill="#1b1d1f" stroke="#26282b"/>
+      <text x="390" y="52" fill="#dcdedf">"how fast does it train"</text>
+      <text x="390" y="72" fill="#7f858a" font-size="12">→ shares no term, scores zero</text>
+      <text x="390" y="88" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#f0685f">BLIND TO PARAPHRASE.</text>
+
+      <rect x="376" y="106" width="320" height="66" fill="#1b1d1f" stroke="#26282b"/>
+      <text x="390" y="128" fill="#dcdedf">"results on WMT 2014"</text>
+      <text x="390" y="148" fill="#7f858a" font-size="12">→ rare term, very high weight</text>
+      <text x="390" y="164" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#3fb950">EXACTLY WHAT IT IS BEST AT.</text>
+    </g>
+    <text x="4" y="200" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#5d6367">NEITHER IS BETTER. THEY FAIL ON DIFFERENT INPUTS — WHICH IS THE ARGUMENT FOR BOTH.</text>
+  </svg>
+  </div>
+  <figcaption>Running both and combining them is called hybrid search. Measured on this
+  corpus, adding the second retriever moved hit rate from 0.788 to 0.864 — the largest
+  single gain in the system.</figcaption>
+</figure>
+
+<div class="term"><span class="w">Dense · sparse · BM25 · IDF · hybrid search</span>
+  <p><strong>Dense</strong> retrieval is the meaning-based one. <strong>Sparse</strong>
+  is the word-overlap one, and the specific algorithm is <strong>BM25</strong>, which
+  weights each shared word by <strong>IDF</strong> — inverse document frequency, i.e.
+  how rare it is. Running both is <strong>hybrid search</strong>.</p>
+  <div class="say">"Hybrid — dense plus BM25, fused with RRF."</div>
+</div>
+</section>
+
+<!-- ============================================================== 04 -->
+<section id="c4">
+<h2 class="ch"><span class="n">Chapter 04</span>Merging two rankings that disagree</h2>
+<p class="lede">Their scores cannot be compared, so the scores get thrown away.</p>
+
+<p>You now have two ranked lists that disagree. Merging them sounds like addition, but a
+cosine similarity of <code>0.63</code> and a BM25 score of <code>11.4</code> are not
+commensurable — one is bounded between −1 and 1, the other is unbounded and depends on
+corpus statistics. Adding them is meaningless.</p>
+
+<p>The fix is to discard the scores entirely and use only <em>positions</em>.</p>
+
+<figure>
+  <div class="fignum">FIG. 03 — RECIPROCAL RANK FUSION, WORKED</div>
+  <div class="plot">
+  <svg viewBox="0 0 700 236" role="img" aria-label="A worked example of reciprocal rank fusion. Passage A is ranked 1 by dense and 30 by sparse, scoring 0.0164 plus 0.0111 for 0.0275. Passage B is ranked 4 by both, scoring 0.0156 twice for 0.0312, and therefore wins despite never being first.">
+    <g font-family="JetBrains Mono, monospace" font-size="11" fill="#dcdedf">
+      <text x="4" y="16" font-size="10" letter-spacing="1.4" fill="#7f858a">SCORE = 1 / (60 + RANK), SUMMED ACROSS BOTH SEARCHES</text>
+
+      <line x1="4" y1="34" x2="696" y2="34" stroke="#33363a"/>
+      <text x="4" y="52" fill="#7f858a" font-size="10">PASSAGE</text>
+      <text x="200" y="52" fill="#7f858a" font-size="10">DENSE</text>
+      <text x="330" y="52" fill="#7f858a" font-size="10">SPARSE</text>
+      <text x="470" y="52" fill="#7f858a" font-size="10">SUM</text>
+      <line x1="4" y1="62" x2="696" y2="62" stroke="#26282b"/>
+
+      <text x="4" y="88" fill="#f3f3f1">Passage A</text>
+      <text x="200" y="88">rank 1 → 0.0164</text>
+      <text x="330" y="88">rank 30 → 0.0111</text>
+      <text x="470" y="88" fill="#a8adb1">0.0275</text>
+      <line x1="4" y1="102" x2="696" y2="102" stroke="#26282b"/>
+
+      <text x="4" y="128" fill="#f3f3f1">Passage B</text>
+      <text x="200" y="128">rank 4 → 0.0156</text>
+      <text x="330" y="128">rank 4 → 0.0156</text>
+      <text x="470" y="128" fill="#3fb950">0.0312 ← wins</text>
+      <line x1="4" y1="142" x2="696" y2="142" stroke="#26282b"/>
+    </g>
+    <g font-family="Newsreader, Georgia, serif" font-size="13.5" fill="#a8adb1">
+      <text x="4" y="172">Passage A was ranked first by one search. Passage B was ranked fourth by both.</text>
+      <text x="4" y="194" fill="#f3f3f1">B wins — agreement between two different methods outweighs one method's confidence.</text>
+      <text x="4" y="220" font-size="12.5" fill="#7f858a">The constant 60 damps the top ranks, so rank 1 versus rank 2 is not treated as decisive.</text>
+    </g>
+  </svg>
+  </div>
+  <figcaption>Reciprocal rank fusion uses only positions, never raw scores, which makes
+  it scale-free by construction and leaves nothing to tune per corpus.</figcaption>
+</figure>
+
+<div class="note"><span class="k">Why not weighted scores</span>
+  <p>The alternative normalises both score scales and blends them with a tunable knob
+  (<code>alpha</code>). It measured <em>the same</em> here — hit rate 0.864 either way.</p>
+  <p>RRF is the default anyway, on robustness rather than numbers. Weighted fusion needs
+  re-tuning whenever the corpus changes, and its per-query normalisation destroys the
+  confidence signal: a query where every candidate is mediocre still produces a top
+  score of 1.0. RRF has nothing to get wrong.</p>
+</div>
+</section>
+
+<!-- ============================================================== 05 -->
+<section id="c5">
+<h2 class="ch"><span class="n">Chapter 05</span>Reading the question and the passage together</h2>
+<p class="lede">The most expensive stage in the system, and the one that earns it.</p>
+
+<p>Everything so far compared your question against passages that were summarised into
+vectors long before the question existed. The passage was never allowed to know what was
+being asked of it.</p>
+
+<figure>
+  <div class="fignum">FIG. 04 — TWO ARCHITECTURES</div>
+  <div class="plot">
+  <svg viewBox="0 0 700 250" role="img" aria-label="Left: a bi-encoder passes query and passage through separate encoders producing two vectors that meet only at a final cosine comparison, with passage vectors precomputed at index time. Right: a cross-encoder concatenates query and passage into one sequence through a single encoder that outputs a relevance score directly.">
+    <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7f858a"/></marker></defs>
+    <g font-family="Newsreader, Georgia, serif" font-size="12.5" fill="#dcdedf">
+      <text x="4" y="16" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#7f858a">BI-ENCODER · SCANS EVERYTHING</text>
+      <rect x="4" y="34" width="74" height="34" fill="none" stroke="#33363a"/><text x="41" y="55" text-anchor="middle">query</text>
+      <rect x="4" y="112" width="74" height="34" fill="none" stroke="#33363a"/><text x="41" y="133" text-anchor="middle">passage</text>
+      <line x1="78" y1="51" x2="100" y2="51" stroke="#7f858a" marker-end="url(#a2)"/>
+      <line x1="78" y1="129" x2="100" y2="129" stroke="#7f858a" marker-end="url(#a2)"/>
+      <rect x="104" y="34" width="76" height="34" fill="none" stroke="#33363a"/><text x="142" y="55" text-anchor="middle">encoder</text>
+      <rect x="104" y="112" width="76" height="34" fill="none" stroke="#33363a"/><text x="142" y="133" text-anchor="middle">encoder</text>
+      <line x1="180" y1="51" x2="202" y2="51" stroke="#7f858a" marker-end="url(#a2)"/>
+      <line x1="180" y1="129" x2="202" y2="129" stroke="#7f858a" marker-end="url(#a2)"/>
+      <rect x="206" y="34" width="56" height="34" fill="#1b1d1f" stroke="#33363a"/><text x="234" y="55" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10">384-d</text>
+      <rect x="206" y="112" width="56" height="34" fill="#1b1d1f" stroke="#33363a"/><text x="234" y="133" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10">384-d</text>
+      <line x1="262" y1="51" x2="292" y2="82" stroke="#7f858a"/><line x1="262" y1="129" x2="292" y2="98" stroke="#7f858a"/>
+      <rect x="294" y="73" width="44" height="34" fill="none" stroke="#33363a"/><text x="316" y="94" text-anchor="middle">cos</text>
+      <line x1="142" y1="72" x2="142" y2="108" stroke="#5d6367" stroke-dasharray="3 3"/>
+      <text x="150" y="94" font-size="11.5" fill="#7f858a" font-style="italic">never interact</text>
+      <text x="4" y="176" font-size="12" fill="#7f858a">passage vectors computed once, before any question exists</text>
+      <text x="4" y="196" font-family="JetBrains Mono, monospace" font-size="10" fill="#5d6367">0 FORWARD PASSES AT QUERY TIME · ~28 ms</text>
+
+      <line x1="358" y1="8" x2="358" y2="230" stroke="#33363a"/>
+
+      <text x="376" y="16" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.4" fill="#7f858a">CROSS-ENCODER · SHORTLIST ONLY</text>
+      <rect x="376" y="73" width="150" height="34" fill="none" stroke="#33363a"/>
+      <text x="451" y="88" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10">[query] [SEP] [passage]</text>
+      <text x="451" y="101" text-anchor="middle" font-size="11" fill="#7f858a">one sequence</text>
+      <line x1="526" y1="90" x2="550" y2="90" stroke="#7f858a" marker-end="url(#a2)"/>
+      <rect x="554" y="73" width="70" height="34" fill="none" stroke="#33363a"/><text x="589" y="94" text-anchor="middle">encoder</text>
+      <line x1="624" y1="90" x2="648" y2="90" stroke="#7f858a" marker-end="url(#a2)"/>
+      <rect x="652" y="73" width="44" height="34" fill="#1b1d1f" stroke="#33363a"/><text x="674" y="94" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10">score</text>
+      <path d="M 396 68 C 412 44, 490 44, 508 68" fill="none" stroke="#7f858a" marker-end="url(#a2)"/>
+      <text x="451" y="38" text-anchor="middle" font-size="11.5" fill="#a8adb1" font-style="italic">every word sees every other word</text>
+      <text x="376" y="176" font-size="12" fill="#7f858a">nothing can be precomputed — it depends on the question</text>
+      <text x="376" y="196" font-family="JetBrains Mono, monospace" font-size="10" fill="#5d6367">20 FORWARD PASSES PER QUERY · ~1,100 ms</text>
+    </g>
+  </svg>
+  </div>
+  <figcaption>The difference is <em>when</em> the query and the passage are allowed to
+  meet. Never letting them meet is exactly what permits precomputing, and therefore what
+  permits scanning a whole corpus at all. This is why the accurate model runs only on the
+  20 candidates the cheap one shortlisted.</figcaption>
+</figure>
+
+<div class="term"><span class="w">Cross-encoder · reranking · two-stage retrieval</span>
+  <p>A cheap first stage for <strong>recall</strong> (is the answer in the pool at
+  all?), then an expensive second stage for <strong>precision</strong> (is it at the
+  top?).</p>
+  <div class="say">"Cross-encoder reranking over a 20-candidate shortlist."</div>
 </div>
 
-<h3>Merging two disagreeing rankings</h3>
-<div class="concept">
-  <div class="plain"><span class="k">In plain terms</span>
-    <p>Now there are two ranked lists that disagree, and their scores cannot be
-    compared — one is a similarity between −1 and 1, the other is an unbounded count.
-    Adding them is meaningless.</p>
-    <p>So the scores are thrown away and only <em>positions</em> are used. Being ranked
-    respectably by both retrievers beats being ranked first by one.</p></div>
-  <div class="term"><span class="k">The term</span>
-    <p><strong>Reciprocal Rank Fusion (RRF)</strong>. Each retriever contributes
-    <code>1 / (60 + rank)</code> per passage, and the contributions are summed.</p>
-    <div class="say">"RRF — scale-free, no weight to tune per corpus."</div></div>
-  <div class="why"><span class="k">Why not weighted scores</span>
-    <p>The alternative normalises both score scales and blends them with a tunable
-    knob. It measured about the same here — but it needs re-tuning whenever the corpus
-    changes, and normalising per query destroys the confidence signal: a query where
-    everything is mediocre still produces a top score of 1.0. RRF has nothing to get
-    wrong.</p></div>
+<p><strong>Measured: MRR 0.601 → 0.710.</strong> MRR asks how high the first correct
+result sits, so this is the number that says the right passage moved <em>to the top</em>
+rather than merely into the set. It costs about a second per question — by far the most
+expensive stage.</p>
+</section>
+
+<!-- ============================================================== 06 -->
+<section id="c6">
+<h2 class="ch"><span class="n">Chapter 06</span>Stopping one document taking every slot</h2>
+<p class="lede">A metric that says 1.000 while the answer is a quarter complete.</p>
+
+<p>The reranker scores each passage on its own merits, so when one document matches well
+it takes <em>all five</em> slots. If five papers answer your question, you hear from one.</p>
+
+<div class="note bad"><span class="k">The measurement that exposed it</span>
+  <p>For the question "which model achieved 28.4 BLEU", five papers report that figure.
+  All five returned passages came from one of them.</p>
+  <p><strong>MRR scored it 1.000. Source recall scored it 0.200.</strong> Ranking metrics
+  call that a perfect result, because by their definition it is — which is the wrong
+  definition when the goal is to compile every relevant source rather than find one.</p>
 </div>
 
-<h3>Reading the question and the passage together</h3>
-<div class="concept">
-  <div class="plain"><span class="k">In plain terms</span>
-    <p>Everything so far compared a question to passages that were summarised long
-    before the question existed. Now a second, slower model reads the question and each
-    candidate passage <em>side by side</em>, and scores how well one answers the other.</p>
-    <p>It is far more accurate and far too slow to run over a whole library — so it
-    only ever sees the ~20 candidates the first stage shortlisted.</p></div>
-  <div class="term"><span class="k">The term</span>
-    <p>A <strong>cross-encoder reranker</strong>, the second half of
-    <strong>two-stage retrieval</strong>. Cheap first stage for recall, expensive second
-    stage for precision.</p>
-    <div class="say">"Cross-encoder reranking over a 20-candidate shortlist."</div></div>
-  <div class="why"><span class="k">Measured</span>
-    <p><strong>MRR 0.601 → 0.710.</strong> MRR asks how high the <em>first</em> correct
-    result sits, so this is the number that says "the right passage moved to the top",
-    not merely "into the set". It costs about a second per question — by far the most
-    expensive stage, and it earns it.</p></div>
+<div class="term"><span class="w">Diversity cap · source recall</span>
+  <p>A <strong>per-document diversity cap</strong> takes at most N passages from any one
+  document. <strong>Source recall</strong> is the metric it protects: of the documents
+  that could answer, how many actually came back.</p>
+  <div class="say">"Capped at two per source — we optimise source recall, not just hit
+  rate."</div>
 </div>
 
-<h3>Not letting one document take every slot</h3>
-<div class="concept">
-  <div class="plain"><span class="k">In plain terms</span>
-    <p>The reranker scores each passage on its own, so when one document matches well
-    it takes <em>all five</em> slots. If five papers answer your question, you hear
-    from one.</p>
-    <p>So there is a cap: at most two passages from any single document.</p></div>
-  <div class="term"><span class="k">The terms</span>
-    <p>A <strong>per-document diversity cap</strong>. The metric it protects is
-    <strong>source recall</strong> — of the documents that could answer, how many
-    actually came back.</p>
-    <div class="say">"Capped at two per source, because we optimise source recall, not
-    just hit rate."</div></div>
-  <div class="why"><span class="k">An honest trade, not a free win</span>
-    <p>Source recall <strong>0.742 → 0.773</strong>, and hit rate <strong>0.864 →
-    0.848</strong>. It costs something: when only one document genuinely answers,
-    capping it pushes a relevant passage out for an irrelevant one.</p>
-    <p>An earlier, smaller test set said the cap was free. It was not — the conclusion
-    reversed when the test set grew.</p></div>
+<div class="tw">
+<table>
+  <thead><tr><th>Cap</th><th class="r">hit rate</th><th class="r">source recall</th><th>Trade</th></tr></thead>
+  <tbody>
+    <tr><td>none</td><td class="r m">0.864</td><td class="r m">0.742</td><td>—</td></tr>
+    <tr class="hi"><td>2 per document <em>(shipped)</em></td><td class="r m">0.848</td><td class="r m">0.773</td><td>+3.1 recall for −1.6 hit rate</td></tr>
+    <tr><td>1 per document</td><td class="r m">0.818</td><td class="r m">0.817</td><td>+7.5 recall for −4.6 hit rate</td></tr>
+  </tbody>
+</table>
 </div>
 
-<h3>Growing the passage back out</h3>
-<p>Ranking works best on small passages; <em>reading</em> works best on larger ones. So
-the winners are expanded to include their neighbouring text before you see them —
-called <strong>parent-document retrieval</strong>. Measured: context recall
-<strong>0.742 → 0.833</strong> for 2.4× the text. Expanding to whole pages gets 0.848
-but costs 4.8× — so the window is the default, and pages remain available for when a
-citation must point at something a reader can verify in one place.</p>
+<p><strong>It is a real trade, not a free win.</strong> When only one document genuinely
+answers, capping it pushes a relevant passage out for an irrelevant one. An earlier,
+smaller test set showed the cap costing nothing — that conclusion reversed when the test
+set grew.</p>
+</section>
 
-<h2><span class="n">§ 04</span>Knowing when to say no</h2>
-<p class="sub">The feature most products do not have, and the one most worth having.</p>
+<!-- ============================================================== 07 -->
+<section id="c7">
+<h2 class="ch"><span class="n">Chapter 07</span>Growing the passage back out</h2>
+<p class="lede">Ranking wants small passages. Reading wants large ones.</p>
+
+<p>Small passages rank better: a short span averages into a vector that stays specific.
+But a small passage is often a poor thing to <em>answer</em> from — it can be cut
+mid-argument, missing the sentence that defines its own subject.</p>
+
+<p>So ranking happens on small passages, and each survivor is then expanded to include
+its neighbouring text before you see it. The retriever gets specificity, the reader gets
+context.</p>
+
+<div class="term"><span class="w">Parent-document retrieval · context recall</span>
+  <p><strong>Context recall</strong> is the metric here, and it is the one ranking
+  cannot express: does the text actually returned <em>contain</em> the answer? A passage
+  can come from the right page and still be cut before the sentence that matters.</p>
+</div>
+
+<div class="tw">
+<table>
+  <thead><tr><th>Mode</th><th class="r">context recall</th><th class="r">tokens/query</th><th class="r">recall per 1k tokens</th></tr></thead>
+  <tbody>
+    <tr><td>none — the raw passage</td><td class="r m">0.742</td><td class="r m">997</td><td class="r m">0.744</td></tr>
+    <tr class="hi"><td>window ±1 <em>(shipped)</em></td><td class="r m">0.833</td><td class="r m">2,371</td><td class="r m">0.351</td></tr>
+    <tr><td>the whole page</td><td class="r m">0.848</td><td class="r m">4,828</td><td class="r m">0.176</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The window recovers <strong>91 of the 106 points</strong> that whole pages gain over
+raw passages, for less than half the text. Pages stay available for the case where a
+citation must point at a complete unit a reader can verify in one place.</p>
+</section>
+
+<!-- ============================================================== 08 -->
+<section id="c8">
+<h2 class="ch"><span class="n">Chapter 08</span>Knowing when to refuse</h2>
+<p class="lede">The feature most products do not have, and the hardest one to tune.</p>
 
 <p>Ask a document search system something its documents do not cover, and the honest
 answer is "this isn't in here". The usual behaviour is to return the closest topical
-match with total confidence, which is worse than useless — it looks exactly like a
-real answer.</p>
+match with complete confidence — which is worse than useless, because it looks exactly
+like a real answer.</p>
 
-<div class="concept">
-  <div class="plain"><span class="k">In plain terms</span>
-    <p>The reranker's score is a genuine measure of "does this passage answer this
-    question". When the best passage scores below a set line, the system refuses
-    instead of answering.</p></div>
-  <div class="term"><span class="k">The term</span>
-    <p><strong>Abstention</strong>, at a <strong>calibrated threshold</strong> —
-    calibrated meaning the line was chosen from measurements, not picked by eye.</p>
-    <div class="say">"Calibrated abstention threshold at zero, tuned on 18 adversarial
-    cases."</div></div>
-  <div class="why"><span class="k">How the line was chosen</span>
-    <p>The test set includes <strong>18 questions the corpus deliberately cannot
-    answer</strong>. Answerable questions score a median of <strong>+4.93</strong>,
-    unanswerable ones <strong>−2.33</strong>. The distributions overlap, so no line is
-    clean and the choice is a real trade.</p></div>
-</div>
+<p>The reranker's score is a genuine measure of "does this passage answer this
+question", so it can be compared against a line. Below the line, the system refuses.</p>
 
-<div class="callout warn">
-  <span class="k">A subtlety worth being able to explain</span>
-  <p>The evaluation tool recommends a threshold of <strong>+2</strong>, and the system
-  ships <strong>0.0</strong>. That looks like ignoring the evidence. It is not.</p>
-  <p>The tool ranks thresholds by subtracting two <em>rates</em> — the fraction of
+<figure>
+  <div class="fignum">FIG. 05 — THE TWO POPULATIONS OVERLAP</div>
+  <div class="plot">
+  <svg viewBox="0 0 700 210" role="img" aria-label="A number line from minus 10 to plus 10 showing that answerable questions have a median score of plus 4.93 with a minimum of minus 4.02, while unanswerable questions have a median of minus 2.33 with a maximum of plus 2.76. The two ranges overlap between minus 4 and plus 2.76, so no threshold separates them cleanly.">
+    <g font-family="JetBrains Mono, monospace" font-size="10" fill="#7f858a">
+      <line x1="40" y1="150" x2="670" y2="150" stroke="#33363a"/>
+      <text x="40" y="168" text-anchor="middle">−10</text>
+      <text x="355" y="168" text-anchor="middle">0</text>
+      <text x="670" y="168" text-anchor="middle">+10</text>
+      <line x1="355" y1="42" x2="355" y2="156" stroke="#3fb950" stroke-dasharray="4 3"/>
+      <text x="355" y="34" text-anchor="middle" fill="#3fb950">THRESHOLD 0.0</text>
+
+      <rect x="228" y="60" width="447" height="24" fill="#3987e5" opacity="0.16" stroke="#3987e5"/>
+      <text x="46" y="77" fill="#3987e5">ANSWERABLE</text>
+      <circle cx="510" cy="72" r="4" fill="#3987e5"/>
+      <text x="510" y="55" text-anchor="middle" fill="#dcdedf">median +4.93</text>
+      <text x="222" y="76" text-anchor="end" fill="#5d6367">min −4.02</text>
+
+      <rect x="56" y="104" width="386" height="24" fill="#d95926" opacity="0.16" stroke="#d95926"/>
+      <text x="46" y="140" fill="#d95926">UNANSWERABLE</text>
+      <circle cx="282" cy="116" r="4" fill="#d95926"/>
+      <text x="282" y="99" text-anchor="middle" fill="#dcdedf">median −2.33</text>
+      <text x="404" y="143" fill="#5d6367">max +2.76</text>
+
+      <rect x="228" y="56" width="214" height="76" fill="none" stroke="#f0685f" stroke-dasharray="3 3"/>
+      <text x="335" y="192" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-size="13" fill="#f0685f">the overlap — no line separates these cleanly</text>
+    </g>
+  </svg>
+  </div>
+  <figcaption>66 answerable questions and 18 written to be unanswerable. The
+  distributions overlap, so the threshold is a deliberate trade rather than a clean
+  split. Everything below turns on which error you would rather make.</figcaption>
+</figure>
+
+<div class="note warn"><span class="k">The subtlety worth being able to explain</span>
+  <p>The evaluation tool recommends a threshold of <strong>+2</strong>. The system ships
+  <strong>0.0</strong>. That looks like ignoring the evidence, and it is not.</p>
+  <p>The tool ranks thresholds by subtracting two <em>rates</em>: the fraction of
   unanswerable questions caught, minus the fraction of answerable ones wrongly refused.
-  But those fractions come from populations of very different size: 18 against 66. That
-  arithmetic quietly values one unanswerable question at <strong>3.7</strong> answerable
-  ones.</p>
+  Those fractions come from populations of very different size — <strong>18 against
+  66</strong> — so the arithmetic quietly values one unanswerable question at
+  <strong>3.7</strong> answerable ones.</p>
   <p>Counted in actual questions, moving to +2 catches <strong>4 more</strong> and
-  wrongly refuses <strong>4 more</strong>. Break-even, before you decide which error is
-  worse — and refusing a question your documents <em>can</em> answer is clearly worse.
-  So 0.0 stays.</p>
-  <div class="say">"The net-separation column is Youden's J — it balances rates, and
-  our class sizes are unbalanced, so we chose on counts."</div>
+  wrongly refuses <strong>4 more</strong>. Break-even, before you even decide which
+  error is worse — and refusing a question your documents <em>can</em> answer is clearly
+  worse. So 0.0 stays.</p>
+  <div class="say">"That column is Youden's J — it balances rates, and our class sizes
+  are unbalanced, so we chose on counts."</div>
 </div>
 
-<h2><span class="n">§ 05</span>How it is judged</h2>
-<p class="sub">The part that separates a system that works from one that merely runs.</p>
+<div class="note"><span class="k">One number, two different costs</span>
+  <p>The same threshold means different things depending on the path. Through the
+  library API the flag is <strong>advisory</strong> — passages are returned either way,
+  so a false refusal merely mislabels a good answer. Through the interface the answer is
+  <strong>withheld</strong> and replaced with a refusal, so a false refusal loses an
+  answer the documents contain.</p>
+  <p>The second is where the asymmetry bites, and it is the path a person uses.</p>
+</div>
+</section>
 
-<p>Every claim above is a number, and every number comes from the same place: 84
-questions written against these documents, each labelled with the pages that actually
-answer it. <strong>66 answerable, 18 deliberately not.</strong> Change anything, re-run
-it, and see whether the numbers move.</p>
+<!-- ============================================================== 09 -->
+<section id="c9">
+<h2 class="ch"><span class="n">Chapter 09</span>How any of this is judged</h2>
+<p class="lede">The part that separates a system that works from one that merely runs.</p>
 
-<div class="tablewrap">
+<p>Every claim in this document is a number, and every number comes from the same place:
+<strong>84 questions</strong> written against these documents, each labelled with the
+pages that actually answer it. 66 answerable, 18 deliberately not. Change anything,
+re-run, and see whether the numbers move.</p>
+
+<div class="term"><span class="w">Golden set</span>
+  <p>Questions with hand-labelled correct answers. Relevance is judged at
+  <em>page</em> level rather than passage level — coarser, but page labels survive a
+  change to passage size, which is exactly when a comparable metric matters most.</p>
+</div>
+
+<h3>The four metrics, and what each one hides</h3>
+<div class="tw">
 <table>
-  <thead><tr><th>Pipeline</th><th class="r">hit rate</th><th class="r">MRR</th>
-    <th class="r">NDCG</th><th class="r">source recall</th></tr></thead>
+  <thead><tr><th>Metric</th><th>Asks</th><th>Blind to</th></tr></thead>
   <tbody>
-    <tr><td>Dense only — <em>the standard tutorial build</em></td>
-      <td class="r mono">0.788</td><td class="r mono">0.601</td><td class="r mono">0.645</td><td class="r mono">0.704</td></tr>
-    <tr><td>+ cross-encoder reranking</td>
-      <td class="r mono">0.788</td><td class="r mono">0.710</td><td class="r mono">0.715</td><td class="r mono">0.711</td></tr>
-    <tr><td>+ hybrid BM25 fusion</td>
-      <td class="r mono">0.864</td><td class="r mono">0.757</td><td class="r mono">0.766</td><td class="r mono">0.742</td></tr>
-    <tr class="hi"><td>+ diversity cap — <em>shipped</em></td>
-      <td class="r mono">0.848</td><td class="r mono">0.754</td><td class="r mono">0.769</td><td class="r mono">0.773</td></tr>
+    <tr><td class="m">hit rate@5</td><td>Is a correct passage anywhere in the five?</td><td>Position. Rank 1 and rank 5 score identically.</td></tr>
+    <tr><td class="m">MRR</td><td>How high is the <em>first</em> correct result?</td><td>Everything after it. One perfect result scores like five.</td></tr>
+    <tr><td class="m">NDCG@5</td><td>Are <em>all</em> the correct results near the top?</td><td>Absolute quality — it is normalised against the best achievable ordering of what was retrieved.</td></tr>
+    <tr><td class="m">source recall</td><td>How many of the answering documents came back?</td><td>Ranking. It does not care where in the five they sit.</td></tr>
   </tbody>
 </table>
 </div>
 
-<div class="glossary">
-  <div class="gl"><dt>hit rate @5</dt><dd>Did a correct passage appear anywhere in the
-    five results? Blind to position — rank 1 and rank 5 score identically.</dd></div>
-  <div class="gl"><dt>MRR</dt><dd>Mean reciprocal rank. How high the <em>first</em>
-    correct result sits. Blind to everything after it.</dd></div>
-  <div class="gl"><dt>NDCG</dt><dd>Rewards getting <em>all</em> the correct results near
-    the top, discounted by how far down each one is.</dd></div>
-  <div class="gl"><dt>source recall</dt><dd>Of the documents that could answer, how many
-    came back. The metric most RAG tutorials never track.</dd></div>
+<h3>Where it stands</h3>
+<div class="tw">
+<table>
+  <thead><tr><th>Pipeline</th><th class="r">hit rate</th><th class="r">MRR</th><th class="r">NDCG</th><th class="r">src recall</th></tr></thead>
+  <tbody>
+    <tr><td>Dense only — <em>the standard tutorial build</em></td><td class="r m">0.788</td><td class="r m">0.601</td><td class="r m">0.645</td><td class="r m">0.704</td></tr>
+    <tr><td>+ cross-encoder reranking</td><td class="r m">0.788</td><td class="r m">0.710</td><td class="r m">0.715</td><td class="r m">0.711</td></tr>
+    <tr><td>+ hybrid BM25 fusion</td><td class="r m">0.864</td><td class="r m">0.757</td><td class="r m">0.766</td><td class="r m">0.742</td></tr>
+    <tr class="hi"><td>+ diversity cap — <em>shipped</em></td><td class="r m">0.848</td><td class="r m">0.754</td><td class="r m">0.769</td><td class="r m">0.773</td></tr>
+  </tbody>
+</table>
 </div>
+<p>Against the naive build: <strong>+6.0 points of hit rate, +15.3 of MRR, +6.9 of
+source recall</strong>.</p>
+</section>
 
-<h2><span class="n">§ 06</span>Four times the measurement was right and the plan was wrong</h2>
-<p class="sub">The most useful thing in the project, stated as evidence rather than advice.</p>
+<!-- ============================================================== 10 -->
+<section id="c10">
+<h2 class="ch"><span class="n">Chapter 10</span>Five times measurement beat the plan</h2>
+<p class="lede">The most valuable habit in the project, as evidence rather than advice.</p>
 
-<div class="tablewrap">
+<div class="tw">
 <table>
   <thead><tr><th>What sounded obviously right</th><th>What measuring showed</th><th>Outcome</th></tr></thead>
   <tbody>
-    <tr><td>Label each passage with its document's title so the system can tell papers apart</td>
+    <tr><td>Label each passage with its document title, so the system can tell papers apart</td>
       <td>No ranking gain, and source recall <em>fell</em> 0.051 — every passage in a document got the same label, making them <em>more</em> alike</td><td>Built, measured, <strong>reverted</strong></td></tr>
     <tr><td>The reranker misses constraint words because it is too small</td>
-      <td>A model 8× larger fixed the same 2 of 10 cases, at 10 seconds per question</td><td>Upgrade <strong>rejected</strong></td></tr>
+      <td>A model 8× larger fixed the same 2 of 10 cases, at 10 s per query</td><td>Upgrade <strong>rejected</strong></td></tr>
     <tr><td>Tables retrieve badly and need special handling</td>
       <td>Tables measured <em>easier</em> than prose — 0.952 against 0.800</td><td><strong>No code written</strong></td></tr>
     <tr><td>Re-indexing is slow because the index is rebuilt each time</td>
-      <td>Rebuilding the index is 0.01 s — <strong>0%</strong> of the runtime</td><td>Task <strong>redefined</strong></td></tr>
+      <td>Rebuilding the index is 0.01 s — <strong>0%</strong> of runtime</td><td>Task <strong>redefined</strong></td></tr>
+    <tr><td>The harness says the refusal threshold should be +2</td>
+      <td>That column subtracts rates over unequal populations; in cases the move is break-even</td><td>Threshold <strong>unchanged</strong></td></tr>
   </tbody>
 </table>
 </div>
 
-<p>Three of those four would have produced correct, well-engineered code that improved
-nothing. The fourth was actively harmful and had already been written up as a success.
+<p>Three of the first four would have produced correct, well-engineered code that
+improved nothing. One was actively harmful and had already been written up as a success.
 Each measurement cost minutes.</p>
 
-<div class="callout bad">
-  <span class="k">Including bugs in the measuring tool itself</span>
+<div class="note bad"><span class="k">Two of the bugs were in the measuring tool itself</span>
   <p>The evaluation tool's own NDCG once printed <strong>1.373</strong> — impossible,
-  since the metric cannot exceed 1.0. It was caught only because a human recognised
-  that the output violated a bound the metric is known to have.</p>
-  <p>A metric with no known bound would have shipped wrong and stayed wrong. That
-  check is now an automated test, along with 21 others.</p>
+  since the metric cannot exceed 1.0. It was caught only because a human recognised that
+  the output violated a bound the metric is known to have. A metric with no known bound
+  would have shipped wrong and stayed wrong.</p>
+  <p>Separately, the diversity cap was measured on a fusion setting the system does not
+  actually serve, so the row every document quoted as "the default" described a
+  configuration that had never run. Five numbers moved when it was corrected — none by
+  more than 0.004, which is precisely why nobody noticed.</p>
+  <p>Both now have automated tests. The NDCG bound is one of 22 assertions that run in
+  milliseconds.</p>
 </div>
+</section>
 
-<h2><span class="n">§ 07</span>What is still wrong with it</h2>
-<p class="sub">Stated plainly, because a description that only lists wins is marketing.</p>
+<!-- ============================================================== 11 -->
+<section id="c11">
+<h2 class="ch"><span class="n">Chapter 11</span>What is still wrong with it</h2>
+<p class="lede">Stated plainly, because a description that only lists wins is marketing.</p>
 
-<h3>It gets about 1 in 6 questions wrong, and 7 of them are structural</h3>
+<h3>It gets about one question in six wrong, and seven of them are structural</h3>
 <p>Running all 84 questions under six different configurations shows that
 <strong>18 fail under at least one</strong> setting — but only <strong>7 fail under
-every one</strong>. Those seven are unreachable by any amount of ranking work. Four
-share a shape: the question names a topic <em>and a constraint</em>, retrieval matches
-the topic, and the constraint — the part that decides which document is right — is
-averaged away.</p>
+every one</strong>. Those seven are unreachable by any amount of ranking work.</p>
 
-<p>Ask for "normalisation across features <em>rather than examples</em>" and you get
-Batch Normalization, which is the thing that phrase explicitly rules out. The fix is
-<strong>query decomposition</strong> — using a language model to break the question
-apart before searching — and it needs API credit the project does not currently have.</p>
+<p>Four share a shape: the question names a topic <em>and a constraint</em>, retrieval
+matches the topic, and the constraint — the part that decides which document is right —
+is averaged away. Ask for "normalisation across features <em>rather than examples</em>"
+and you get Batch Normalization, which is the thing that phrase explicitly rules out.</p>
 
-<h3>The document loaders have never run on real files</h3>
+<p>The fix is <strong>query decomposition</strong>: using a language model to break the
+question apart before searching. It needs API credit the project does not have. The seven
+cases are now a fixture that any attempted fix can be scored against in about 20
+seconds.</p>
+
+<h3>The document loaders have never run on a real file</h3>
 <p>The corpus is 20 PDFs. Code exists for Word, PowerPoint, Excel and scanned documents,
 and <strong>none of it has ever processed a real file</strong>. The spreadsheet path is
-the least trustworthy: rows are flattened into <code>Column: value</code> text on an
-assumption with no evidence behind it. This is the largest unknown in the system and
-the cheapest to close.</p>
+least trustworthy: rows are flattened into <code>Column: value</code> text on an
+assumption with no evidence behind it. This is the largest unknown in the system and the
+cheapest to close.</p>
 
 <h3>Writing prose has never actually run</h3>
 <p>The generation layer is written and reaches the network, but no call has ever
 completed — the account has no credit. The code is real; the evidence is not, and this
-project's own record says those are different things.</p>
+project's own record insists those are different things.</p>
+</section>
 
-<h2><span class="n">§ 08</span>Why build this instead of using a product</h2>
-<p class="sub">The honest answer is not "better answers".</p>
+<!-- ============================================================== 12 -->
+<section id="c12">
+<h2 class="ch"><span class="n">Chapter 12</span>Why build it at all</h2>
+<p class="lede">The honest answer is not "better answers".</p>
 
-<p>A hand-built system will not beat NotebookLM or Glean on answer quality. They have
-better models, more compute, and teams working on nothing else. Competing there means
-losing on their terms.</p>
+<p>A hand-built system will not beat NotebookLM or Glean on raw answer quality. They
+have better models, far more compute, and teams working on nothing else. Competing there
+means losing on their terms.</p>
 
 <p>They share a structural weakness, and it follows from being polished consumer
-products rather than being an oversight. They are closed systems that always sound
+products rather than being an oversight: they are closed systems that always sound
 confident.</p>
 
-<div class="tablewrap">
+<div class="tw">
 <table>
   <thead><tr><th>A question you actually have</th><th>A closed product</th><th>This</th></tr></thead>
   <tbody>
@@ -522,29 +782,42 @@ confident.</p>
 </table>
 </div>
 
-<div class="callout">
-  <span class="k">The sentence to lead with</span>
-  <p>"It doesn't beat a closed product on answer quality and isn't trying to. It
-  competes on things they structurally can't offer: every retrieval stage is
-  inspectable with scores, every change is measurable against 84 labelled cases, and
-  it refuses when it doesn't know instead of answering anyway."</p>
+<div class="note good"><span class="k">The sentence to lead with</span>
+  <p>"It doesn't beat a closed product on answer quality and isn't trying to. It competes
+  on what they structurally can't offer: every retrieval stage is inspectable with
+  scores, every change is measurable against 84 labelled cases, and it refuses when it
+  doesn't know instead of answering anyway."</p>
 </div>
+</section>
 
-<h2><span class="n">§ 09</span>Glossary</h2>
-<div class="glossary">
-  <div class="gl"><dt>chunk</dt><dd>One independently searchable passage, plus the record of which document and page it came from.</dd></div>
-  <div class="gl"><dt>embedding / dense vector</dt><dd>A list of numbers encoding a text's meaning as a position in space. Here, 384 of them.</dd></div>
-  <div class="gl"><dt>bi-encoder</dt><dd>Encodes question and passage <em>separately</em>, so passages can be processed in advance. Fast; never lets the two texts interact.</dd></div>
-  <div class="gl"><dt>cross-encoder</dt><dd>Encodes them <em>together</em> for a much better relevance score. Too slow for a whole corpus — hence its use as a second stage.</dd></div>
-  <div class="gl"><dt>BM25</dt><dd>Classic word-overlap scoring, weighting rare terms above common ones.</dd></div>
-  <div class="gl"><dt>RRF</dt><dd>Reciprocal rank fusion. Merges rankings using positions only, never raw scores.</dd></div>
-  <div class="gl"><dt>reranking</dt><dd>Re-scoring a shortlist with a slower, more accurate model.</dd></div>
-  <div class="gl"><dt>context window</dt><dd>The hard limit on how much text a model can be given at once.</dd></div>
-  <div class="gl"><dt>abstention</dt><dd>Refusing to answer when confidence falls below a calibrated line.</dd></div>
-  <div class="gl"><dt>golden set</dt><dd>Questions with hand-labelled correct answers, used to score any change.</dd></div>
-  <div class="gl"><dt>hallucination</dt><dd>A fluent, confident, false statement. Retrieval-only output cannot produce one, because nothing is composed.</dd></div>
-  <div class="gl"><dt>query decomposition</dt><dd>Splitting a question into parts before searching. The unfinished fix for the seven structural failures.</dd></div>
-</div>
+<!-- ============================================================== 13 -->
+<section id="c13">
+<h2 class="ch"><span class="n">Chapter 13</span>Glossary</h2>
+<p class="lede">Every term used above, in one place.</p>
+
+<dl class="gl">
+  <div><dt>passage / chunk</dt><dd>One independently searchable piece of text, plus the record of which document and page it came from. Here, 210 tokens.</dd></div>
+  <div><dt>token</dt><dd>Roughly three-quarters of a word. How models actually count text, and what every size limit is denominated in.</dd></div>
+  <div><dt>embedding</dt><dd>A list of numbers encoding a text's meaning as a position in space. Here, 384 of them.</dd></div>
+  <div><dt>bi-encoder</dt><dd>Encodes question and passage separately, so passages can be processed in advance. Fast; never lets the two texts interact.</dd></div>
+  <div><dt>cross-encoder</dt><dd>Encodes them together for a far better relevance score. Too slow for a whole corpus, hence its use as a second stage.</dd></div>
+  <div><dt>cosine similarity</dt><dd>The angle between two embeddings. On unit-length vectors it is just their dot product. Range −1 to 1.</dd></div>
+  <div><dt>BM25</dt><dd>Classic word-overlap scoring, weighting rare terms far above common ones.</dd></div>
+  <div><dt>IDF</dt><dd>Inverse document frequency — how rare a word is across the corpus, and therefore how much a match on it counts.</dd></div>
+  <div><dt>hybrid search</dt><dd>Running a meaning-based and a word-based search together, because they fail on different inputs.</dd></div>
+  <div><dt>RRF</dt><dd>Reciprocal rank fusion. Merges rankings using positions only, never raw scores.</dd></div>
+  <div><dt>reranking</dt><dd>Re-scoring a shortlist with a slower, more accurate model.</dd></div>
+  <div><dt>recall vs precision</dt><dd>Recall: is the answer in the pool at all. Precision: is it at the top. The two pipeline stages are judged on different ones.</dd></div>
+  <div><dt>source recall</dt><dd>Of the documents that could answer, how many came back. The metric most RAG tutorials never track.</dd></div>
+  <div><dt>context window</dt><dd>The hard limit on how much text a model can be given at once.</dd></div>
+  <div><dt>parent-document retrieval</dt><dd>Rank on small passages, then return the larger unit around each one.</dd></div>
+  <div><dt>abstention</dt><dd>Refusing to answer when confidence falls below a calibrated line.</dd></div>
+  <div><dt>calibrated</dt><dd>The line was chosen from measurements on labelled data, not picked by eye.</dd></div>
+  <div><dt>golden set</dt><dd>Questions with hand-labelled correct answers, used to score any change.</dd></div>
+  <div><dt>hallucination</dt><dd>A fluent, confident, false statement. Retrieval-only output cannot produce one, because nothing is composed.</dd></div>
+  <div><dt>query decomposition</dt><dd>Splitting a question into parts before searching. The unfinished fix for the seven structural failures.</dd></div>
+</dl>
+</section>
 
 <footer>
   Every figure measured from the running system · regenerate with
