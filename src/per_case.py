@@ -26,7 +26,7 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 
 from abstain import ABSTAIN_THRESHOLD
-from evaluate import (context_recall, gold_keys, gold_sources, hit_rate,
+from evaluate import (GOLDEN_SET, context_recall, gold_keys, gold_sources, hit_rate,
                       is_relevant, load_cases, ndcg, reciprocal_rank,
                       source_recall)
 from hybrid import build_bm25
@@ -58,6 +58,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--k", type=int, default=TOP_K)
     ap.add_argument("--candidate-k", type=int, default=CANDIDATE_K)
+    # A corpus and its questions travel together, like the corpus and its
+    # index. Scoring one corpus against another corpus's golden set produces
+    # numbers that look fine and mean nothing.
+    ap.add_argument("--golden", type=Path, default=GOLDEN_SET,
+                    help="golden set to score against")
     ap.add_argument("--no-rerank", action="store_true")
     ap.add_argument("--fusion", default=DEFAULT_FUSION,
                     choices=["none", "rrf", "weighted"])
@@ -69,7 +74,7 @@ def main() -> int:
     opts = dict(use_reranker=not args.no_rerank, fusion=args.fusion,
                 max_per_source=args.max_per_source or None)
 
-    answerable, adversarial = load_cases()
+    answerable, adversarial = load_cases(args.golden)
     index, metadata = load_index()
     model = SentenceTransformer(EMBEDDING_MODEL)
     bm25 = build_bm25(metadata)

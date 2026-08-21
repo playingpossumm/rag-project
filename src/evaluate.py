@@ -56,8 +56,11 @@ def gold_keys(case: dict) -> set:
     paper has a page 5. Matching on page alone would score a hit on the wrong
     document as correct, which is the most common real-world RAG failure.
     """
+    # `kind` defaults to "page" so a golden set written before locator kinds
+    # were recorded still scores correctly -- every corpus that predates this
+    # was all-PDF.
     return {
-        (entry["source"], "page", str(p))
+        (entry["source"], entry.get("kind", "page"), str(p))
         for entry in case.get("gold", [])
         for p in entry["pages"]
     }
@@ -170,6 +173,11 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--k", type=int, default=TOP_K)
     ap.add_argument("--candidate-k", type=int, default=CANDIDATE_K)
+    # A corpus and its questions travel together, like the corpus and its
+    # index. Scoring one corpus against another corpus's golden set produces
+    # numbers that look fine and mean nothing.
+    ap.add_argument("--golden", type=Path, default=GOLDEN_SET,
+                    help="golden set to score against")
     ap.add_argument("--per-case", action="store_true")
     ap.add_argument("--emit", type=Path, default=Path(__file__).parent.parent / "eval" / "results.json",
                     help="write machine-readable results here (default: eval/results.json)")
@@ -183,7 +191,7 @@ def main():
     emitted: dict = {"corpus": {}, "candidate_pool": {}, "end_to_end": {},
                      "expansion": {}, "abstention": {}}
 
-    answerable, adversarial = load_cases()
+    answerable, adversarial = load_cases(args.golden)
     index, metadata = load_index()
     model = SentenceTransformer(EMBEDDING_MODEL)
     bm25 = build_bm25(metadata)

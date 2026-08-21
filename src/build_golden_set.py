@@ -21,7 +21,9 @@ The cost is that answer strings must be distinctive enough not to match
 incidentally. `check` reports how many locations each matched so an over-broad
 string is visible rather than quietly inflating the gold set.
 """
+import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -30,7 +32,11 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 ROOT = Path(__file__).parent.parent
-STORE = ROOT / "vector_store" / "metadata.json"
+# Follows RAG_STORE_DIR, so a golden set is always derived from the corpus that
+# is actually indexed. Deriving ML labels from a bird index would produce a file
+# full of "matches nothing" and look like the questions were wrong.
+STORE = Path(os.environ.get("RAG_STORE_DIR",
+                            ROOT / "vector_store")).expanduser() / "metadata.json"
 OUT = ROOT / "eval" / "golden_set.json"
 
 # Questions are phrased as a user would actually ask them -- no document named,
@@ -222,20 +228,59 @@ def derive_gold(chunks, answer: str) -> list[dict]:
     for c in chunks:
         if needle in norm(c["text"]):
             loc = c["locator"]
-            found.setdefault(c["source"], set()).add(loc["value"])
+            found.setdefault(c["source"], (loc.get("kind", "page"), set()))[1].add(loc["value"])
+    # Locator values are not all one type once a corpus holds more than PDFs:
+    # a page is an int, a Word section and a spreadsheet sheet are strings. Any
+    # question whose gold spans both crashed on sorted(), which an all-PDF
+    # corpus could never reveal. Ints first in numeric order, then strings
+    # alphabetically -- the ordering is cosmetic, the type safety is not.
+    # The KIND travels with the value. A location is (source, kind, value), and
+    # a gold set that recorded only the value silently assumed "page" -- which
+    # is true of a PDF corpus and false of every .docx, .pptx and .xlsx, whose
+    # locators are sections, slides and sheets. Every non-PDF hit would have
+    # scored as a miss.
     return [
-        {"source": src, "pages": sorted(vals)}
-        for src, vals in sorted(found.items())
+        {"source": src, "kind": kind,
+         "pages": sorted(vals, key=lambda v: (isinstance(v, str), v))}
+        for src, (kind, vals) in sorted(found.items())
     ]
 
 
+def load_cases(path: Path | None):
+    """Authored questions, from a JSON file or the built-in ML list.
+
+    A corpus needs its own questions -- there is no generic set, because a
+    question is only useful if its answer is in the documents. The JSON form is
+    the same four fields as the built-in tuples, so neither can drift into a
+    shape the other cannot read.
+    """
+    if path is None:
+        return CASES, ADVERSARIAL
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    cases = [(c["id"], c["question"], c["answer_contains"], c.get("kind", "fact"))
+             for c in data.get("cases", [])]
+    adv = [(c["id"], c["question"], c.get("adversarial_kind", "absent"),
+            c.get("why", "")) for c in data.get("adversarial", [])]
+    return cases, adv
+
+
 def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--cases", type=Path, default=None,
+                    help="authored questions as JSON; omit for the built-in ML set")
+    ap.add_argument("--emit", type=Path,
+                    default=ROOT / "eval" / "golden_set.json")
+    ap.add_argument("--label", default="arXiv ML/NLP papers")
+    args = ap.parse_args()
+
+    CASE_LIST, ADV_LIST = load_cases(args.cases)
+
     chunks = json.loads(STORE.read_text(encoding="utf-8"))
     sources = sorted({c["source"] for c in chunks})
     print(f"corpus: {len(sources)} documents, {len(chunks)} chunks\n")
 
     cases, problems = [], []
-    for cid, question, answer, kind in CASES:
+    for cid, question, answer, kind in CASE_LIST:
         gold = derive_gold(chunks, answer)
         n_src = len(gold)
         n_loc = sum(len(g["pages"]) for g in gold)
@@ -258,14 +303,14 @@ def main():
             "multi_source": n_src > 1,
         })
 
-    for cid, question, kind, why in ADVERSARIAL:
+    for cid, question, kind, why in ADV_LIST:
         cases.append({
             "id": cid, "question": question, "unanswerable": True,
             "adversarial_kind": kind, "why": why, "gold": [],
         })
 
     payload = {
-        "corpus": f"{len(sources)} arXiv ML/NLP papers",
+        "corpus": f"{len(sources)} {args.label}",
         "generated_by": "src/build_golden_set.py",
         "note": (
             "Gold locations are DERIVED from answer strings against the current "
@@ -277,12 +322,14 @@ def main():
         ),
         "cases": cases,
     }
-    OUT.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    args.emit.parent.mkdir(parents=True, exist_ok=True)
+    args.emit.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                         encoding="utf-8")
 
     answerable = [c for c in cases if not c.get("unanswerable")]
     multi = [c for c in answerable if c["multi_source"]]
-    print(f"\nwrote {OUT.relative_to(ROOT)}: {len(answerable)} answerable "
-          f"({len(multi)} multi-source), {len(ADVERSARIAL)} adversarial")
+    print(f"\nwrote {args.emit}: {len(answerable)} answerable "
+          f"({len(multi)} multi-source), {len(ADV_LIST)} adversarial")
     if problems:
         print("\nPROBLEMS -- these need a better answer string:")
         for cid, why in problems:
