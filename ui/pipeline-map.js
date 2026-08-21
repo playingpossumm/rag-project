@@ -154,7 +154,12 @@ export function buildRun(trace, city, ink) {
   const order = [...new Set(final.map(i => i.source))];
   const colour = palette(order, ink);
   const finalIds = new Set(final.map(i => i.chunk_id));
-  const confident = !!trace.verdict?.confident;
+  /* Tri-state, not boolean. With reranking off there is no cross-encoder score
+     to test against a threshold calibrated on cross-encoder scores, so the
+     server returns null rather than a verdict it cannot justify -- and `!!null`
+     would have drawn that as a refusal, inventing a decision nobody made. */
+  const confident = trace.verdict?.confident ?? null;
+  const opts = trace.options || {};
 
   // Which windows in the index light, and for which reader.
   const denseIds = (stages.get("dense")?.items || []).map(i => i.chunk_id);
@@ -196,12 +201,14 @@ export function buildRun(trace, city, ink) {
     return { ...r, n: Math.max(ids.size, r.b === "gate" || r.b === "answer" ? final.length : 0), colours };
   });
 
-  const rer = floors.get("reranked") || [], sel = floors.get("selected") || [];
-  const kept = new Set(sel.map(m => m.chunk_id));
-  const displaced = rer.filter(m => !kept.has(m.chunk_id) && m.rank <= 6).length;
+  // Taken from the trace, not inferred. The old inference counted candidates in
+  // the reranked top 6 that did not survive, which at k=5 is 1 no matter what
+  // the cap did -- so the map read "1 cut" beside a stage note reading "nothing
+  // displaced", and one of the two had to be wrong.
+  const displaced = trace.selection?.displaced ?? 0;
 
   return {
-    colour, order, confident, floors, litWindows, traffic,
+    colour, order, confident, floors, litWindows, traffic, opts,
     verdict: trace.verdict, query: trace.query,
     counts: {
       total: city.total,
@@ -276,10 +283,13 @@ function drawGate(ctx, g, ink, run) {
     ctx.beginPath(); ctx.moveTo(Lt.x, Lt.y); ctx.lineTo(Rt.x, Rt.y); ctx.stroke();
     return;
   }
-  ctx.strokeStyle = run.confident ? ink.good : ink.critical;
-  ctx.lineWidth = 2.6;
+  // Open in green, barred in red, and open in grey when the gate did not run:
+  // an ungated pass is not an approval and must not be coloured like one.
+  ctx.strokeStyle = run.confident === true ? ink.good
+                  : run.confident === false ? ink.critical : ink.faint;
+  ctx.lineWidth = run.confident === null ? 1.6 : 2.6;
   ctx.beginPath();
-  if (run.confident) { ctx.moveTo(Lt.x, Lt.y); ctx.lineTo(Rt.x, Rt.y); }
+  if (run.confident !== false) { ctx.moveTo(Lt.x, Lt.y); ctx.lineTo(Rt.x, Rt.y); }
   else for (const z of [1.4, 2.4]) {
     const l = project(g.gx - W, g.gy + W, z), r = project(g.gx + W, g.gy - W, z);
     ctx.moveTo(l.x, l.y); ctx.lineTo(r.x, r.y);
@@ -404,7 +414,7 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
   diamond(ctx, A.gx, A.gy, 5, 6, 0);
   ctx.fillStyle = ink.panel; ctx.globalAlpha = 0.5; ctx.fill(); ctx.globalAlpha = 1;
   ctx.strokeStyle = ink.line; ctx.lineWidth = 1; ctx.stroke();
-  if (run && run.confident && legPhase("answer") > 0.4) {
+  if (run && run.confident !== false && legPhase("answer") > 0.4) {
     const sel = run.floors.get("selected") || [];
     sel.forEach((m, k) => {
       const q = project(A.gx, A.gy - 4 + k * 1.7, 0.3);
@@ -450,54 +460,98 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1) {
   const topOf = t => toScreen(project(t.gx, t.gy - TOWER_W, FLOORS + 0.6));
   label(toScreen(project(city.index.gx, city.index.gy - 20, 0)), "The index",
         `${city.total.toLocaleString()} chunks · ${city.sources.length} documents`);
+  /* Names come from the run once there is one. A tower still titled "Diversity
+     cap" over a run that applied no cap is the map asserting something that did
+     not happen -- the same failure as a stale README, drawn instead of typed. */
+  const o = run?.opts || {};
   city.towers.forEach((t, ti) => {
     const sub = !c ? t.sub
       : t.id === "dense" ? `${c.dense} found`
-      : t.id === "sparse" ? `${c.sparse} found`
-      : t.id === "fused" ? `${c.both} by both`
-      : t.id === "reranked" ? `${c.reranked} rescored`
+      : t.id === "sparse" ? (o.fusion === "none" ? "not run" : `${c.sparse} found`)
+      : t.id === "fused" ? (o.fusion === "none" ? "dense only" : `${c.both} by both`)
+      : t.id === "reranked" ? (o.use_reranker === false ? "off" : `${c.reranked} rescored`)
       : c.displaced ? `${c.selected} kept, ${c.displaced} cut` : `${c.selected} kept`;
+    const title = !run ? t.label
+      : t.id === "fused" && o.fusion === "none" ? "No fusion"
+      : t.id === "fused" && o.fusion === "weighted" ? "Weighted"
+      : t.id === "selected" && !(o.max_per_source && o.use_reranker !== false) ? "Selection"
+      : t.label;
+    const faded = run && ((t.id === "sparse" && o.fusion === "none")
+                       || (t.id === "reranked" && o.use_reranker === false));
     const a = topOf(t);
     // Spine towers alternate height; the two retrievers sit off-spine already.
     const lift = (t.id === "dense" || t.id === "sparse") ? 0 : (ti % 2 ? 0 : 22);
-    label({ x: a.x, y: a.y - 12 - lift }, t.label, sub);
+    label({ x: a.x, y: a.y - 12 - lift }, title, sub, null, faded ? 0.45 : 1);
   });
   const g = toScreen(project(city.gate.gx, city.gate.gy - 4.6, 5));
-  label({ x: g.x, y: g.y - 12 },
-        run ? (run.confident ? "Answering" : "Declined") : "The gate",
-        run?.verdict?.confidence != null
+  const gateName = !run ? "The gate"
+                 : run.confident === true ? "Answering"
+                 : run.confident === false ? "Declined" : "No gate";
+  label({ x: g.x, y: g.y - 12 }, gateName,
+        !run ? "answer or decline"
+        : run.confident === null ? "no calibrated score"
+        : run.verdict?.confidence != null
           ? `${run.verdict.confidence > 0 ? "+" : ""}${run.verdict.confidence} against ${run.verdict.threshold.toFixed(1)}`
           : "answer or decline",
-        run ? (run.confident ? ink.good : ink.critical) : null);
+        !run ? null : run.confident === true ? ink.good
+             : run.confident === false ? ink.critical : null);
   const an = toScreen(project(A.gx, A.gy - 6, 1));
   label({ x: an.x, y: an.y - 12 }, "The answer",
-        run ? (run.confident ? `${c.selected} cited passages` : "nothing returned") : "cited passages");
+        run ? (run.confident === false ? "nothing returned"
+                                       : `${c.selected} cited passages`)
+            : "cited passages");
 
   return { scale, toScreen };
 }
 
-/* Plain-language captions, using this query's real numbers. */
+/* Plain-language captions, using this query's real numbers.
+
+   Every one of these is written from the run rather than from the defaults.
+   That matters now that the settings re-run the pipeline: a caption reading
+   "at most 2 passages per document" under a run with the cap off would be the
+   page confidently narrating something that did not happen. */
 export function captions(run) {
   if (!run) return [];
-  const c = run.counts;
+  const c = run.counts, o = run.opts || {};
+  const cap = o.max_per_source;
+  const fused = o.fusion === "none"
+    ? { title: "No fusion",
+        text: `With the word search off there is nothing to fuse: the candidate pool is the meaning search's ${c.dense} as they stand.` }
+    : { title: o.fusion === "weighted" ? "Weighted fusion" : "Fusion",
+        text: o.fusion === "weighted"
+          ? `Each retriever's scores are normalised and added, weighted by alpha. ${c.both} of ${c.fused} were found by both.`
+          : `The two rankings merge by position, never by score. ${c.both} of ${c.fused} were found by both — agreement is what fusion rewards.` };
+
   return [
-    { id: "dense", title: "One index, two readings",
-      text: `All ${c.total.toLocaleString()} passages are already here. Two searches run at the same moment — one on meaning, one on exact words — and each lights its own ${c.dense}. ${c.onlySparse} were found only by the word search.` },
-    { id: "fused", title: "Fusion",
-      text: `The two rankings merge by position, never by score. ${c.both} of ${c.fused} were found by both — agreement is what fusion rewards.` },
-    { id: "reranked", title: "Reranking",
-      text: `A second model reads your question and each passage together, and rescores all ${c.reranked}. Watch the floors reshuffle.` },
-    { id: "selected", title: "Diversity cap",
-      text: c.displaced
-        ? `At most 2 passages per document, so one paper cannot take every slot. ${c.displaced} were displaced.`
-        : "At most 2 passages per document. The cap was not reached here." },
-    { id: "gate", title: run.confident ? "The gate opens" : "The gate stays shut",
-      text: run.confident
+    { id: "dense", title: o.fusion === "none" ? "One index, one reading" : "One index, two readings",
+      text: o.fusion === "none"
+        ? `All ${c.total.toLocaleString()} passages are already here. Only the search on meaning runs, and it lights ${c.dense}.`
+        : `All ${c.total.toLocaleString()} passages are already here. Two searches run at the same moment — one on meaning, one on exact words — and each lights its own ${c.dense}. ${c.onlySparse} were found only by the word search.` },
+    { id: "fused", ...fused },
+    { id: "reranked", title: o.use_reranker === false ? "No reranking" : "Reranking",
+      text: o.use_reranker === false
+        ? "The cross-encoder is off, so the first stage's ranking goes straight to selection. This is the naive-RAG baseline the rest of the pipeline is measured against."
+        : `A second model reads your question and each passage together, and rescores all ${c.reranked}. Watch the floors reshuffle.` },
+    { id: "selected", title: cap && o.use_reranker !== false ? "Diversity cap" : "Selection",
+      text: o.use_reranker === false
+        ? `No cap on this path — the cap trims a reranked pool, so the top ${c.selected} of the shortlist are the result.`
+        : !cap
+          ? `No cap, so the top ${c.selected} are taken as ranked. One strong document can hold every slot.`
+          : c.displaced
+            ? `At most ${cap} passage${cap === 1 ? "" : "s"} per document, so one paper cannot take every slot. ${c.displaced} were displaced.`
+            : `At most ${cap} passage${cap === 1 ? "" : "s"} per document. The cap was not reached here.` },
+    { id: "gate", title: run.confident === true ? "The gate opens"
+                       : run.confident === false ? "The gate stays shut" : "The gate is not applied",
+      text: run.confident === true
         ? "The top passage scores above the threshold, so the system answers."
-        : "Nothing scored above the threshold, so it declines rather than returning the closest topical match." },
-    { id: "answer", title: run.confident ? "The answer" : "No answer",
-      text: run.confident
-        ? "The surviving passages expand to their surrounding context and are returned verbatim, each with a citation."
-        : "The closest matches are shown as rejected candidates, not as an answer." },
+        : run.confident === false
+          ? "Nothing scored above the threshold, so it declines rather than returning the closest topical match."
+          : "The threshold is calibrated on cross-encoder scores, and reranking is off, so there is no comparable number to test. It passes ungated rather than pretending to a judgement." },
+    { id: "answer", title: run.confident === false ? "No answer" : "The answer",
+      text: run.confident === false
+        ? "The closest matches are shown as rejected candidates, not as an answer."
+        : o.expansion && o.expansion !== "none"
+          ? `The surviving passages expand to ${o.expansion === "page" ? "their whole page" : "their neighbouring chunks"} and are returned verbatim, each with a citation.`
+          : "The surviving passages are returned verbatim, as retrieved, each with a citation." },
   ];
 }

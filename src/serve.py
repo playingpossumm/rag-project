@@ -188,6 +188,44 @@ EXAMPLES = [
 ]
 
 
+def trace_options(payload: dict) -> dict:
+    """Read pipeline options off a /api/trace request.
+
+    This is what turns the inspector into a bench: the same question, re-run
+    under a different configuration, so "did that change help?" can be answered
+    on the query in front of you rather than only in aggregate. Aggregate
+    numbers come from eval/results.json and describe 84 cases; this describes
+    the one you asked.
+
+    Every option is validated here rather than passed through, because these
+    arrive from a browser and an unknown fusion strategy should be a 400 that
+    names the mistake, not a 500 from three frames deeper.
+    """
+    opts: dict = {}
+
+    if "rerank" in payload:
+        opts["use_reranker"] = bool(payload["rerank"])
+
+    if "fusion" in payload:
+        fusion = str(payload["fusion"])
+        if fusion not in ("none", "rrf", "weighted"):
+            raise ValueError(f"fusion must be none|rrf|weighted, got {fusion!r}")
+        opts["fusion"] = fusion
+
+    if "expansion" in payload:
+        expansion = str(payload["expansion"])
+        if expansion not in ("none", "window", "page"):
+            raise ValueError(f"expansion must be none|window|page, got {expansion!r}")
+        opts["expansion"] = expansion
+
+    if "max_per_source" in payload:
+        cap = payload["max_per_source"]
+        # null is "no cap", which is a real setting and distinct from absent.
+        opts["max_per_source"] = None if cap is None else int(cap)
+
+    return opts
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -351,7 +389,8 @@ class Handler(BaseHTTPRequestHandler):
                 with RES.lock:
                     result = trace_pipeline(question, RES.index, RES.metadata,
                                             RES.model, bm25=RES.bm25,
-                                            k=int(payload.get("k", 5)))
+                                            k=int(payload.get("k", 5)),
+                                            **trace_options(payload))
                 self._send(200, result)
             else:
                 answer = ask(
@@ -362,6 +401,10 @@ class Handler(BaseHTTPRequestHandler):
                     generate=bool(payload.get("generate", False)),
                 )
                 self._send(200, answer.to_dict())
+        except ValueError as exc:
+            # A rejected option is the caller's mistake, not the server's, and
+            # saying so is the difference between fixing it and guessing.
+            self._send(400, {"error": str(exc)})
         except Exception as exc:  # noqa: BLE001 - report rather than drop the connection
             self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
 

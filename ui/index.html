@@ -137,6 +137,10 @@ button{font:inherit;color:inherit}
 /* ---------------------------------------------- the answer — the climax */
 .answer{border-top:2px solid var(--good)}
 .answer.declined{border-top-color:var(--critical)}
+/* A third state. Reranking off means no calibrated score, so the gate did not
+   run -- neither approval nor refusal, and it must not be coloured as either. */
+.answer.ungated{border-top-color:var(--rule)}
+.answer.ungated .verdict .v{color:var(--muted)}
 .abody{padding:26px 28px}
 .verdict{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .verdict .v{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.18em;
@@ -193,6 +197,14 @@ tr.out .snip{opacity:.6}
 
 /* ------------------------------------------------------------ settings */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;margin-top:24px}
+/* A setting the current pipeline never reaches. Dimmed and inert rather than
+   hidden: it still has to be findable, and its absence explained. */
+.setting.inert .opts{opacity:.4;pointer-events:none}
+.setting .inertnote{margin:8px 0 0;font-size:12px;color:var(--muted);max-width:52ch}
+.settings.busy{opacity:.5;pointer-events:none;transition:opacity 120ms var(--ease-out)}
+#compare table{margin-top:8px}
+#compare td:first-child{color:var(--soft);white-space:nowrap}
+#compare .same{color:var(--faint)}
 .grid2 .panel{margin-top:0;border-color:var(--line)}
 @media (max-width:960px){.grid2{grid-template-columns:1fr}}
 .settings{padding:4px 16px 12px}
@@ -285,10 +297,10 @@ tr.out .snip{opacity:.6}
   <div class="grid2">
     <section class="panel hide" id="panel-settings">
       <div class="phead"><span class="lab">Settings</span>
-        <div class="right"><span class="lab">84 labelled cases</span></div></div>
+        <div class="right"><span class="lab">84 labelled cases</span>
+          <button id="reset" type="button" class="hide">Reset</button></div></div>
       <div class="settings" id="settings"></div>
-      <div class="caption" style="min-height:0;font-size:12px">
-        <b>Not wired.</b> The numbers are measured; the controls do not yet re-run retrieval.</div>
+      <div class="caption" id="compare" style="min-height:0;font-size:12px"></div>
     </section>
 
     <section class="panel hide" id="panel-stages">
@@ -391,26 +403,37 @@ for (const id of ["src-sample", "src-folder", "src-drive"]) {
   };
 }
 
-/* --------------------------------------------------------------- run */
+/* --------------------------------------------------------------- run
+   A question is traced twice whenever the settings are off their defaults. The
+   defaults run is what the comparison under the settings is measured against,
+   and carrying one over from a previous question would compare two different
+   questions -- the exact mistake that once made a title-prefix change look like
+   a win. A trace is ~400ms, so the honest version is also the cheap one. */
 $("#form").onsubmit = e => { e.preventDefault(); run($("#q").value.trim()); };
+
+let QUESTION = "", BASE = null, LAST = null;
+
+async function trace(q, opts) {
+  const t0 = performance.now();
+  const r = await fetch("/api/trace", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question: q, k: 5, ...opts }),
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  data.ms = performance.now() - t0;
+  return data;
+}
 
 async function run(q) {
   if (!q || !CITY) return;
+  QUESTION = q;
   $("#go").disabled = true;
   $("#cap").textContent = "Running";
-  const t0 = performance.now();
   try {
-    const r = await fetch("/api/trace", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: q }),
-    });
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || r.statusText);
-    const ms = performance.now() - t0;
-    INK = readInk();
-    RUN = buildRun(data, CITY, INK);
-    $("#elapsed").textContent = `${ms.toFixed(0)}ms · replay ${(REPLAY_MS / ms).toFixed(0)}×`;
-    renderAnswer(data); renderSettings(); renderStages(data);
+    BASE = await trace(q, DEFAULTS);
+    LAST = atDefaults() ? BASE : await trace(q, OPTS);
+    show(LAST);
     for (const id of ["panel-answer", "panel-settings", "panel-stages"]) {
       const el = $("#" + id);
       el.classList.remove("hide");
@@ -420,6 +443,27 @@ async function run(q) {
   } catch (err) {
     $("#cap").innerHTML = `<span class="err">${esc(err.message)}</span>`;
   } finally { $("#go").disabled = false; }
+}
+
+/* Re-run the question already on screen under the current settings. */
+async function rerun() {
+  if (!QUESTION || !BASE) return;
+  $("#settings").classList.add("busy");
+  try {
+    LAST = atDefaults() ? BASE : await trace(QUESTION, OPTS);
+    show(LAST);
+    play();
+  } catch (err) {
+    $("#compare").innerHTML = `<span class="err">${esc(err.message)}</span>`;
+  } finally { $("#settings").classList.remove("busy"); }
+}
+
+function show(data) {
+  INK = readInk();
+  RUN = buildRun(data, CITY, INK);
+  $("#elapsed").textContent =
+    `${data.ms.toFixed(0)}ms · replay ${(REPLAY_MS / data.ms).toFixed(0)}×`;
+  renderAnswer(data); renderSettings(); renderCompare(); renderStages(data);
 }
 
 /* ---------------------------------------------------------- playback */
@@ -456,10 +500,20 @@ $("#p").oninput = e => { stopPlay(); setProgress(Number(e.target.value) / 100, f
 function renderAnswer(data) {
   const v = data.verdict;
   const sel = data.stages[data.stages.length - 1].items;
-  const ranked = data.stages.find(s => s.name === "reranked")?.items || [];
-  const top = sel[0], ok = v.confident, colour = RUN.colour;
+  /* With reranking off the reranked stage is empty by design, so the candidate
+     table falls back to the ranking that actually decided the result. */
+  const rankStage = data.stages.find(s => s.name === "reranked");
+  const ranked = (rankStage?.items.length ? rankStage
+                  : data.stages.find(s => s.name === "fused"))?.items || [];
+  const top = sel[0], colour = RUN.colour;
+  /* Three states, not two. `ok` is "something was returned", which is true of
+     an ungated run; `declined` is the only state that returns nothing. */
+  const declined = v.confident === false;
+  const ungated = v.confident === null;
+  const ok = !declined;
 
-  $("#panel-answer").className = "panel answer" + (ok ? "" : " declined");
+  $("#panel-answer").className = "panel answer"
+    + (declined ? " declined" : ungated ? " ungated" : "");
   $("#ansmeta").textContent = ok
     ? `${sel.length} passages / ${new Set(sel.map(i => i.source)).size} docs` : "nothing returned";
 
@@ -471,8 +525,16 @@ function renderAnswer(data) {
     d.n += 1; d.best = Math.max(d.best, i.score); byDoc.set(i.source, d);
   }
   const docs = [...byDoc.values()].sort((a, b) => b.best - a.best);
+  /* Scaled to this query's own range. The old floor of lo+1 assumed a
+     cross-encoder score, which spans single digits; a fusion score never
+     exceeds ~0.03, so every bar collapsed to a stub the moment reranking was
+     switched off -- a scale borrowed from one unit and applied to another. */
   const lo = Math.min(...ranked.map(i => i.score), 0);
-  const hi = Math.max(...docs.map(d => d.best), lo + 1);
+  const top_ = Math.max(...docs.map(d => d.best));
+  const hi = top_ > lo ? top_ : lo + 1;
+  /* Cross-encoder scores are single digits; fusion scores are thousandths.
+     Two decimals renders the second as "+0.03" for everything. */
+  const sig = v => Math.abs(v) < 1 ? v.toFixed(4) : v.toFixed(2);
   /* The bar is scaled within this query, so on a decline -- where every score
      sits far below the threshold -- the best of a bad set would still fill it
      and read as confidence. The numbers already say rejected; the bar is
@@ -481,9 +543,9 @@ function renderAnswer(data) {
     <div class="row">
       <div class="name"><i style="background:${colour(d.source)}"></i>${esc(shortDoc(d.source))}</div>
       <div class="n">${d.n} psg</div>
-      <div class="bar">${ok ? `<i style="width:${Math.max(4, Math.round((d.best - lo) / (hi - lo) * 100))}%;
+      <div class="bar">${!declined ? `<i style="width:${Math.max(4, Math.round((d.best - lo) / (hi - lo) * 100))}%;
         background:${colour(d.source)}"></i>` : ""}</div>
-      <div class="s">${d.best > 0 ? "+" : ""}${d.best.toFixed(2)}</div>
+      <div class="s">${d.best > 0 ? "+" : ""}${sig(d.best)}</div>
     </div>`).join("");
 
   const cand = ranked.map(i => `
@@ -496,17 +558,32 @@ function renderAnswer(data) {
       <td class="r num">${i.delta > 0 ? "+" + i.delta : i.delta < 0 ? i.delta : "·"}</td>
     </tr>`).join("");
 
+  /* Expansion is reported rather than shown. The blockquote is the passage the
+     reranker scored, which is what the confidence figure refers to; substituting
+     the grown text would put a number against text it was never measured on. */
+  const cx = data.context || {};
+  const grown = cx.mode && cx.mode !== "none"
+    ? ` Each is then expanded to ${cx.mode === "page" ? "its whole page" : "its neighbouring chunks"}
+        before being handed on — ${nf(cx.chars)} characters in ${cx.blocks} block${cx.blocks === 1 ? "" : "s"}.`
+    : "";
+
   $("#answer").innerHTML = `
-    <div class="verdict"><span class="v">${ok ? "Answering" : "Declined"}</span>
-      <span class="score">${v.confidence > 0 ? "+" : ""}${v.confidence} against threshold ${v.threshold.toFixed(1)}</span>
+    <div class="verdict"><span class="v">${
+        declined ? "Declined" : ungated ? "Returned, not gated" : "Answering"}</span>
+      <span class="score">${ungated
+        ? `top score ${v.confidence} on the fusion scale — not comparable to the threshold`
+        : `${v.confidence > 0 ? "+" : ""}${v.confidence} against threshold ${v.threshold.toFixed(1)}`}</span>
     </div>
     ${ok ? `
       <blockquote>${esc(fragment(top.text))}</blockquote>
       <div class="credit"><i style="background:${colour(top.source)}"></i>
         ${esc(shortDoc(top.source))} · ${esc(top.locator)}</div>
+      ${ungated ? `<p class="why">Reranking is off, so the abstention gate did not run —
+        its threshold is calibrated on cross-encoder scores and none were computed. This is
+        <b>the shortlist's best passage, not one the system vouched for</b>.</p>` : ""}
       <p class="why">Returned <b>verbatim</b>, not summarised, which is why it cannot invent
-        anything. Writing these into prose is an optional layer that has never run here for
-        want of API credit.</p>
+        anything.${grown} Writing these into prose is an optional layer that has never run here
+        for want of API credit.</p>
     ` : `
       <blockquote style="font-size:19px">The corpus does not contain this.</blockquote>
       <p class="why">${esc(v.explanation)}</p>
@@ -515,12 +592,15 @@ function renderAnswer(data) {
         answer is the failure this gate exists to prevent.</p>
     `}
     ${docs.length ? `<div class="lab" style="margin-top:26px">${
-      ok ? "Documents that answered" : "Closest, and rejected"}</div>
+      declined ? "Closest, and rejected"
+      : ungated ? "Documents returned" : "Documents that answered"}</div>
       <div class="rows">${rows}</div>` : ""}
     <details class="more">
       <summary>Every candidate weighed</summary>
-      <p class="why">All ${ranked.length} after reranking, in the cross-encoder's order.
-        The ${sel.length} that survived the cap are solid; the rest were dropped.</p>
+      <p class="why">${ungated
+        ? `All ${ranked.length} in the first stage's order — nothing rescored them.`
+        : `All ${ranked.length} after reranking, in the cross-encoder's order.`}
+        The ${sel.length} that survived are solid; the rest were dropped.</p>
       <div class="scroll"><table>
         <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th>
           <th class="r">Score</th><th class="r">Move</th></tr></thead>
@@ -529,39 +609,124 @@ function renderAnswer(data) {
 }
 
 /* ---------------------------------------------------------- settings
-   Each option carries the number that chose it, read from eval/results.json
-   rather than typed here -- a hard-coded 0.848 goes stale the next time the
-   harness runs and nobody notices. */
+   These re-run the pipeline. That is the whole difference between an
+   explanation and a bench: the aggregate numbers beside each option describe
+   84 labelled cases and answer "is this better in general", and the comparison
+   underneath describes the one question on screen and answers "did it change
+   THIS result". A closed product can offer neither, because neither exists
+   unless the stages are inspectable and the harness is yours.
+
+   The aggregate figures are read from eval/results.json, never typed here: a
+   hard-coded 0.848 goes stale the next time the harness runs and nobody
+   notices. */
+const DEFAULTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window" };
+let OPTS = { ...DEFAULTS };
+const atDefaults = () => Object.keys(DEFAULTS).every(k => OPTS[k] === DEFAULTS[k]);
+
+const GROUPS = [
+  { key: "rerank", h: "Reranking", u: "MRR", opts: [
+      ["On", true, ["end_to_end", "dense + rerank", "mrr"]],
+      ["Off", false, ["end_to_end", "dense, no rerank", "mrr"]]] },
+  { key: "fusion", h: "Fusion", u: "hit rate", opts: [
+      ["RRF", "rrf", ["end_to_end", "rrf + rerank", "hit_rate"]],
+      ["Weighted", "weighted", ["end_to_end", "weighted + rerank", "hit_rate"]],
+      ["Dense", "none", ["end_to_end", "dense + rerank", "hit_rate"]]] },
+  { key: "max_per_source", h: "Diversity cap", u: "source recall", opts: [
+      ["2/src", 2, ["end_to_end", "+ diversity 2/src", "src_recall"]],
+      ["1/src", 1, ["end_to_end", "+ diversity 1/src", "src_recall"]],
+      ["None", null, ["end_to_end", "rrf + rerank", "src_recall"]]] },
+  { key: "expansion", h: "Context", u: "context recall", opts: [
+      ["Window", "window", ["expansion", "window +/-1", "context_recall"]],
+      ["Page", "page", ["expansion", "page", "context_recall"]],
+      ["None", "none", ["expansion", "none (chunks)", "context_recall"]]] },
+];
+
 function renderSettings() {
-  const e2e = EVAL?.end_to_end || {}, exp = EVAL?.expansion || {};
-  const g = (o, k) => (o && o[k] != null ? o[k].toFixed(3) : "—");
-  const S = [
-    { h: "Reranking", u: "MRR", opts: [
-        ["On", g(e2e["dense + rerank"], "mrr")], ["Off", g(e2e["dense, no rerank"], "mrr")]] },
-    { h: "Fusion", u: "hit rate", opts: [
-        ["RRF", g(e2e["rrf + rerank"], "hit_rate")],
-        ["Weighted", g(e2e["weighted + rerank"], "hit_rate")],
-        ["Dense", g(e2e["dense + rerank"], "hit_rate")]] },
-    { h: "Diversity cap", u: "source recall", opts: [
-        ["2/src", g(e2e["+ diversity 2/src"], "src_recall")],
-        ["1/src", g(e2e["+ diversity 1/src"], "src_recall")],
-        ["None", g(e2e["rrf + rerank"], "src_recall")]] },
-    { h: "Context", u: "context recall", opts: [
-        ["Window", g(exp["window +/-1"], "context_recall")],
-        ["Page", g(exp["page"], "context_recall")],
-        ["None", g(exp["none (chunks)"], "context_recall")]] },
-  ];
-  $("#settings").innerHTML = S.map((s, i) => `
-    <div class="setting">
-      <div class="top"><h3>${s.h}</h3><span class="lab unit">${s.u}</span></div>
-      <div class="opts">${s.opts.map(([k, val], n) => `
-        <button class="opt" type="button" aria-pressed="${n === 0}" data-g="${i}">
-          <span class="k">${k}</span><span class="v">${val}</span></button>`).join("")}</div>
+  const measured = path => {
+    const v = path.reduce((o, k) => (o == null ? o : o[k]), EVAL);
+    return v == null ? "—" : v.toFixed(3);
+  };
+  /* retrieve() applies the cap only on the reranked path, so with reranking off
+     this control genuinely does nothing. Dimming it and saying why beats
+     leaving a live-looking button that changes no result. */
+  const inert = key => key === "max_per_source" && OPTS.rerank === false;
+
+  $("#settings").innerHTML = GROUPS.map(g => `
+    <div class="setting${inert(g.key) ? " inert" : ""}">
+      <div class="top"><h3>${g.h}</h3><span class="lab unit">${g.u}</span></div>
+      <div class="opts">${g.opts.map(([label, value, path]) => `
+        <button class="opt" type="button" aria-pressed="${OPTS[g.key] === value}"
+                data-k="${g.key}" data-v="${encodeURIComponent(JSON.stringify(value))}">
+          <span class="k">${label}</span><span class="v">${measured(path)}</span></button>`).join("")}</div>
+      ${inert(g.key) ? `<p class="inertnote">The cap trims a reranked pool, so this path
+        never reaches it. Turn reranking back on to use it.</p>` : ""}
     </div>`).join("");
+
   $("#settings").querySelectorAll(".opt").forEach(b => {
-    b.onclick = () => $("#settings").querySelectorAll(`.opt[data-g="${b.dataset.g}"]`)
-      .forEach(o => o.setAttribute("aria-pressed", String(o === b)));
+    b.onclick = () => {
+      const value = JSON.parse(decodeURIComponent(b.dataset.v));
+      if (OPTS[b.dataset.k] === value) return;
+      OPTS[b.dataset.k] = value;
+      renderSettings();
+      rerun();
+    };
   });
+  $("#reset").classList.toggle("hide", atDefaults());
+}
+
+$("#reset").onclick = () => { OPTS = { ...DEFAULTS }; renderSettings(); rerun(); };
+
+/* ------------------------------------------------------- the comparison
+   Defaults against the current settings, on the question on screen. Only the
+   things that actually moved: a table of five rows where four read "unchanged"
+   trains the eye to skip the one that did not. */
+function renderCompare() {
+  const el = $("#compare");
+  if (!BASE || !LAST) { el.innerHTML = ""; return; }
+  if (LAST === BASE) {
+    el.innerHTML = `<span class="lab">at defaults</span> &nbsp;Change any setting above to
+      re-run this question and compare against them.`;
+    return;
+  }
+
+  const items = t => t.stages[t.stages.length - 1].items;
+  const a = items(BASE), b = items(LAST);
+  const aIds = new Set(a.map(i => i.chunk_id));
+  const kept = b.filter(i => aIds.has(i.chunk_id)).length;
+  const docs = t => new Set(items(t).map(i => i.source)).size;
+  const conf = t => t.verdict.confident === null ? "no gate"
+    : `${t.verdict.confidence > 0 ? "+" : ""}${t.verdict.confidence}`;
+  const cite = t => items(t).length
+    ? `${shortDoc(items(t)[0].source)} · ${items(t)[0].locator}` : "—";
+
+  const rows = [
+    ["top passage", cite(BASE), cite(LAST)],
+    /* Written so the row-is-identical filter below can drop it: "5" against
+       "5 of 5 the same" would never compare equal, and a row that always
+       appears teaches the eye to stop reading the table. */
+    ["passages", `${a.length}`,
+     kept === b.length && a.length === b.length ? `${b.length}`
+       : `${b.length}, ${b.length - kept} new`],
+    ["documents", `${docs(BASE)}`, `${docs(LAST)}`],
+    ["confidence", conf(BASE), conf(LAST)],
+    ["context", `${nf(BASE.context.chars)} ch`, `${nf(LAST.context.chars)} ch`],
+    /* Latency is a real cost of reranking -- an 8x reranker was rejected over
+       it -- but two traces of the same query vary by a few ms either way, and
+       a 38-vs-35 row presented as a delta is noise wearing a measurement's
+       clothes. Reported only when the difference outruns that. */
+    ...(Math.max(BASE.ms, LAST.ms) > 1.25 * Math.min(BASE.ms, LAST.ms)
+      ? [["took", `${BASE.ms.toFixed(0)}ms`, `${LAST.ms.toFixed(0)}ms`]] : []),
+  ].filter(([, x, y]) => x !== y);
+
+  el.innerHTML = `<span class="lab">this question, defaults vs now</span>
+    ${rows.length ? `<table>
+      <thead><tr><th></th><th class="r">default</th><th class="r">now</th></tr></thead>
+      <tbody>${rows.map(([k, x, y]) => `<tr><td>${esc(k)}</td>
+        <td class="r num">${esc(x)}</td><td class="r num">${esc(y)}</td></tr>`).join("")}
+      </tbody></table>`
+    : `<p class="why" style="margin-top:6px">Nothing measurable changed — this question
+        returns the same passages either way. Worth knowing: a setting that helps across
+        84 cases need not move any single one.</p>`}`;
 }
 
 /* -------------------------------------------------------- inspection */
