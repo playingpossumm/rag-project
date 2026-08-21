@@ -541,7 +541,7 @@
       <div>retrieval <b>dense + BM25, RRF</b></div>
       <div>rerank <b>cross-encoder</b></div>
       <div>eval <b>84 cases</b></div>
-      <div>MRR <b>0.601 &rarr; 0.751</b></div>
+      <div>MRR <b>0.601 &rarr; 0.754</b></div>
       <div>re-index <b>432 s &rarr; 0.8 s</b></div>
     </div>
   </header>
@@ -2679,10 +2679,13 @@ TOKEN_RE = re.compile(<span class="n">r"[a-z0-9]+"</span>)
         </p>
         <p>
           The price of that separation is duplication &mdash; the stage order exists in two
-          places and could drift apart. So a test asserts that the tracer and the real pipeline
-          return byte-identical results, verified across four queries including one the system
-          is supposed to refuse. That test is what makes the duplication safe to keep rather
-          than a bug waiting to happen.
+          places and could drift apart. A test asserts that the tracer and the real pipeline
+          select the same passages in the same order, across four queries &mdash; including one
+          the system is supposed to refuse &mdash; under every combination of fusion, reranking
+          and diversity cap the interface can ask for. Eighty checks, and they earn their keep:
+          the serving path takes a <em>different</em> route when reranking is off, shortlisting
+          five candidates rather than twenty and skipping the diversity cap entirely, and a
+          tracer that missed that would have drawn a pool and a cap the pipeline never ran.
         </p>
       </div>
 
@@ -2824,7 +2827,7 @@ TOKEN_RE = re.compile(<span class="n">r"[a-z0-9]+"</span>)
           <tr><td><code>ingest.py</code></td><td><code>_LazyModel</code>, <code>chunk_salt()</code>, guard limited to new chunks, progress events</td><td>free / local</td></tr>
           <tr><td><code>pipeline_trace.py</code></td><td>Re-runs retrieval retaining every intermediate ranking</td><td>free / local</td></tr>
           <tr><td><code>serve.py</code></td><td><code>GET /</code> inspector, <code>POST /api/trace</code>, <code>POST /ask</code>; shared resources behind a lock</td><td>free / local</td></tr>
-          <tr><td><code>ui/index.html</code></td><td>The inspector: bump chart, confidence gauge, per-stage tables. No external requests</td><td>free / local</td></tr>
+          <tr><td><code>ui/index.html</code></td><td>The interface: pipeline map, the answer, per-stage tables, and settings that re-run retrieval. No external requests</td><td>free / local</td></tr>
         </tbody>
       </table>
     </div>
@@ -2860,8 +2863,21 @@ TOKEN_RE = re.compile(<span class="n">r"[a-z0-9]+"</span>)
           no credit. The code is written; the evidence is not.
         </p>
         <p>
-          <strong>Indexing progress is emitted but unread.</strong> <code>build_index()</code>
-          already reports structured events for every stage; nothing displays them yet.
+          <strong>Retrieval settings are now an experiment, not a readout.</strong> The panel
+          beside the answer re-runs the pipeline: the same question is traced twice, once at the
+          defaults and once at whatever is selected, and only what actually differs is reported.
+          With reranking off it reports no verdict at all &mdash; the refusal threshold is
+          calibrated on cross-encoder scores, and fusion scores are a different quantity on a
+          different scale, so testing one against the other would pass every question including
+          the ones that should be refused.
+        </p>
+        <p>
+          <strong>Indexing progress is emitted and now read.</strong> <code>build_index()</code>
+          reports structured events for every stage, and the local-folder intake displays them:
+          paste a path, see what would be indexed and what would be skipped and why, then watch
+          each document land. A browser cannot hand a server a filesystem path &mdash; a picker
+          returns bytes, never a location &mdash; so pasting is not a lesser form of the
+          request, it is the only form there is.
         </p>
       </div>
     </div>
