@@ -97,6 +97,33 @@ def main() -> int:
             print(f"    {cid:<18}{c['confidence']:+6.2f}  {c['question'][:66]}")
         print()
 
+    # ---- what LOWERING would recover ---------------------------------------
+    # This tool assumed the shipped threshold was a floor and only ever swept
+    # upward, which is true of the corpus it was written against and false in
+    # general. On a corpus the reranker scores lower, the shipped value is too
+    # HIGH and the interesting move is downward -- and the tool could not say so.
+    base0 = next(r for r in rows if r["threshold"] == shipped)
+    better = [r for r in rows if r["threshold"] < shipped
+              and len(r["wrongly_refused"]) < len(base0["wrongly_refused"])]
+    if better:
+        print(f"\n{'-' * 72}\nWhat LOWERING the threshold would recover\n")
+        print(f"  {'threshold':>10}{'still caught':>15}{'wrongly refused':>18}{'recovered':>12}")
+        for r in sorted(better, key=lambda r: -r["threshold"]):
+            rec = len(base0["wrongly_refused"]) - len(r["wrongly_refused"])
+            lost = len(base0["caught"]) - len(r["caught"])
+            note = "  same catching" if lost == 0 else f"  costs {lost} caught"
+            print(f"  {r['threshold']:>+10}{len(r['caught']):>15}"
+                  f"{len(r['wrongly_refused']):>18}{rec:>+12}{note}")
+        free = [r for r in better if len(r["caught"]) == len(base0["caught"])]
+        if free:
+            best = max(free, key=lambda r: -r["threshold"])
+            names = sorted(set(base0["wrongly_refused"]) - set(best["wrongly_refused"]))
+            print(f"\n  {best['threshold']:+d} catches exactly as many and recovers "
+                  f"{len(names)} answerable question(s) for nothing:")
+            for cid in names:
+                c = next(x for x in answerable if x["id"] == cid)
+                print(f"    {cid:<18}{c['confidence']:+6.2f}  {c['question'][:62]}")
+
     # ---- the implied cost ratio --------------------------------------------
     base = next(r for r in rows if r["threshold"] == shipped)
     print(f"{'-' * 72}\nThe cost ratio the shipped threshold implies\n")
