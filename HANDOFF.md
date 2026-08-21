@@ -120,7 +120,12 @@ written and reviewed in the same session. Do not treat visual verification as a
 final polish step.
 
 Other hard-won corrections worth not repeating:
-- NDCG once read **1.373** — the eval tool's own IDCG bug. Fixed and unit-checked.
+- NDCG once read **1.373** — the eval tool's own IDCG bug. Fixed, and as of
+  2026-08-21 actually unit-checked: `src/test_metrics.py` holds the four
+  hand-computed cases the field notes have always said were verified but which
+  were never committed. The regression has teeth — the pre-fix arithmetic
+  returns 2.131 where the assertion demands ≤ 1.0. Second claimed-but-absent
+  test found this session, after `test_trace_matches_pipeline`.
 - Embeddings were silently truncated at 256 tokens (median 370 tokens lost per
   chunk) because chunk size was specified in *words*. Now token-based, with an assertion.
 - README numbers went stale against a grown golden set; the owner caught it. Re-running

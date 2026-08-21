@@ -212,6 +212,7 @@ python src/cli.py "What is late interaction in a retrieval model?"
 python src/evaluate.py         # reproduce every number in this README
 python src/per_case.py         # per-case outcomes -> eval/per_case.json
 python src/hard_cases.py       # only the cases nothing gets right, in ~20s
+python src/test_metrics.py     # the scoring functions, hand-computed (ms)
 python src/test_trace.py       # the trace and the serving path still agree
 python src/serve.py            # local HTTP API and UI on :8000
 ```
