@@ -149,7 +149,17 @@ def ask(
     )
 
     if generate:
-        from generate_answer import synthesize  # imported lazily: needs an API key
+        # Lazy: importing generate.py pulls in the anthropic client and reads
+        # .env, and the whole point of retrieval-only being the default is that
+        # a caller without an API key never touches any of that.
+        #
+        # This read `from generate_answer import synthesize` until 2026-08-21.
+        # No module of that name has ever existed. Being both lazy and inside
+        # the optional branch, it could only fail on a path that has never run
+        # for want of API credit -- so the code was wrong for as long as it was
+        # unexercised, and looked fine.
+        from generate import synthesize
+
         result.answer = synthesize(question, results)
         result.mode = "generated"
 
