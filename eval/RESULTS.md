@@ -222,6 +222,75 @@ by accident. Size and overlap are configurable via `RAG_CHUNK_SIZE` and
 `RAG_CHUNK_OVERLAP` for measuring alternatives within the ceiling; going beyond
 it is a request for a different embedding model, not a different setting.
 
+## Scaling the corpus 20 -> 36 documents
+
+The corpus grew from 20 arXiv papers (2,768 passages) to 36 (5,459) by adding
+sixteen recent cs.CL preprints. Recent, not foundational: arXiv was queried
+newest-first, so the additions are topically adjacent to the questions without
+answering any of them. That is the realistic growth pattern and the harder test
+-- more near-misses for the retriever to reject.
+
+| pipeline | hit rate | MRR | NDCG | src recall |
+|---|---|---|---|---|
+| 20 documents *(shipped config)* | 0.848 | 0.754 | 0.769 | 0.773 |
+| 36 documents *(shipped config)* | 0.848 | 0.749 | 0.761 | 0.738 |
+| change | **0.000** | −0.005 | −0.008 | **−0.035** |
+
+**Ranking quality did not move.** Hit rate is identical, MRR and NDCG shift by
+less than one case (66 cases, so one case is worth ~1.5 points). Nothing here
+justifies changing a default.
+
+### Source recall fell for a measurement reason, not a retrieval one
+
+Gold locations are derived from answer strings, so adding documents that
+*contain* an answer string adds them to that question's gold set. Eleven of 66
+questions gained gold sources, and the mean source-recall divisor -- which is
+`min(|gold|, k)` -- rose from **2.12 to 2.30**.
+
+That divisor moving 8.5% is enough to account for the drop on its own. Returning
+two of two answering documents scores 1.000; returning the same two documents
+when five now answer scores 0.400, with retrieval having done nothing
+differently. The metric got harder, the system did not get worse.
+
+### Abstention looks much worse, and it is the labels
+
+| | 20 documents | 36 documents |
+|---|---|---|
+| unanswerable median | −2.33 | **+0.09** |
+| unanswerable max | +2.76 | **+6.85** |
+| caught at threshold 0 | 13 / 18 | **9 / 18** |
+
+Five adversarial cases crossed the threshold, and four of them did so because
+the corpus now genuinely answers them:
+
+| case | 20 docs | 36 docs | what it now hits |
+|---|---|---|---|
+| `adv-moe-routing` | −8.36 | **+6.85** | a compute-efficient scaling paper |
+| `adv-rlhf` | −4.30 | **+4.22** | a multi-agent orchestration paper |
+| `adv-quantize-4bit` | −2.98 | **+2.26** | a small-model architecture paper |
+| `adv-mamba` | −1.12 | **+0.70** | the same convolution-attention hybrid |
+| `adv-salary` | −4.14 | **+0.09** | a wine benchmark — a genuine false positive |
+
+The gate is doing its job. The labels went stale, which is the failure the
+golden set was designed around and warns about in its own docstring: *"when the
+corpus grew from 1 document to 20, twelve of sixteen adversarial cases silently
+became answerable."* It happened again at 20 -> 36.
+
+**Nothing was adjusted in the retrieval system, because nothing in it regressed.**
+The five stale labels are the open item.
+
+### The audit tool missed all of it
+
+`audit_golden_set.py` exists to catch exactly this. Matching hardcoded subject
+terms, it flagged two cases -- neither of which crossed the threshold -- and
+missed all five that did. It could not have caught them: a paper discusses
+expert load balancing without ever writing "mixture of experts".
+
+It now also asks the retriever. If the reranker scores an unanswerable question
+above the threshold, either the label is stale or the gate is broken, and both
+need a human. On the current corpus that check flags nine cases and reports that
+**eight were invisible to the term list**.
+
 ## Context expansion
 
 | mode | context recall | tokens/query | recall per 1k tokens |
