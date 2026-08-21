@@ -417,19 +417,43 @@ doing so, so it no longer needs files copied into `data/`. (8) is done.
 
 ## 8. Published artifacts — update, never re-publish
 
-Two pages are published to the owner's Claude account. Their **source is in this
-repo**; the published copies live in the cloud and are not carried by any session.
+Their **source is in this repo**; the published copies live in the cloud and are
+not carried by any session.
 
-| Artifact | Source file | URL |
-|---|---|---|
-| Anatomy of a Retrieval Pipeline (Phases 1–3) | `docs/phase-1-field-notes.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 |
-| Retrieval System Status | `docs/project-status.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 |
+| Artifact | Source file | URL | Updatable from `the owner's address, removed 2026-09-07`? |
+|---|---|---|---|
+| Anatomy of a Retrieval Pipeline (Phases 1–3) | `docs/phase-1-field-notes.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | **yes — use this one** |
+| ” (earlier copy, other account) | ” | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | no — see below |
+| Retrieval System Status | `docs/project-status.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | untested; likely no |
 
 **To update one, pass its URL.** Publishing the source file without the `url`
 creates a *second, separate* artifact instead of updating the existing one, and
 the owner's existing link silently goes stale. This is the single easiest way to
 break something here, and nothing in the file itself warns you — which is why the
 URLs are recorded here.
+
+### The two `8c62ba9a` / `0fa6a672` URLs are not owned by this account
+
+Discovered 2026-08-21 while updating the field notes. `action: "list"` on
+`the owner's address, removed 2026-09-07` returns eight artifacts and **neither of those UUIDs is
+among them**, so they were published from somewhere else. That produces a
+deadlock rather than a clean error, and it is worth recording so the next
+session does not spend the same time on it:
+
+- Publishing to that URL is refused until the session has read the live version.
+- Reading it is refused: *"served to you as a public (non-member) reader, and
+  reading public artifacts that way is not enabled yet."* Making the artifact
+  public does **not** lift this — it was already being served that way.
+
+So the only route to that URL is `force: true`, which overwrites the live copy
+without seeing it. The owner was asked and chose to **keep both** rather than
+force. The 2026-08-21 corrections (§5b, §7) are therefore live on
+`c8fef8f2` and **absent from `8c62ba9a`**, which still shows MRR 0.751, the
+"bump chart" module row, and "indexing progress is emitted but unread".
+
+If access to the original account turns up, publishing `phase-1-field-notes.html`
+from there with the `8c62ba9a` URL updates it in place with no force and no risk,
+and the two copies converge.
 
 Both carry a banner scoping Phase 1–2 figures as historical. Phase 3 reflects the
 system as it stands. If Phase 4 is added, extend that banner rather than letting it
