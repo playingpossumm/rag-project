@@ -13,7 +13,7 @@ export const MEASURED: Record<string, { count: number; loc: number }> = {
   'cli': { count: 1, loc: 65 },
   'diversify': { count: 1, loc: 99 },
   'embedcache': { count: 1, loc: 151 },
-  'evaluate': { count: 2, loc: 514 },
+  'evaluate': { count: 3, loc: 655 },
   'fetch': { count: 1, loc: 82 },
   'generate': { count: 1, loc: 158 },
   'goldenset': { count: 5, loc: 681 },

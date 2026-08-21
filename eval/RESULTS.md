@@ -36,6 +36,72 @@ When a question is answered by only one document, capping that document pushes a
 relevant passage out for an irrelevant one. 2/src ships: most of the breadth for
 a third of the cost.
 
+## Which questions fail, and whether they are always the same ones
+
+The system misses roughly 15% of answerable questions, and that has been
+described as cross-document confusion. That is a claim about *which* questions
+fail, and nothing checked it until now. `src/failure_overlap.py` does, over the
+six configurations `src/per_case.py` can emit.
+
+Repeating one configuration proves nothing — retrieval is deterministic, so the
+same settings return the same passages every time. The variation has to come
+from changing the pipeline.
+
+| configuration | missed | refused wrongly | fail rate | adversarial answered |
+|---|---|---|---|---|
+| default (rrf + rerank + cap 2) | 10 | 1 | 16.7% | 5 |
+| no rerank | 12 | 0 | 18.2% | 18 † |
+| dense only | 14 | 2 | 24.2% | 4 |
+| weighted fusion | 10 | 1 | 16.7% | 5 |
+| cap 1/src | 12 | 1 | 19.7% | 5 |
+| no cap | 9 | 1 | 15.2% | 5 |
+
+† Not a gate failure. Without reranking there is no calibrated score, so the
+gate never runs and all 18 pass by construction — an absent gate, not a failing
+one. Excluded from the adversarial comparison below for that reason.
+
+**The failures are not the same set.** 18 of 66 answerable cases (27%) fail
+under at least one configuration, but only **7 (10.6%) fail under all six**:
+
+- **7 structural** — no fusion, reranking or capping reaches them. Four are
+  labelled `cross-doc`, one `fact`, two `multi`, so cross-document confusion
+  describes most of the hard core but not all of it.
+- **11 contested** — ranking work moves them, so a change can be scored on
+  them. Four are rescued by exactly one configuration, which is within the
+  noise this corpus supports and should not be read as that setting being
+  better.
+
+So "15% cross-document confusion" is really a ~11% floor plus a shifting
+margin, and the floor is the part worth optimising against. It is a fixture:
+the same seven cases, reproducible from `src/per_case.py` under any settings.
+
+### A hypothesis this refuted
+
+Three of the seven return the **right document at rank 1** and are scored as
+misses because the gold page differs — `adam-bias` returns `adam_optimizer.pdf`
+pages 2–3 against gold pages 5, 8, 9. Page-level labelling is known to be
+coarse, and labels were derived from answer strings rather than independently
+authored, so the obvious reading is that the labels are incomplete and
+retrieval found a better passage than the label credits.
+
+That reading is wrong. Context recall — does the returned *text* contain the
+labelled answer string — is **0.000 for all seven**. The answer was genuinely
+not in what came back. These are real retrieval misses, and the coarse-labelling
+caveat does not excuse them.
+
+### The abstention gate is stable
+
+Over the five gated configurations, **4 of 18 adversarial cases are answered
+under every one**, and one more (`adv-license-terms`, +0.17) sits close enough
+to the threshold to flip. The gate does not become better or worse as ranking
+changes, because it reads the top rerank score and ranking configuration barely
+moves that score across zero. Those four are a threshold question, not a
+retrieval one.
+
+    .venv\Scripts\python.exe src\per_case.py --emit runs\default.json
+    .venv\Scripts\python.exe src\per_case.py --no-rerank --emit runs\no-rerank.json
+    .venv\Scripts\python.exe src\failure_overlap.py runs\*.json
+
 ## Context expansion
 
 | mode | context recall | tokens/query | recall per 1k tokens |

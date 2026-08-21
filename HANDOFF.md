@@ -326,11 +326,24 @@ Mode, so `git pull` in a skills repo will not update them; re-copy instead.
    `Column: value` text on an assumption with no evidence behind it. This is the
    largest unknown in the system and the cheapest to close — it needs the owner's
    documents in `data/`.
-2. **Cross-document confusion, ~15% of questions.** The retriever matches the
-   topic and ignores the constraint that distinguishes the answer ("normalisation
-   across features *rather than examples*" still returns Batch Normalization).
-   Mechanism understood; the obvious fix is ruled out by measurement (§4). The
-   real fix is query decomposition, which needs an LLM → needs credit.
+2. **Cross-document confusion — a ~11% floor, not a flat 15%.** The retriever
+   matches the topic and ignores the constraint that distinguishes the answer
+   ("normalisation across features *rather than examples*" still returns Batch
+   Normalization). Mechanism understood; the obvious fix is ruled out by
+   measurement (§4). The real fix is query decomposition, which needs an LLM →
+   needs credit.
+
+   Sharpened 2026-08-21 by `src/failure_overlap.py` across six configurations
+   (see `eval/RESULTS.md`). 18 of 66 answerable cases fail under *some*
+   configuration, but only **7 fail under all of them**. Those seven are a
+   fixture — reproducible, unreachable by any fusion/rerank/cap change, and the
+   right thing to score query decomposition against. The other eleven move with
+   ranking and should not be counted as the same problem.
+
+   A tempting explanation was tested and refuted: three of the seven return the
+   right document at rank 1 and miss on page, which looks like incomplete
+   labels rather than bad retrieval. Context recall is 0.000 for all seven —
+   the answer text was not returned at all. They are real misses.
 3. **Generation is unverified end to end.** `generate.py` targets `claude-opus-5`
    and has never completed a real call. Code written, evidence absent — but as of
    2026-08-21 the code has at least been read against the data it receives, and
