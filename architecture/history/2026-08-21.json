@@ -1,8 +1,8 @@
 {
   "date": "2026-08-21",
   "totals": {
-    "files": 30,
-    "loc": 4801
+    "files": 32,
+    "loc": 5124
   },
   "nodes": {
     "api": {
@@ -78,8 +78,8 @@
       "loc": 158
     },
     "evaluate": {
-      "count": 3,
-      "loc": 655
+      "count": 5,
+      "loc": 978
     },
     "goldenset": {
       "count": 5,

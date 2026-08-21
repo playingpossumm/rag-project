@@ -102,6 +102,72 @@ retrieval one.
     .venv\Scripts\python.exe src\per_case.py --no-rerank --emit runs\no-rerank.json
     .venv\Scripts\python.exe src\failure_overlap.py runs\*.json
 
+## The abstention threshold: what each setting costs, by name
+
+`evaluate.py` has reported "best net separation at threshold **+2**" on every
+run since the sweep was written, while the shipped threshold is **0.0**. The
+project's answer has been that false abstention is the costlier error — a
+policy, stated against an aggregate. `src/calibrate_threshold.py` makes it
+concrete, and the aggregate turns out to have been the misleading half.
+
+| threshold | refuses | of adversarial | wrongly refuses | of answerable |
+|---|---|---|---|---|
+| −1 | 12 | 67% | 1 | 1.5% |
+| **0.0** *(shipped)* | **13** | **72%** | **1** | **1.5%** |
+| +1 | 15 | 83% | 4 | 6.1% |
+| +2 | 17 | 94% | 5 | 7.6% |
+| +3 | 18 | 100% | 10 | 15.2% |
+
+**In cases, moving 0 → +2 trades 4 more caught for 4 more lost.** Exactly
+break-even before any cost weighting — not the clear win `net` reports.
+
+### Why the sweep and the counts disagree
+
+`net = caught − false_abstain` is Youden's J. It is a legitimate statistic and
+the wrong one for this decision, because it subtracts two **rates** over
+populations of very different size: 18 adversarial against 66 answerable. That
+values one adversarial case at **3.7 answerable ones**, and users experience
+cases rather than rates. `evaluate.py` now prints a counts column beside the
+rates so the two readings can be compared instead of one hiding the other.
+
+Under counts, no threshold above 0.0 wins on its own terms:
+
+| vs 0.0 | more caught | more lost | break-even weight |
+|---|---|---|---|
+| +1 | 2 | 3 | 0.7× |
+| +2 | 4 | 4 | 1.0× |
+| +3 | 5 | 9 | 0.6× |
+
+Read: 0.0 wins whenever a wrongly refused question costs more than that
+multiple of an unanswerable one slipping through. At +1 and +3 it wins even if
+the two cost the same.
+
+### What +1 would actually cost
+
+Not "6.1% of answerable questions" — these three:
+
+| case | top score | question |
+|---|---|---|
+| `cot-gsm8k` | +0.66 | Which grade-school math benchmark is used to evaluate reasoning? |
+| `gpt3-fewshot` | +0.97 | How does task performance change with the number of examples in the prompt? |
+| `resnet-shortcut` | +0.16 | What connections allow gradients to flow through very deep networks? |
+
+**Conclusion: 0.0 stays**, and now for a measured reason rather than a stated
+preference. The four adversarial cases that slip through under every gated
+configuration are not fixable by moving the threshold without losing answerable
+questions one for one; they need a different signal, not a different cut point.
+
+### The gate costs different things on different paths
+
+One number serves two cost structures, and the aggregate hides it:
+
+- `api.ask()` — the flag is **advisory**. Passages and citations are returned
+  either way, so a false abstention mislabels a good answer.
+- the UI — the answer is **withheld** and replaced with "The corpus does not
+  contain this", so a false abstention loses an answer the corpus has.
+
+The second is where the cost asymmetry bites, and it is the path a person uses.
+
 ## Context expansion
 
 | mode | context recall | tokens/query | recall per 1k tokens |

@@ -1,0 +1,236 @@
+{
+ "generated_by": "src/calibrate_threshold.py",
+ "shipped_threshold": 0.0,
+ "n_answerable": 66,
+ "n_adversarial": 18,
+ "sweep": [
+  {
+   "threshold": -4,
+   "caught": [
+    "adv-rlhf",
+    "adv-carbon",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-inference-cost"
+   ],
+   "wrongly_refused": [
+    "adam"
+   ]
+  },
+  {
+   "threshold": -3,
+   "caught": [
+    "adv-rlhf",
+    "adv-carbon",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-inference-cost"
+   ],
+   "wrongly_refused": [
+    "adam"
+   ]
+  },
+  {
+   "threshold": -2,
+   "caught": [
+    "adv-rlhf",
+    "adv-carbon",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-quantize-4bit",
+    "adv-inference-cost",
+    "adv-compute-budget"
+   ],
+   "wrongly_refused": [
+    "adam"
+   ]
+  },
+  {
+   "threshold": -1,
+   "caught": [
+    "adv-rlhf",
+    "adv-mamba",
+    "adv-price",
+    "adv-carbon",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-quantize-4bit",
+    "adv-inference-cost",
+    "adv-compute-budget"
+   ],
+   "wrongly_refused": [
+    "adam"
+   ]
+  },
+  {
+   "threshold": 0,
+   "caught": [
+    "adv-rlhf",
+    "adv-mamba",
+    "adv-price",
+    "adv-energy",
+    "adv-carbon",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-quantize-4bit",
+    "adv-inference-cost",
+    "adv-compute-budget"
+   ],
+   "wrongly_refused": [
+    "adam"
+   ]
+  },
+  {
+   "threshold": 1,
+   "caught": [
+    "adv-diffusion",
+    "adv-rlhf",
+    "adv-mamba",
+    "adv-price",
+    "adv-energy",
+    "adv-carbon",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-quantize-4bit",
+    "adv-inference-cost",
+    "adv-license-terms",
+    "adv-compute-budget"
+   ],
+   "wrongly_refused": [
+    "adam",
+    "cot-gsm8k",
+    "gpt3-fewshot",
+    "resnet-shortcut"
+   ]
+  },
+  {
+   "threshold": 2,
+   "caught": [
+    "adv-diffusion",
+    "adv-rlhf",
+    "adv-mamba",
+    "adv-price",
+    "adv-energy",
+    "adv-carbon",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-quantize-4bit",
+    "adv-inference-cost",
+    "adv-latency-ms",
+    "adv-context-window",
+    "adv-license-terms",
+    "adv-compute-budget"
+   ],
+   "wrongly_refused": [
+    "adam",
+    "cot-gsm8k",
+    "gpt3-fewshot",
+    "resnet-shortcut",
+    "vit-inductive"
+   ]
+  },
+  {
+   "threshold": 3,
+   "caught": [
+    "adv-diffusion",
+    "adv-rlhf",
+    "adv-mamba",
+    "adv-price",
+    "adv-energy",
+    "adv-carbon",
+    "adv-seed",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-quantize-4bit",
+    "adv-inference-cost",
+    "adv-latency-ms",
+    "adv-context-window",
+    "adv-license-terms",
+    "adv-compute-budget"
+   ],
+   "wrongly_refused": [
+    "scale-why",
+    "adam",
+    "bert-wordpiece",
+    "cot-gsm8k",
+    "faiss-ivf",
+    "gpt3-params",
+    "gpt3-fewshot",
+    "resnet-shortcut",
+    "roberta-nsp-drop",
+    "vit-inductive"
+   ]
+  },
+  {
+   "threshold": 4,
+   "caught": [
+    "adv-diffusion",
+    "adv-rlhf",
+    "adv-mamba",
+    "adv-price",
+    "adv-energy",
+    "adv-carbon",
+    "adv-seed",
+    "adv-review",
+    "adv-salary",
+    "adv-retract",
+    "adv-flash",
+    "adv-moe-routing",
+    "adv-quantize-4bit",
+    "adv-inference-cost",
+    "adv-latency-ms",
+    "adv-context-window",
+    "adv-license-terms",
+    "adv-compute-budget"
+   ],
+   "wrongly_refused": [
+    "scale-why",
+    "p100",
+    "adam",
+    "relu",
+    "dropout-rate",
+    "faiss-pq",
+    "adam-bias",
+    "bahdanau-fixed",
+    "bert-wordpiece",
+    "cot-gsm8k",
+    "colbert-msmarco",
+    "faiss-ivf",
+    "gpt3-params",
+    "gpt3-fewshot",
+    "ln-stats",
+    "resnet-degradation",
+    "resnet-shortcut",
+    "roberta-nsp-drop",
+    "sbert-speed",
+    "seq2seq-reverse",
+    "t5-c4",
+    "vit-inductive"
+   ]
+  }
+ ]
+}

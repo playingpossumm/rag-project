@@ -29,6 +29,7 @@ from pathlib import Path
 
 from sentence_transformers import SentenceTransformer
 
+from abstain import ABSTAIN_THRESHOLD
 from hybrid import build_bm25
 from retrieve import CANDIDATE_K, EMBEDDING_MODEL, TOP_K, load_index, retrieve, shortlist
 
@@ -314,19 +315,45 @@ def main():
         print(f"    {kind:<11} n={len(scores):<3} max {max(scores):+.2f}  "
               f"({', '.join(f'{s:+.1f}' for s in sorted(scores, reverse=True))})")
 
-    print(f"\n  {'threshold':>10}{'caught':>9}{'false abstain':>15}{'net':>8}")
+    print(f"\n  {'threshold':>10}{'caught':>9}{'false abstain':>15}{'net':>8}"
+          f"{'in cases':>14}")
     best = None
+    counts = {}
     for t in [-10, -8, -6, -5, -4, -3, -2, -1, 0, 1, 2]:
-        caught = sum(1 for s in adv_scores if s < t) / len(adv_scores)
-        false_ab = sum(1 for s in ans_scores if s < t) / len(ans_scores)
+        n_caught = sum(1 for s in adv_scores if s < t)
+        n_false = sum(1 for s in ans_scores if s < t)
+        counts[t] = (n_caught, n_false)
+        caught = n_caught / len(adv_scores)
+        false_ab = n_false / len(ans_scores)
         net = caught - false_ab
-        flag = ""
         if best is None or net > best[1]:
-            best, flag = (t, net), ""
-        print(f"  {t:>10}{caught:>9.3f}{false_ab:>15.3f}{net:>8.3f}{flag}")
-    print(f"\n  best net separation at threshold {best[0]} (net {best[1]:.3f})")
+            best = (t, net)
+        print(f"  {t:>10}{caught:>9.3f}{false_ab:>15.3f}{net:>8.3f}"
+              f"{f'{n_caught} / {n_false}':>14}")
+
+    # The `net` column is Youden's J, which is a legitimate statistic and not
+    # the one this decision wants. It subtracts two RATES over populations of
+    # very different size, so an adversarial case is implicitly worth
+    # len(answerable)/len(adversarial) answerable ones -- 3.7x here. Users
+    # experience cases, not rates. The counts column above is there so the two
+    # readings can be compared, because they disagree: the rate says +2 is a
+    # clear win, and in cases it is break-even.
+    ratio = len(ans_scores) / len(adv_scores)
+    shipped = ABSTAIN_THRESHOLD
+    print(f"\n  best net separation at threshold {best[0]} (net {best[1]:.3f})"
+          f"  -- but read the caveat")
+    print(f"  CAVEAT: `net` subtracts rates over {len(adv_scores)} adversarial and "
+          f"{len(ans_scores)} answerable cases,")
+    print(f"          so it values one adversarial case at {ratio:.1f} answerable ones.")
+    if shipped in counts and best[0] in counts and best[0] != shipped:
+        dc = counts[best[0]][0] - counts[shipped][0]
+        dl = counts[best[0]][1] - counts[shipped][1]
+        print(f"          In cases, moving {shipped:+.0f} -> {best[0]:+d} trades "
+              f"{dc} more caught for {dl} more lost.")
+    print("          src/calibrate_threshold.py names the questions each step costs.")
     print("  note: false abstention is the costlier error -- refusing a question the")
-    print("        corpus CAN answer is worse than answering a weak one with citations.")
+    print("        corpus CAN answer is worse than answering a weak one with citations,")
+    print(f"        which is why the shipped threshold stays at {shipped:+.1f}.")
 
 
     if args.emit:

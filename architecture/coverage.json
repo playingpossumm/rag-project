@@ -25,7 +25,8 @@
   "abstain":    { "owns": ["src/abstain.py"] },
   "generate":   { "owns": ["src/generate.py"] },
 
-  "evaluate":   { "owns": ["src/evaluate.py", "src/per_case.py", "src/failure_overlap.py"] },
+  "evaluate":   { "owns": ["src/evaluate.py", "src/per_case.py", "src/failure_overlap.py",
+                         "src/hard_cases.py", "src/calibrate_threshold.py"] },
   "goldenset":  { "owns": [
     "src/build_golden_set.py",
     "src/check_answers.py",

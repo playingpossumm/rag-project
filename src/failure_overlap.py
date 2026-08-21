@@ -45,7 +45,13 @@ def load(paths):
 
 
 def main() -> int:
-    paths = sys.argv[1:]
+    args = sys.argv[1:]
+    fixture_out = None
+    if "--emit-fixture" in args:
+        i = args.index("--emit-fixture")
+        fixture_out = Path(args[i + 1])
+        del args[i:i + 2]
+    paths = args
     if not paths:
         print(__doc__)
         return 2
@@ -133,6 +139,34 @@ def main() -> int:
         print(f"    always  {i:<18}{meta[i]['confidence']:+.2f}  {meta[i]['question'][:62]}")
     for i in adv_some:
         print(f"    partly  {i:<18}{meta[i]['confidence']:+.2f}  {meta[i]['question'][:62]}")
+
+    # ---- the fixture --------------------------------------------------------
+    # Written out so a change can be scored against these seven in seconds
+    # instead of a full harness run. Derived, never hand-listed: the set is
+    # whatever currently fails everywhere, so it shrinks when something is
+    # actually fixed rather than being a stale list someone has to remember to
+    # prune.
+    if fixture_out:
+        fixture_out.parent.mkdir(exist_ok=True)
+        fixture_out.write_text(json.dumps({
+            "generated_by": "src/failure_overlap.py --emit-fixture",
+            "configurations": names,
+            "note": "Answerable cases that fail under every configuration listed above, "
+                    "and adversarial cases answered under every gated one. Run with "
+                    "src/hard_cases.py.",
+            "structural": [
+                {"id": i, "kind": meta[i]["kind"], "question": meta[i]["question"],
+                 "gold_sources": meta[i]["gold_sources"]}
+                for i in sorted(always)
+            ],
+            "slips_the_gate": [
+                {"id": i, "question": meta[i]["question"],
+                 "confidence": meta[i]["confidence"]}
+                for i in sorted(adv_always)
+            ],
+        }, indent=1) + "\n", encoding="utf-8")
+        print(f"\nwrote fixture: {fixture_out} "
+              f"({len(always)} structural, {len(adv_always)} slipping the gate)")
     return 0
 
 

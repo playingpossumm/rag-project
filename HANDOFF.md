@@ -51,7 +51,13 @@ page 0.848 @ 4828. Page buys 1.5 points of recall for 2× the tokens; window is 
 
 Abstention separation: answerable median **+4.93**, unanswerable median **−2.33**,
 threshold **0.0**. The distributions overlap (answerable min −4.02), so the
-threshold is a deliberate trade, not a clean split.
+threshold is a deliberate trade, not a clean split — and as of 2026-08-21 a
+**measured** one. `evaluate.py` reports "best net separation at +2" every run;
+that column is Youden's J, which subtracts rates over 18 adversarial and 66
+answerable cases and so values one adversarial case at 3.7 answerable ones. In
+cases, 0 → +2 trades 4 caught for 4 lost — break-even before any weighting, and
++1 and +3 lose outright. 0.0 stays. See `eval/RESULTS.md` and
+`src/calibrate_threshold.py`, which names the three questions +1 would cost.
 
 Indexing: full cold build **432 s** · re-index nothing changed **0.76 s** ·
 add 1 document to 20 **18.8 s**.
@@ -102,6 +108,7 @@ as a success.
 
 | Sounded right | Measurement said | Outcome |
 |---|---|---|
+| The harness says the abstention threshold should be +2 | `net` is a difference of rates over unequal populations; in cases, +2 trades 4 caught for 4 lost | threshold **unchanged at 0.0**, and the harness now prints counts too |
 | Prefix each chunk with its document title | no ranking gain, source recall **−0.051**; the earlier "win" came from changing two variables at once | built, measured, **reverted** (`USE_TITLE_PREFIX=0`) |
 | The reranker misses constraint words because it's too small | an 8× model (BGE 278M) fixed the *same* 2/10 cases at 10 s/query | upgrade **rejected** |
 | Tables retrieve badly, need special handling | tables measured **easier** than prose (0.952 vs 0.800 any-hit), 91% keep headers | **no code written** |

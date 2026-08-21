@@ -158,6 +158,9 @@ in the other's metrics, so the harness reports both.
 | [`api.py`](src/api.py) | `ask()` — the single entry point |
 | [`evaluate.py`](src/evaluate.py) | hit rate, MRR, NDCG, source recall, context recall |
 | [`per_case.py`](src/per_case.py) | Per-case outcomes for all 84 golden-set questions, as JSON |
+| [`failure_overlap.py`](src/failure_overlap.py) | Which cases fail under *every* configuration, and which move |
+| [`hard_cases.py`](src/hard_cases.py) | Runs only the cases nothing currently gets right — seconds, not minutes |
+| [`calibrate_threshold.py`](src/calibrate_threshold.py) | Names the questions each abstention threshold would cost |
 | [`pipeline_trace.py`](src/pipeline_trace.py) | Re-runs retrieval keeping every intermediate ranking |
 
 Three interfaces — Python, HTTP, CLI — are all thin shells over one `ask()`
@@ -208,6 +211,7 @@ python src/cli.py "What is late interaction in a retrieval model?"
 ```bash
 python src/evaluate.py         # reproduce every number in this README
 python src/per_case.py         # per-case outcomes -> eval/per_case.json
+python src/hard_cases.py       # only the cases nothing gets right, in ~20s
 python src/test_trace.py       # the trace and the serving path still agree
 python src/serve.py            # local HTTP API and UI on :8000
 ```
