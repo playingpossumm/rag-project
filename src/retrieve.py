@@ -36,9 +36,16 @@ CANDIDATE_K = 20
 DEFAULT_FUSION = "rrf"
 
 
-def load_index():
-    index = faiss.read_index(str(STORE_DIR / "index.faiss"))
-    with open(STORE_DIR / "metadata.json", encoding="utf-8") as f:
+def load_index(store_dir=None):
+    """Read an index. `store_dir` lets one process hold several corpora.
+
+    The env var still sets the default, so every script keeps working unchanged;
+    only a caller that genuinely serves more than one corpus needs to pass a
+    path.
+    """
+    store = Path(store_dir) if store_dir else STORE_DIR
+    index = faiss.read_index(str(store / "index.faiss"))
+    with open(store / "metadata.json", encoding="utf-8") as f:
         metadata = json.load(f)
     return index, metadata
 

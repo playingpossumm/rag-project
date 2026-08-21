@@ -68,27 +68,51 @@ class Resources:
     def __init__(self):
         self.lock = threading.Lock()
         self._loaded = False
+        self.corpus = None          # the active corpus config, see corpora.py
 
-    def load(self):
-        if self._loaded:
+    def load(self, name: str | None = None):
+        if self._loaded and (name is None or name == self.corpus["name"]):
             return
         from sentence_transformers import SentenceTransformer
 
+        import corpora
         from hybrid import build_bm25
         from retrieve import EMBEDDING_MODEL, load_index
 
-        self.index, self.metadata = load_index()
-        self.model = SentenceTransformer(EMBEDDING_MODEL)
+        cfg = corpora.get(name or corpora.active_name())
+        if not cfg["indexed"]:
+            raise ValueError(f"corpus {cfg['name']!r} has no index; "
+                             f"run ingest.py with RAG_STORE_DIR={cfg['store']}")
+
+        # The embedder is the same model for every corpus and costs ~20s to
+        # load, so it is kept across a switch. The index, its metadata and the
+        # BM25 built from that metadata all belong to one corpus and are
+        # replaced together -- a half-switched state would serve one corpus's
+        # passages under another's citations.
+        self.index, self.metadata = load_index(cfg["store"])
+        if not hasattr(self, "model"):
+            self.model = SentenceTransformer(EMBEDDING_MODEL)
         self.bm25 = build_bm25(self.metadata)
+        self.corpus = cfg
         self._loaded = True
+
+    def switch(self, name: str):
+        with self.lock:
+            self._loaded = False
+            self.load(name)
+
+    def threshold(self) -> float:
+        """The active corpus's calibrated cut point, or 0.0 if nobody set one."""
+        return (self.corpus or {}).get("threshold") or 0.0
 
     def reload(self):
         """Re-read the index after a rebuild, so serving matches what is on disk."""
         with self.lock:
+            name = self.corpus["name"] if self.corpus else None
             self._loaded = False
-            self.load()
+            self.load(name)
 
-    def corpus(self) -> dict:
+    def stats(self) -> dict:
         docs = sorted({c["source"] for c in self.metadata})
         return {"chunks": len(self.metadata), "documents": len(docs), "sources": docs}
 
@@ -241,6 +265,15 @@ def inspect_folder(raw: str) -> tuple[Path, list[str], list[tuple[str, str]]]:
     return folder, supported, skipped
 
 
+def corpus_info() -> dict:
+    """What the UI shows about the corpus it is talking to."""
+    import corpora
+
+    if not RES.corpus:
+        return {}
+    return corpora.describe(RES.corpus)
+
+
 def trace_options(payload: dict) -> dict:
     """Read pipeline options off a /api/trace request.
 
@@ -304,6 +337,7 @@ def chat(question: str, payload: dict) -> dict:
     with RES.lock:
         trace = trace_pipeline(question, RES.index, RES.metadata, RES.model,
                                bm25=RES.bm25, k=int(payload.get("k", 5)),
+                               threshold=RES.threshold(),
                                **trace_options(payload))
 
     selected = trace["stages"][-1]["items"]
@@ -443,8 +477,17 @@ class Handler(BaseHTTPRequestHandler):
             # in. A page that can be pointed anywhere has to say where it points.
             from ingest import DATA_DIR
 
-            self._send(200, {**RES.corpus(), "examples": EXAMPLES,
-                             "data_dir": str(DATA_DIR)})
+            self._send(200, {**RES.stats(), "examples": EXAMPLES,
+                             "data_dir": str(DATA_DIR),
+                             "active": corpus_info()})
+
+        elif route == "/api/corpora":
+            import corpora
+            self._send(200, {
+                "active": RES.corpus["name"] if RES.corpus else None,
+                "corpora": [corpora.describe(c)
+                            for c in corpora.registry().values()],
+            })
 
         elif route == "/api/index/status":
             self._send(200, INDEX_RUN.snapshot())
@@ -466,6 +509,22 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         route = self.path.rstrip("/")
+
+        if route == "/api/corpus/select":
+            payload = self._body()
+            if payload is None:
+                return
+            name = (payload.get("name") or "").strip()
+            try:
+                RES.switch(name)
+            except ValueError as exc:
+                self._send(400, {"error": str(exc)})
+                return
+            except Exception as exc:  # noqa: BLE001
+                self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
+                return
+            self._send(200, {**RES.stats(), "active": corpus_info()})
+            return
 
         if route in ("/api/index/start", "/api/index/inspect"):
             payload = self._body()
@@ -540,6 +599,7 @@ class Handler(BaseHTTPRequestHandler):
                     result = trace_pipeline(question, RES.index, RES.metadata,
                                             RES.model, bm25=RES.bm25,
                                             k=int(payload.get("k", 5)),
+                                            threshold=RES.threshold(),
                                             **trace_options(payload))
                 self._send(200, result)
             else:
@@ -572,7 +632,7 @@ def main():
     print("Loading index and models...")
     RES.load()
     ask("warmup", k=1)
-    stats = RES.corpus()
+    stats = RES.stats()
     print(f"Ready on http://{host}:{port}")
     print(f"  inspector  http://{host}:{port}/")
     print(f"  quality    http://{host}:{port}/quality   (retrieval quality dashboard)")

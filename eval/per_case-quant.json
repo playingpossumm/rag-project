@@ -1,0 +1,2315 @@
+{
+ "generated_by": "src/per_case.py",
+ "options": {
+  "k": 5,
+  "candidate_k": 20,
+  "use_reranker": true,
+  "fusion": "rrf",
+  "max_per_source": 2
+ },
+ "threshold": 0.0,
+ "corpus": {
+  "chunks": 6184,
+  "documents": 35
+ },
+ "totals": {
+  "answerable": {
+   "n": 35,
+   "hit_rate": 0.5429,
+   "mrr": 0.4095,
+   "ndcg": 0.4366,
+   "src_recall": 0.3614,
+   "refused_wrongly": 19,
+   "missed": 7
+  },
+  "adversarial": {
+   "n": 6,
+   "refused": 6,
+   "answered_anyway": 0
+  }
+ },
+ "cases": [
+  {
+   "id": "qf-realized-vol",
+   "kind": "multi",
+   "question": "How is volatility estimated from high-frequency intraday price data?",
+   "unanswerable": false,
+   "gold_sources": [
+    "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+    "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
+    "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+    "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+    "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+    "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf"
+   ],
+   "confidence": -0.479,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 2",
+     "score": -0.4794,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+     "locator": "page 3",
+     "score": -0.572,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+     "locator": "page 9",
+     "score": -2.0498,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 3",
+     "score": -2.0906,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 20",
+     "score": -2.7524,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.4,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-vol-clustering",
+   "kind": "fact",
+   "question": "What describes the tendency of large price moves to be followed by more large moves?",
+   "unanswerable": false,
+   "gold_sources": [
+    "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
+   ],
+   "confidence": 1.033,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 17",
+     "score": 1.0329,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+     "locator": "page 4",
+     "score": -4.2076,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 8",
+     "score": -4.2511,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 13",
+     "score": -4.4668,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+     "locator": "page 2",
+     "score": -4.6038,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-garch",
+   "kind": "multi",
+   "question": "Which model family captures time-varying conditional variance in returns?",
+   "unanswerable": false,
+   "gold_sources": [
+    "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+    "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
+    "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+    "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
+   ],
+   "confidence": -1.229,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+     "locator": "page 10",
+     "score": -1.2287,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 1",
+     "score": -1.8653,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 26",
+     "score": -2.4797,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 8",
+     "score": -3.5037,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+     "locator": "page 13",
+     "score": -4.4612,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.25,
+   "ndcg": 0.4307,
+   "src_recall": 0.4,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-stochastic-vol",
+   "kind": "cross-doc",
+   "question": "Which class of models treats variance itself as a random process?",
+   "unanswerable": false,
+   "gold_sources": [
+    "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+    "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+    "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf"
+   ],
+   "confidence": 0.078,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 17",
+     "score": 0.0781,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
+     "locator": "page 6",
+     "score": -3.4288,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
+     "locator": "page 4",
+     "score": -4.5756,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 1",
+     "score": -5.2639,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 6",
+     "score": -5.3552,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.6667,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-var",
+   "kind": "multi",
+   "question": "Which risk measure reports the loss threshold exceeded with a given probability?",
+   "unanswerable": false,
+   "gold_sources": [
+    "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+    "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
+    "regime_gated_residual_mixture_of_experts_for_cross_section.pdf"
+   ],
+   "confidence": 4.536,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 7",
+     "score": 4.5365,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 3",
+     "score": 3.3754,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 2",
+     "score": 1.1219,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+     "locator": "page 28",
+     "score": -0.4933,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
+     "locator": "page 14",
+     "score": -3.3681,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.4,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-expected-shortfall",
+   "kind": "cross-doc",
+   "question": "Which coherent risk measure averages the losses beyond a quantile?",
+   "unanswerable": false,
+   "gold_sources": [
+    "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+    "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "simulating_stress_laws_under_extremal_dependence_character.pdf"
+   ],
+   "confidence": 6.26,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 2",
+     "score": 6.2599,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 3",
+     "score": 4.9162,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+     "locator": "page 1",
+     "score": -0.0185,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+     "locator": "page 1",
+     "score": -3.0718,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+     "locator": "page 2",
+     "score": -3.6432,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.906,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-max-drawdown",
+   "kind": "multi",
+   "question": "Which measure reports the largest peak-to-trough decline of a strategy?",
+   "unanswerable": false,
+   "gold_sources": [
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+    "zlend_a_dual_scope_cash_flow_reconstruction_framework_for.pdf"
+   ],
+   "confidence": -1.053,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 4",
+     "score": -1.0527,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 11",
+     "score": -1.3415,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
+     "locator": "page 1",
+     "score": -5.5972,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 24",
+     "score": -5.813,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 17",
+     "score": -8.2526,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-sortino",
+   "kind": "fact",
+   "question": "Which performance ratio penalises only downside deviation?",
+   "unanswerable": false,
+   "gold_sources": [
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf"
+   ],
+   "confidence": 1.705,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 11",
+     "score": 1.7047,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 4",
+     "score": 1.2436,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 19",
+     "score": -1.7232,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
+     "locator": "page 48",
+     "score": -2.6748,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 14",
+     "score": -3.6224,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.6667,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-information-ratio",
+   "kind": "fact",
+   "question": "Which ratio measures active return per unit of tracking error?",
+   "unanswerable": false,
+   "gold_sources": [
+    "regime_gated_residual_mixture_of_experts_for_cross_section.pdf"
+   ],
+   "confidence": -1.655,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "self_consistent_adjoint_policy_iteration_for_constrained_d.pdf",
+     "locator": "page 34",
+     "score": -1.6551,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 4",
+     "score": -4.338,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 11",
+     "score": -4.4407,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 15",
+     "score": -5.2622,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 8",
+     "score": -5.5918,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-mean-variance",
+   "kind": "cross-doc",
+   "question": "Which framework trades expected return against portfolio variance?",
+   "unanswerable": false,
+   "gold_sources": [
+    "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf"
+   ],
+   "confidence": 4.886,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 1",
+     "score": 4.8863,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
+     "locator": "page 2",
+     "score": 4.1266,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 1",
+     "score": 2.733,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
+     "locator": "page 5",
+     "score": 1.4948,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 9",
+     "score": 0.7614,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6797,
+   "src_recall": 0.6667,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-efficient-frontier",
+   "kind": "fact",
+   "question": "What is the set of portfolios with the best return for each level of risk called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+    "the_price_of_permission_classification_uncertainty_in_cons.pdf"
+   ],
+   "confidence": -0.66,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 2",
+     "score": -0.66,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 2",
+     "score": -1.7559,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 3",
+     "score": -2.7226,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+     "locator": "page 1",
+     "score": -4.8559,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 2",
+     "score": -6.481,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-markowitz",
+   "kind": "multi",
+   "question": "Whose portfolio selection theory underpins modern allocation methods?",
+   "unanswerable": false,
+   "gold_sources": [
+    "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "the_market_s_conditioning_representation_equilibrium_crowd.pdf"
+   ],
+   "confidence": -0.21,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 1",
+     "score": -0.2103,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 5",
+     "score": -0.9362,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
+     "locator": "page 3",
+     "score": -2.6852,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 21",
+     "score": -3.0899,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
+     "locator": "page 1",
+     "score": -3.3677,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-risk-parity",
+   "kind": "multi",
+   "question": "Which allocation method equalises each asset's contribution to total risk?",
+   "unanswerable": false,
+   "gold_sources": [
+    "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf"
+   ],
+   "confidence": -2.304,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 18",
+     "score": -2.3036,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
+     "locator": "page 3",
+     "score": -2.9686,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
+     "locator": "page 29",
+     "score": -3.1532,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 2",
+     "score": -3.1884,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
+     "locator": "page 3",
+     "score": -4.7885,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6241,
+   "src_recall": 0.3333,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-capm",
+   "kind": "fact",
+   "question": "Which model prices an asset by its sensitivity to the market portfolio?",
+   "unanswerable": false,
+   "gold_sources": [
+    "the_price_of_permission_classification_uncertainty_in_cons.pdf"
+   ],
+   "confidence": 1.881,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 5",
+     "score": 1.8809,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 2",
+     "score": 1.1446,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
+     "locator": "page 17",
+     "score": -3.804,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 37",
+     "score": -3.889,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 1",
+     "score": -4.0395,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-factor-model",
+   "kind": "cross-doc",
+   "question": "Which approach explains returns through exposure to common drivers?",
+   "unanswerable": false,
+   "gold_sources": [
+    "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+    "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+    "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
+    "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+    "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
+    "simulating_stress_laws_under_extremal_dependence_character.pdf",
+    "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+    "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf"
+   ],
+   "confidence": -1.287,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 32",
+     "score": -1.2869,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 29",
+     "score": -2.3077,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+     "locator": "page 26",
+     "score": -5.3424,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+     "locator": "page 33",
+     "score": -6.1635,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+     "locator": "page 4",
+     "score": -10.4274,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-risk-premium",
+   "kind": "multi",
+   "question": "What is the excess return investors demand for bearing risk called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+    "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
+    "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+    "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf"
+   ],
+   "confidence": -0.381,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 6",
+     "score": -0.3807,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 10",
+     "score": -1.2236,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 8",
+     "score": -1.625,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
+     "locator": "page 17",
+     "score": -2.9553,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 18",
+     "score": -4.14,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.25,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-lob",
+   "kind": "multi",
+   "question": "Which data structure records outstanding buy and sell orders at each price?",
+   "unanswerable": false,
+   "gold_sources": [
+    "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+    "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+    "multi_level_market_making_with_reinforcement_learning.pdf"
+   ],
+   "confidence": 2.914,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": 2.9135,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 10",
+     "score": 0.1111,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 7",
+     "score": -0.1168,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 7",
+     "score": -0.1208,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -0.7552,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.8503,
+   "src_recall": 0.3333,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-bid-ask",
+   "kind": "fact",
+   "question": "What is the gap between the best buy and best sell quote called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
+    "multi_level_market_making_with_reinforcement_learning.pdf"
+   ],
+   "confidence": 0.331,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": 0.3311,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 17",
+     "score": -0.5477,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 7",
+     "score": -1.8604,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -3.1856,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 4",
+     "score": -3.2354,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.5,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-market-impact",
+   "kind": "multi",
+   "question": "What is the adverse price movement caused by executing a large order called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+    "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+    "multi_level_market_making_with_reinforcement_learning.pdf",
+    "the_market_s_conditioning_representation_equilibrium_crowd.pdf"
+   ],
+   "confidence": 2.237,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 17",
+     "score": 2.2366,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 13",
+     "score": -1.4141,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -1.6422,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "the_triadic_stress_index_in_financial_markets.pdf",
+     "locator": "page 16",
+     "score": -10.1153,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+     "locator": "page 4",
+     "score": -10.7951,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.25,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-order-flow",
+   "kind": "multi",
+   "question": "Which signal captures the imbalance of buying against selling pressure?",
+   "unanswerable": false,
+   "gold_sources": [
+    "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+    "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+    "multi_level_market_making_with_reinforcement_learning.pdf",
+    "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+    "the_price_of_permission_classification_uncertainty_in_cons.pdf"
+   ],
+   "confidence": 0.048,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 11",
+     "score": 0.0483,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 13",
+     "score": -2.4705,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 36",
+     "score": -2.615,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 65",
+     "score": -4.6006,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+     "locator": "page 2",
+     "score": -8.0966,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.4,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-market-making",
+   "kind": "fact",
+   "question": "Which activity involves quoting both sides of the book to earn the spread?",
+   "unanswerable": false,
+   "gold_sources": [
+    "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+    "multi_level_market_making_with_reinforcement_learning.pdf"
+   ],
+   "confidence": -3.434,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -3.4344,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 20",
+     "score": -4.3803,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+     "locator": "page 4",
+     "score": -7.7603,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+     "locator": "page 5",
+     "score": -7.7623,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+     "locator": "page 6",
+     "score": -10.4283,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.5,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-hft",
+   "kind": "multi",
+   "question": "Which style of trading operates at sub-second timescales?",
+   "unanswerable": false,
+   "gold_sources": [
+    "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+    "conservation_of_short_term_flows_signed_optimal_transport.pdf",
+    "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "multi_level_market_making_with_reinforcement_learning.pdf",
+    "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+    "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+    "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+    "zlend_a_dual_scope_cash_flow_reconstruction_framework_for.pdf"
+   ],
+   "confidence": -6.41,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 17",
+     "score": -6.4099,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
+     "locator": "page 15",
+     "score": -8.0469,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+     "locator": "page 8",
+     "score": -8.491,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+     "locator": "page 7",
+     "score": -8.5681,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 4",
+     "score": -8.9404,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 0.4,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-transaction-costs",
+   "kind": "multi",
+   "question": "What erodes a strategy's paper returns once it is actually executed?",
+   "unanswerable": false,
+   "gold_sources": [
+    "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+    "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+    "conservation_of_short_term_flows_signed_optimal_transport.pdf",
+    "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "multi_level_market_making_with_reinforcement_learning.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+    "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
+    "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+    "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+    "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf"
+   ],
+   "confidence": -5.581,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 29",
+     "score": -5.5812,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 5",
+     "score": -6.1109,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+     "locator": "page 7",
+     "score": -6.4566,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 22",
+     "score": -8.391,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 32",
+     "score": -8.8697,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.25,
+   "ndcg": 0.4307,
+   "src_recall": 0.4,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-slippage",
+   "kind": "fact",
+   "question": "What is the difference between an expected fill price and the achieved one called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf"
+   ],
+   "confidence": 0.517,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 13",
+     "score": 0.5167,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 18",
+     "score": -2.4362,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 19",
+     "score": -2.4407,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 18",
+     "score": -4.1403,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 14",
+     "score": -4.3064,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-backtest",
+   "kind": "multi",
+   "question": "What is the simulation of a strategy over historical data called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+    "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+    "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "multi_level_market_making_with_reinforcement_learning.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+    "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+    "the_triadic_stress_index_in_financial_markets.pdf"
+   ],
+   "confidence": 0.365,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+     "locator": "page 13",
+     "score": 0.3654,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+     "locator": "page 13",
+     "score": 0.1751,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+     "locator": "page 1",
+     "score": -0.7292,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -0.9752,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 4",
+     "score": -5.1489,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.3333,
+   "ndcg": 0.5706,
+   "src_recall": 0.6,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-overfitting",
+   "kind": "cross-doc",
+   "question": "What failure occurs when a strategy is tuned until it fits historical noise?",
+   "unanswerable": false,
+   "gold_sources": [
+    "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+    "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+    "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf"
+   ],
+   "confidence": -6.666,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 35",
+     "score": -6.6659,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 16",
+     "score": -8.3422,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 12",
+     "score": -8.4568,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 39",
+     "score": -9.1613,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
+     "locator": "page 8",
+     "score": -9.5507,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.25,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-heavy-tails",
+   "kind": "multi",
+   "question": "Which property of return distributions makes extreme moves more likely than a normal model implies?",
+   "unanswerable": false,
+   "gold_sources": [
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "simulating_stress_laws_under_extremal_dependence_character.pdf",
+    "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
+   ],
+   "confidence": -1.63,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 2",
+     "score": -1.6304,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 1",
+     "score": -2.4804,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "simulating_stress_laws_under_extremal_dependence_character.pdf",
+     "locator": "page 31",
+     "score": -5.6181,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "simulating_stress_laws_under_extremal_dependence_character.pdf",
+     "locator": "page 2",
+     "score": -6.5089,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 9",
+     "score": -7.1289,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-stylized-facts",
+   "kind": "multi",
+   "question": "What are the empirical regularities observed across virtually all financial return series called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+    "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+    "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
+   ],
+   "confidence": 1.045,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 6",
+     "score": 1.045,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 1",
+     "score": 0.715,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 2",
+     "score": -1.9255,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+     "locator": "page 7",
+     "score": -2.1513,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
+     "locator": "page 23",
+     "score": -9.7044,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.3333,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-copula",
+   "kind": "fact",
+   "question": "Which tool models the dependence structure between assets separately from their margins?",
+   "unanswerable": false,
+   "gold_sources": [
+    "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+    "simulating_stress_laws_under_extremal_dependence_character.pdf"
+   ],
+   "confidence": -0.619,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+     "locator": "page 15",
+     "score": -0.6186,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 12",
+     "score": -3.5501,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+     "locator": "page 2",
+     "score": -3.7548,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+     "locator": "page 15",
+     "score": -4.7194,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 24",
+     "score": -4.7627,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.8772,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-tail-dependence",
+   "kind": "fact",
+   "question": "What measures the tendency of assets to crash together?",
+   "unanswerable": false,
+   "gold_sources": [
+    "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+    "simulating_stress_laws_under_extremal_dependence_character.pdf"
+   ],
+   "confidence": -4.124,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "the_triadic_stress_index_in_financial_markets.pdf",
+     "locator": "page 21",
+     "score": -4.1243,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 1",
+     "score": -5.7107,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "the_triadic_stress_index_in_financial_markets.pdf",
+     "locator": "page 1",
+     "score": -6.8081,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 30",
+     "score": -7.2731,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+     "locator": "page 3",
+     "score": -8.2407,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-regime-switching",
+   "kind": "fact",
+   "question": "Which models let parameters change between distinct market states?",
+   "unanswerable": false,
+   "gold_sources": [
+    "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+    "regime_gated_residual_mixture_of_experts_for_cross_section.pdf"
+   ],
+   "confidence": -1.15,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 1",
+     "score": -1.1498,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 3",
+     "score": -4.1992,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 22",
+     "score": -4.2055,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 3",
+     "score": -5.1546,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 33",
+     "score": -5.5097,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.5,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-black-scholes",
+   "kind": "fact",
+   "question": "Which classical formula prices a European option under constant volatility?",
+   "unanswerable": false,
+   "gold_sources": [
+    "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf"
+   ],
+   "confidence": 1.19,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
+     "locator": "page 7",
+     "score": 1.1903,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
+     "locator": "page 8",
+     "score": -2.7124,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
+     "locator": "page 2",
+     "score": -3.9466,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 12",
+     "score": -5.5903,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
+     "locator": "page 31",
+     "score": -5.7599,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "qf-mean-reversion",
+   "kind": "fact",
+   "question": "Which behaviour describes prices being pulled back toward a long-run level?",
+   "unanswerable": false,
+   "gold_sources": [
+    "pricing_temperature_index_insurance_under_long_memory_and.pdf"
+   ],
+   "confidence": -7.206,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 31",
+     "score": -7.2059,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 17",
+     "score": -7.8906,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 26",
+     "score": -8.0088,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 7",
+     "score": -8.4835,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 19",
+     "score": -9.5328,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-momentum",
+   "kind": "multi",
+   "question": "Which effect describes past winners continuing to outperform?",
+   "unanswerable": false,
+   "gold_sources": [
+    "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+    "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+    "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+    "the_price_of_permission_classification_uncertainty_in_cons.pdf"
+   ],
+   "confidence": -8.61,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+     "locator": "page 6",
+     "score": -8.6103,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
+     "locator": "page 6",
+     "score": -8.7394,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
+     "locator": "page 49",
+     "score": -9.105,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+     "locator": "page 3",
+     "score": -9.259,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+     "locator": "page 4",
+     "score": -9.2626,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "qf-deep-learning",
+   "kind": "multi",
+   "question": "Which family of methods is applied to forecasting from raw market data?",
+   "unanswerable": false,
+   "gold_sources": [
+    "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+    "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+    "communicating_credit_risk_with_large_language_models_evalu.pdf",
+    "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+    "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
+    "large_language_model_driven_small_capitalization_trading_i.pdf",
+    "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+    "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
+    "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf"
+   ],
+   "confidence": 1.272,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+     "locator": "page 3",
+     "score": 1.2724,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+     "locator": "page 17",
+     "score": 1.2443,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 1",
+     "score": -1.1688,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 8",
+     "score": -1.2187,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+     "locator": "page 3",
+     "score": -3.4777,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6509,
+   "src_recall": 0.4,
+   "context_recall": 0.0
+  },
+  {
+   "id": "adv-qf-syrinx",
+   "kind": "absent",
+   "question": "What organ do birds use to produce song?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -10.938,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+     "locator": "page 8",
+     "score": -10.9376,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "communicating_credit_risk_with_large_language_models_evalu.pdf",
+     "locator": "page 43",
+     "score": -11.0657,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "communicating_credit_risk_with_large_language_models_evalu.pdf",
+     "locator": "page 43",
+     "score": -11.0762,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+     "locator": "page 8",
+     "score": -11.1226,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 21",
+     "score": -11.1314,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-qf-photosynth",
+   "kind": "absent",
+   "question": "How does the Calvin cycle fix carbon during photosynthesis?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -11.146,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 6",
+     "score": -11.1458,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 17",
+     "score": -11.228,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+     "locator": "page 8",
+     "score": -11.2327,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
+     "locator": "page 12",
+     "score": -11.2334,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 5",
+     "score": -11.2505,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-qf-mortgage-rate",
+   "kind": "near-miss",
+   "question": "What is the current 30-year fixed mortgage rate?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -6.676,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 57",
+     "score": -6.6757,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "communicating_credit_risk_with_large_language_models_evalu.pdf",
+     "locator": "page 7",
+     "score": -8.7274,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "communicating_credit_risk_with_large_language_models_evalu.pdf",
+     "locator": "page 22",
+     "score": -9.1729,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+     "locator": "page 24",
+     "score": -9.4062,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 57",
+     "score": -9.7919,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-qf-broker-fee",
+   "kind": "near-miss",
+   "question": "What commission does the broker charge per executed trade?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -6.101,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 10",
+     "score": -6.1013,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -6.6207,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 22",
+     "score": -7.0103,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 18",
+     "score": -7.5535,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -8.0293,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-qf-author-pay",
+   "kind": "metadata",
+   "question": "Which fund employed the authors and what were they paid?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -6.908,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 41",
+     "score": -6.9075,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
+     "locator": "page 22",
+     "score": -9.1715,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 18",
+     "score": -9.5573,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
+     "locator": "page 8",
+     "score": -9.673,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 36",
+     "score": -10.3567,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-qf-ticker-close",
+   "kind": "near-miss",
+   "question": "What was the closing price of AAPL yesterday?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -6.593,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+     "locator": "page 4",
+     "score": -6.5931,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+     "locator": "page 1",
+     "score": -7.4224,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+     "locator": "page 3",
+     "score": -8.2364,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+     "locator": "page 4",
+     "score": -9.622,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+     "locator": "page 5",
+     "score": -10.3364,
+     "relevant": false
+    }
+   ]
+  }
+ ]
+}

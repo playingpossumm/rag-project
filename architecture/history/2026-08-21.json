@@ -2,7 +2,7 @@
   "date": "2026-08-21",
   "totals": {
     "files": 41,
-    "loc": 6612
+    "loc": 6794
   },
   "nodes": {
     "api": {
@@ -11,7 +11,7 @@
     },
     "serve": {
       "count": 1,
-      "loc": 591
+      "loc": 651
     },
     "cli": {
       "count": 1,
@@ -19,7 +19,7 @@
     },
     "trace": {
       "count": 2,
-      "loc": 468
+      "loc": 478
     },
     "ingest": {
       "count": 1,
@@ -51,7 +51,7 @@
     },
     "retrieve": {
       "count": 6,
-      "loc": 777
+      "loc": 784
     },
     "hybrid": {
       "count": 1,
@@ -71,7 +71,7 @@
     },
     "abstain": {
       "count": 1,
-      "loc": 95
+      "loc": 113
     },
     "generate": {
       "count": 1,
@@ -79,11 +79,11 @@
     },
     "evaluate": {
       "count": 7,
-      "loc": 1245
+      "loc": 1285
     },
     "goldenset": {
       "count": 5,
-      "loc": 743
+      "loc": 790
     },
     "probes": {
       "count": 3,

@@ -8,15 +8,15 @@
  */
 
 export const MEASURED: Record<string, { count: number; loc: number }> = {
-  'abstain': { count: 1, loc: 95 },
+  'abstain': { count: 1, loc: 113 },
   'api': { count: 1, loc: 167 },
   'cli': { count: 1, loc: 65 },
   'diversify': { count: 1, loc: 99 },
   'embedcache': { count: 1, loc: 151 },
-  'evaluate': { count: 7, loc: 1245 },
+  'evaluate': { count: 7, loc: 1285 },
   'fetch': { count: 3, loc: 487 },
   'generate': { count: 1, loc: 158 },
-  'goldenset': { count: 5, loc: 743 },
+  'goldenset': { count: 5, loc: 790 },
   'health': { count: 1, loc: 101 },
   'hybrid': { count: 1, loc: 108 },
   'ingest': { count: 1, loc: 376 },
@@ -26,9 +26,11 @@ export const MEASURED: Record<string, { count: number; loc: number }> = {
   'parsecache': { count: 1, loc: 104 },
   'probes': { count: 3, loc: 254 },
   'rerank': { count: 1, loc: 77 },
-  'retrieve': { count: 6, loc: 777 },
-  'serve': { count: 1, loc: 591 },
-  'trace': { count: 2, loc: 468 },
+  'retrieve': { count: 6, loc: 784 },
+  'serve': { count: 1, loc: 651 },
+  'trace': { count: 2, loc: 478 },
 }
 
-export const UNCLAIMED: string[] = []
+export const UNCLAIMED: string[] = [
+  'src/corpora.py',
+]

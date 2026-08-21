@@ -1,0 +1,26 @@
+{
+  "llm": {
+    "label": "ML & NLP papers",
+    "data": "data",
+    "store": "vector_store",
+    "golden": "eval/golden_set.json",
+    "threshold": 0.0,
+    "note": "36 arXiv papers. Calibrated: at 0.0 the gate wrongly refuses 1 of 66 answerable questions (1.5%) and catches 9 of 18 adversarial. Lowering costs more catching than it recovers here, which is why this corpus kept the value the whole project was built on."
+  },
+  "birds": {
+    "label": "Ornithology",
+    "data": "data-birds",
+    "store": "store-birds",
+    "golden": "eval/golden-birds.json",
+    "threshold": -3.0,
+    "note": "45 Wikipedia documents, mixed .docx/.pptx/.xlsx/.pdf. Calibrated 2026-08-21: at the ML value of 0.0 this corpus wrongly refuses 10 of 26 answerable questions (38.5%). At -3 it catches exactly as many adversarial cases and recovers six of them for nothing."
+  },
+  "quant": {
+    "label": "Quantitative finance",
+    "data": "data-quant",
+    "store": "store-quant",
+    "golden": "eval/golden-quant.json",
+    "threshold": -4.0,
+    "note": "35 arXiv q-fin papers. Calibrated 2026-08-21: at 0.0 this corpus wrongly refuses 19 of 35 answerable questions (54.3%). At -4 it still catches all six adversarial cases and recovers thirteen answerable ones for nothing. The widest gap of the three, and the clearest evidence that one global threshold cannot serve several corpora."
+  }
+}
