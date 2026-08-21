@@ -2,7 +2,7 @@
   "date": "2026-08-21",
   "totals": {
     "files": 38,
-    "loc": 5926
+    "loc": 5992
   },
   "nodes": {
     "api": {
@@ -11,7 +11,7 @@
     },
     "serve": {
       "count": 1,
-      "loc": 525
+      "loc": 591
     },
     "cli": {
       "count": 1,

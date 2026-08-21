@@ -14,12 +14,15 @@
 @font-face{font-family:"DM Mono";src:url("/fonts/DMMono-500.woff2") format("woff2");
   font-weight:500;font-display:swap;font-style:normal}
 
+/* Dark, matching the app. The three series hues are the dark-stepped values
+   re-validated all-pairs on this ground -- CVD dE 9.4, normal vision 20.9 --
+   not the light values dimmed, which fail the lightness band. */
 :root{
-  --bg:#F4F5F6; --panel:#FFFFFF; --sunk:#ECEEEF;
-  --ink:#000000; --soft:#3C4142; --muted:#6E7476; --faint:#9AA0A2;
-  --line:#E2E4E6; --rule:#C3C9CC;
-  --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
-  --good:#0ca30c; --critical:#d03b3b; --serious:#b3705f;
+  --bg:#0b0c0d; --panel:#141618; --sunk:#1b1e21;
+  --ink:#f4f6f7; --soft:#a9b0b5; --muted:#7d858b; --faint:#5b6368;
+  --line:#22262a; --rule:#2e3338;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+  --good:#3fb950; --critical:#f0685f; --serious:#d9a441;
   --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
   --ease-out:cubic-bezier(0.23,1,0.32,1);

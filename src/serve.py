@@ -279,6 +279,56 @@ def trace_options(payload: dict) -> dict:
     return opts
 
 
+def chat(question: str, payload: dict) -> dict:
+    """One question, one round trip: the answer AND how it was reached.
+
+    The chat surface shows its own working -- which retriever found what, what
+    the reranker moved, what the cap dropped -- so it needs the trace and the
+    answer together. Two calls would re-run retrieval twice for one question and
+    could disagree, which is the exact failure the citation contract exists to
+    prevent.
+
+    Generation is reported, never thrown. `generation.state` is one of:
+
+      "off"        the caller did not ask for prose
+      "ok"         a real answer came back
+      "unavailable" the call was attempted and failed -- no credit, no key, a
+                   refusal. The passages are still returned and still correct,
+                   so the surface degrades to retrieval-only rather than to an
+                   error page. The reason is passed through verbatim because
+                   "you have no credit" and "the model declined" need different
+                   actions from the reader.
+    """
+    from pipeline_trace import trace_pipeline
+
+    with RES.lock:
+        trace = trace_pipeline(question, RES.index, RES.metadata, RES.model,
+                               bm25=RES.bm25, k=int(payload.get("k", 5)),
+                               **trace_options(payload))
+
+    selected = trace["stages"][-1]["items"]
+    generation = {"state": "off", "text": None, "reason": None}
+
+    if payload.get("generate"):
+        try:
+            from generate import synthesize
+
+            # Generate from the passages the trace reports, not a second
+            # retrieval, so the citations shown and the text read are the same.
+            with RES.lock:
+                chunks = [RES.metadata[i["chunk_id"]] for i in selected]
+                for c, i in zip(chunks, selected):
+                    c.setdefault("chunk_id", i["chunk_id"])
+            generation = {"state": "ok",
+                          "text": synthesize(question, chunks),
+                          "reason": None}
+        except Exception as exc:  # noqa: BLE001 - reported, never raised
+            generation = {"state": "unavailable", "text": None,
+                          "reason": f"{type(exc).__name__}: {exc}"}
+
+    return {**trace, "generation": generation}
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -451,6 +501,22 @@ class Handler(BaseHTTPRequestHandler):
                                  "documents": len(supported) if supported else None})
             else:
                 self._send(409, {"error": "an indexing run is already in progress"})
+            return
+
+        if route == "/api/chat":
+            payload = self._body()
+            if payload is None:
+                return
+            question = (payload.get("question") or "").strip()
+            if not question:
+                self._send(400, {"error": "field 'question' is required"})
+                return
+            try:
+                self._send(200, chat(question, payload))
+            except ValueError as exc:
+                self._send(400, {"error": str(exc)})
+            except Exception as exc:  # noqa: BLE001
+                self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
             return
 
         if route not in ("/ask", "/api/trace"):
