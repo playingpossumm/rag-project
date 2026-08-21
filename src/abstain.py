@@ -64,7 +64,25 @@ unanswerable cases rather than chosen by intuition. See eval/RESULTS.md.
 #
 # Third recalibration of this constant, and the third time a corpus or golden
 # set change moved it. It is a property of the data, not of the model.
-ABSTAIN_THRESHOLD = 0.0
+#
+# MEASURED ACROSS CORPORA, 2026-08-21, which settles that last sentence. The
+# same threshold applied to a second corpus, Wikipedia ornithology:
+#
+#                       answerable median   wrongly refused at 0.0
+#   ML papers   (36)            +4.93        1 of 66   ( 1.5%)
+#   ornithology (45)            +1.82       10 of 26   (38.5%)
+#
+# Not a small drift. At 0.0 the gate refuses more than a third of the questions
+# the bird corpus can answer, and that corpus's own sweep puts its best point at
+# -6. The reranker scores encyclopaedia prose far lower than it scores papers,
+# so a cut point calibrated on one corpus says very little about another.
+#
+# It is therefore overridable, and a corpus nobody has calibrated is running on
+# a number derived from somebody else's documents. Calibrate with
+# src/calibrate_threshold.py before trusting a refusal.
+import os
+
+ABSTAIN_THRESHOLD = float(os.environ.get("RAG_ABSTAIN_THRESHOLD", 0.0))
 
 
 def top_score(results: list[dict]) -> float:
