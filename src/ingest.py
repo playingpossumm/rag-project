@@ -18,7 +18,13 @@ from loaders import extract_title, load_document
 # no API integration for files that are genuinely files.
 DATA_DIR = Path(os.environ.get("RAG_DATA_DIR",
                                Path(__file__).parent.parent / "data")).expanduser()
-STORE_DIR = Path(__file__).parent.parent / "vector_store"
+# Overridable alongside RAG_DATA_DIR, and for the same reason: a corpus and the
+# index built from it are one pair. Pointing the data directory at a second
+# corpus while the store stayed put would overwrite the first corpus's index,
+# which is a silent and expensive mistake -- the two directories have to move
+# together or not at all.
+STORE_DIR = Path(os.environ.get("RAG_STORE_DIR",
+                                Path(__file__).parent.parent / "vector_store")).expanduser()
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
 # Chunk size is measured in TOKENS, not words, because the encoder's input
