@@ -136,10 +136,10 @@
     without a technical background, and argue about it with an engineer
     afterwards</b>. Every figure is measured from the running system.</p>
   <div class="facts">
-    <div>corpus <b>20 documents · 2,768 passages</b></div>
+    <div>corpus <b>36 documents · 5,459 passages</b></div>
     <div>test set <b>84 questions</b></div>
     <div>hit rate <b>0.848</b></div>
-    <div>source recall <b>0.773</b></div>
+    <div>source recall <b>0.738</b></div>
   </div>
 </header>
 
@@ -157,8 +157,9 @@
     <li><a href="#c9">How any of this is judged<span>metrics and the golden set</span></a></li>
     <li><a href="#c10">Five times measurement beat the plan<span>including two tool bugs</span></a></li>
     <li><a href="#c11">What is still wrong with it<span>stated plainly</span></a></li>
-    <li><a href="#c12">Why build it at all<span>against NotebookLM</span></a></li>
-    <li><a href="#c13">Glossary<span>every term in one place</span></a></li>
+    <li><a href="#c12">Does any of it transfer?<span>a second corpus</span></a></li>
+    <li><a href="#c13">Why build it at all<span>against NotebookLM</span></a></li>
+    <li><a href="#c14">Glossary<span>every term in one place</span></a></li>
   </ol>
 </nav>
 
@@ -674,12 +675,23 @@ re-run, and see whether the numbers move.</p>
     <tr><td>Dense only — <em>the standard tutorial build</em></td><td class="r m">0.788</td><td class="r m">0.601</td><td class="r m">0.645</td><td class="r m">0.704</td></tr>
     <tr><td>+ cross-encoder reranking</td><td class="r m">0.788</td><td class="r m">0.710</td><td class="r m">0.715</td><td class="r m">0.711</td></tr>
     <tr><td>+ hybrid BM25 fusion</td><td class="r m">0.864</td><td class="r m">0.757</td><td class="r m">0.766</td><td class="r m">0.742</td></tr>
-    <tr class="hi"><td>+ diversity cap — <em>shipped</em></td><td class="r m">0.848</td><td class="r m">0.754</td><td class="r m">0.769</td><td class="r m">0.773</td></tr>
+    <tr class="hi"><td>+ diversity cap — <em>shipped</em></td><td class="r m">0.848</td><td class="r m">0.749</td><td class="r m">0.761</td><td class="r m">0.738</td></tr>
   </tbody>
 </table>
 </div>
-<p>Against the naive build: <strong>+6.0 points of hit rate, +15.3 of MRR, +6.9 of
+<p>Against the naive build: <strong>+4.5 points of hit rate, +16.0 of MRR, +9.7 of
 source recall</strong>.</p>
+
+<div class="note"><span class="k">Why these differ from an earlier reading</span>
+  <p>The corpus grew from 20 documents to 36 partway through. Ranking barely
+  moved — hit rate is identical — but source recall fell from 0.773 to 0.738,
+  and that fall is a <em>measurement</em> effect rather than a retrieval one.</p>
+  <p>Gold locations are derived from answer strings, so a new document that
+  contains one joins that question's gold set. Eleven of 66 questions gained
+  sources. Returning two of two answering documents scores 1.000; returning the
+  same two when five now answer scores 0.400, with retrieval having done nothing
+  differently. <strong>The metric got harder, the system did not get worse.</strong></p>
+</div>
 </section>
 
 <!-- ============================================================== 10 -->
@@ -743,12 +755,16 @@ question apart before searching. It needs API credit the project does not have. 
 cases are now a fixture that any attempted fix can be scored against in about 20
 seconds.</p>
 
-<h3>The document loaders have never run on a real file</h3>
-<p>The corpus is 20 PDFs. Code exists for Word, PowerPoint, Excel and scanned documents,
-and <strong>none of it has ever processed a real file</strong>. The spreadsheet path is
-least trustworthy: rows are flattened into <code>Column: value</code> text on an
-assumption with no evidence behind it. This is the largest unknown in the system and the
-cheapest to close.</p>
+<h3 style="color:var(--good)">Closed: the loaders now run on real files</h3>
+<p>This chapter used to say that the Word, PowerPoint and Excel loaders had never
+processed a real file, that this was the largest unknown in the system, and that the
+spreadsheet path was least trustworthy because rows are flattened into
+<code>Column: value</code> "on an assumption with no evidence behind it".</p>
+<p>They have now run, against a 45-document corpus that is 62% non-PDF. Word and
+PowerPoint were correct as written, tables and speaker notes included.
+<strong>The spreadsheet assumption was wrong</strong>, in precisely the way the caveat
+predicted — see chapter 12.</p>
+<p><strong>Still untested:</strong> the OCR path has never seen a scanned document.</p>
 
 <h3>Writing prose has never actually run</h3>
 <p>The generation layer is written and reaches the network, but no call has ever
@@ -758,7 +774,83 @@ project's own record insists those are different things.</p>
 
 <!-- ============================================================== 12 -->
 <section id="c12">
-<h2 class="ch"><span class="n">Chapter 12</span>Why build it at all</h2>
+<h2 class="ch"><span class="n">Chapter 12</span>Does any of it transfer?</h2>
+<p class="lede">Every number so far describes one corpus of machine-learning papers.
+A second corpus answers a different question: which of these are properties of the
+<em>system</em>, and which are properties of the <em>documents</em>?</p>
+
+<p>45 Wikipedia ornithology documents were indexed and scored against 26 questions
+written against them. Deliberately mixed — 12 Word, 12 PowerPoint, 11 Excel, 10 PDF —
+because three of those loaders had never seen a real file.</p>
+
+<div class="tw">
+<table>
+  <thead><tr><th>shipped pipeline</th><th class="r">ML papers (36)</th><th class="r">ornithology (45)</th></tr></thead>
+  <tbody>
+    <tr><td>hit rate</td><td class="r m">0.848</td><td class="r m">0.808</td></tr>
+    <tr><td>MRR</td><td class="r m">0.749</td><td class="r m">0.570</td></tr>
+    <tr><td>NDCG</td><td class="r m">0.761</td><td class="r m">0.635</td></tr>
+    <tr><td>source recall</td><td class="r m">0.738</td><td class="r m">0.762</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Ranking is materially worse and source recall slightly better. Both point the same
+way: encyclopaedia prose states a fact once, in ordinary words, so the right passage is
+found but sits lower — and the answer is spread across fewer documents, which are
+correspondingly easier to cover.</p>
+
+<div class="note bad"><span class="k">The threshold does not transfer at all</span>
+  <p>This is the finding that invalidates a default rather than nudging one.</p>
+  <div class="tw">
+  <table>
+    <thead><tr><th></th><th class="r">answerable median</th><th class="r">wrongly refused at 0.0</th></tr></thead>
+    <tbody>
+      <tr><td>ML papers</td><td class="r m">+4.93</td><td class="r m">1 of 66 — 1.5%</td></tr>
+      <tr><td>ornithology</td><td class="r m">+1.82</td><td class="r m"><strong>10 of 26 — 38.5%</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The shipped refusal threshold rejects <strong>more than a third</strong> of the
+  questions the bird corpus can actually answer. On its own sweep the best cut point is
+  <strong>−6</strong> — six full points from the shipped value.</p>
+  <p>The cross-encoder simply scores encyclopaedia prose lower than it scores academic
+  papers. A cut point calibrated on one corpus says very little about another.
+  <strong>A corpus nobody has calibrated is running on a number derived from somebody
+  else's documents.</strong></p>
+</div>
+
+<h3>Three bugs that only a mixed-format corpus could reveal</h3>
+<p>Everything before this ran on PDFs alone. Adding Word, PowerPoint and Excel found
+three defects, none of which an all-PDF corpus can produce:</p>
+<ol>
+  <li><strong>The spreadsheet loader mislabelled every value.</strong> It assumed row 1
+  held the column names. Real spreadsheets open with a title spanning the sheet, and on
+  one of those every row came back as <code>Q3 sales report: 41200</code> — the title
+  repeated as the column name, the real headers demoted to data, the values unlabelled.
+  Nothing errored.</li>
+  <li><strong>Building the labels crashed.</strong> A location is sorted by its value,
+  and a page number is an integer while a Word section and a spreadsheet sheet are text.
+  Any question whose answer spanned both formats compared a number against a string.</li>
+  <li><strong>Every non-PDF hit scored as a miss.</strong> A location is
+  <em>(document, kind, value)</em>, but the labels stored only the value, so the scorer
+  assumed "page" while results carried "section", "slide" or "sheet". This one would
+  never have crashed — it would have reported that retrieval found nothing in 20 of 45
+  documents, and the obvious conclusion, <em>the loaders must be broken</em>, would have
+  been exactly wrong.</li>
+</ol>
+
+<div class="note"><span class="k">Why this chapter exists</span>
+  <p>A system measured on one corpus is a system whose numbers you do not yet know how
+  to read. Two of the three bugs above are invisible to any amount of testing against
+  the documents the system was built on, and the threshold finding overturns a default
+  that four separate rounds of calibration had left in place.</p>
+</div>
+</section>
+
+<!-- ============================================================== 13 -->
+<section id="c13">
+<h2 class="ch"><span class="n">Chapter 13</span>Why build it at all</h2>
 <p class="lede">The honest answer is not "better answers".</p>
 
 <p>A hand-built system will not beat NotebookLM or Glean on raw answer quality. They
@@ -791,8 +883,8 @@ confident.</p>
 </section>
 
 <!-- ============================================================== 13 -->
-<section id="c13">
-<h2 class="ch"><span class="n">Chapter 13</span>Glossary</h2>
+<section id="c14">
+<h2 class="ch"><span class="n">Chapter 14</span>Glossary</h2>
 <p class="lede">Every term used above, in one place.</p>
 
 <dl class="gl">
