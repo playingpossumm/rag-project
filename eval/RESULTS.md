@@ -291,6 +291,66 @@ above the threshold, either the label is stale or the gate is broken, and both
 need a human. On the current corpus that check flags nine cases and reports that
 **eight were invisible to the term list**.
 
+## A second corpus: what transfers and what does not
+
+A corpus of 45 Wikipedia ornithology documents was built to test whether any of
+this is a property of the system or of the ML papers it was tuned on. It is
+deliberately mixed-format -- 12 `.docx`, 12 `.pptx`, 11 `.xlsx`, 10 `.pdf` --
+because the loaders for three of those had never run on a real file.
+
+| shipped pipeline | ML papers (36) | ornithology (45) |
+|---|---|---|
+| hit rate | 0.848 | 0.808 |
+| MRR | 0.749 | **0.570** |
+| NDCG | 0.761 | 0.635 |
+| source recall | 0.738 | **0.762** |
+
+Ranking is materially worse and source recall is slightly better. Both point the
+same way: encyclopaedia prose states a fact in one place and in ordinary words,
+so the right passage is found but sits lower, and the answer is spread across
+fewer documents that are easier to cover.
+
+### The abstention threshold does not transfer at all
+
+This is the finding that matters, and it invalidates a default rather than
+adjusting one.
+
+| | answerable median | wrongly refused at 0.0 |
+|---|---|---|
+| ML papers | +4.93 | 1 of 66 — **1.5%** |
+| ornithology | +1.82 | 10 of 26 — **38.5%** |
+
+The shipped threshold refuses **more than a third** of the questions the bird
+corpus can answer. On its own sweep the best point is **−6**, six full points
+away from the shipped value. The cross-encoder scores encyclopaedia prose far
+lower than it scores academic papers, so a cut point calibrated on one corpus
+says very little about another.
+
+`abstain.py` had already guessed this in a comment — *"it is a property of the
+data, not of the model"* — written after the third recalibration. It is now
+measured rather than suspected, and the constant is overridable with
+`RAG_ABSTAIN_THRESHOLD`. **A corpus nobody has calibrated is running on a number
+derived from somebody else's documents.**
+
+### Hybrid fusion may not transfer either
+
+| candidate pool @20 | ML papers | ornithology |
+|---|---|---|
+| dense only | 0.909 | **0.962** |
+| + BM25, fused by RRF | **0.924** | 0.885 |
+
+On the ML corpus adding the lexical retriever is the single largest gain in the
+system. On the bird corpus it appears to *cost* 7.7 points of pool any-hit --
+the opposite direction. The plausible reason is that questions about birds and
+the text answering them share ordinary vocabulary, so BM25 promotes passages
+that merely repeat common words.
+
+**Treated as a lead, not a result.** 26 answerable cases means one case is worth
+3.8 points, so this is a two-case difference and inside the noise this corpus can
+resolve. It is recorded because it points the opposite way to a settled default,
+and that is worth re-testing on a larger bird golden set rather than acting on
+now.
+
 ## Context expansion
 
 | mode | context recall | tokens/query | recall per 1k tokens |
