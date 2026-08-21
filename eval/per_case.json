@@ -1,0 +1,4527 @@
+{
+ "generated_by": "src/per_case.py",
+ "options": {
+  "k": 5,
+  "candidate_k": 20,
+  "use_reranker": true,
+  "fusion": "rrf",
+  "max_per_source": 2
+ },
+ "threshold": 0.0,
+ "corpus": {
+  "chunks": 2768,
+  "documents": 20
+ },
+ "totals": {
+  "answerable": {
+   "n": 66,
+   "hit_rate": 0.8485,
+   "mrr": 0.7543,
+   "ndcg": 0.7687,
+   "src_recall": 0.7735,
+   "refused_wrongly": 1,
+   "missed": 10
+  },
+  "adversarial": {
+   "n": 18,
+   "refused": 13,
+   "answered_anyway": 5
+  }
+ },
+ "cases": [
+  {
+   "id": "mha-def",
+   "kind": "fact",
+   "question": "What is multi-head attention and why use several heads instead of one?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 4.385,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 5",
+     "score": 4.385,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 5",
+     "score": 2.9513,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "vision_transformer.pdf",
+     "locator": "page 2",
+     "score": 1.7415,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "vision_transformer.pdf",
+     "locator": "page 13",
+     "score": -2.266,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 5",
+     "score": -2.86,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "scale-why",
+   "kind": "fact",
+   "question": "Why is the dot product scaled by the square root of the key dimension?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 2.966,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 4",
+     "score": 2.966,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 4",
+     "score": 2.8309,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "colbert.pdf",
+     "locator": "page 4",
+     "score": -5.4402,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "colbert.pdf",
+     "locator": "page 4",
+     "score": -6.4005,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 3",
+     "score": -8.7781,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "warmup",
+   "kind": "fact",
+   "question": "Which learning rate schedule increases linearly for the first steps then decays by inverse square root?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 6.395,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 12",
+     "score": 6.3949,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 7",
+     "score": 4.5982,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "roberta.pdf",
+     "locator": "page 2",
+     "score": 1.1527,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "lora.pdf",
+     "locator": "page 18",
+     "score": 0.3437,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 12",
+     "score": -3.3245,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "pos-enc-fn",
+   "kind": "fact",
+   "question": "What sinusoidal function is used to compute positional encodings?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 4.165,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 6",
+     "score": 4.1647,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 6",
+     "score": 3.2045,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "vision_transformer.pdf",
+     "locator": "page 8",
+     "score": -0.3027,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 5",
+     "score": -1.0194,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 18",
+     "score": -1.8392,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "pos-enc-why",
+   "kind": "fact",
+   "question": "Why does a model with no recurrence and no convolution need positional encodings?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 7.572,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 6",
+     "score": 7.5716,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "vision_transformer.pdf",
+     "locator": "page 18",
+     "score": 0.4309,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 2",
+     "score": -2.217,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "vision_transformer.pdf",
+     "locator": "page 17",
+     "score": -2.3283,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 5",
+     "score": -5.8879,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "path-length",
+   "kind": "fact",
+   "question": "How does the maximum path length between positions compare for self-attention and recurrent layers?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 5.905,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 6",
+     "score": 5.9054,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 7",
+     "score": 4.3299,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 5",
+     "score": -0.1998,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "vision_transformer.pdf",
+     "locator": "page 4",
+     "score": -1.7458,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 20",
+     "score": -1.9897,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bleu-ende",
+   "kind": "fact",
+   "question": "Which model achieved 28.4 BLEU on WMT 2014 English-to-German?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "bahdanau_attention.pdf",
+    "colbert.pdf",
+    "gpt3.pdf",
+    "seq2seq.pdf"
+   ],
+   "confidence": 8.834,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 1",
+     "score": 8.8338,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 8",
+     "score": 6.8868,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 39",
+     "score": 2.2458,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 8",
+     "score": 1.8745,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "seq2seq.pdf",
+     "locator": "page 6",
+     "score": 0.1226,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.9469,
+   "src_recall": 0.4,
+   "context_recall": 1.0
+  },
+  {
+   "id": "attn-uses",
+   "kind": "fact",
+   "question": "In which three different ways is multi-head attention used in an encoder-decoder Transformer?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 7.824,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 5",
+     "score": 7.824,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 3",
+     "score": 4.656,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 5",
+     "score": 4.1438,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 16",
+     "score": 3.1858,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 18",
+     "score": 1.3513,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "label-smooth",
+   "kind": "fact",
+   "question": "What label smoothing value was used during training?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 6.113,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 8",
+     "score": 6.1134,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "vision_transformer.pdf",
+     "locator": "page 6",
+     "score": 0.5234,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 43",
+     "score": -2.9544,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 12",
+     "score": -4.844,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 8",
+     "score": -4.9338,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "p100",
+   "kind": "fact",
+   "question": "What GPU hardware was used for training, and how many?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 3.752,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 7",
+     "score": 3.7518,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "seq2seq.pdf",
+     "locator": "page 5",
+     "score": -0.1698,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 18",
+     "score": -1.3865,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 42",
+     "score": -1.6351,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 9",
+     "score": -2.4399,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "adam",
+   "kind": "multi",
+   "question": "Which optimizer was used, and with what beta values?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "gpt3.pdf",
+    "roberta.pdf",
+    "vision_transformer.pdf"
+   ],
+   "confidence": -4.022,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 5",
+     "score": -4.0217,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 7",
+     "score": -5.7418,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 8",
+     "score": -7.378,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 38",
+     "score": -7.9023,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 1",
+     "score": -8.4057,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 0.25,
+   "context_recall": 1.0
+  },
+  {
+   "id": "relu",
+   "kind": "multi",
+   "question": "Which activation function is applied between the two linear layers of a feed-forward block?",
+   "unanswerable": false,
+   "gold_sources": [
+    "adam_optimizer.pdf",
+    "attention_is_all_you_need.pdf",
+    "batch_normalization.pdf",
+    "bert.pdf",
+    "gpt3.pdf",
+    "layer_normalization.pdf",
+    "resnet.pdf",
+    "t5.pdf"
+   ],
+   "confidence": 3.047,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 5",
+     "score": 3.0467,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 4",
+     "score": 1.5668,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 4",
+     "score": -0.5021,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "layer_normalization.pdf",
+     "locator": "page 2",
+     "score": -1.7651,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 3",
+     "score": -3.3929,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.8772,
+   "src_recall": 0.6,
+   "context_recall": 1.0
+  },
+  {
+   "id": "dropout-rate",
+   "kind": "multi",
+   "question": "What dropout rate was applied for regularization?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "dense_passage_retrieval.pdf"
+   ],
+   "confidence": 3.998,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 11",
+     "score": 3.9976,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "resnet.pdf",
+     "locator": "page 8",
+     "score": 3.3568,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "batch_normalization.pdf",
+     "locator": "page 6",
+     "score": 1.2477,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 13",
+     "score": 0.7023,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "batch_normalization.pdf",
+     "locator": "page 6",
+     "score": -0.0076,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "residual",
+   "kind": "multi",
+   "question": "How are residual connections and layer normalization applied around each sub-layer?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "lora.pdf",
+    "vision_transformer.pdf"
+   ],
+   "confidence": 6.363,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 3",
+     "score": 6.3633,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 4",
+     "score": 6.1484,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 3",
+     "score": 4.3781,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "layer_normalization.pdf",
+     "locator": "page 13",
+     "score": 1.4092,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 3",
+     "score": 0.9279,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.8855,
+   "src_recall": 0.6667,
+   "context_recall": 1.0
+  },
+  {
+   "id": "wmt14",
+   "kind": "multi",
+   "question": "Which translation dataset was used for the English-to-German experiments?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf"
+   ],
+   "confidence": 4.934,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 8",
+     "score": 4.9344,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 1",
+     "score": 4.1122,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 16",
+     "score": 3.7521,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 4",
+     "score": 1.3066,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 9",
+     "score": 1.3063,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "colbert-late",
+   "kind": "cross-doc",
+   "question": "What is late interaction in a retrieval model?",
+   "unanswerable": false,
+   "gold_sources": [
+    "colbert.pdf",
+    "dense_passage_retrieval.pdf"
+   ],
+   "confidence": 4.643,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "colbert.pdf",
+     "locator": "page 1",
+     "score": 4.6429,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "colbert.pdf",
+     "locator": "page 2",
+     "score": 4.581,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 9",
+     "score": 2.4654,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 19",
+     "score": -3.4657,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 9",
+     "score": -3.7485,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "dpr-dual",
+   "kind": "cross-doc",
+   "question": "How is a dual-encoder retriever trained with in-batch negatives?",
+   "unanswerable": false,
+   "gold_sources": [
+    "dense_passage_retrieval.pdf"
+   ],
+   "confidence": 4.35,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 4",
+     "score": 4.3501,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 5",
+     "score": 3.6768,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "rag.pdf",
+     "locator": "page 3",
+     "score": -2.2729,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 2",
+     "score": -4.868,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 5",
+     "score": -7.3196,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "lora-rank",
+   "kind": "cross-doc",
+   "question": "How does low-rank adaptation reduce the number of trainable parameters?",
+   "unanswerable": false,
+   "gold_sources": [
+    "lora.pdf"
+   ],
+   "confidence": 7.325,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "lora.pdf",
+     "locator": "page 1",
+     "score": 7.3246,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "lora.pdf",
+     "locator": "page 9",
+     "score": 5.5453,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "lora.pdf",
+     "locator": "page 2",
+     "score": 3.5342,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "lora.pdf",
+     "locator": "page 9",
+     "score": 1.8923,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "lora.pdf",
+     "locator": "page 22",
+     "score": 1.7372,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bert-mlm",
+   "kind": "cross-doc",
+   "question": "What is the masked language model pre-training objective?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bert.pdf",
+    "rag.pdf",
+    "roberta.pdf",
+    "t5.pdf",
+    "vision_transformer.pdf"
+   ],
+   "confidence": 9.584,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bert.pdf",
+     "locator": "page 1",
+     "score": 9.5845,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "roberta.pdf",
+     "locator": "page 2",
+     "score": 7.9493,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 13",
+     "score": 7.8202,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "bert.pdf",
+     "locator": "page 2",
+     "score": 7.5835,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 21",
+     "score": 7.2715,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.6,
+   "context_recall": 1.0
+  },
+  {
+   "id": "cot-prompt",
+   "kind": "cross-doc",
+   "question": "How does prompting a model with intermediate reasoning steps affect arithmetic accuracy?",
+   "unanswerable": false,
+   "gold_sources": [
+    "chain_of_thought.pdf"
+   ],
+   "confidence": 4.45,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 19",
+     "score": 4.4497,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 1",
+     "score": 4.2916,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 23",
+     "score": 4.2531,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 24",
+     "score": 4.0367,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 8",
+     "score": 3.4381,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "sbert-siamese",
+   "kind": "cross-doc",
+   "question": "How are siamese network structures used to derive sentence embeddings?",
+   "unanswerable": false,
+   "gold_sources": [
+    "dense_passage_retrieval.pdf",
+    "sentence_bert.pdf"
+   ],
+   "confidence": 7.128,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "sentence_bert.pdf",
+     "locator": "page 1",
+     "score": 7.1278,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "sentence_bert.pdf",
+     "locator": "page 1",
+     "score": 6.7934,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "bert.pdf",
+     "locator": "page 4",
+     "score": -1.6515,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bert.pdf",
+     "locator": "page 11",
+     "score": -8.9081,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "rag.pdf",
+     "locator": "page 11",
+     "score": -11.4663,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "vit-patches",
+   "kind": "cross-doc",
+   "question": "How is an image split into patches and fed to a Transformer?",
+   "unanswerable": false,
+   "gold_sources": [
+    "vision_transformer.pdf"
+   ],
+   "confidence": 5.977,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "vision_transformer.pdf",
+     "locator": "page 1",
+     "score": 5.9773,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "vision_transformer.pdf",
+     "locator": "page 3",
+     "score": 5.5839,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 5",
+     "score": 0.0109,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 16",
+     "score": -4.1152,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "resnet.pdf",
+     "locator": "page 12",
+     "score": -9.3297,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "faiss-pq",
+   "kind": "cross-doc",
+   "question": "How does product quantization compress vectors for similarity search?",
+   "unanswerable": false,
+   "gold_sources": [
+    "colbert.pdf",
+    "faiss_billion_scale.pdf",
+    "resnet.pdf"
+   ],
+   "confidence": 3.793,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 1",
+     "score": 3.7929,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 1",
+     "score": 2.8078,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 3",
+     "score": 1.8685,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 3",
+     "score": 1.7124,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "colbert.pdf",
+     "locator": "page 6",
+     "score": -0.0199,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.9469,
+   "src_recall": 0.6667,
+   "context_recall": 1.0
+  },
+  {
+   "id": "adam-bias",
+   "kind": "fact",
+   "question": "How does the optimizer correct for bias in its moment estimates?",
+   "unanswerable": false,
+   "gold_sources": [
+    "adam_optimizer.pdf"
+   ],
+   "confidence": 3.473,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 2",
+     "score": 3.4726,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 3",
+     "score": 3.206,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 36",
+     "score": -7.6812,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "batch_normalization.pdf",
+     "locator": "page 6",
+     "score": -10.5045,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 25",
+     "score": -11.0184,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "adam-adamax",
+   "kind": "fact",
+   "question": "What variant based on the infinity norm is proposed?",
+   "unanswerable": false,
+   "gold_sources": [
+    "adam_optimizer.pdf"
+   ],
+   "confidence": 4.668,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 9",
+     "score": 4.668,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 1",
+     "score": 3.1829,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 22",
+     "score": -5.9946,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "layer_normalization.pdf",
+     "locator": "page 3",
+     "score": -6.3103,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 37",
+     "score": -7.3191,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bahdanau-fixed",
+   "kind": "fact",
+   "question": "What bottleneck does encoding a sentence into a fixed-length vector create?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bahdanau_attention.pdf"
+   ],
+   "confidence": 3.087,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 1",
+     "score": 3.0867,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 9",
+     "score": 2.3204,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "seq2seq.pdf",
+     "locator": "page 2",
+     "score": -1.7332,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "sentence_bert.pdf",
+     "locator": "page 3",
+     "score": -3.7706,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 7",
+     "score": -7.4856,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bahdanau-align",
+   "kind": "fact",
+   "question": "How does the model learn to align and translate jointly?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "bahdanau_attention.pdf",
+    "seq2seq.pdf",
+    "t5.pdf"
+   ],
+   "confidence": 8.229,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 1",
+     "score": 8.2288,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 2",
+     "score": 6.4621,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "seq2seq.pdf",
+     "locator": "page 9",
+     "score": 5.8516,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 58",
+     "score": 5.6809,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 10",
+     "score": 3.5223,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bn-covariate",
+   "kind": "fact",
+   "question": "What problem does normalizing layer inputs address?",
+   "unanswerable": false,
+   "gold_sources": [
+    "batch_normalization.pdf",
+    "layer_normalization.pdf",
+    "resnet.pdf",
+    "vision_transformer.pdf"
+   ],
+   "confidence": 4.545,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "batch_normalization.pdf",
+     "locator": "page 1",
+     "score": 4.5453,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "batch_normalization.pdf",
+     "locator": "page 3",
+     "score": 4.4599,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "layer_normalization.pdf",
+     "locator": "page 3",
+     "score": 3.7906,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "layer_normalization.pdf",
+     "locator": "page 2",
+     "score": 3.5296,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 29",
+     "score": -1.4512,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bn-minibatch",
+   "kind": "multi",
+   "question": "How are normalization statistics computed during training?",
+   "unanswerable": false,
+   "gold_sources": [
+    "batch_normalization.pdf",
+    "colbert.pdf",
+    "dense_passage_retrieval.pdf",
+    "layer_normalization.pdf",
+    "resnet.pdf",
+    "roberta.pdf",
+    "sentence_bert.pdf",
+    "word2vec.pdf"
+   ],
+   "confidence": 7.17,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "batch_normalization.pdf",
+     "locator": "page 3",
+     "score": 7.17,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "batch_normalization.pdf",
+     "locator": "page 4",
+     "score": 6.0114,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "layer_normalization.pdf",
+     "locator": "page 2",
+     "score": 4.8865,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "layer_normalization.pdf",
+     "locator": "page 2",
+     "score": 4.4751,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "resnet.pdf",
+     "locator": "page 10",
+     "score": -0.7201,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.6,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bert-nsp",
+   "kind": "cross-doc",
+   "question": "What sentence-level pre-training task is used alongside masked prediction?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bert.pdf",
+    "roberta.pdf"
+   ],
+   "confidence": 5.252,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bert.pdf",
+     "locator": "page 2",
+     "score": 5.2524,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "roberta.pdf",
+     "locator": "page 2",
+     "score": 4.5025,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "bert.pdf",
+     "locator": "page 1",
+     "score": 3.8575,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "vision_transformer.pdf",
+     "locator": "page 9",
+     "score": 3.4431,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "roberta.pdf",
+     "locator": "page 2",
+     "score": -0.1282,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.9469,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bert-wordpiece",
+   "kind": "multi",
+   "question": "What subword tokenization scheme is used?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "bert.pdf",
+    "colbert.pdf",
+    "t5.pdf"
+   ],
+   "confidence": 2.513,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "roberta.pdf",
+     "locator": "page 6",
+     "score": 2.5128,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "roberta.pdf",
+     "locator": "page 6",
+     "score": 0.6109,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 62",
+     "score": -0.0294,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 5",
+     "score": -1.8668,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 21",
+     "score": -2.4662,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.25,
+   "context_recall": 0.0
+  },
+  {
+   "id": "bert-glue",
+   "kind": "multi",
+   "question": "What benchmark suite is used to evaluate language understanding?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bert.pdf",
+    "gpt3.pdf",
+    "lora.pdf",
+    "rag.pdf",
+    "t5.pdf"
+   ],
+   "confidence": 5.32,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "lora.pdf",
+     "locator": "page 5",
+     "score": 5.3198,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "roberta.pdf",
+     "locator": "page 3",
+     "score": 5.0087,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "roberta.pdf",
+     "locator": "page 12",
+     "score": 4.9668,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 74",
+     "score": 4.7048,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 66",
+     "score": 4.5627,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.6,
+   "context_recall": 0.0
+  },
+  {
+   "id": "cot-gsm8k",
+   "kind": "cross-doc",
+   "question": "Which grade-school math benchmark is used to evaluate reasoning?",
+   "unanswerable": false,
+   "gold_sources": [
+    "chain_of_thought.pdf"
+   ],
+   "confidence": 0.658,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 4",
+     "score": 0.6584,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 2",
+     "score": -0.5589,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 18",
+     "score": -0.9663,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 3",
+     "score": -1.6955,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 18",
+     "score": -2.694,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6509,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "cot-scale",
+   "kind": "cross-doc",
+   "question": "At what model scale does chain-of-thought reasoning emerge?",
+   "unanswerable": false,
+   "gold_sources": [
+    "chain_of_thought.pdf"
+   ],
+   "confidence": 8.163,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 16",
+     "score": 8.163,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 9",
+     "score": 7.778,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 21",
+     "score": 7.1622,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 9",
+     "score": 6.4594,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 5",
+     "score": 6.4371,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.8855,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "colbert-maxsim",
+   "kind": "fact",
+   "question": "What operator computes the similarity between query and document embeddings?",
+   "unanswerable": false,
+   "gold_sources": [
+    "colbert.pdf"
+   ],
+   "confidence": 7.002,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "colbert.pdf",
+     "locator": "page 2",
+     "score": 7.002,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "colbert.pdf",
+     "locator": "page 4",
+     "score": 6.5934,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 3",
+     "score": -0.0935,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 3",
+     "score": -4.8574,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 9",
+     "score": -8.0868,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "colbert-msmarco",
+   "kind": "multi",
+   "question": "Which passage ranking dataset is used for evaluation?",
+   "unanswerable": false,
+   "gold_sources": [
+    "colbert.pdf",
+    "rag.pdf"
+   ],
+   "confidence": 3.334,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "gpt3.pdf",
+     "locator": "page 54",
+     "score": 3.334,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "colbert.pdf",
+     "locator": "page 6",
+     "score": 2.6576,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 5",
+     "score": 2.3462,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "roberta.pdf",
+     "locator": "page 4",
+     "score": 0.8946,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bert.pdf",
+     "locator": "page 6",
+     "score": 0.2972,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "dpr-bm25",
+   "kind": "multi",
+   "question": "How does dense retrieval compare with BM25 on top-20 accuracy?",
+   "unanswerable": false,
+   "gold_sources": [
+    "colbert.pdf",
+    "dense_passage_retrieval.pdf",
+    "rag.pdf"
+   ],
+   "confidence": 5.602,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 5",
+     "score": 5.6021,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 5",
+     "score": 5.5565,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "colbert.pdf",
+     "locator": "page 8",
+     "score": 3.2509,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 7",
+     "score": 2.779,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "colbert.pdf",
+     "locator": "page 8",
+     "score": 2.168,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "dpr-nq",
+   "kind": "multi",
+   "question": "Which open-domain question answering dataset is used?",
+   "unanswerable": false,
+   "gold_sources": [
+    "dense_passage_retrieval.pdf",
+    "gpt3.pdf",
+    "rag.pdf"
+   ],
+   "confidence": 6.539,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "rag.pdf",
+     "locator": "page 4",
+     "score": 6.539,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 1",
+     "score": 6.0571,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 2",
+     "score": 4.6576,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 18",
+     "score": 3.8774,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "lora.pdf",
+     "locator": "page 17",
+     "score": -3.9041,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.906,
+   "src_recall": 0.6667,
+   "context_recall": 1.0
+  },
+  {
+   "id": "faiss-kselect",
+   "kind": "fact",
+   "question": "How is top-k selection implemented efficiently on GPU?",
+   "unanswerable": false,
+   "gold_sources": [
+    "faiss_billion_scale.pdf"
+   ],
+   "confidence": 4.723,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 2",
+     "score": 4.7231,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 6",
+     "score": 4.1726,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 8",
+     "score": 3.7485,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 10",
+     "score": 3.5789,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 4",
+     "score": 2.6176,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "faiss-ivf",
+   "kind": "fact",
+   "question": "What index structure partitions vectors into cells for search?",
+   "unanswerable": false,
+   "gold_sources": [
+    "colbert.pdf",
+    "faiss_billion_scale.pdf"
+   ],
+   "confidence": 2.084,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "colbert.pdf",
+     "locator": "page 6",
+     "score": 2.0839,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "colbert.pdf",
+     "locator": "page 6",
+     "score": -0.3884,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 1",
+     "score": -2.7188,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 2",
+     "score": -3.4456,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 3",
+     "score": -6.9249,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.9675,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "gpt3-params",
+   "kind": "cross-doc",
+   "question": "How many parameters does the largest autoregressive model have?",
+   "unanswerable": false,
+   "gold_sources": [
+    "gpt3.pdf",
+    "lora.pdf"
+   ],
+   "confidence": 2.489,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bert.pdf",
+     "locator": "page 8",
+     "score": 2.4892,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 36",
+     "score": 1.5637,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 20",
+     "score": -1.0181,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 4",
+     "score": -1.8584,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "rag.pdf",
+     "locator": "page 19",
+     "score": -3.0582,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "gpt3-icl",
+   "kind": "cross-doc",
+   "question": "What is in-context learning without gradient updates?",
+   "unanswerable": false,
+   "gold_sources": [
+    "chain_of_thought.pdf",
+    "gpt3.pdf"
+   ],
+   "confidence": 6.136,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "gpt3.pdf",
+     "locator": "page 4",
+     "score": 6.1357,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "gpt3.pdf",
+     "locator": "page 5",
+     "score": 5.2544,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 25",
+     "score": 0.384,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "seq2seq.pdf",
+     "locator": "page 9",
+     "score": -1.1111,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "layer_normalization.pdf",
+     "locator": "page 14",
+     "score": -1.1253,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "gpt3-fewshot",
+   "kind": "cross-doc",
+   "question": "How does task performance change with the number of examples in the prompt?",
+   "unanswerable": false,
+   "gold_sources": [
+    "gpt3.pdf"
+   ],
+   "confidence": 0.966,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 18",
+     "score": 0.9663,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "gpt3.pdf",
+     "locator": "page 24",
+     "score": 0.8028,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 23",
+     "score": 0.6574,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 18",
+     "score": -0.7989,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "lora.pdf",
+     "locator": "page 9",
+     "score": -0.9924,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "ln-vs-bn",
+   "kind": "multi",
+   "question": "Why is layer normalization preferred over batch normalization for recurrent networks?",
+   "unanswerable": false,
+   "gold_sources": [
+    "adam_optimizer.pdf",
+    "attention_is_all_you_need.pdf",
+    "bahdanau_attention.pdf",
+    "batch_normalization.pdf",
+    "gpt3.pdf",
+    "layer_normalization.pdf",
+    "seq2seq.pdf",
+    "t5.pdf",
+    "word2vec.pdf"
+   ],
+   "confidence": 5.86,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "layer_normalization.pdf",
+     "locator": "page 1",
+     "score": 5.8596,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "layer_normalization.pdf",
+     "locator": "page 3",
+     "score": 5.7053,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "layer_normalization.pdf",
+     "locator": "page 10",
+     "score": 5.2923,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "batch_normalization.pdf",
+     "locator": "page 8",
+     "score": 4.6356,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "batch_normalization.pdf",
+     "locator": "page 5",
+     "score": 4.2388,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.4,
+   "context_recall": 1.0
+  },
+  {
+   "id": "ln-stats",
+   "kind": "cross-doc",
+   "question": "How are normalization statistics computed across features rather than examples?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "layer_normalization.pdf",
+    "lora.pdf",
+    "t5.pdf"
+   ],
+   "confidence": 3.875,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "batch_normalization.pdf",
+     "locator": "page 3",
+     "score": 3.8755,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "batch_normalization.pdf",
+     "locator": "page 3",
+     "score": 3.8116,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "batch_normalization.pdf",
+     "locator": "page 3",
+     "score": 3.5232,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "layer_normalization.pdf",
+     "locator": "page 2",
+     "score": 1.1517,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "layer_normalization.pdf",
+     "locator": "page 3",
+     "score": -0.8832,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.25,
+   "ndcg": 0.5013,
+   "src_recall": 0.25,
+   "context_recall": 1.0
+  },
+  {
+   "id": "lora-latency",
+   "kind": "fact",
+   "question": "Does the adaptation method add inference latency?",
+   "unanswerable": false,
+   "gold_sources": [
+    "lora.pdf"
+   ],
+   "confidence": 6.357,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "lora.pdf",
+     "locator": "page 2",
+     "score": 6.357,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "lora.pdf",
+     "locator": "page 9",
+     "score": 4.5171,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 40",
+     "score": -2.6868,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "colbert.pdf",
+     "locator": "page 7",
+     "score": -5.932,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "batch_normalization.pdf",
+     "locator": "page 1",
+     "score": -7.6363,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "lora-frozen",
+   "kind": "multi",
+   "question": "Are the pretrained weights updated during adaptation?",
+   "unanswerable": false,
+   "gold_sources": [
+    "batch_normalization.pdf",
+    "lora.pdf",
+    "rag.pdf",
+    "vision_transformer.pdf"
+   ],
+   "confidence": 6.08,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "lora.pdf",
+     "locator": "page 4",
+     "score": 6.0797,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "lora.pdf",
+     "locator": "page 5",
+     "score": 5.4555,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 40",
+     "score": 2.0325,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 9",
+     "score": -3.642,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "layer_normalization.pdf",
+     "locator": "page 6",
+     "score": -5.3753,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.25,
+   "context_recall": 0.0
+  },
+  {
+   "id": "rag-parametric",
+   "kind": "cross-doc",
+   "question": "How are parametric and non-parametric memory combined?",
+   "unanswerable": false,
+   "gold_sources": [
+    "rag.pdf"
+   ],
+   "confidence": 7.074,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "rag.pdf",
+     "locator": "page 6",
+     "score": 7.0738,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "rag.pdf",
+     "locator": "page 2",
+     "score": 6.537,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 11",
+     "score": -10.0992,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 10",
+     "score": -10.965,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 39",
+     "score": -11.3114,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "rag-marginalize",
+   "kind": "cross-doc",
+   "question": "How are retrieved documents marginalized during generation?",
+   "unanswerable": false,
+   "gold_sources": [
+    "rag.pdf"
+   ],
+   "confidence": 4.106,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "rag.pdf",
+     "locator": "page 3",
+     "score": 4.1065,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "rag.pdf",
+     "locator": "page 3",
+     "score": 3.3106,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "rag.pdf",
+     "locator": "page 2",
+     "score": 2.4184,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 18",
+     "score": 0.9672,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "rag.pdf",
+     "locator": "page 7",
+     "score": -0.6475,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "resnet-degradation",
+   "kind": "fact",
+   "question": "What happens to accuracy when plain networks get deeper?",
+   "unanswerable": false,
+   "gold_sources": [
+    "dense_passage_retrieval.pdf",
+    "resnet.pdf",
+    "roberta.pdf",
+    "seq2seq.pdf",
+    "t5.pdf"
+   ],
+   "confidence": 3.755,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "resnet.pdf",
+     "locator": "page 5",
+     "score": 3.7546,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "resnet.pdf",
+     "locator": "page 1",
+     "score": 3.4301,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "batch_normalization.pdf",
+     "locator": "page 7",
+     "score": -2.8707,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "batch_normalization.pdf",
+     "locator": "page 2",
+     "score": -9.1497,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 7",
+     "score": -10.2477,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.2,
+   "context_recall": 0.0
+  },
+  {
+   "id": "resnet-shortcut",
+   "kind": "fact",
+   "question": "What connections allow gradients to flow through very deep networks?",
+   "unanswerable": false,
+   "gold_sources": [
+    "resnet.pdf"
+   ],
+   "confidence": 0.161,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "resnet.pdf",
+     "locator": "page 1",
+     "score": 0.1609,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "resnet.pdf",
+     "locator": "page 2",
+     "score": -0.9103,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "batch_normalization.pdf",
+     "locator": "page 1",
+     "score": -1.9534,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "batch_normalization.pdf",
+     "locator": "page 2",
+     "score": -2.0244,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 12",
+     "score": -2.1204,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "resnet-152",
+   "kind": "fact",
+   "question": "How deep is the deepest network evaluated on ImageNet?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "gpt3.pdf",
+    "resnet.pdf",
+    "vision_transformer.pdf"
+   ],
+   "confidence": 6.056,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "resnet.pdf",
+     "locator": "page 2",
+     "score": 6.0564,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "resnet.pdf",
+     "locator": "page 1",
+     "score": 4.3414,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "batch_normalization.pdf",
+     "locator": "page 8",
+     "score": 2.5059,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "batch_normalization.pdf",
+     "locator": "page 7",
+     "score": -0.4076,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 18",
+     "score": -2.934,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "roberta-dynamic",
+   "kind": "fact",
+   "question": "What masking strategy is applied differently at each epoch?",
+   "unanswerable": false,
+   "gold_sources": [
+    "roberta.pdf"
+   ],
+   "confidence": 4.448,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "roberta.pdf",
+     "locator": "page 4",
+     "score": 4.4481,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "bert.pdf",
+     "locator": "page 13",
+     "score": 0.4961,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "roberta.pdf",
+     "locator": "page 4",
+     "score": -0.7175,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "bert.pdf",
+     "locator": "page 16",
+     "score": -2.4049,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 15",
+     "score": -4.3352,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.9197,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "roberta-nsp-drop",
+   "kind": "cross-doc",
+   "question": "What pre-training objective was found unnecessary and removed?",
+   "unanswerable": false,
+   "gold_sources": [
+    "roberta.pdf"
+   ],
+   "confidence": 2.308,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 23",
+     "score": 2.3081,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 25",
+     "score": 1.543,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "rag.pdf",
+     "locator": "page 3",
+     "score": -4.844,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "batch_normalization.pdf",
+     "locator": "page 5",
+     "score": -7.1138,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 43",
+     "score": -7.3014,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "sbert-cosine",
+   "kind": "multi",
+   "question": "How is sentence similarity computed from the derived embeddings?",
+   "unanswerable": false,
+   "gold_sources": [
+    "sentence_bert.pdf"
+   ],
+   "confidence": 6.642,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "sentence_bert.pdf",
+     "locator": "page 4",
+     "score": 6.6416,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "sentence_bert.pdf",
+     "locator": "page 1",
+     "score": 5.6127,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "sentence_bert.pdf",
+     "locator": "page 5",
+     "score": 4.9729,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "colbert.pdf",
+     "locator": "page 4",
+     "score": 1.1771,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bert.pdf",
+     "locator": "page 2",
+     "score": -0.3873,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "sbert-speed",
+   "kind": "fact",
+   "question": "How much faster is the approach than a cross-encoder for similarity search?",
+   "unanswerable": false,
+   "gold_sources": [
+    "sentence_bert.pdf"
+   ],
+   "confidence": 3.55,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 1",
+     "score": 3.5497,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "sentence_bert.pdf",
+     "locator": "page 1",
+     "score": 1.9237,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 1",
+     "score": 1.5098,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 3",
+     "score": -0.9876,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "colbert.pdf",
+     "locator": "page 6",
+     "score": -1.2021,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "seq2seq-reverse",
+   "kind": "fact",
+   "question": "What input transformation improved translation performance markedly?",
+   "unanswerable": false,
+   "gold_sources": [
+    "faiss_billion_scale.pdf",
+    "seq2seq.pdf"
+   ],
+   "confidence": 3.244,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 2",
+     "score": 3.2443,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "seq2seq.pdf",
+     "locator": "page 3",
+     "score": 2.6424,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 16",
+     "score": 2.3837,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 9",
+     "score": 0.8016,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "seq2seq.pdf",
+     "locator": "page 1",
+     "score": -1.6826,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.2,
+   "ndcg": 0.3869,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "seq2seq-lstm",
+   "kind": "fact",
+   "question": "What recurrent architecture maps sequences to a fixed-dimensional vector?",
+   "unanswerable": false,
+   "gold_sources": [
+    "seq2seq.pdf"
+   ],
+   "confidence": 4.319,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "seq2seq.pdf",
+     "locator": "page 2",
+     "score": 4.3191,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "seq2seq.pdf",
+     "locator": "page 3",
+     "score": -1.8441,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 2",
+     "score": -2.5494,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "word2vec.pdf",
+     "locator": "page 10",
+     "score": -3.4648,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 2",
+     "score": -5.2667,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "t5-c4",
+   "kind": "fact",
+   "question": "What cleaned web-scraped corpus is used for pre-training?",
+   "unanswerable": false,
+   "gold_sources": [
+    "t5.pdf"
+   ],
+   "confidence": 3.698,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 42",
+     "score": 3.6981,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 6",
+     "score": 3.0167,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bert.pdf",
+     "locator": "page 5",
+     "score": -0.2274,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "vision_transformer.pdf",
+     "locator": "page 4",
+     "score": -3.9695,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bert.pdf",
+     "locator": "page 4",
+     "score": -4.1976,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "t5-text2text",
+   "kind": "cross-doc",
+   "question": "How are all NLP tasks cast into a single format?",
+   "unanswerable": false,
+   "gold_sources": [
+    "colbert.pdf",
+    "dense_passage_retrieval.pdf",
+    "gpt3.pdf",
+    "rag.pdf",
+    "t5.pdf"
+   ],
+   "confidence": 5.995,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 9",
+     "score": 5.9949,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 8",
+     "score": 1.8344,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "rag.pdf",
+     "locator": "page 8",
+     "score": 0.9651,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 9",
+     "score": 0.5413,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bert.pdf",
+     "locator": "page 5",
+     "score": -1.4205,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.4,
+   "context_recall": 0.0
+  },
+  {
+   "id": "t5-span",
+   "kind": "multi",
+   "question": "What corruption objective masks contiguous spans of tokens?",
+   "unanswerable": false,
+   "gold_sources": [
+    "t5.pdf"
+   ],
+   "confidence": 5.928,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 23",
+     "score": 5.9278,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 25",
+     "score": 5.2403,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 21",
+     "score": 3.6646,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bert.pdf",
+     "locator": "page 1",
+     "score": -2.2548,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bert.pdf",
+     "locator": "page 1",
+     "score": -4.2642,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "vit-jft",
+   "kind": "fact",
+   "question": "Which large private dataset is used for pre-training?",
+   "unanswerable": false,
+   "gold_sources": [
+    "vision_transformer.pdf"
+   ],
+   "confidence": 5.397,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 25",
+     "score": 5.3966,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "vision_transformer.pdf",
+     "locator": "page 6",
+     "score": 3.2689,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 27",
+     "score": 3.251,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 9",
+     "score": 2.9711,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 9",
+     "score": 2.9011,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "vit-inductive",
+   "kind": "cross-doc",
+   "question": "What inductive biases do convolutional networks have that transformers lack?",
+   "unanswerable": false,
+   "gold_sources": [
+    "vision_transformer.pdf"
+   ],
+   "confidence": 1.212,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "vision_transformer.pdf",
+     "locator": "page 1",
+     "score": 1.2125,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "vision_transformer.pdf",
+     "locator": "page 7",
+     "score": -2.0077,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 6",
+     "score": -5.1561,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 69",
+     "score": -9.4928,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 36",
+     "score": -10.6043,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "w2v-cbow",
+   "kind": "fact",
+   "question": "What architecture predicts a word from its surrounding context?",
+   "unanswerable": false,
+   "gold_sources": [
+    "word2vec.pdf"
+   ],
+   "confidence": 7.899,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "word2vec.pdf",
+     "locator": "page 5",
+     "score": 7.8991,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "gpt3.pdf",
+     "locator": "page 72",
+     "score": 3.0036,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "word2vec.pdf",
+     "locator": "page 4",
+     "score": 2.7638,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "bert.pdf",
+     "locator": "page 2",
+     "score": 2.465,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 3",
+     "score": 0.2571,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.3333,
+   "ndcg": 0.5,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "w2v-skipgram",
+   "kind": "fact",
+   "question": "What architecture predicts surrounding words from a target word?",
+   "unanswerable": false,
+   "gold_sources": [
+    "layer_normalization.pdf",
+    "word2vec.pdf"
+   ],
+   "confidence": 6.386,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "word2vec.pdf",
+     "locator": "page 5",
+     "score": 6.3864,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "word2vec.pdf",
+     "locator": "page 9",
+     "score": 2.6071,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "bert.pdf",
+     "locator": "page 4",
+     "score": 1.983,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 1",
+     "score": 1.1733,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 3",
+     "score": 0.8047,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "w2v-analogy",
+   "kind": "multi",
+   "question": "How are syntactic and semantic regularities measured in word vectors?",
+   "unanswerable": false,
+   "gold_sources": [
+    "attention_is_all_you_need.pdf",
+    "gpt3.pdf",
+    "t5.pdf",
+    "word2vec.pdf"
+   ],
+   "confidence": 5.816,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "word2vec.pdf",
+     "locator": "page 2",
+     "score": 5.8155,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "word2vec.pdf",
+     "locator": "page 1",
+     "score": 4.4405,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 1",
+     "score": -5.5441,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bert.pdf",
+     "locator": "page 15",
+     "score": -7.9703,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "sentence_bert.pdf",
+     "locator": "page 10",
+     "score": -8.6962,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.25,
+   "context_recall": 1.0
+  },
+  {
+   "id": "adv-diffusion",
+   "kind": "absent",
+   "question": "What noise schedule does the denoising diffusion model use?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": 0.433,
+   "abstained": false,
+   "outcome": "answered_anyway",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 24",
+     "score": 0.4332,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 57",
+     "score": -4.0185,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 9",
+     "score": -7.6602,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 3",
+     "score": -7.7746,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "lora.pdf",
+     "locator": "page 18",
+     "score": -9.3089,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-rlhf",
+   "kind": "absent",
+   "question": "How is the reward model trained for RLHF?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -4.3,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "layer_normalization.pdf",
+     "locator": "page 7",
+     "score": -4.2999,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "lora.pdf",
+     "locator": "page 7",
+     "score": -5.3522,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "lora.pdf",
+     "locator": "page 25",
+     "score": -5.7594,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bert.pdf",
+     "locator": "page 3",
+     "score": -6.274,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 9",
+     "score": -6.6207,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-mamba",
+   "kind": "absent",
+   "question": "How does the state space model handle long sequences without attention?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -1.118,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 7",
+     "score": -1.1177,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 2",
+     "score": -2.5131,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "layer_normalization.pdf",
+     "locator": "page 9",
+     "score": -3.0466,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "vision_transformer.pdf",
+     "locator": "page 8",
+     "score": -4.7847,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 4",
+     "score": -4.9493,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-price",
+   "kind": "near-miss",
+   "question": "How many dollars did it cost to train the model?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -1.127,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 27",
+     "score": -1.1266,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "gpt3.pdf",
+     "locator": "page 39",
+     "score": -1.2804,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 27",
+     "score": -1.5546,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 36",
+     "score": -3.0757,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 46",
+     "score": -4.1301,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-energy",
+   "kind": "near-miss",
+   "question": "How many kilowatt-hours did training consume?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -0.177,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "gpt3.pdf",
+     "locator": "page 39",
+     "score": -0.1772,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "gpt3.pdf",
+     "locator": "page 9",
+     "score": -7.0905,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 27",
+     "score": -8.1518,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "t5.pdf",
+     "locator": "page 57",
+     "score": -9.5363,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 57",
+     "score": -9.5399,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-carbon",
+   "kind": "near-miss",
+   "question": "What was the carbon footprint of training?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -9.517,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "gpt3.pdf",
+     "locator": "page 39",
+     "score": -9.5169,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 57",
+     "score": -9.606,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 28",
+     "score": -9.739,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 9",
+     "score": -10.2028,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "colbert.pdf",
+     "locator": "page 9",
+     "score": -10.9279,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-seed",
+   "kind": "near-miss",
+   "question": "What random seed was used for the reported runs?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": 2.758,
+   "abstained": false,
+   "outcome": "answered_anyway",
+   "results": [
+    {
+     "rank": 1,
+     "source": "lora.pdf",
+     "locator": "page 18",
+     "score": 2.7585,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 15",
+     "score": 1.61,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "lora.pdf",
+     "locator": "page 18",
+     "score": 0.523,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 4",
+     "score": -0.2993,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 14",
+     "score": -3.5095,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-review",
+   "kind": "metadata",
+   "question": "What did the peer reviewers say about this work?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -5.464,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 9",
+     "score": -5.4645,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 15",
+     "score": -8.7239,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 10",
+     "score": -9.1035,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 42",
+     "score": -9.5838,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 28",
+     "score": -9.6048,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-salary",
+   "kind": "metadata",
+   "question": "What were the authors paid for this research?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -4.138,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 10",
+     "score": -4.1384,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "gpt3.pdf",
+     "locator": "page 48",
+     "score": -5.4804,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 46",
+     "score": -6.3629,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 10",
+     "score": -7.1267,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 1",
+     "score": -8.4081,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-retract",
+   "kind": "metadata",
+   "question": "Has this paper been retracted?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -7.764,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "word2vec.pdf",
+     "locator": "page 1",
+     "score": -7.7638,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 1",
+     "score": -8.3033,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "t5.pdf",
+     "locator": "page 4",
+     "score": -8.8349,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "sentence_bert.pdf",
+     "locator": "page 9",
+     "score": -8.8911,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bert.pdf",
+     "locator": "page 15",
+     "score": -9.0118,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-flash",
+   "kind": "absent",
+   "question": "How does flash attention reduce memory reads and writes?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -5.542,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 11",
+     "score": -5.5418,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 5",
+     "score": -5.8494,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "lora.pdf",
+     "locator": "page 5",
+     "score": -5.9894,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 5",
+     "score": -9.0206,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 4",
+     "score": -9.2705,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-moe-routing",
+   "kind": "absent",
+   "question": "What load balancing loss is used for expert routing?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -8.356,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "gpt3.pdf",
+     "locator": "page 8",
+     "score": -8.3559,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 12",
+     "score": -10.1822,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 12",
+     "score": -10.6042,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "batch_normalization.pdf",
+     "locator": "page 1",
+     "score": -10.767,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "batch_normalization.pdf",
+     "locator": "page 4",
+     "score": -10.9112,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-quantize-4bit",
+   "kind": "absent",
+   "question": "How is the model quantized to 4-bit precision?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -2.975,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 3",
+     "score": -2.9748,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "t5.pdf",
+     "locator": "page 34",
+     "score": -4.0393,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 22",
+     "score": -4.645,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "rag.pdf",
+     "locator": "page 19",
+     "score": -4.8503,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 22",
+     "score": -5.319,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-inference-cost",
+   "kind": "near-miss",
+   "question": "What is the cost per thousand inference requests?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -6.287,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "t5.pdf",
+     "locator": "page 36",
+     "score": -6.2866,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "vision_transformer.pdf",
+     "locator": "page 20",
+     "score": -7.5589,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 8",
+     "score": -9.3323,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 20",
+     "score": -10.4365,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "colbert.pdf",
+     "locator": "page 7",
+     "score": -10.4888,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-latency-ms",
+   "kind": "near-miss",
+   "question": "What is the end-to-end latency in milliseconds per query?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": 1.114,
+   "abstained": false,
+   "outcome": "answered_anyway",
+   "results": [
+    {
+     "rank": 1,
+     "source": "colbert.pdf",
+     "locator": "page 6",
+     "score": 1.1143,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "colbert.pdf",
+     "locator": "page 8",
+     "score": 0.562,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "faiss_billion_scale.pdf",
+     "locator": "page 9",
+     "score": -5.8127,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "lora.pdf",
+     "locator": "page 3",
+     "score": -8.9595,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 7",
+     "score": -9.3654,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-context-window",
+   "kind": "near-miss",
+   "question": "What is the maximum context length in tokens?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": 1.644,
+   "abstained": false,
+   "outcome": "answered_anyway",
+   "results": [
+    {
+     "rank": 1,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 7",
+     "score": 1.6444,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 7",
+     "score": 0.8534,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "roberta.pdf",
+     "locator": "page 2",
+     "score": -1.7902,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 43",
+     "score": -2.2444,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 23",
+     "score": -2.9661,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-license-terms",
+   "kind": "metadata",
+   "question": "Under what licence were the model weights released?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": 0.172,
+   "abstained": false,
+   "outcome": "answered_anyway",
+   "results": [
+    {
+     "rank": 1,
+     "source": "lora.pdf",
+     "locator": "page 18",
+     "score": 0.1724,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "lora.pdf",
+     "locator": "page 18",
+     "score": -5.3861,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "layer_normalization.pdf",
+     "locator": "page 6",
+     "score": -9.0648,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "layer_normalization.pdf",
+     "locator": "page 4",
+     "score": -9.4743,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bahdanau_attention.pdf",
+     "locator": "page 7",
+     "score": -9.6439,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-compute-budget",
+   "kind": "near-miss",
+   "question": "How many GPU-hours were budgeted before training began?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -2.327,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 7",
+     "score": -2.3266,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "gpt3.pdf",
+     "locator": "page 39",
+     "score": -4.4049,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "gpt3.pdf",
+     "locator": "page 9",
+     "score": -4.9764,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 8",
+     "score": -5.9918,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "seq2seq.pdf",
+     "locator": "page 5",
+     "score": -6.4551,
+     "relevant": false
+    }
+   ]
+  }
+ ]
+}
