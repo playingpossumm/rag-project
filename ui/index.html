@@ -88,7 +88,7 @@ button,input,textarea{font:inherit;color:inherit}
 .picker>button .dot{width:6px;height:6px;border-radius:50%;background:var(--s3);flex:none}
 .picker>button .caret{width:5px;height:5px;border-right:1.5px solid var(--faint);
   border-bottom:1.5px solid var(--faint);transform:rotate(45deg) translate(-1px,-1px)}
-.menu{position:absolute;right:0;top:calc(100% + 8px);min-width:290px;z-index:40;
+.menu{position:absolute;right:0;top:calc(100% + 8px);min-width:334px;z-index:40;
   background:var(--card);border:1px solid var(--edge);border-radius:12px;
   padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.5)}
 .menu[hidden]{display:none}
@@ -101,7 +101,13 @@ button,input,textarea{font:inherit;color:inherit}
 .menu .nm b{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:500;
   color:var(--faint)}
 .menu button[aria-current="true"] .nm{color:var(--s1)}
-.menu .sub2{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+.menu .sub2{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:4px}
+/* size on the left, cut point on the right: the two things you choose a corpus
+   on, and the two that differ most between them. */
+.menu .row2{display:flex;gap:12px;align-items:baseline;margin-top:2px;
+  font-family:var(--mono);font-size:10px;color:var(--faint)}
+.menu .row2 .fmt{letter-spacing:.06em}
+.menu .row2 .thr{margin-left:auto;white-space:nowrap}
 .menu .warn2{color:var(--warn)}
 .switching{opacity:.4;pointer-events:none}
 
@@ -455,12 +461,16 @@ async function loadPicker() {
     <button type="button" data-name="${esc(c.name)}" ${c.indexed ? "" : "disabled"}
             aria-current="${c.name === data.active}">
       <span class="nm">${esc(c.label)}<b>${c.name === data.active ? "in use" : ""}</b></span>
-      <span class="sub2 ${c.calibrated ? "" : "warn2"}">${
-        c.indexed
-          ? (c.calibrated
+      ${c.indexed ? `
+        <span class="sub2">${nf(c.documents)} docs · ${nf(c.chunks)} passages</span>
+        <span class="row2">
+          <span class="fmt">${Object.keys(c.formats || {}).join(" ").toUpperCase()}</span>
+          <span class="thr ${c.calibrated ? "" : "warn2"}">${
+            c.calibrated
               ? `refuses below ${c.threshold > 0 ? "+" : ""}${c.threshold.toFixed(1)}`
-              : "not calibrated · borrowing 0.0")
-          : "no index built"}</span>
+              : "not calibrated · borrowing 0.0"}</span>
+        </span>`
+      : `<span class="sub2 warn2">no index built</span>`}
     </button>`).join("");
   $("#pickMenu").querySelectorAll("button[data-name]").forEach(b => {
     b.onclick = () => selectCorpus(b.dataset.name);

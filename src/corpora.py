@@ -89,6 +89,42 @@ def get(name: str) -> dict:
     return reg[name]
 
 
+# metadata.json is 9 MB on the largest corpus, so counting documents by parsing
+# it is not something to do while drawing a menu. The counts are derived once and
+# cached beside the index; the cache is rebuilt whenever metadata.json is newer,
+# so a re-ingest cannot leave a stale document count on screen.
+def stats(cfg: dict) -> dict:
+    """How big a corpus is, and which file formats it is made of."""
+    if not cfg["indexed"]:
+        return {}
+    meta = cfg["store"] / "metadata.json"
+    cache = cfg["store"] / "stats.json"
+    if cache.exists() and cache.stat().st_mtime >= meta.stat().st_mtime:
+        try:
+            return json.loads(cache.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            pass  # a truncated cache is rebuilt, not fatal
+
+    chunks = json.loads(meta.read_text(encoding="utf-8"))
+    sources = {c["source"] for c in chunks}
+    formats: dict[str, int] = {}
+    for src in sources:
+        ext = src.rsplit(".", 1)[-1].lower() if "." in src else "other"
+        formats[ext] = formats.get(ext, 0) + 1
+    out = {
+        "documents": len(sources),
+        "chunks": len(chunks),
+        # Sorted by count so the dominant format reads first, then by name so the
+        # order does not change between runs on a tie.
+        "formats": dict(sorted(formats.items(), key=lambda kv: (-kv[1], kv[0]))),
+    }
+    try:
+        cache.write_text(json.dumps(out, indent=2), encoding="utf-8")
+    except OSError:
+        pass  # a read-only store still gets correct numbers, just not cached
+    return out
+
+
 def describe(cfg: dict) -> dict:
     """The shape the UI needs: paths flattened, nothing that leaks a filesystem."""
     return {
@@ -97,4 +133,5 @@ def describe(cfg: dict) -> dict:
         "indexed": cfg["indexed"],
         "calibrated": cfg["calibrated"],
         "threshold": cfg["threshold"] if cfg["calibrated"] else 0.0,
+        **stats(cfg),
     }
