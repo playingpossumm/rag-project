@@ -1,0 +1,1761 @@
+{
+ "generated_by": "src/per_case.py",
+ "options": {
+  "k": 5,
+  "candidate_k": 20,
+  "use_reranker": true,
+  "fusion": "rrf",
+  "max_per_source": 2
+ },
+ "threshold": 0.0,
+ "corpus": {
+  "chunks": 900,
+  "documents": 45
+ },
+ "totals": {
+  "answerable": {
+   "n": 26,
+   "hit_rate": 0.8077,
+   "mrr": 0.5699,
+   "ndcg": 0.6348,
+   "src_recall": 0.7615,
+   "refused_wrongly": 10,
+   "missed": 2
+  },
+  "adversarial": {
+   "n": 6,
+   "refused": 5,
+   "answered_anyway": 1
+  }
+ },
+ "cases": [
+  {
+   "id": "bird-syrinx",
+   "kind": "fact",
+   "question": "What organ do birds use to produce song?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_vocalization.docx",
+    "bird_vocalization.pdf",
+    "parrot.xlsx",
+    "passerine.pptx"
+   ],
+   "confidence": 5.788,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "parrot.xlsx",
+     "locator": "sheet Notes",
+     "score": 5.7882,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 2",
+     "score": 4.8156,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "bird_vocalization.docx",
+     "locator": "section Anatomy and physiology",
+     "score": 4.258,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "bird_vocalization.docx",
+     "locator": "section Definition",
+     "score": 3.8472,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 1",
+     "score": 3.5221,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.75,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-keel",
+   "kind": "fact",
+   "question": "Which breastbone feature anchors the muscles that power flight?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird.docx"
+   ],
+   "confidence": 4.931,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "flightless_bird.pdf",
+     "locator": "page 2",
+     "score": 4.9306,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Flight",
+     "score": -2.4557,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Flight",
+     "score": -2.6159,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "flightless_bird.pdf",
+     "locator": "page 2",
+     "score": -3.3469,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird.docx",
+     "locator": "section Early evolution",
+     "score": -5.4988,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.2,
+   "ndcg": 0.3869,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-barbules",
+   "kind": "fact",
+   "question": "What interlocking structures hold the vane of a feather together?",
+   "unanswerable": false,
+   "gold_sources": [
+    "feather.pdf",
+    "feather.xlsx"
+   ],
+   "confidence": -0.953,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "archaeopteryx.docx",
+     "locator": "section Plumage",
+     "score": -0.9526,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "feather.pdf",
+     "locator": "page 2",
+     "score": -1.0826,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "feather.pdf",
+     "locator": "page 2",
+     "score": -2.8757,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "feather.xlsx",
+     "locator": "sheet Sections",
+     "score": -4.3473,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "feather.xlsx",
+     "locator": "sheet Sections",
+     "score": -4.5466,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6934,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-down",
+   "kind": "multi",
+   "question": "Which type of feather provides insulation rather than flight surface?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_nest.docx",
+    "emperor_penguin.pptx",
+    "feather.pdf",
+    "feather.xlsx"
+   ],
+   "confidence": 2.586,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "feather.pdf",
+     "locator": "page 2",
+     "score": 2.5865,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "feather.xlsx",
+     "locator": "sheet Sections",
+     "score": 1.6612,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "feather.xlsx",
+     "locator": "sheet Notes",
+     "score": 1.2233,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "feather.pdf",
+     "locator": "page 2",
+     "score": 1.0906,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 6",
+     "score": -0.0227,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.75,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-airsacs",
+   "kind": "fact",
+   "question": "What structures make airflow through a bird's lungs one-directional?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_anatomy.docx",
+    "bird_anatomy.pptx",
+    "feather.pdf"
+   ],
+   "confidence": -2.974,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_anatomy.docx",
+     "locator": "section Overview",
+     "score": -2.974,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "bird_anatomy.docx",
+     "locator": "section Skeletal system",
+     "score": -3.3807,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 5",
+     "score": -4.2258,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_flight.xlsx",
+     "locator": "sheet Sections",
+     "score": -4.9679,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird_anatomy.pptx",
+     "locator": "slide 2",
+     "score": -5.021,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 0.6667,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-brood-parasite",
+   "kind": "fact",
+   "question": "What is it called when a bird lays its eggs in another species' nest?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_egg.pptx",
+    "bird_egg.xlsx"
+   ],
+   "confidence": 6.628,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_nest.pptx",
+     "locator": "slide 2",
+     "score": 6.6283,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "bird_nest.docx",
+     "locator": "section Overview",
+     "score": 5.552,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bird_egg.xlsx",
+     "locator": "sheet Notes",
+     "score": 5.2791,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "bird_egg.pptx",
+     "locator": "slide 9",
+     "score": 4.1266,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "bird_egg.pptx",
+     "locator": "slide 9",
+     "score": 3.8383,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.3333,
+   "ndcg": 0.6183,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-altricial",
+   "kind": "cross-doc",
+   "question": "What term describes chicks that hatch helpless and wholly dependent on their parents?",
+   "unanswerable": false,
+   "gold_sources": [
+    "beak.pdf",
+    "budgerigar.pdf",
+    "eurasian_magpie.docx",
+    "passerine.pptx"
+   ],
+   "confidence": 1.819,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "passerine.pptx",
+     "locator": "slide 6",
+     "score": 1.8192,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 8",
+     "score": -0.4135,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "budgerigar.pdf",
+     "locator": "page 5",
+     "score": -1.8022,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Breeding",
+     "score": -3.0541,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Breeding",
+     "score": -4.1085,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 0.8529,
+   "src_recall": 0.75,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-precocial",
+   "kind": "cross-doc",
+   "question": "What term describes chicks able to move and feed themselves soon after hatching?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_nest.docx",
+    "bird_nest.pptx",
+    "mallard.pdf"
+   ],
+   "confidence": 0.397,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Breeding",
+     "score": 0.3969,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 8",
+     "score": -0.2996,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "budgerigar.pdf",
+     "locator": "page 5",
+     "score": -1.3587,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 8",
+     "score": -1.7187,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "budgerigar.pdf",
+     "locator": "page 5",
+     "score": -1.7922,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "bird-furcula",
+   "kind": "fact",
+   "question": "What is the fused collarbone of a bird called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "origin_of_birds.pptx"
+   ],
+   "confidence": 1.869,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_anatomy.docx",
+     "locator": "section Pygostyle",
+     "score": 1.8687,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 4",
+     "score": 0.3248,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "bird_anatomy.docx",
+     "locator": "section Cervical vertebrae",
+     "score": -0.4603,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "beak.docx",
+     "locator": "section Mandibles",
+     "score": -1.5215,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "feather.pdf",
+     "locator": "page 2",
+     "score": -2.2155,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-uropygial",
+   "kind": "fact",
+   "question": "Which gland supplies the oil a bird spreads while preening?",
+   "unanswerable": false,
+   "gold_sources": [
+    "feather.pdf",
+    "owl.pptx"
+   ],
+   "confidence": 5.144,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "owl.pptx",
+     "locator": "slide 6",
+     "score": 5.1438,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "feather.pdf",
+     "locator": "page 4",
+     "score": -2.8438,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "feather.pdf",
+     "locator": "page 3",
+     "score": -6.1785,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 6",
+     "score": -6.6609,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "beak.docx",
+     "locator": "section Overview",
+     "score": -6.9635,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-hollow-bones",
+   "kind": "fact",
+   "question": "Which skeletal adaptation reduces a bird's weight for flight?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_anatomy.docx",
+    "bird_anatomy.pptx"
+   ],
+   "confidence": 5.032,
+   "abstained": false,
+   "outcome": "missed",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_anatomy.pptx",
+     "locator": "slide 4",
+     "score": 5.032,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Flight",
+     "score": 4.8938,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bird_anatomy.docx",
+     "locator": "section Axial skeleton",
+     "score": 4.6495,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_anatomy.docx",
+     "locator": "section Overview",
+     "score": 3.4775,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird_anatomy.pptx",
+     "locator": "slide 2",
+     "score": 2.4665,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "bird-flyway",
+   "kind": "fact",
+   "question": "What is the established route a migrating population follows called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_migration.pdf",
+    "bird_migration.xlsx"
+   ],
+   "confidence": 1.233,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_migration.pdf",
+     "locator": "page 4",
+     "score": 1.233,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "bird_migration.pdf",
+     "locator": "page 4",
+     "score": 1.0972,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bird_migration.xlsx",
+     "locator": "sheet Sections",
+     "score": -4.5244,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_migration.xlsx",
+     "locator": "sheet Notes",
+     "score": -5.0369,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "common_raven.pdf",
+     "locator": "page 2",
+     "score": -10.8435,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.25,
+   "ndcg": 0.4307,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-alula",
+   "kind": "fact",
+   "question": "Which small group of feathers helps prevent a stall at low speed?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird.docx",
+    "flightless_bird.pdf"
+   ],
+   "confidence": -7.281,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_flight.xlsx",
+     "locator": "sheet Sections",
+     "score": -7.2811,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "bird_flight.pptx",
+     "locator": "slide 8",
+     "score": -7.5524,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bird_flight.pptx",
+     "locator": "slide 8",
+     "score": -7.9501,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_flight.xlsx",
+     "locator": "sheet Notes",
+     "score": -7.9938,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "feather.xlsx",
+     "locator": "sheet Sections",
+     "score": -8.2782,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "bird-wing-loading",
+   "kind": "fact",
+   "question": "Which ratio of body mass to wing area governs flight performance?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_flight.xlsx"
+   ],
+   "confidence": -0.992,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Flight",
+     "score": -0.9918,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "bird_flight.xlsx",
+     "locator": "sheet Notes",
+     "score": -3.6817,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "flightless_bird.pdf",
+     "locator": "page 3",
+     "score": -4.3548,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Flight",
+     "score": -4.6614,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird_flight.xlsx",
+     "locator": "sheet Notes",
+     "score": -5.1247,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6241,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-aspect-ratio",
+   "kind": "fact",
+   "question": "Which wing measurement compares span against width?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_flight.pptx",
+    "bird_flight.xlsx"
+   ],
+   "confidence": -2.306,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 2",
+     "score": -2.3061,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "golden_eagle.docx",
+     "locator": "section Subspecies and distribution",
+     "score": -4.376,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "golden_eagle.docx",
+     "locator": "section Size",
+     "score": -4.7599,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 2",
+     "score": -5.7813,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird_flight.xlsx",
+     "locator": "sheet Notes",
+     "score": -6.6737,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.2,
+   "ndcg": 0.3869,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-melanin",
+   "kind": "multi",
+   "question": "Which pigment gives feathers their black and brown colouring?",
+   "unanswerable": false,
+   "gold_sources": [
+    "archaeopteryx.docx",
+    "common_raven.pdf",
+    "feather.pdf",
+    "feather.xlsx"
+   ],
+   "confidence": 5.422,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "feather.pdf",
+     "locator": "page 3",
+     "score": 5.4225,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "feather.xlsx",
+     "locator": "sheet Notes",
+     "score": 4.7364,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "archaeopteryx.docx",
+     "locator": "section Colouration",
+     "score": 2.4207,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "feather.pdf",
+     "locator": "page 4",
+     "score": 2.3337,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "archaeopteryx.docx",
+     "locator": "section Colouration",
+     "score": 1.6058,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.75,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-carotenoid",
+   "kind": "multi",
+   "question": "Which dietary pigments produce red and yellow feather colour?",
+   "unanswerable": false,
+   "gold_sources": [
+    "feather.pdf",
+    "feather.xlsx",
+    "penguin.docx"
+   ],
+   "confidence": 4.872,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "feather.pdf",
+     "locator": "page 4",
+     "score": 4.8718,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "feather.xlsx",
+     "locator": "sheet Notes",
+     "score": 4.2241,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "feather.pdf",
+     "locator": "page 3",
+     "score": 4.056,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "bird_egg.pptx",
+     "locator": "slide 4",
+     "score": -2.825,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "archaeopteryx.docx",
+     "locator": "section Colouration",
+     "score": -4.4515,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.6667,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-iridescence",
+   "kind": "fact",
+   "question": "What optical effect produces structural rather than pigment colour in feathers?",
+   "unanswerable": false,
+   "gold_sources": [
+    "feather.pdf",
+    "ruby_throated_hummingbird.docx"
+   ],
+   "confidence": 4.096,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "feather.pdf",
+     "locator": "page 4",
+     "score": 4.096,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "feather.pdf",
+     "locator": "page 3",
+     "score": 0.6845,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "archaeopteryx.docx",
+     "locator": "section Colouration",
+     "score": -0.0833,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "feather.xlsx",
+     "locator": "sheet Notes",
+     "score": -0.1205,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "archaeopteryx.docx",
+     "locator": "section Colouration",
+     "score": -0.8297,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.5,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-tool-use",
+   "kind": "cross-doc",
+   "question": "Which corvid behaviour involves shaping objects into implements?",
+   "unanswerable": false,
+   "gold_sources": [
+    "corvidae.xlsx",
+    "new_caledonian_crow.pptx"
+   ],
+   "confidence": -0.535,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "corvidae.xlsx",
+     "locator": "sheet Notes",
+     "score": -0.5351,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "corvidae.xlsx",
+     "locator": "sheet Sections",
+     "score": -3.9254,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Intelligence",
+     "score": -6.3032,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "new_caledonian_crow.pptx",
+     "locator": "slide 7",
+     "score": -8.1821,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "new_caledonian_crow.pptx",
+     "locator": "slide 6",
+     "score": -9.1684,
+     "relevant": true
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6797,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-mirror",
+   "kind": "fact",
+   "question": "Which self-recognition experiment have magpies been shown to pass?",
+   "unanswerable": false,
+   "gold_sources": [
+    "corvidae.xlsx",
+    "eurasian_magpie.docx"
+   ],
+   "confidence": 3.273,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Intelligence",
+     "score": 3.2735,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Intelligence",
+     "score": 0.6669,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "corvidae.xlsx",
+     "locator": "sheet Notes",
+     "score": -3.7687,
+     "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "corvidae.xlsx",
+     "locator": "sheet Sections",
+     "score": -6.8332,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "bird_intelligence.pptx",
+     "locator": "slide 3",
+     "score": -9.6696,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 0.3333,
+   "ndcg": 0.5706,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-dialects",
+   "kind": "multi",
+   "question": "What regional variation appears in the songs of a single species?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_vocalization.docx",
+    "bird_vocalization.pdf",
+    "woodpecker.pptx"
+   ],
+   "confidence": -0.509,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_vocalization.docx",
+     "locator": "section Qualities",
+     "score": -0.5088,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 4",
+     "score": -1.3515,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bird_vocalization.docx",
+     "locator": "section Definition",
+     "score": -5.0152,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 2",
+     "score": -5.6279,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 1",
+     "score": -6.3057,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 0.6667,
+   "context_recall": 0.0
+  },
+  {
+   "id": "bird-dawn-chorus",
+   "kind": "fact",
+   "question": "What is the burst of collective singing at first light called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_vocalization.docx",
+    "bird_vocalization.pdf"
+   ],
+   "confidence": -10.619,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_vocalization.docx",
+     "locator": "section (untitled)",
+     "score": -10.6192,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 4",
+     "score": -10.6807,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 1",
+     "score": -10.9611,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_vocalization.docx",
+     "locator": "section Definition",
+     "score": -10.9903,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "mute_swan.docx",
+     "locator": "section Description",
+     "score": -11.1499,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 0.0,
+   "mrr": 0.0,
+   "ndcg": 0.0,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "bird-mimicry",
+   "kind": "fact",
+   "question": "What is it called when a bird reproduces the sounds of other species?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_vocalization.docx",
+    "bird_vocalization.pdf"
+   ],
+   "confidence": 1.206,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 3",
+     "score": 1.2056,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "bird_vocalization.docx",
+     "locator": "section Mimicry",
+     "score": 0.8242,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "bird_vocalization.docx",
+     "locator": "section Anatomy and physiology",
+     "score": -0.1358,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 2",
+     "score": -0.5166,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "common_raven.pdf",
+     "locator": "page 4",
+     "score": -1.5927,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-imprinting",
+   "kind": "fact",
+   "question": "Which early-life attachment process was famously studied in ducklings?",
+   "unanswerable": false,
+   "gold_sources": [
+    "mallard.pdf"
+   ],
+   "confidence": -8.276,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "mallard.pdf",
+     "locator": "page 6",
+     "score": -8.2758,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "mallard.pdf",
+     "locator": "page 8",
+     "score": -8.3222,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "archaeopteryx.docx",
+     "locator": "section Description",
+     "score": -10.2714,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "anatidae.xlsx",
+     "locator": "sheet Notes",
+     "score": -10.3309,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird.docx",
+     "locator": "section Early evolution",
+     "score": -10.3703,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 0.0
+  },
+  {
+   "id": "bird-incubation",
+   "kind": "multi",
+   "question": "What is the period of sitting on eggs before hatching called?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_nest.docx",
+    "bird_nest.pptx",
+    "common_raven.pdf",
+    "mallard.pdf",
+    "peregrine_falcon.pdf"
+   ],
+   "confidence": -4.55,
+   "abstained": true,
+   "outcome": "refused_wrongly",
+   "results": [
+    {
+     "rank": 1,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 8",
+     "score": -4.5498,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "common_raven.pdf",
+     "locator": "page 5",
+     "score": -4.9968,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Breeding",
+     "score": -6.1183,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "budgerigar.pdf",
+     "locator": "page 4",
+     "score": -6.4128,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Breeding",
+     "score": -6.5263,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.4,
+   "context_recall": 1.0
+  },
+  {
+   "id": "bird-fledging",
+   "kind": "multi",
+   "question": "What is the stage at which a young bird develops flight feathers and leaves the nest?",
+   "unanswerable": false,
+   "gold_sources": [
+    "bird_migration.pdf",
+    "bird_nest.docx",
+    "budgerigar.pdf",
+    "common_raven.pdf",
+    "mallard.pdf",
+    "mute_swan.docx",
+    "woodpecker.pptx"
+   ],
+   "confidence": 1.974,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "budgerigar.pdf",
+     "locator": "page 5",
+     "score": 1.9737,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Description",
+     "score": -0.14,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "hummingbird.pdf",
+     "locator": "page 2",
+     "score": -0.777,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_nest.docx",
+     "locator": "section Overview",
+     "score": -1.4924,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "golden_eagle.docx",
+     "locator": "section Colour",
+     "score": -1.5861,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 0.4,
+   "context_recall": 0.0
+  },
+  {
+   "id": "adv-bird-transformer",
+   "kind": "absent",
+   "question": "What attention mechanism does the transformer architecture use?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -10.722,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "beak.pdf",
+     "locator": "page 1",
+     "score": -10.7216,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "owl.pptx",
+     "locator": "slide 6",
+     "score": -10.8694,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "owl.pptx",
+     "locator": "slide 7",
+     "score": -10.9796,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "beak.docx",
+     "locator": "section Anatomy",
+     "score": -11.0351,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "mallard.pdf",
+     "locator": "page 5",
+     "score": -11.0899,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-bird-insulin",
+   "kind": "absent",
+   "question": "How does insulin regulate blood glucose in humans?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -10.391,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 7",
+     "score": -10.3911,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 6",
+     "score": -10.7114,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "owl.pptx",
+     "locator": "slide 3",
+     "score": -10.9288,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Behavior and ecology",
+     "score": -10.9874,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "arctic_tern.xlsx",
+     "locator": "sheet Notes",
+     "score": -11.0086,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-bird-consensus",
+   "kind": "absent",
+   "question": "How does a proof of stake protocol reach consensus?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -9.978,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "bird.docx",
+     "locator": "section Classification of bird orders",
+     "score": -9.9776,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 2",
+     "score": -10.996,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 2",
+     "score": -11.0677,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 6",
+     "score": -11.1374,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird.docx",
+     "locator": "section Dinosaurs and the origin of birds",
+     "score": -11.187,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-bird-price",
+   "kind": "near-miss",
+   "question": "How much does a trained falcon sell for at auction?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -7.979,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 5",
+     "score": -7.9792,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 2",
+     "score": -8.3246,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bird_intelligence.pptx",
+     "locator": "slide 4",
+     "score": -10.9976,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_intelligence.docx",
+     "locator": "section Associative learning",
+     "score": -11.0699,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "parrot.xlsx",
+     "locator": "sheet Notes",
+     "score": -11.1368,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-bird-author",
+   "kind": "metadata",
+   "question": "Who wrote this article and when was it last revised?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -8.852,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "woodpecker.pptx",
+     "locator": "slide 10",
+     "score": -8.852,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "passerine.pptx",
+     "locator": "slide 10",
+     "score": -8.852,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "owl.pptx",
+     "locator": "slide 10",
+     "score": -8.852,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 10",
+     "score": -8.852,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "new_caledonian_crow.pptx",
+     "locator": "slide 9",
+     "score": -8.852,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-bird-count-2024",
+   "kind": "near-miss",
+   "question": "How many individuals were counted in the 2024 breeding survey?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": 1.921,
+   "abstained": false,
+   "outcome": "answered_anyway",
+   "results": [
+    {
+     "rank": 1,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 8",
+     "score": 1.9207,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Population and status",
+     "score": -0.8279,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "mute_swan.docx",
+     "locator": "section Breeding",
+     "score": -5.0128,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "arctic_tern.xlsx",
+     "locator": "sheet Notes",
+     "score": -7.7455,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird_migration.xlsx",
+     "locator": "sheet Notes",
+     "score": -9.1245,
+     "relevant": false
+    }
+   ]
+  }
+ ]
+}
