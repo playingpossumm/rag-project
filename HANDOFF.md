@@ -332,12 +332,24 @@ Mode, so `git pull` in a skills repo will not update them; re-copy instead.
 
 ## 7. What is unfinished — stated plainly
 
-1. **The corpus is 20 PDFs and nothing else.** `load_docx`, `load_pptx`,
-   `load_xlsx` and the entire OCR path are written and have **never run on real
-   files**. The spreadsheet path is the least trustworthy: rows are serialised to
-   `Column: value` text on an assumption with no evidence behind it. This is the
-   largest unknown in the system and the cheapest to close — it needs the owner's
-   documents in `data/`.
+1. **Closed 2026-08-21 — and the spreadsheet assumption was wrong.** The loaders
+   have now run on real files. `load_xlsx` took row 1 as the header; a sheet whose
+   first row is a *title* made every row read `Q3 sales report: 41200` — the title
+   repeated as the column name, the real headers demoted to data, every value
+   unlabelled, and nothing erroring. Fixed by finding the header rather than
+   assuming it. `load_docx` and `load_pptx` were correct as written, tables and
+   speaker notes included. `src/test_loaders.py` writes a real file per format and
+   reads it back — 15 checks, verified to fail 3 when the old assumption is put back.
+
+   The corpus is now **36 documents / 5,459 passages**. Two further topic corpora
+   are built by `src/fetch_topic.py`: `data-birds/` (45 documents, mixed
+   `.docx`/`.pptx`/`.xlsx`/`.pdf`, from Wikipedia) and `data-quant/` (18 arXiv
+   q-fin papers). Both are gitignored and rebuildable. `RAG_STORE_DIR` now moves
+   the index with `RAG_DATA_DIR`, so indexing a second corpus no longer overwrites
+   the first one's store.
+
+   **Still open:** the OCR path has never seen a scanned document, and neither
+   new corpus has a golden set, so neither is measurable yet.
 2. **Cross-document confusion — a ~11% floor, not a flat 15%.** The retriever
    matches the topic and ignores the constraint that distinguishes the answer
    ("normalisation across features *rather than examples*" still returns Batch
