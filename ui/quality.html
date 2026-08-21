@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retrieval Quality</title>
+<style>
+/* Same fonts, tokens and devices as the app. This is a second view of one
+   system, not a second design -- and nothing here is loaded from a network. */
+@font-face{font-family:Inter;src:url("/fonts/Inter-400_700.woff2") format("woff2");
+  font-weight:400 700;font-display:swap;font-style:normal}
+@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-400.woff2") format("woff2");
+  font-weight:400;font-display:swap;font-style:normal}
+@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-500.woff2") format("woff2");
+  font-weight:500;font-display:swap;font-style:normal}
+
+:root{
+  --bg:#F4F5F6; --panel:#FFFFFF; --sunk:#ECEEEF;
+  --ink:#000000; --soft:#3C4142; --muted:#6E7476; --faint:#9AA0A2;
+  --line:#E2E4E6; --rule:#C3C9CC;
+  --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a;
+  --good:#0ca30c; --critical:#d03b3b; --serious:#b3705f;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --ease-out:cubic-bezier(0.23,1,0.32,1);
+  --max:1180px; --pad:clamp(1.25rem,4vw,3.25rem);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;letter-spacing:-.006em;-webkit-font-smoothing:antialiased}
+h1,h2{margin:0;font-weight:600;letter-spacing:-.022em;line-height:1.1}
+a{color:inherit}
+.lab{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.folio{border-bottom:1px solid var(--rule);background:var(--panel)}
+.folio-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:54px;
+  display:flex;align-items:center;gap:22px}
+.folio .name{font-size:14px;font-weight:600;white-space:nowrap}
+.folio .rule{flex:1;height:1px;background:var(--rule)}
+.folio a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
+.folio a:hover{color:var(--ink)}
+
+.wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 96px}
+.panel{border:1px solid var(--rule);background:var(--panel);margin-top:24px}
+.phead{display:flex;align-items:baseline;gap:16px;padding:10px 16px;
+  border-bottom:1px solid var(--line);flex-wrap:wrap}
+.phead .right{margin-left:auto}
+.pbody{padding:18px 16px}
+.note{color:var(--muted);font-size:13px;max-width:78ch;margin:0 0 16px}
+.note b{color:var(--soft);font-weight:600}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-family:var(--mono);font-size:9.5px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.13em;color:var(--faint);
+  padding:0 12px 8px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
+th.r,td.r{text-align:right;padding-right:0;padding-left:16px}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr.win td{font-weight:600}
+tr.win td:first-child::after{content:" ← shipped";font-family:var(--mono);
+  font-size:9px;letter-spacing:.12em;color:var(--good);font-weight:500}
+.scroll{overflow-x:auto}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  border-top:1px solid var(--line)}
+.tile{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tile:last-child{border-right:0}
+.tile .v{font-family:var(--mono);font-size:22px;letter-spacing:-.02em;margin-top:4px}
+.tile .s{color:var(--faint);font-size:11.5px;margin-top:2px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media (max-width:900px){.split{grid-template-columns:1fr}}
+.case{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:8px 0;
+  border-bottom:1px solid var(--line);font-size:13px;align-items:baseline}
+.case:last-child{border-bottom:0}
+.case .k{font-family:var(--mono);font-size:10px;color:var(--faint);white-space:nowrap}
+.case .q{color:var(--muted);font-size:12.5px}
+.err{color:var(--critical)}
+.miss{color:var(--muted);font-style:italic;font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="folio"><div class="folio-in">
+  <span class="name">Retrieval Quality</span>
+  <span class="rule"></span>
+  <a href="/">&larr; the inspector</a>
+  <a href="/~/architecture">the map</a>
+  <span class="lab" id="readout">loading</span>
+</div></div>
+
+<div class="wrap">
+  <div class="tiles panel" id="tiles" style="margin-top:0;border-top:0"></div>
+
+  <section class="panel">
+    <div class="phead"><span class="lab">Against naive RAG</span>
+      <span class="right lab" id="e2e-n"></span></div>
+    <div class="pbody">
+      <p class="note">Every configuration the harness scores, end to end at k=5. <b>Source
+        recall</b> is the one ordinary RAG tutorials never track: it asks whether every
+        document that answers the question was returned, not whether one was.</p>
+      <div class="scroll"><table id="e2e"></table></div>
+    </div>
+  </section>
+
+  <div class="split">
+    <section class="panel">
+      <div class="phead"><span class="lab">Where it fails</span>
+        <span class="right lab" id="fail-n"></span></div>
+      <div class="pbody">
+        <p class="note">Measured across six configurations. <b>Structural</b> cases fail
+          under every one — no fusion, reranking or cap change reaches them.</p>
+        <div id="hard"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="phead"><span class="lab">Abstention</span>
+        <span class="right lab" id="thr-n"></span></div>
+      <div class="pbody">
+        <p class="note">What each threshold would cost. The <b>in cases</b> column is the
+          one to read: the rate column values one adversarial case at several answerable
+          ones, because the two populations differ in size.</p>
+        <div class="scroll"><table id="thr"></table></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="phead"><span class="lab">Context expansion</span>
+      <span class="right lab">recall against tokens</span></div>
+    <div class="pbody">
+      <p class="note">Expansion cannot move a ranking metric — it changes how much text
+        each survivor carries, so it is measured by whether the returned text contains
+        the answer, and by what that costs.</p>
+      <div class="scroll"><table id="exp"></table></div>
+    </div>
+  </section>
+</div>
+
+<script type="module">
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const f3 = v => (v == null || Number.isNaN(v)) ? "—" : Number(v).toFixed(3);
+const nf = n => Number(n).toLocaleString();
+
+const grab = async url => {
+  try { const r = await fetch(url); return r.ok ? await r.json() : null; }
+  catch { return null; }
+};
+
+/* Each panel is filled independently and says so when its file is absent.
+   "not generated yet" and "measured as zero" must not look the same. */
+const absent = (el, cmd) => {
+  el.innerHTML = `<p class="miss">Not generated yet — run
+    <span class="num">${esc(cmd)}</span></p>`;
+};
+
+const [ev, pc, thr, hard, corpus] = await Promise.all([
+  grab("/api/eval"), grab("/api/per-case"), grab("/api/threshold"),
+  grab("/api/hard-cases"), grab("/api/corpus"),
+]);
+
+/* ---------------------------------------------------------------- tiles */
+const t = pc?.totals?.answerable, a = pc?.totals?.adversarial;
+$("#readout").textContent = corpus
+  ? `${nf(corpus.chunks)} chunks / ${corpus.documents} docs` : "server unreachable";
+$("#tiles").innerHTML = [
+  ["Corpus", corpus ? nf(corpus.chunks) : "—", corpus ? `${corpus.documents} documents` : ""],
+  ["Golden set", t ? t.n + a.n : "—", t ? `${t.n} answerable · ${a.n} adversarial` : ""],
+  ["Hit rate @5", f3(t?.hit_rate), "a relevant page returned"],
+  ["Source recall", f3(t?.src_recall), "of the documents that answer"],
+  ["Refused wrongly", t ? t.refused_wrongly : "—", t ? `of ${t.n} answerable` : ""],
+  ["Answered anyway", a ? a.answered_anyway : "—", a ? `of ${a.n} adversarial` : ""],
+].map(([k, v, s]) => `<div class="tile"><div class="lab">${esc(k)}</div>
+  <div class="v">${esc(String(v))}</div><div class="s">${esc(s)}</div></div>`).join("");
+
+/* ------------------------------------------------------------ end to end */
+if (!ev?.end_to_end) absent($("#e2e").parentElement, "python src/evaluate.py");
+else {
+  const rows = Object.entries(ev.end_to_end);
+  const SHIPPED = "+ diversity 2/src";
+  $("#e2e-n").textContent = `${rows.length} configurations`;
+  $("#e2e").innerHTML = `<thead><tr><th>Pipeline</th><th class="r">any-hit</th>
+      <th class="r">MRR</th><th class="r">NDCG</th><th class="r">src recall</th>
+    </tr></thead><tbody>${rows.map(([name, m]) => `
+      <tr class="${name === SHIPPED ? "win" : ""}">
+        <td>${esc(name)}</td>
+        <td class="r num">${f3(m.hit_rate)}</td>
+        <td class="r num">${f3(m.mrr)}</td>
+        <td class="r num">${f3(m.ndcg)}</td>
+        <td class="r num">${f3(m.src_recall)}</td>
+      </tr>`).join("")}</tbody>`;
+}
+
+/* --------------------------------------------------------------- failures */
+if (!hard?.structural) {
+  absent($("#hard"), "src/failure_overlap.py runs/*.json --emit-fixture eval/hard_cases.json");
+} else {
+  $("#fail-n").textContent = `${hard.structural.length} structural`;
+  $("#hard").innerHTML = hard.structural.map(c => `
+    <div class="case"><span class="k">${esc(c.kind)}</span>
+      <span><b>${esc(c.id)}</b><br><span class="q">${esc(c.question)}</span></span>
+    </div>`).join("")
+    + (hard.slips_the_gate?.length ? `
+      <p class="note" style="margin:16px 0 6px"><b>${hard.slips_the_gate.length} adversarial
+        questions</b> are answered under every gated configuration — a threshold question,
+        not a retrieval one.</p>
+      ${hard.slips_the_gate.map(c => `<div class="case">
+        <span class="k">${c.confidence > 0 ? "+" : ""}${Number(c.confidence).toFixed(2)}</span>
+        <span class="q">${esc(c.question)}</span></div>`).join("")}` : "");
+}
+
+/* -------------------------------------------------------------- threshold */
+if (!thr?.sweep) absent($("#thr").parentElement, "python src/calibrate_threshold.py --emit eval/threshold.json");
+else {
+  const shipped = thr.shipped_threshold;
+  $("#thr-n").textContent = `shipped ${shipped >= 0 ? "+" : ""}${shipped.toFixed(1)}`;
+  $("#thr").innerHTML = `<thead><tr><th>Threshold</th><th class="r">refuses</th>
+      <th class="r">wrongly refuses</th><th class="r">in cases</th></tr></thead>
+    <tbody>${thr.sweep.filter(r => r.threshold >= -1 && r.threshold <= 3).map(r => `
+      <tr class="${r.threshold === shipped ? "win" : ""}">
+        <td class="num">${r.threshold >= 0 ? "+" : ""}${r.threshold}</td>
+        <td class="r num">${r.caught.length} / ${thr.n_adversarial}</td>
+        <td class="r num">${r.wrongly_refused.length} / ${thr.n_answerable}</td>
+        <td class="r num">${r.caught.length} caught, ${r.wrongly_refused.length} lost</td>
+      </tr>`).join("")}</tbody>`;
+}
+
+/* -------------------------------------------------------------- expansion */
+if (!ev?.expansion) absent($("#exp").parentElement, "python src/evaluate.py");
+else {
+  $("#exp").innerHTML = `<thead><tr><th>Mode</th><th class="r">context recall</th>
+      <th class="r">tokens/query</th><th class="r">blocks</th></tr></thead>
+    <tbody>${Object.entries(ev.expansion).map(([k, m]) => `
+      <tr class="${k.startsWith("window") ? "win" : ""}">
+        <td>${esc(k)}</td>
+        <td class="r num">${f3(m.context_recall)}</td>
+        <td class="r num">${nf(m.tokens_per_query)}</td>
+        <td class="r num">${m.blocks_per_query}</td>
+      </tr>`).join("")}</tbody>`;
+}
+</script>
+</body>
+</html>

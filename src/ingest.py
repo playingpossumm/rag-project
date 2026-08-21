@@ -31,8 +31,22 @@ EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 # embedding_text), which consumes part of the same 256-token budget. The
 # remaining headroom covers the prefix plus the [CLS]/[SEP] tokens added at
 # encode time.
-CHUNK_SIZE_TOKENS = 210
-CHUNK_OVERLAP_TOKENS = 40
+#
+# Overridable so a strategy can be measured rather than argued about, but NOT
+# unbounded: the encoder's ceiling is a property of the model, not a preference,
+# and build_index() refuses to write an index whose chunks exceed it. A request
+# for "500 tokens, 50 overlap" is not a setting this can honour -- it is a
+# request for a different encoder. See eval/RESULTS.md, "Chunk size is bounded
+# by the encoder".
+CHUNK_SIZE_TOKENS = int(os.environ.get("RAG_CHUNK_SIZE", 210))
+CHUNK_OVERLAP_TOKENS = int(os.environ.get("RAG_CHUNK_OVERLAP", 40))
+
+if CHUNK_OVERLAP_TOKENS >= CHUNK_SIZE_TOKENS:
+    # The stride is size - overlap. At overlap >= size the stride is zero or
+    # negative and chunking never advances, which hangs rather than errors.
+    raise ValueError(
+        f"RAG_CHUNK_OVERLAP ({CHUNK_OVERLAP_TOKENS}) must be less than "
+        f"RAG_CHUNK_SIZE ({CHUNK_SIZE_TOKENS}); the stride is their difference")
 
 # Bounds the embedding prefix. Long enough for a real paper title,
 # short enough that it cannot crowd out the passage it labels.

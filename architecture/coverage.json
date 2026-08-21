@@ -17,7 +17,9 @@
   "parsecache": { "owns": ["src/parse_cache.py"] },
   "embedcache": { "owns": ["src/embedding_cache.py"] },
 
-  "retrieve":   { "owns": ["src/retrieve.py"] },
+  "retrieve":   { "owns": ["src/metadata_filter.py", "src/query_expansion.py",
+                         "src/late_interaction.py", "src/query_rewrite.py",
+                         "src/web_fallback.py", "src/retrieve.py"] },
   "hybrid":     { "owns": ["src/hybrid.py"] },
   "rerank":     { "owns": ["src/rerank.py"] },
   "diversify":  { "owns": ["src/diversify.py"] },

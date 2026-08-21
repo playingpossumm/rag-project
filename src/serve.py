@@ -38,7 +38,19 @@ HOST, PORT = "127.0.0.1", 8000
 MAX_BODY = 64 * 1024  # a question is small; refuse anything that clearly is not
 UI_FILE = Path(__file__).parent.parent / "ui" / "index.html"
 ARCH_FILE = Path(__file__).parent.parent / "docs" / "architecture.html"
-EVAL_FILE = Path(__file__).parent.parent / "eval" / "results.json"
+EVAL_DIR = Path(__file__).parent.parent / "eval"
+EVAL_FILE = EVAL_DIR / "results.json"
+
+# The quality view reads whatever the harness has written. Each is optional:
+# a file that has not been generated yet makes its panel say so rather than
+# making the page fail to load, because "not measured" and "measured as zero"
+# must not look the same.
+QUALITY_FILES = {
+    "/api/eval": "results.json",
+    "/api/per-case": "per_case.json",
+    "/api/threshold": "threshold.json",
+    "/api/hard-cases": "hard_cases.json",
+}
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -331,6 +343,21 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, f.read_bytes(), "font/woff2")
 
+        elif route == "/quality":
+            f = UI_FILE.parent / "quality.html"
+            if not f.exists():
+                self._send(404, {"error": "ui/quality.html is missing"})
+                return
+            self._raw(200, f.read_bytes(), "text/html; charset=utf-8")
+
+        elif route in QUALITY_FILES and route != "/api/eval":
+            f = EVAL_DIR / QUALITY_FILES[route]
+            if not f.exists():
+                self._send(404, {"error": f"eval/{f.name} has not been generated -- "
+                                          f"see README for the command"})
+                return
+            self._raw(200, f.read_bytes(), "application/json; charset=utf-8")
+
         elif route == "/api/eval":
             # Static passthrough of what evaluate.py wrote. The UI shows measured
             # numbers rather than restating them, so a stale README cannot make
@@ -482,6 +509,7 @@ def main():
     stats = RES.corpus()
     print(f"Ready on http://{host}:{port}")
     print(f"  inspector  http://{host}:{port}/")
+    print(f"  quality    http://{host}:{port}/quality   (retrieval quality dashboard)")
     print(f"  map        http://{host}:{port}/~/architecture")
     print(f"  api        POST /ask, POST /api/trace")
     print(f"  corpus     {stats['chunks']} chunks from {stats['documents']} documents")

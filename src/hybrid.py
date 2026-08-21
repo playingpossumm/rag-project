@@ -40,9 +40,16 @@ def build_bm25(metadata: list[dict]) -> BM25Okapi:
     return BM25Okapi([tokenize(c.get("embed_text", c["text"])) for c in metadata])
 
 
-def bm25_search(query: str, bm25: BM25Okapi, metadata: list[dict], k: int) -> list[dict]:
-    scores = bm25.get_scores(tokenize(query))
-    ranked = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:k]
+def bm25_search(query: str, bm25: BM25Okapi, metadata: list[dict], k: int,
+                allowed_ids: list[int] | None = None,
+                terms: list[str] | None = None) -> list[dict]:
+    # `terms` lets a caller hand in an already-expanded bag (see
+    # query_expansion.py) without this module knowing how it was built.
+    scores = bm25.get_scores(terms if terms is not None else tokenize(query))
+    # BM25 scores the whole corpus regardless, so scoping is just a narrower
+    # argmax -- exact, and no cheaper to approximate.
+    pool = range(len(scores)) if allowed_ids is None else allowed_ids
+    ranked = sorted(pool, key=lambda i: scores[i], reverse=True)[:k]
     return [
         {**metadata[i], "chunk_id": int(i), "score": float(scores[i])}
         for i in ranked

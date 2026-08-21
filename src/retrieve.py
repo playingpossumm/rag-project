@@ -38,10 +38,26 @@ def load_index():
     return index, metadata
 
 
-def search(query: str, index, metadata, model, k: int = TOP_K) -> list[dict]:
+def search(query: str, index, metadata, model, k: int = TOP_K,
+           allowed_ids: list[int] | None = None) -> list[dict]:
     query_vec = model.encode([query], convert_to_numpy=True)
     faiss.normalize_L2(query_vec)
-    scores, ids = index.search(query_vec.astype(np.float32), k)
+
+    # A selector makes FAISS skip excluded rows during the scan, so the result
+    # is the true top k WITHIN the subset. Retrieving normally and filtering
+    # afterwards would return the survivors of the top k overall, which is
+    # empty whenever the unfiltered leaders all sit outside the scope.
+    if allowed_ids is None:
+        scores, ids = index.search(query_vec.astype(np.float32), k)
+    else:
+        if not allowed_ids:
+            return []
+        from metadata_filter import selector
+
+        params = faiss.SearchParameters()
+        params.sel = selector(allowed_ids)
+        scores, ids = index.search(query_vec.astype(np.float32),
+                                   min(k, len(allowed_ids)), params=params)
 
     results = []
     for score, idx in zip(scores[0], ids[0]):
@@ -64,6 +80,8 @@ def shortlist(
     fusion: str = DEFAULT_FUSION,
     bm25=None,
     alpha: float = 0.5,
+    allowed_ids: list[int] | None = None,
+    query_expansion: str = "none",
 ) -> list[dict]:
     """First stage: produce the candidate pool the reranker will reorder.
 
@@ -71,7 +89,7 @@ def shortlist(
     retrievers are asked for k candidates each, so fusion sees the same depth
     per retriever rather than splitting one budget between them.
     """
-    dense = search(query, index, metadata, model, k=k)
+    dense = search(query, index, metadata, model, k=k, allowed_ids=allowed_ids)
     if fusion == "none":
         return dense
 
@@ -82,7 +100,19 @@ def shortlist(
     if bm25 is None:
         bm25 = build_bm25(metadata)
 
-    sparse = bm25_search(query, bm25, metadata, k=k)
+    # Expansion is given to the sparse retriever only: appending a bag of
+    # keywords to a sentence moves its embedding somewhere that is not a
+    # question, so it helps lexical matching and distorts semantic matching.
+    terms = None
+    if query_expansion == "prf":
+        from query_expansion import expand
+
+        terms = expand(query, bm25, metadata)
+    elif query_expansion != "none":
+        raise ValueError(f"unknown query expansion: {query_expansion!r}")
+
+    sparse = bm25_search(query, bm25, metadata, k=k, allowed_ids=allowed_ids,
+                         terms=terms)
     if fusion == "rrf":
         return fuse_rrf(dense, sparse, k=k)
     if fusion == "weighted":
@@ -104,6 +134,8 @@ def retrieve(
     expansion: str = "none",
     window: int = 1,
     max_per_source: int | None = DEFAULT_MAX_PER_SOURCE,
+    allowed_ids: list[int] | None = None,
+    query_expansion: str = "none",
 ) -> list[dict]:
     """Full retrieval pipeline: shortlist, rerank, then expand context.
 
@@ -116,7 +148,9 @@ def retrieve(
         from rerank import rerank  # lazy so the baseline path stays light
 
         candidates = shortlist(query, index, metadata, model, k=candidate_k,
-                               fusion=fusion, bm25=bm25, alpha=alpha)
+                               fusion=fusion, bm25=bm25, alpha=alpha,
+                               allowed_ids=allowed_ids,
+                               query_expansion=query_expansion)
         # Rerank the whole pool, then select k. Selecting first would give the
         # diversity step nothing to choose between.
         ranked = rerank(query, candidates, k=len(candidates))
@@ -124,7 +158,9 @@ def retrieve(
                    if max_per_source else ranked[:k])
     else:
         results = shortlist(query, index, metadata, model, k=k,
-                            fusion=fusion, bm25=bm25, alpha=alpha)
+                            fusion=fusion, bm25=bm25, alpha=alpha,
+                            allowed_ids=allowed_ids,
+                            query_expansion=query_expansion)
 
     # Expansion runs last, deliberately. Ranking on small chunks is what keeps
     # precision high; growing them any earlier would feed the reranker diluted

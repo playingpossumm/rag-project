@@ -1,8 +1,8 @@
 {
   "date": "2026-08-21",
   "totals": {
-    "files": 33,
-    "loc": 5263
+    "files": 38,
+    "loc": 5926
   },
   "nodes": {
     "api": {
@@ -11,7 +11,7 @@
     },
     "serve": {
       "count": 1,
-      "loc": 497
+      "loc": 525
     },
     "cli": {
       "count": 1,
@@ -23,7 +23,7 @@
     },
     "ingest": {
       "count": 1,
-      "loc": 356
+      "loc": 370
     },
     "loaders": {
       "count": 1,
@@ -50,12 +50,12 @@
       "loc": 151
     },
     "retrieve": {
-      "count": 1,
-      "loc": 158
+      "count": 6,
+      "loc": 772
     },
     "hybrid": {
       "count": 1,
-      "loc": 101
+      "loc": 108
     },
     "rerank": {
       "count": 1,

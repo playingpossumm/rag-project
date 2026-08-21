@@ -168,6 +168,60 @@ One number serves two cost structures, and the aggregate hides it:
 
 The second is where the cost asymmetry bites, and it is the path a person uses.
 
+## Query expansion (PRF) — built, measured, left off
+
+Pseudo-relevance feedback, RM3-style: run the query, take the top ten results as
+if relevant, add their highest-IDF terms, re-run. No model and no network.
+
+| stage | any-hit | MRR | src recall |
+|---|---|---|---|
+| candidate pool, rrf | 0.924 | 0.717 | 0.836 |
+| candidate pool, rrf + PRF | **0.939** | 0.723 | 0.821 |
+| end to end, default | 0.848 | 0.754 | 0.773 |
+| end to end, default + PRF | 0.848 | 0.754 | 0.767 |
+
+It does what it claims at the stage it targets — **+1.5 points of pool any-hit** —
+and the reranker then erases all of it: end-to-end any-hit and MRR are identical
+to three decimals, and source recall is slightly worse. This is the same
+mechanism already documented for fusion: the cross-encoder re-scores every
+candidate from scratch, so a better *ordering* entering the pool is discarded,
+and only a better *membership* survives. PRF changes both, and the membership
+gain is too small to show.
+
+Available as `query_expansion="prf"`. Default `"none"`.
+
+## Late interaction (ColBERT-style) — built, measured, left off
+
+MaxSim over token embeddings, applied to the candidate pool as a reranker.
+
+| reranker | any-hit | MRR | NDCG | src recall | s/query |
+|---|---|---|---|---|---|
+| none (fusion order) | 0.818 | 0.701 | 0.724 | 0.777 | 0.04 |
+| **cross-encoder** *(shipped)* | **0.848** | **0.754** | **0.769** | 0.773 | 1.11 |
+| late interaction | 0.833 | 0.713 | 0.740 | 0.752 | 1.04 |
+
+Strictly dominated: it lands between no reranking and the cross-encoder on every
+ranking metric while costing **the same** (1.04s against 1.11s). There is no
+operating point at which it is the right choice here.
+
+**One caveat, and it is a real one.** This scores with `all-MiniLM-L6-v2`'s token
+embeddings, not a ColBERT checkpoint. Real ColBERT models are trained for MaxSim
+with a projection layer, so this measures *late interaction using a bi-encoder's
+tokens*, which is not the same claim as "ColBERT is worse". A fair test needs
+`colbertv2.0` and is the obvious follow-up.
+
+## Chunk size is bounded by the encoder, not by preference
+
+`all-MiniLM-L6-v2` has `max_seq_length = 256`. A 500-token chunk loses its last
+**244 tokens — 49% of every chunk** — silently, before the encoder sees it. That
+is the defect this project already found and fixed once, when chunks were sized
+in *words*.
+
+`build_index()` refuses to write such an index, so the setting cannot be applied
+by accident. Size and overlap are configurable via `RAG_CHUNK_SIZE` and
+`RAG_CHUNK_OVERLAP` for measuring alternatives within the ceiling; going beyond
+it is a request for a different embedding model, not a different setting.
+
 ## Context expansion
 
 | mode | context recall | tokens/query | recall per 1k tokens |
