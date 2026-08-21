@@ -86,6 +86,28 @@ button{font:inherit;color:inherit}
 .hint b{color:var(--serious);font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
   text-transform:uppercase;margin-right:10px;font-weight:500}
 
+/* ------------------------------------------------------------- intake
+   A plain text field and a button. A browser cannot hand a filesystem path to
+   a server -- a picker returns bytes, never a location -- so pasting the path
+   is not a lesser version of a folder picker, it is the only version there is;
+   saying so beats a disabled control that implies otherwise. */
+.intake{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0 12px}
+.intake input{flex:1;min-width:260px;padding:8px 10px;border:1px solid var(--rule);
+  background:var(--panel);color:var(--ink);font-family:var(--mono);font-size:12px}
+.intake input:focus{outline:0;border-color:var(--ink)}
+.intake button{border:1px solid var(--rule);background:var(--panel);padding:8px 14px;
+  font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;cursor:pointer;white-space:nowrap;
+  transition:transform 160ms var(--ease-out),border-color 160ms var(--ease-out)}
+.intake button:hover:not(:disabled){border-color:var(--ink)}
+.intake button:active:not(:disabled){transform:scale(.97)}
+.intake button:disabled{opacity:.4;cursor:default}
+.intake .warn{flex-basis:100%;font-size:12px;color:var(--muted)}
+.intake .warn b{color:var(--serious)}
+.intake-log{max-height:190px;overflow:auto;margin:0 0 12px;font-size:12px}
+.intake-log tr.fail td{color:var(--critical)}
+.intake-log tr.skip td{color:var(--faint)}
+
 /* ---------------------------------------------------------------- shell */
 .wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 96px}
 
@@ -257,7 +279,7 @@ tr.out .snip{opacity:.6}
     <span class="rule"></span>
     <div class="seg" role="group" aria-label="Source">
       <button id="src-sample" aria-pressed="true" type="button">Sample corpus</button>
-      <button id="src-folder" aria-pressed="false" type="button">Local folder <span class="lock">◇</span></button>
+      <button id="src-folder" aria-pressed="false" type="button">Local folder</button>
       <button id="src-drive" aria-pressed="false" type="button">Drive <span class="lock">◇</span></button>
     </div>
     <span class="lab" id="readout">loading</span>
@@ -342,7 +364,7 @@ const readInk = () => {
     other: v("--series-other"), good: v("--good"), critical: v("--critical") };
 };
 
-let CITY = null, RUN = null, INK = readInk(), EVAL = null;
+let CITY = null, RUN = null, INK = readInk(), EVAL = null, CORPUS = null;
 const REPLAY_MS = 8000;
 
 const cv = $("#city"), ctx = cv.getContext("2d");
@@ -368,7 +390,7 @@ Promise.all([
   fetch("/api/corpus").then(r => r.json()),
   fetch("/api/eval").then(r => r.ok ? r.json() : null).catch(() => null),
 ]).then(([chunks, corpus, evalData]) => {
-  CITY = buildCity(chunks); EVAL = evalData;
+  CITY = buildCity(chunks); EVAL = evalData; CORPUS = corpus;
   $("#readout").textContent = `${nf(corpus.chunks)} chunks / ${corpus.documents} docs`;
   $("#sugs").innerHTML = (corpus.examples || []).map(x =>
     `<button class="sug" type="button" data-q="${esc(x.q)}" title="${esc(x.q)}">${esc(x.label)}</button>`).join("");
@@ -383,24 +405,172 @@ Promise.all([
 });
 
 /* -------------------------------------------------------- source picker
-   Selecting is selecting. The two unbuilt sources say so in one line and never
-   become the selection, so the app is never left in a dead state. */
+   Selecting is selecting. Drive is still unbuilt and says so in one line
+   without becoming the selection, so the app is never left in a dead state.
+   Local folder is now real -- see the intake below. */
 const LOCKED = {
-  "src-folder": "Reading a local folder needs a pasted path or drag-and-drop; a browser cannot take a filesystem path from a picker.",
-  "src-drive": "Native Google Docs are pointers, not files, so this needs the Drive export path.",
+  "src-drive": "Native Google Docs are pointers, not files, so this needs the Drive export path. Files that are genuinely files -- a PDF or .docx in a synced Drive folder -- already work today: point Local folder at the synced directory.",
 };
-for (const id of ["src-sample", "src-folder", "src-drive"]) {
+const TABS = ["src-sample", "src-folder", "src-drive"];
+const hint = html => {
+  $("#hint").classList.remove("hide");
+  $("#hint").firstElementChild.innerHTML = html;
+};
+
+for (const id of TABS) {
   $("#" + id).onclick = () => {
-    const locked = LOCKED[id];
-    if (!locked) {
-      for (const o of ["src-sample", "src-folder", "src-drive"])
-        $("#" + o).setAttribute("aria-pressed", String(o === id));
-      $("#hint").classList.add("hide");
+    if (LOCKED[id]) { hint(`<b>not wired</b>${esc(LOCKED[id])}`); return; }
+    for (const o of TABS) $("#" + o).setAttribute("aria-pressed", String(o === id));
+    if (id === "src-folder") showIntake(); else showSample();
+  };
+}
+
+/* The bundled corpus is a source like any other now, so it gets the same
+   affordance rather than being the one tab that only relabels the page. Once a
+   folder can replace the index, "Sample corpus" as an inert label would be
+   claiming to be the current source without being able to make that true. */
+function showSample() {
+  hint(`
+    <div class="intake">
+      <div class="warn" style="flex:1;flex-basis:auto">The 20 papers bundled with the
+        project, at <span class="num">${esc(CORPUS?.data_dir || "data/")}</span>. Re-index
+        after adding or removing a file there.</div>
+      <button id="sample-reindex" type="button">Re-index</button>
+    </div>
+    <div class="warn" id="folder-msg" style="padding-bottom:10px"></div>`);
+  $("#sample-reindex").onclick = () => {
+    $("#folder-check")?.remove();
+    startIndex(null);
+  };
+}
+
+/* ------------------------------------------------------------- intake
+   Two steps, and the first is not optional: resolve the path, show what was
+   found, and only then offer to index. Indexing REPLACES the vector store, so
+   a mistyped path resolving to an empty folder would otherwise destroy a
+   working index and report success. The server refuses that case outright;
+   this makes a person see what they are about to replace before they can. */
+function showIntake() {
+  hint(`
+    <div class="intake">
+      <input id="folder" placeholder="C:\\Users\\you\\Documents\\contracts" spellcheck="false"
+             aria-label="Folder path">
+      <button id="folder-check" type="button">Check folder</button>
+      <div class="warn" id="folder-msg">Paste a folder path — a browser cannot read one from a
+        file picker, so this is the only form the request can take. PDF, DOCX, PPTX and XLSX
+        are indexed; anything else is listed and skipped.
+        <b>Indexing replaces the current index.</b></div>
+    </div>`);
+  $("#folder").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); check(); } };
+  $("#folder-check").onclick = check;
+}
+
+async function post(url, body) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify(body) });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+async function check() {
+  const path = $("#folder").value.trim();
+  const msg = $("#folder-msg"), btn = $("#folder-check");
+  if (!path) { msg.innerHTML = `<span class="err">Paste a folder path first.</span>`; return; }
+  btn.disabled = true;
+  msg.textContent = "Checking…";
+  try {
+    const d = await post("/api/index/inspect", { path });
+    const skipped = d.skipped.length
+      ? `<br>${d.skipped.length} file(s) would be skipped: ${d.skipped
+          .slice(0, 4).map(x => esc(x.document)).join(", ")}${d.skipped.length > 4 ? "…" : ""}`
+      : "";
+    msg.innerHTML = `<b>found</b>${d.documents.length} document(s) in
+      <span class="num">${esc(d.folder)}</span>. Indexing replaces the current
+      ${nf(CORPUS?.chunks || 0)}-chunk index.${skipped}`;
+    btn.textContent = "Index this folder";
+    btn.onclick = () => startIndex(path);
+  } catch (err) {
+    msg.innerHTML = `<span class="err">${esc(err.message)}</span>`;
+    btn.textContent = "Check folder";
+    btn.onclick = check;
+  } finally { btn.disabled = false; }
+}
+
+async function startIndex(path) {
+  const msg = $("#folder-msg"), btn = $("#folder-check") || $("#sample-reindex");
+  btn.disabled = true;
+  try {
+    // A null path means the configured corpus directory, which is what the CLI
+    // and RAG_DATA_DIR have always indexed.
+    await post("/api/index/start", path ? { path } : {});
+    msg.innerHTML = `<b>indexing</b>Reading documents. A cold build of 20 PDFs took 432s;
+      anything already parsed is cached and comes back in under a second.`;
+    poll();
+  } catch (err) {
+    msg.innerHTML = `<span class="err">${esc(err.message)}</span>`;
+    btn.disabled = false;
+  }
+}
+
+/* Polling, not a socket: a run emits about one event per document, so the
+   bottleneck is parsing and never the poll. */
+function poll() {
+  const msg = $("#folder-msg");
+  const tick = async () => {
+    let s;
+    try { s = await fetch("/api/index/status").then(r => r.json()); }
+    catch { setTimeout(tick, 1500); return; }
+
+    const rows = s.files.slice(-40).map(f => `
+      <tr class="${f.status === "FAIL" ? "fail" : f.status === "SKIP" ? "skip" : ""}">
+        <td>${esc(f.document)}</td><td>${esc(f.status)}</td>
+        <td class="r num">${f.chunks == null ? "" : nf(f.chunks)}</td>
+        <td>${esc(f.detail || "")}</td></tr>`).join("");
+    const log = `<div class="scroll intake-log"><table>
+      <thead><tr><th>Document</th><th>Status</th><th class="r">Chunks</th><th>Note</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+
+    if (s.state === "running") {
+      msg.innerHTML = `<b>indexing</b>${s.files.length} of
+        ${s.totals.scan?.documents ?? "?"} · ${s.elapsed}s${log}`;
+      setTimeout(tick, 800);
       return;
     }
-    $("#hint").classList.remove("hide");
-    $("#hint").firstElementChild.innerHTML = `<b>not wired</b>${esc(locked)}`;
+    if (s.state === "error") {
+      msg.innerHTML = `<span class="err">${esc(s.error)}</span>`;
+      ($("#folder-check") || $("#sample-reindex")).disabled = false;
+      return;
+    }
+    if (s.state === "done") {
+      const skipped = (s.summary?.skipped || []).length;
+      msg.innerHTML = `<b>indexed</b>${nf(s.summary?.chunks || 0)} chunks from
+        ${s.summary?.indexed ?? "?"} document(s) in ${s.elapsed}s${
+        skipped ? `, ${skipped} excluded by the health check` : ""}.${log}`;
+      ($("#folder-check") || $("#sample-reindex")).disabled = false;
+      // The index on disk changed, so everything the page derives from it is
+      // stale -- the corpus readout, the examples, and every block of the city.
+      refreshCorpus();
+    }
   };
+  tick();
+}
+
+async function refreshCorpus() {
+  const [chunks, corpus] = await Promise.all([
+    fetch("/api/chunks").then(r => r.json()),
+    fetch("/api/corpus").then(r => r.json()),
+  ]);
+  CORPUS = corpus;
+  CITY = buildCity(chunks);
+  RUN = null; BASE = null; LAST = null; QUESTION = "";
+  $("#readout").textContent = `${nf(corpus.chunks)} chunks / ${corpus.documents} docs`;
+  for (const id of ["panel-answer", "panel-settings", "panel-stages"])
+    $("#" + id).classList.add("hide");
+  $("#cap").textContent = "A new index. Ask something and it lights a route.";
+  $("#elapsed").textContent = "idle";
+  $("#p").value = 0;
+  render();
 }
 
 /* --------------------------------------------------------------- run

@@ -188,6 +188,48 @@ EXAMPLES = [
 ]
 
 
+def inspect_folder(raw: str) -> tuple[Path, list[str], list[tuple[str, str]]]:
+    """Resolve a pasted folder path and report what indexing it would find.
+
+    A browser cannot hand a filesystem path to a server -- a file picker returns
+    file contents, never a location -- so a pasted path is the honest form of
+    "point this at my documents", and RAG_DATA_DIR already proves the server
+    side works. What is added here is the checking a pasted string needs: it may
+    be a typo, a file, a folder full of .doc, or empty.
+
+    Raises ValueError with a message meant to be shown to a person. That matters
+    more here than anywhere else in this file: indexing REPLACES the vector
+    store, so a path that quietly resolves to an empty directory would destroy a
+    working index and report success.
+    """
+    from corpus_health import SUPPORTED, scan_unsupported
+
+    if not raw:
+        raise ValueError("no folder given")
+
+    folder = Path(raw.strip().strip('"')).expanduser()
+    if not folder.exists():
+        raise ValueError(f"no such folder: {folder}")
+    if not folder.is_dir():
+        raise ValueError(f"that is a file, not a folder: {folder}")
+
+    try:
+        supported = sorted(f.name for f in folder.iterdir()
+                           if f.is_file() and f.suffix.lower() in SUPPORTED)
+        skipped = [(path.name, reason) for path, reason in scan_unsupported(folder)]
+    except PermissionError as exc:
+        raise ValueError(f"cannot read that folder: {exc}") from exc
+
+    if not supported:
+        formats = ", ".join(sorted(SUPPORTED))
+        raise ValueError(
+            f"{folder} holds no indexable documents ({formats}). "
+            + (f"It does hold {len(skipped)} file(s) in other formats."
+               if skipped else "It appears to be empty.")
+        )
+    return folder, supported, skipped
+
+
 def trace_options(payload: dict) -> dict:
     """Read pipeline options off a /api/trace request.
 
@@ -339,7 +381,13 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
 
         elif route == "/api/corpus":
-            self._send(200, {**RES.corpus(), "examples": EXAMPLES})
+            # data_dir is reported because the answer to "which documents is
+            # this?" stopped being obvious the moment a folder could be pasted
+            # in. A page that can be pointed anywhere has to say where it points.
+            from ingest import DATA_DIR
+
+            self._send(200, {**RES.corpus(), "examples": EXAMPLES,
+                             "data_dir": str(DATA_DIR)})
 
         elif route == "/api/index/status":
             self._send(200, INDEX_RUN.snapshot())
@@ -362,9 +410,38 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         route = self.path.rstrip("/")
 
-        if route == "/api/index/start":
-            if INDEX_RUN.start():
-                self._send(202, {"state": "running"})
+        if route in ("/api/index/start", "/api/index/inspect"):
+            payload = self._body()
+            if payload is None:
+                return
+            # An absent path on /start means the configured corpus directory,
+            # which is how the CLI and RAG_DATA_DIR have always worked. On
+            # /inspect it means nothing, so it is an error rather than a 200
+            # reporting zero documents -- which would read as "your folder is
+            # empty" for a request that never named a folder.
+            raw = (payload.get("path") or "").strip()
+            try:
+                folder, supported, skipped = (
+                    inspect_folder(raw) if raw or route.endswith("inspect")
+                    else (None, None, None))
+            except ValueError as exc:
+                self._send(400, {"error": str(exc)})
+                return
+
+            # Look before indexing. The two routes share one resolver so what
+            # the preview reports and what the run reads cannot differ.
+            if route == "/api/index/inspect":
+                self._send(200, {
+                    "folder": str(folder) if folder else None,
+                    "documents": supported if supported is not None else [],
+                    "skipped": [{"document": n, "reason": r} for n, r in (skipped or [])],
+                })
+                return
+
+            if INDEX_RUN.start(folder):
+                self._send(202, {"state": "running",
+                                 "folder": str(folder) if folder else None,
+                                 "documents": len(supported) if supported else None})
             else:
                 self._send(409, {"error": "an indexing run is already in progress"})
             return
