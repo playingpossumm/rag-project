@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import os
 import sys
 
 import faiss
@@ -13,7 +14,11 @@ from diversify import DEFAULT_MAX_PER_SOURCE, diversify
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-STORE_DIR = Path(__file__).parent.parent / "vector_store"
+# Must agree with ingest.STORE_DIR, and does so by reading the same variable.
+# Serving one corpus from an index built over another produces answers with
+# citations pointing at documents that were never searched.
+STORE_DIR = Path(os.environ.get("RAG_STORE_DIR",
+                                Path(__file__).parent.parent / "vector_store")).expanduser()
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 TOP_K = 5
 
