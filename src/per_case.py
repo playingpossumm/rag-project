@@ -121,6 +121,12 @@ def main() -> int:
                 row["context_recall"] = context_recall(results, case["answer_contains"])
         rows.append(row)
 
+    # Totals are rounded to 4dp for readability; the ROWS are authoritative.
+    # This matters when comparing against eval/results.json, which rounds to 3:
+    # 56 hits in 66 cases is 0.848484..., stored here as 0.8485, and re-rounding
+    # that to 3dp gives 0.849 against the harness's 0.848 -- a disagreement
+    # invented by rounding twice, not a difference in what was measured.
+    # Recompute from "cases" rather than re-rounding these.
     ans_rows = [r for r in rows if not r["unanswerable"]]
     adv_rows = [r for r in rows if r["unanswerable"]]
     mean = lambda key, src: round(sum(r[key] for r in src) / len(src), 4) if src else None

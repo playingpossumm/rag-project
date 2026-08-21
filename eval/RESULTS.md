@@ -15,11 +15,11 @@ from answer strings against the current corpus rather than hand-written.
 | dense only, no rerank *(naive RAG)* | 0.788 | 0.601 | 0.645 | 0.704 |
 | + cross-encoder rerank | 0.788 | 0.710 | 0.715 | 0.711 |
 | + RRF hybrid fusion | 0.864 | 0.757 | 0.766 | 0.742 |
-| **+ diversity cap 2/src** *(shipped)* | 0.848 | 0.751 | 0.765 | 0.773 |
-| + diversity cap 1/src | 0.818 | 0.739 | 0.751 | 0.816 |
+| **+ diversity cap 2/src** *(shipped)* | 0.848 | 0.754 | 0.769 | 0.773 |
+| + diversity cap 1/src | 0.818 | 0.742 | 0.753 | 0.817 |
 
 Against naive RAG the shipped pipeline improves any-hit by **+6.0 points** and
-MRR by **+15.0**.
+MRR by **+15.3**.
 
 ## The diversity cap is a trade, not a free win
 
@@ -30,7 +30,7 @@ plainly does:
 |---|---|---|---|
 | none | 0.864 | 0.742 | — |
 | 2/src | 0.848 | 0.773 | +3.1 src recall for −1.6 any-hit |
-| 1/src | 0.818 | 0.816 | +7.4 src recall for −4.6 any-hit |
+| 1/src | 0.818 | 0.817 | +7.5 src recall for −4.6 any-hit |
 
 When a question is answered by only one document, capping that document pushes a
 relevant passage out for an irrelevant one. 2/src ships: most of the breadth for

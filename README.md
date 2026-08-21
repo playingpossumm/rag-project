@@ -12,7 +12,7 @@ conclusions that had already been written up as results turned out to be wrong.*
   naive RAG                0.788  0.601   0.645           0.704
   + cross-encoder rerank   0.788  0.710   0.715           0.711
   + hybrid BM25 fusion     0.864  0.757   0.766           0.742
-  + diversity cap (2/src)  0.848  0.751   0.765           0.773
+  + diversity cap (2/src)  0.848  0.754   0.769           0.773
 ```
 
 20 documents, 2,768 chunks, 84 labelled evaluation cases. Reproduce with

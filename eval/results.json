@@ -1,37 +1,34 @@
 {
-  "generated_by": "src/evaluate.py",
-  "corpus": {
-    "documents": 20,
-    "chunks": 2768,
-    "answerable_cases": 66,
-    "adversarial_cases": 18,
-    "k": 5,
-    "candidate_k": 20
-  },
+  "corpus": {},
   "candidate_pool": {
     "dense": {
       "hit_rate": 0.909,
       "mrr": 0.613,
+      "ndcg": 0.675,
       "src_recall": 0.85
     },
     "rrf": {
       "hit_rate": 0.924,
       "mrr": 0.717,
+      "ndcg": 0.736,
       "src_recall": 0.836
     },
     "weighted a=0.3": {
       "hit_rate": 0.924,
       "mrr": 0.742,
+      "ndcg": 0.748,
       "src_recall": 0.835
     },
     "weighted a=0.5": {
       "hit_rate": 0.939,
       "mrr": 0.728,
+      "ndcg": 0.741,
       "src_recall": 0.842
     },
     "weighted a=0.7": {
       "hit_rate": 0.939,
       "mrr": 0.682,
+      "ndcg": 0.713,
       "src_recall": 0.84
     }
   },
@@ -48,29 +45,29 @@
       "ndcg": 0.715,
       "src_recall": 0.711
     },
-    "rrf + rerank": {
-      "hit_rate": 0.864,
-      "mrr": 0.757,
-      "ndcg": 0.766,
-      "src_recall": 0.742
-    },
     "weighted + rerank": {
       "hit_rate": 0.864,
       "mrr": 0.754,
       "ndcg": 0.762,
       "src_recall": 0.742
     },
+    "rrf + rerank": {
+      "hit_rate": 0.864,
+      "mrr": 0.757,
+      "ndcg": 0.766,
+      "src_recall": 0.742
+    },
     "+ diversity 2/src": {
       "hit_rate": 0.848,
-      "mrr": 0.751,
-      "ndcg": 0.765,
+      "mrr": 0.754,
+      "ndcg": 0.769,
       "src_recall": 0.773
     },
     "+ diversity 1/src": {
       "hit_rate": 0.818,
-      "mrr": 0.739,
-      "ndcg": 0.751,
-      "src_recall": 0.816
+      "mrr": 0.742,
+      "ndcg": 0.753,
+      "src_recall": 0.817
     }
   },
   "expansion": {
@@ -90,22 +87,6 @@
       "blocks_per_query": 4.5
     }
   },
-  "abstention": {
-    "answerable": {
-      "n": 66,
-      "min": -4.02,
-      "median": 4.93,
-      "max": 9.58
-    },
-    "unanswerable": {
-      "n": 18,
-      "min": -9.52,
-      "median": -2.33,
-      "max": 2.76
-    },
-    "best_threshold": 2,
-    "best_net": 0.869,
-    "shipped_threshold": 0.0
-  },
-  "note": "Transcribed from the run of 2026-08-18; subsequent runs write this file directly. If any document disagrees with this file, the document is stale."
+  "abstention": {},
+  "generated_by": "src/evaluate.py"
 }

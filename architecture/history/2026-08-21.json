@@ -2,7 +2,7 @@
   "date": "2026-08-21",
   "totals": {
     "files": 29,
-    "loc": 4640
+    "loc": 4660
   },
   "nodes": {
     "api": {
@@ -63,7 +63,7 @@
     },
     "diversify": {
       "count": 1,
-      "loc": 95
+      "loc": 99
     },
     "parent": {
       "count": 1,
@@ -79,7 +79,7 @@
     },
     "evaluate": {
       "count": 2,
-      "loc": 498
+      "loc": 514
     },
     "goldenset": {
       "count": 5,

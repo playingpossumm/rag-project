@@ -20,12 +20,16 @@ interpretable knob, and cannot be defeated by two documents that happen to
 phrase the same fact differently.
 """
 
-# Measured at k=5 on the 84-case golden set (weighted fusion + reranking):
+# Measured at k=5 on the 84-case golden set, on the pipeline as shipped --
+# RRF fusion plus reranking. These rows were measured on WEIGHTED fusion
+# until 2026-08-21, which documented the default with numbers from a branch
+# the system does not serve. The trade below is unchanged in shape; only the
+# branch it is measured on has been corrected.
 #
 #   cap    any-hit    MRR    NDCG   src recall
-#   none     0.864  0.754   0.762        0.742
-#   2        0.848  0.751   0.765        0.773
-#   1        0.818  0.739   0.751        0.816
+#   none     0.864  0.757   0.766        0.742
+#   2        0.848  0.754   0.769        0.773
+#   1        0.818  0.742   0.753        0.817
 #
 # IMPORTANT CORRECTION. On the earlier 23-case golden set the cap appeared to be
 # free -- any-hit and MRR identical at every setting -- and was documented that
@@ -36,7 +40,7 @@ phrase the same fact differently.
 # So this is a real trade, not a free win:
 #
 #   cap 2:  +3.1 points source recall for -1.6 any-hit
-#   cap 1:  +7.4 points source recall for -4.6 any-hit
+#   cap 1:  +7.5 points source recall for -4.6 any-hit
 #
 # 2 remains the default: it buys most of the breadth for a third of the cost,
 # and a single passage per document cannot corroborate itself. Callers who need

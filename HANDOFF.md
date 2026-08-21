@@ -43,8 +43,8 @@ End-to-end at k=5 (from `eval/results.json`, regenerate with `src/evaluate.py`):
 | dense, no rerank (naive RAG) | 0.788 | 0.601 | 0.645 | 0.704 |
 | + cross-encoder rerank | 0.788 | 0.710 | 0.715 | 0.711 |
 | + hybrid fusion (RRF) | 0.864 | 0.757 | 0.766 | 0.742 |
-| **+ diversity cap 2/src (default)** | **0.848** | **0.751** | **0.765** | **0.773** |
-| + diversity cap 1/src | 0.818 | 0.739 | 0.751 | 0.816 |
+| **+ diversity cap 2/src (default)** | **0.848** | **0.754** | **0.769** | **0.773** |
+| + diversity cap 1/src | 0.818 | 0.742 | 0.753 | 0.817 |
 
 Context expansion: none 0.742 recall @ 997 tok/query · **window±1 0.833 @ 2371 (default)** ·
 page 0.848 @ 4828. Page buys 1.5 points of recall for 2× the tokens; window is the default.
@@ -386,14 +386,28 @@ Mode, so `git pull` in a skills repo will not update them; re-copy instead.
    (84 rows: retrieved passages, per-passage relevance, confidence, and one of
    `found` / `missed` / `refused` / `refused_wrongly` / `answered_anyway`).
 
-   It closed a real gap on its first run. `eval/results.json` measures the cap
-   only on the **weighted** fusion branch, so the row documented as the default
-   is `weighted + cap 2` — while `DEFAULT_FUSION` is `"rrf"`, which is what the
-   app actually serves. The served configuration had never been in the
-   aggregate table. It measures **hit 0.849 · MRR 0.754 · NDCG 0.769 · source
-   recall 0.773**, against the documented 0.848 / 0.751 / 0.765 / 0.773 — near
-   enough that nothing was ever wrong, and a mislabel worth correcting in
-   `evaluate.py`'s `finals` list.
+   It closed a real gap on its first run, and the gap is now closed properly.
+   `eval/results.json` measured the diversity cap only on the **weighted**
+   fusion branch, so the row every document quoted as the default was
+   `weighted + cap 2` — while `DEFAULT_FUSION` is `"rrf"`, which is what
+   `api.ask()` and the app serve. The served configuration had never appeared
+   in the aggregate table at all.
+
+   **Corrected 2026-08-21.** `evaluate.py`'s `finals` list now runs the cap on
+   RRF and orders the rows so the indent means what it looks like. Five numbers
+   moved, none by more than 0.004:
+
+   | | any-hit | MRR | NDCG | src recall |
+   |---|---|---|---|---|
+   | cap 2/src, was | 0.848 | 0.751 | 0.765 | 0.773 |
+   | cap 2/src, now | 0.848 | **0.754** | **0.769** | 0.773 |
+   | cap 1/src, was | 0.818 | 0.739 | 0.751 | 0.816 |
+   | cap 1/src, now | 0.818 | **0.742** | **0.753** | **0.817** |
+
+   So no conclusion drawn from that table was ever wrong, which is exactly why
+   it survived. What makes the correction worth trusting: `per_case.py` had
+   already measured the served configuration independently, and the harness now
+   reproduces its figures to three decimals from a separate code path.
 
 Ranked by value: **(1) is worth more than everything else combined**, and only
 the owner can unblock it — and the folder intake in (7) is now the mechanism for

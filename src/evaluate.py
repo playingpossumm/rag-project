@@ -214,17 +214,27 @@ def main():
 
     # ---- Layer 2: end-to-end, with reranking ------------------------------
     # max_per_source=None disables the diversity cap, so its effect is isolated:
-    # the two "weighted + rerank" rows differ only in that one parameter.
+    # the indented rows differ from "rrf + rerank" in that one parameter only.
+    #
+    # Those two rows ran on WEIGHTED fusion until 2026-08-21, which meant the
+    # row every document quoted as the default described a configuration this
+    # system has never served -- DEFAULT_FUSION is "rrf". The cap was still
+    # correctly isolated, so no conclusion drawn from it was wrong, and the two
+    # branches sit within noise of each other, which is exactly why it survived
+    # unnoticed. It was found by src/per_case.py measuring the served
+    # configuration and getting a number that was not in this table at all.
+    #
+    # The ordering matters as much as the fusion: the indent means "the row
+    # above, plus one change", so the row above has to be the one the indented
+    # rows are actually a change *to*.
     finals = [
         ("dense, no rerank", dict(fusion="none", use_reranker=False)),
         ("dense + rerank",   dict(fusion="none", use_reranker=True, max_per_source=None)),
-        ("rrf + rerank",     dict(fusion="rrf", use_reranker=True, max_per_source=None)),
         ("weighted + rerank", dict(fusion="weighted", alpha=0.5, use_reranker=True,
                                    max_per_source=None)),
-        ("  + diversity 2/src", dict(fusion="weighted", alpha=0.5, use_reranker=True,
-                                     max_per_source=2)),
-        ("  + diversity 1/src", dict(fusion="weighted", alpha=0.5, use_reranker=True,
-                                     max_per_source=1)),
+        ("rrf + rerank",     dict(fusion="rrf", use_reranker=True, max_per_source=None)),
+        ("  + diversity 2/src", dict(fusion="rrf", use_reranker=True, max_per_source=2)),
+        ("  + diversity 1/src", dict(fusion="rrf", use_reranker=True, max_per_source=1)),
     ]
 
     print(f"\nEND TO END @ {args.k}")

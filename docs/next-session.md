@@ -47,21 +47,12 @@ WHAT IS NOW WORTH DOING, in priority order:
    Point it at a folder with a spreadsheet and a deck in it, ask something only
    they can answer, and see what breaks.
 
-2. Correct a mislabel in evaluate.py, now that per_case.json has exposed it.
-   The row documented everywhere as the default — "+ diversity cap 2/src" — is
-   measured on the WEIGHTED fusion branch, but DEFAULT_FUSION is "rrf", which is
-   what the app actually serves. The served configuration has never been in the
-   aggregate table. src/per_case.py measures it at hit 0.849 / MRR 0.754 /
-   NDCG 0.769 / src recall 0.773 against the documented 0.848 / 0.751 / 0.765 /
-   0.773, so nothing was ever wrong — but the label is, and this repo has been
-   bitten by exactly that before.
-
-3. Use the per-case data. eval/per_case.json now has all 84 outcomes. The
+2. Use the per-case data. eval/per_case.json now has all 84 outcomes. The
    obvious question it can answer and nothing else can: is the ~15% cross-
    document confusion the SAME fifteen percent from run to run, or does it move?
    If it is stable, those cases are a fixture worth optimising against.
 
-4. Generation, if there is ever credit. src/generate.py is fixed and exercised
+3. Generation, if there is ever credit. src/generate.py is fixed and exercised
    to the network boundary but has still never completed a real call. When there
    is credit: run it once, and consider adding server-side `fallbacks` (see
    HANDOFF §7 item 3 for why it is deliberately not there yet).
@@ -85,11 +76,13 @@ it. The folder intake removed that blocker: the mechanism now exists, so the
 remaining step is genuinely just pointing it somewhere, and it is back where its
 value says it belongs.
 
-**Why a mislabel is item 2.** It changes no number and no behaviour, which is
-precisely the kind of thing this repo has learned to distrust: the README once
-carried figures from a 23-case set under a heading claiming 84, and re-running
-the harness reversed three conclusions. A default that is documented as one
-configuration and served as another is the same failure one step earlier.
+**Why the mislabel that was item 2 is gone.** evaluate.py measured the
+diversity cap on the weighted fusion branch while the app serves RRF, so the row
+documented as the default described a configuration this system has never run.
+Corrected 2026-08-21: five numbers moved, none by more than 0.004, and no
+conclusion changed. Recorded here because the size of the correction is the
+point — it changed nothing, which is why it survived, and this repo has been
+bitten by exactly that shape of error before.
 
 **Why the design skills are named and then withheld.** They are installed and
 they are good, which is exactly why a session will reach for them by default.
