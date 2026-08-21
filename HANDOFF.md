@@ -447,7 +447,8 @@ not carried by any session.
 
 | Artifact | Source file | URL | Updatable from `the owner's address, removed 2026-09-07`? |
 |---|---|---|---|
-| Anatomy of a Retrieval Pipeline (Phases 1–3) | `docs/phase-1-field-notes.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | **yes — use this one** |
+| **Understanding This Retrieval System** (the complete guide) | `docs/understanding-rag.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | **yes** |
+| Anatomy of a Retrieval Pipeline (Phases 1–3) | `docs/phase-1-field-notes.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | **yes** |
 | ” (earlier copy, other account) | ” | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | no — see below |
 | Retrieval System Status | `docs/project-status.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | **yes — use this one** |
 | ” (earlier copy, other account) | ” | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | no — tested 2026-08-21, same error |
