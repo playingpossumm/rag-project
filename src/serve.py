@@ -37,7 +37,6 @@ from api import ask
 HOST, PORT = "127.0.0.1", 8000
 MAX_BODY = 64 * 1024  # a question is small; refuse anything that clearly is not
 UI_FILE = Path(__file__).parent.parent / "ui" / "index.html"
-AMBIENT_FILE = Path(__file__).parent.parent / "ui" / "ambient.html"
 ARCH_FILE = Path(__file__).parent.parent / "docs" / "architecture.html"
 EVAL_FILE = Path(__file__).parent.parent / "eval" / "results.json"
 
@@ -302,12 +301,6 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, UI_FILE.read_bytes(), "text/html; charset=utf-8")
 
-        elif route == "/ambient":
-            if not AMBIENT_FILE.exists():
-                self._send(404, {"error": "ui/ambient.html is missing"})
-                return
-            self._raw(200, AMBIENT_FILE.read_bytes(), "text/html; charset=utf-8")
-
         elif route == "/~/architecture":
             # A committed artifact, served rather than generated: it is built by
             # `npm run architecture:build` and opens straight from docs/ with no
@@ -319,15 +312,12 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, ARCH_FILE.read_bytes(), "text/html; charset=utf-8")
 
-        elif route in ("/pipeline", "/pipeline-map.js"):
-            # Prototype surface for the isometric pipeline map, kept separate
-            # from the Inspector while the figure is still being designed.
-            f = (UI_FILE.parent / "pipeline.html") if route == "/pipeline"                 else (UI_FILE.parent / "pipeline-map.js")
+        elif route == "/pipeline-map.js":
+            f = UI_FILE.parent / "pipeline-map.js"
             if not f.exists():
-                self._send(404, {"error": f"ui/{f.name} is missing"})
+                self._send(404, {"error": "ui/pipeline-map.js is missing"})
                 return
-            ctype = "text/html" if route == "/pipeline" else "text/javascript"
-            self._raw(200, f.read_bytes(), f"{ctype}; charset=utf-8")
+            self._raw(200, f.read_bytes(), "text/javascript; charset=utf-8")
 
         elif route.startswith("/fonts/"):
             # Inter and DM Mono, served from the repo rather than a CDN. The
@@ -340,16 +330,6 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(404, {"error": f"no font {name}"})
                 return
             self._raw(200, f.read_bytes(), "font/woff2")
-
-        elif route == "/ambient-fields.js":
-            # One narrow static route rather than a static-file server: the
-            # generative fields are shared by the inspector and the chooser
-            # page, and duplicating them in both would let them drift.
-            f = UI_FILE.parent / "ambient-fields.js"
-            if not f.exists():
-                self._send(404, {"error": "ui/ambient-fields.js is missing"})
-                return
-            self._raw(200, f.read_bytes(), "text/javascript; charset=utf-8")
 
         elif route == "/api/eval":
             # Static passthrough of what evaluate.py wrote. The UI shows measured
@@ -502,7 +482,6 @@ def main():
     stats = RES.corpus()
     print(f"Ready on http://{host}:{port}")
     print(f"  inspector  http://{host}:{port}/")
-    print(f"  ambient    http://{host}:{port}/ambient   (generative options, side by side)")
     print(f"  map        http://{host}:{port}/~/architecture")
     print(f"  api        POST /ask, POST /api/trace")
     print(f"  corpus     {stats['chunks']} chunks from {stats['documents']} documents")
