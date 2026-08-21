@@ -9,23 +9,23 @@
  },
  "threshold": 0.0,
  "corpus": {
-  "chunks": 2768,
-  "documents": 20
+  "chunks": 5459,
+  "documents": 36
  },
  "totals": {
   "answerable": {
    "n": 66,
    "hit_rate": 0.8485,
-   "mrr": 0.7543,
-   "ndcg": 0.7687,
-   "src_recall": 0.7735,
+   "mrr": 0.7492,
+   "ndcg": 0.7608,
+   "src_recall": 0.7381,
    "refused_wrongly": 1,
    "missed": 10
   },
   "adversarial": {
    "n": 18,
-   "refused": 13,
-   "answered_anyway": 5
+   "refused": 9,
+   "answered_anyway": 9
   }
  },
  "cases": [
@@ -64,16 +64,16 @@
     },
     {
      "rank": 4,
-     "source": "vision_transformer.pdf",
-     "locator": "page 13",
-     "score": -2.266,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 2",
+     "score": -1.9514,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "t5.pdf",
-     "locator": "page 5",
-     "score": -2.86,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 7",
+     "score": -2.2525,
      "relevant": false
     }
    ],
@@ -111,23 +111,23 @@
     },
     {
      "rank": 3,
-     "source": "colbert.pdf",
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
      "locator": "page 4",
-     "score": -5.4402,
+     "score": -5.0797,
      "relevant": false
     },
     {
      "rank": 4,
      "source": "colbert.pdf",
      "locator": "page 4",
-     "score": -6.4005,
+     "score": -5.4402,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "faiss_billion_scale.pdf",
-     "locator": "page 3",
-     "score": -8.7781,
+     "source": "colbert.pdf",
+     "locator": "page 4",
+     "score": -6.4005,
      "relevant": false
     }
    ],
@@ -172,16 +172,16 @@
     },
     {
      "rank": 4,
-     "source": "lora.pdf",
-     "locator": "page 18",
-     "score": 0.3437,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 4",
+     "score": 0.9067,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "t5.pdf",
-     "locator": "page 12",
-     "score": -3.3245,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 4",
+     "score": 0.3713,
      "relevant": false
     }
    ],
@@ -266,16 +266,16 @@
     },
     {
      "rank": 2,
-     "source": "vision_transformer.pdf",
-     "locator": "page 18",
-     "score": 0.4309,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 2",
+     "score": 0.5168,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 2",
-     "score": -2.217,
+     "source": "vision_transformer.pdf",
+     "locator": "page 18",
+     "score": 0.4309,
      "relevant": false
     },
     {
@@ -287,15 +287,15 @@
     },
     {
      "rank": 5,
-     "source": "t5.pdf",
-     "locator": "page 5",
-     "score": -5.8879,
-     "relevant": false
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 6",
+     "score": -2.7981,
+     "relevant": true
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
+   "ndcg": 0.8503,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -334,16 +334,16 @@
     },
     {
      "rank": 4,
-     "source": "vision_transformer.pdf",
-     "locator": "page 4",
-     "score": -1.7458,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 2",
+     "score": -0.5766,
      "relevant": false
     },
     {
      "rank": 5,
      "source": "vision_transformer.pdf",
-     "locator": "page 20",
-     "score": -1.9897,
+     "locator": "page 4",
+     "score": -1.7458,
      "relevant": false
     }
    ],
@@ -361,8 +361,10 @@
    "gold_sources": [
     "attention_is_all_you_need.pdf",
     "bahdanau_attention.pdf",
+    "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
     "colbert.pdf",
     "gpt3.pdf",
+    "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
     "seq2seq.pdf"
    ],
    "confidence": 8.834,
@@ -486,30 +488,30 @@
     },
     {
      "rank": 2,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 5",
+     "score": 0.6807,
+     "relevant": false
+    },
+    {
+     "rank": 3,
      "source": "vision_transformer.pdf",
      "locator": "page 6",
      "score": 0.5234,
      "relevant": false
     },
     {
-     "rank": 3,
+     "rank": 4,
      "source": "gpt3.pdf",
      "locator": "page 43",
      "score": -2.9544,
      "relevant": false
     },
     {
-     "rank": 4,
-     "source": "t5.pdf",
-     "locator": "page 12",
-     "score": -4.844,
-     "relevant": false
-    },
-    {
      "rank": 5,
-     "source": "gpt3.pdf",
-     "locator": "page 8",
-     "score": -4.9338,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 6",
+     "score": -4.6156,
      "relevant": false
     }
    ],
@@ -540,16 +542,16 @@
     },
     {
      "rank": 2,
-     "source": "seq2seq.pdf",
-     "locator": "page 5",
-     "score": -0.1698,
+     "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
+     "locator": "page 12",
+     "score": 0.2458,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "gpt3.pdf",
-     "locator": "page 18",
-     "score": -1.3865,
+     "source": "seq2seq.pdf",
+     "locator": "page 5",
+     "score": -0.1698,
      "relevant": false
     },
     {
@@ -561,9 +563,9 @@
     },
     {
      "rank": 5,
-     "source": "faiss_billion_scale.pdf",
-     "locator": "page 9",
-     "score": -2.4399,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 5",
+     "score": -1.6852,
      "relevant": false
     }
    ],
@@ -584,49 +586,49 @@
     "roberta.pdf",
     "vision_transformer.pdf"
    ],
-   "confidence": -4.022,
+   "confidence": -3.821,
    "abstained": true,
    "outcome": "refused_wrongly",
    "results": [
     {
      "rank": 1,
+     "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
+     "locator": "page 13",
+     "score": -3.821,
+     "relevant": false
+    },
+    {
+     "rank": 2,
      "source": "adam_optimizer.pdf",
      "locator": "page 5",
      "score": -4.0217,
      "relevant": false
     },
     {
-     "rank": 2,
+     "rank": 3,
      "source": "attention_is_all_you_need.pdf",
      "locator": "page 7",
      "score": -5.7418,
      "relevant": true
     },
     {
-     "rank": 3,
-     "source": "adam_optimizer.pdf",
-     "locator": "page 8",
-     "score": -7.378,
-     "relevant": false
-    },
-    {
      "rank": 4,
-     "source": "t5.pdf",
-     "locator": "page 38",
-     "score": -7.9023,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 9",
+     "score": -6.8952,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "faiss_billion_scale.pdf",
-     "locator": "page 1",
-     "score": -8.4057,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 8",
+     "score": -7.378,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.5,
-   "ndcg": 0.6309,
+   "mrr": 0.3333,
+   "ndcg": 0.5,
    "src_recall": 0.25,
    "context_recall": 1.0
   },
@@ -844,9 +846,9 @@
     },
     {
      "rank": 5,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 9",
-     "score": 1.3063,
+     "source": "seq2seq.pdf",
+     "locator": "page 4",
+     "score": 1.0699,
      "relevant": false
     }
    ],
@@ -892,22 +894,22 @@
     },
     {
      "rank": 4,
-     "source": "rag.pdf",
-     "locator": "page 19",
-     "score": -3.4657,
-     "relevant": false
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 10",
+     "score": -1.4555,
+     "relevant": true
     },
     {
      "rank": 5,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 9",
-     "score": -3.7485,
+     "source": "rag.pdf",
+     "locator": "page 19",
+     "score": -3.4657,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
+   "ndcg": 0.9675,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -971,7 +973,10 @@
    "question": "How does low-rank adaptation reduce the number of trainable parameters?",
    "unanswerable": false,
    "gold_sources": [
-    "lora.pdf"
+    "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+    "lora.pdf",
+    "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+    "phantom_gains_auditing_self_improvement_against_a_measured.pdf"
    ],
    "confidence": 7.325,
    "abstained": false,
@@ -1007,16 +1012,16 @@
     },
     {
      "rank": 5,
-     "source": "lora.pdf",
-     "locator": "page 22",
-     "score": 1.7372,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 9",
+     "score": -10.5084,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 1.0,
+   "src_recall": 0.5,
    "context_recall": 1.0
   },
   {
@@ -1137,6 +1142,7 @@
    "question": "How are siamese network structures used to derive sentence embeddings?",
    "unanswerable": false,
    "gold_sources": [
+    "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
     "dense_passage_retrieval.pdf",
     "sentence_bert.pdf"
    ],
@@ -1160,30 +1166,30 @@
     },
     {
      "rank": 3,
+     "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+     "locator": "page 12",
+     "score": 3.1245,
+     "relevant": true
+    },
+    {
+     "rank": 4,
      "source": "bert.pdf",
      "locator": "page 4",
      "score": -1.6515,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 5,
      "source": "bert.pdf",
      "locator": "page 11",
      "score": -8.9081,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "rag.pdf",
-     "locator": "page 11",
-     "score": -11.4663,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 0.5,
+   "src_recall": 0.6667,
    "context_recall": 1.0
   },
   {
@@ -1192,6 +1198,8 @@
    "question": "How is an image split into patches and fed to a Transformer?",
    "unanswerable": false,
    "gold_sources": [
+    "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
+    "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
     "vision_transformer.pdf"
    ],
    "confidence": 5.977,
@@ -1237,7 +1245,7 @@
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 1.0,
+   "src_recall": 0.3333,
    "context_recall": 1.0
   },
   {
@@ -1324,23 +1332,23 @@
     },
     {
      "rank": 3,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 10",
+     "score": -7.5146,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "gpt3.pdf",
      "locator": "page 36",
      "score": -7.6812,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 5,
      "source": "batch_normalization.pdf",
      "locator": "page 6",
      "score": -10.5045,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 25",
-     "score": -11.0184,
      "relevant": false
     }
    ],
@@ -1392,9 +1400,9 @@
     },
     {
      "rank": 5,
-     "source": "t5.pdf",
-     "locator": "page 37",
-     "score": -7.3191,
+     "source": "batch_normalization.pdf",
+     "locator": "page 3",
+     "score": -7.0962,
      "relevant": false
     }
    ],
@@ -1677,8 +1685,8 @@
     {
      "rank": 5,
      "source": "roberta.pdf",
-     "locator": "page 2",
-     "score": -0.1282,
+     "locator": "page 4",
+     "score": 1.7992,
      "relevant": true
     }
    ],
@@ -1809,7 +1817,8 @@
    "question": "Which grade-school math benchmark is used to evaluate reasoning?",
    "unanswerable": false,
    "gold_sources": [
-    "chain_of_thought.pdf"
+    "chain_of_thought.pdf",
+    "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf"
    ],
    "confidence": 0.658,
    "abstained": false,
@@ -1838,23 +1847,23 @@
     },
     {
      "rank": 4,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 3",
-     "score": -1.6955,
-     "relevant": true
-    },
-    {
-     "rank": 5,
      "source": "gpt3.pdf",
      "locator": "page 18",
      "score": -2.694,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
+     "locator": "page 5",
+     "score": -4.0307,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 0.5,
-   "ndcg": 0.6509,
-   "src_recall": 1.0,
+   "ndcg": 0.6309,
+   "src_recall": 0.5,
    "context_recall": 1.0
   },
   {
@@ -1995,22 +2004,22 @@
     {
      "rank": 3,
      "source": "dense_passage_retrieval.pdf",
+     "locator": "page 4",
+     "score": 2.3639,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "dense_passage_retrieval.pdf",
      "locator": "page 5",
      "score": 2.3462,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 5,
      "source": "roberta.pdf",
      "locator": "page 4",
      "score": 0.8946,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "bert.pdf",
-     "locator": "page 6",
-     "score": 0.2972,
      "relevant": false
     }
    ],
@@ -2120,9 +2129,9 @@
     },
     {
      "rank": 5,
-     "source": "lora.pdf",
-     "locator": "page 17",
-     "score": -3.9041,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 10",
+     "score": 3.2731,
      "relevant": false
     }
    ],
@@ -2174,10 +2183,10 @@
     },
     {
      "rank": 5,
-     "source": "faiss_billion_scale.pdf",
-     "locator": "page 4",
-     "score": 2.6176,
-     "relevant": true
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 10",
+     "score": -1.0176,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
@@ -2229,9 +2238,9 @@
     },
     {
      "rank": 5,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 3",
-     "score": -6.9249,
+     "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
+     "locator": "page 24",
+     "score": -7.6714,
      "relevant": false
     }
    ],
@@ -2270,23 +2279,23 @@
     },
     {
      "rank": 3,
-     "source": "t5.pdf",
-     "locator": "page 20",
-     "score": -1.0181,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "chain_of_thought.pdf",
      "locator": "page 4",
      "score": -1.8584,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "rag.pdf",
      "locator": "page 19",
      "score": -3.0582,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 19",
+     "score": -3.5532,
      "relevant": false
     }
    ],
@@ -2302,6 +2311,7 @@
    "question": "What is in-context learning without gradient updates?",
    "unanswerable": false,
    "gold_sources": [
+    "an_agentic_approach_for_active_data_collection_travel_beha.pdf",
     "chain_of_thought.pdf",
     "gpt3.pdf"
    ],
@@ -2348,7 +2358,7 @@
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 1.0,
+   "src_recall": 0.6667,
    "context_recall": 1.0
   },
   {
@@ -2380,15 +2390,15 @@
     {
      "rank": 3,
      "source": "gpt3.pdf",
-     "locator": "page 23",
-     "score": 0.6574,
+     "locator": "page 20",
+     "score": 0.139,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 18",
-     "score": -0.7989,
+     "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+     "locator": "page 5",
+     "score": -0.4886,
      "relevant": false
     },
     {
@@ -2498,29 +2508,29 @@
     },
     {
      "rank": 3,
-     "source": "batch_normalization.pdf",
-     "locator": "page 3",
-     "score": 3.5232,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "layer_normalization.pdf",
-     "locator": "page 2",
-     "score": 1.1517,
-     "relevant": true
-    },
-    {
-     "rank": 5,
      "source": "layer_normalization.pdf",
      "locator": "page 3",
      "score": -0.8832,
      "relevant": true
+    },
+    {
+     "rank": 4,
+     "source": "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
+     "locator": "page 15",
+     "score": -0.9727,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "layer_normalization.pdf",
+     "locator": "page 1",
+     "score": -1.8044,
+     "relevant": true
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.25,
-   "ndcg": 0.5013,
+   "mrr": 0.3333,
+   "ndcg": 0.5438,
    "src_recall": 0.25,
    "context_recall": 1.0
   },
@@ -2559,16 +2569,16 @@
     },
     {
      "rank": 4,
-     "source": "colbert.pdf",
-     "locator": "page 7",
-     "score": -5.932,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 9",
+     "score": -3.4372,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "batch_normalization.pdf",
-     "locator": "page 1",
-     "score": -7.6363,
+     "source": "colbert.pdf",
+     "locator": "page 7",
+     "score": -5.932,
      "relevant": false
     }
    ],
@@ -2585,26 +2595,30 @@
    "unanswerable": false,
    "gold_sources": [
     "batch_normalization.pdf",
+    "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+    "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
+    "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
     "lora.pdf",
+    "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
     "rag.pdf",
     "vision_transformer.pdf"
    ],
-   "confidence": 6.08,
+   "confidence": 5.455,
    "abstained": false,
    "outcome": "found",
    "results": [
     {
      "rank": 1,
      "source": "lora.pdf",
-     "locator": "page 4",
-     "score": 6.0797,
+     "locator": "page 5",
+     "score": 5.4555,
      "relevant": true
     },
     {
      "rank": 2,
      "source": "lora.pdf",
-     "locator": "page 5",
-     "score": 5.4555,
+     "locator": "page 2",
+     "score": 4.1269,
      "relevant": true
     },
     {
@@ -2616,23 +2630,23 @@
     },
     {
      "rank": 4,
-     "source": "gpt3.pdf",
-     "locator": "page 9",
-     "score": -3.642,
+     "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+     "locator": "page 30",
+     "score": -4.5155,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "layer_normalization.pdf",
-     "locator": "page 6",
-     "score": -5.3753,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 5",
+     "score": -4.6977,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 0.25,
+   "src_recall": 0.4,
    "context_recall": 0.0
   },
   {
@@ -2663,23 +2677,23 @@
     },
     {
      "rank": 3,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 11",
-     "score": -10.0992,
-     "relevant": false
+     "source": "rag.pdf",
+     "locator": "page 2",
+     "score": 5.8847,
+     "relevant": true
     },
     {
      "rank": 4,
-     "source": "bahdanau_attention.pdf",
-     "locator": "page 10",
-     "score": -10.965,
+     "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+     "locator": "page 7",
+     "score": -3.4276,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "gpt3.pdf",
-     "locator": "page 39",
-     "score": -11.3114,
+     "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+     "locator": "page 7",
+     "score": -6.5625,
      "relevant": false
     }
    ],
@@ -2717,23 +2731,23 @@
     },
     {
      "rank": 3,
-     "source": "rag.pdf",
-     "locator": "page 2",
-     "score": 2.4184,
-     "relevant": true
+     "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
+     "locator": "page 10",
+     "score": -6.5607,
+     "relevant": false
     },
     {
      "rank": 4,
-     "source": "rag.pdf",
-     "locator": "page 18",
-     "score": 0.9672,
-     "relevant": true
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 14",
+     "score": -7.539,
+     "relevant": false
     },
     {
      "rank": 5,
-     "source": "rag.pdf",
-     "locator": "page 7",
-     "score": -0.6475,
+     "source": "gpt3.pdf",
+     "locator": "page 43",
+     "score": -8.6842,
      "relevant": false
     }
    ],
@@ -2749,11 +2763,18 @@
    "question": "What happens to accuracy when plain networks get deeper?",
    "unanswerable": false,
    "gold_sources": [
+    "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
+    "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
     "dense_passage_retrieval.pdf",
+    "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
+    "healmed_multilingual_evaluation_of_large_language_models_i.pdf",
+    "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+    "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
     "resnet.pdf",
     "roberta.pdf",
     "seq2seq.pdf",
-    "t5.pdf"
+    "t5.pdf",
+    "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf"
    ],
    "confidence": 3.755,
    "abstained": false,
@@ -2782,23 +2803,23 @@
     },
     {
      "rank": 4,
-     "source": "batch_normalization.pdf",
-     "locator": "page 2",
-     "score": -9.1497,
-     "relevant": false
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 3",
+     "score": -8.943,
+     "relevant": true
     },
     {
      "rank": 5,
-     "source": "vision_transformer.pdf",
-     "locator": "page 7",
-     "score": -10.2477,
+     "source": "batch_normalization.pdf",
+     "locator": "page 2",
+     "score": -9.1497,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
-   "src_recall": 0.2,
+   "ndcg": 0.9675,
+   "src_recall": 0.4,
    "context_recall": 0.0
   },
   {
@@ -2862,7 +2883,10 @@
    "unanswerable": false,
    "gold_sources": [
     "attention_is_all_you_need.pdf",
+    "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
+    "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
     "gpt3.pdf",
+    "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
     "resnet.pdf",
     "vision_transformer.pdf"
    ],
@@ -2893,23 +2917,23 @@
     },
     {
      "rank": 4,
-     "source": "batch_normalization.pdf",
-     "locator": "page 7",
-     "score": -0.4076,
+     "source": "layer_normalization.pdf",
+     "locator": "page 11",
+     "score": 1.7934,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "vision_transformer.pdf",
-     "locator": "page 18",
-     "score": -2.934,
+     "source": "t5.pdf",
+     "locator": "page 60",
+     "score": -1.514,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 0.5,
+   "src_recall": 0.2,
    "context_recall": 1.0
   },
   {
@@ -2933,23 +2957,23 @@
     },
     {
      "rank": 2,
-     "source": "bert.pdf",
-     "locator": "page 13",
-     "score": 0.4961,
-     "relevant": false
-    },
-    {
-     "rank": 3,
      "source": "roberta.pdf",
      "locator": "page 4",
      "score": -0.7175,
      "relevant": true
     },
     {
-     "rank": 4,
+     "rank": 3,
      "source": "bert.pdf",
      "locator": "page 16",
      "score": -2.4049,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bert.pdf",
+     "locator": "page 16",
+     "score": -2.8857,
      "relevant": false
     },
     {
@@ -2962,7 +2986,7 @@
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 0.9197,
+   "ndcg": 1.0,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -2994,23 +3018,23 @@
     },
     {
      "rank": 3,
+     "source": "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
+     "locator": "page 1",
+     "score": -2.48,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "rag.pdf",
      "locator": "page 3",
      "score": -4.844,
      "relevant": false
     },
     {
-     "rank": 4,
-     "source": "batch_normalization.pdf",
-     "locator": "page 5",
-     "score": -7.1138,
-     "relevant": false
-    },
-    {
      "rank": 5,
-     "source": "gpt3.pdf",
-     "locator": "page 43",
-     "score": -7.3014,
+     "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+     "locator": "page 22",
+     "score": -6.8187,
      "relevant": false
     }
    ],
@@ -3164,22 +3188,22 @@
     },
     {
      "rank": 4,
-     "source": "bahdanau_attention.pdf",
-     "locator": "page 9",
-     "score": 0.8016,
-     "relevant": false
-    },
-    {
-     "rank": 5,
      "source": "seq2seq.pdf",
      "locator": "page 1",
      "score": -1.6826,
      "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 15",
+     "score": -1.6835,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.2,
-   "ndcg": 0.3869,
+   "mrr": 0.25,
+   "ndcg": 0.4307,
    "src_recall": 0.5,
    "context_recall": 1.0
   },
@@ -3204,36 +3228,36 @@
     },
     {
      "rank": 2,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 2",
+     "score": 0.2193,
+     "relevant": false
+    },
+    {
+     "rank": 3,
      "source": "seq2seq.pdf",
      "locator": "page 3",
      "score": -1.8441,
      "relevant": true
     },
     {
-     "rank": 3,
+     "rank": 4,
      "source": "attention_is_all_you_need.pdf",
      "locator": "page 2",
      "score": -2.5494,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 5,
      "source": "word2vec.pdf",
      "locator": "page 10",
      "score": -3.4648,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 2",
-     "score": -5.2667,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
+   "ndcg": 0.9197,
    "src_recall": 1.0,
    "context_recall": 0.0
   },
@@ -3243,6 +3267,7 @@
    "question": "What cleaned web-scraped corpus is used for pre-training?",
    "unanswerable": false,
    "gold_sources": [
+    "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
     "t5.pdf"
    ],
    "confidence": 3.698,
@@ -3279,16 +3304,16 @@
     },
     {
      "rank": 5,
-     "source": "bert.pdf",
-     "locator": "page 4",
-     "score": -4.1976,
+     "source": "gpt3.pdf",
+     "locator": "page 7",
+     "score": -4.7783,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 1.0,
+   "src_recall": 0.5,
    "context_recall": 1.0
   },
   {
@@ -3424,36 +3449,36 @@
     },
     {
      "rank": 2,
-     "source": "vision_transformer.pdf",
-     "locator": "page 6",
-     "score": 3.2689,
-     "relevant": true
-    },
-    {
-     "rank": 3,
      "source": "t5.pdf",
      "locator": "page 27",
      "score": 3.251,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 3,
      "source": "gpt3.pdf",
      "locator": "page 9",
      "score": 2.9711,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "gpt3.pdf",
      "locator": "page 9",
      "score": 2.9011,
      "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 5",
+     "score": 2.6011,
+     "relevant": true
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.5,
-   "ndcg": 0.6309,
+   "mrr": 0.2,
+   "ndcg": 0.3869,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -3479,8 +3504,8 @@
     {
      "rank": 2,
      "source": "vision_transformer.pdf",
-     "locator": "page 7",
-     "score": -2.0077,
+     "locator": "page 1",
+     "score": -2.6638,
      "relevant": true
     },
     {
@@ -3492,16 +3517,16 @@
     },
     {
      "rank": 4,
-     "source": "gpt3.pdf",
-     "locator": "page 69",
-     "score": -9.4928,
+     "source": "resnet.pdf",
+     "locator": "page 9",
+     "score": -5.231,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "gpt3.pdf",
-     "locator": "page 36",
-     "score": -10.6043,
+     "source": "resnet.pdf",
+     "locator": "page 9",
+     "score": -6.2754,
      "relevant": false
     }
    ],
@@ -3627,6 +3652,7 @@
    "unanswerable": false,
    "gold_sources": [
     "attention_is_all_you_need.pdf",
+    "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
     "gpt3.pdf",
     "t5.pdf",
     "word2vec.pdf"
@@ -3651,10 +3677,10 @@
     },
     {
      "rank": 3,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 1",
-     "score": -5.5441,
-     "relevant": false
+     "source": "word2vec.pdf",
+     "locator": "page 8",
+     "score": 3.6566,
+     "relevant": true
     },
     {
      "rank": 4,
@@ -3674,7 +3700,7 @@
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 0.25,
+   "src_recall": 0.2,
    "context_recall": 1.0
   },
   {
@@ -3703,23 +3729,23 @@
     },
     {
      "rank": 3,
-     "source": "gpt3.pdf",
-     "locator": "page 9",
-     "score": -7.6602,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 6",
+     "score": -7.1361,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "rag.pdf",
-     "locator": "page 3",
-     "score": -7.7746,
+     "source": "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf",
+     "locator": "page 13",
+     "score": -8.9728,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "lora.pdf",
-     "locator": "page 18",
-     "score": -9.3089,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 10",
+     "score": -9.1503,
      "relevant": false
     }
    ]
@@ -3730,43 +3756,43 @@
    "question": "How is the reward model trained for RLHF?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -4.3,
-   "abstained": true,
-   "outcome": "refused",
+   "confidence": 4.216,
+   "abstained": false,
+   "outcome": "answered_anyway",
    "results": [
     {
      "rank": 1,
-     "source": "layer_normalization.pdf",
-     "locator": "page 7",
-     "score": -4.2999,
+     "source": "multi_agent_orchestration_with_the_common_sense_reasoning.pdf",
+     "locator": "page 6",
+     "score": 4.2165,
      "relevant": false
     },
     {
      "rank": 2,
-     "source": "lora.pdf",
-     "locator": "page 7",
-     "score": -5.3522,
+     "source": "multi_agent_orchestration_with_the_common_sense_reasoning.pdf",
+     "locator": "page 2",
+     "score": 2.2481,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "lora.pdf",
-     "locator": "page 25",
-     "score": -5.7594,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 16",
+     "score": 1.6355,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "bert.pdf",
-     "locator": "page 3",
-     "score": -6.274,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 39",
+     "score": 0.0543,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 9",
-     "score": -6.6207,
+     "source": "g_carl_grounded_checklist_aligned_reward_learning_for_pati.pdf",
+     "locator": "page 5",
+     "score": -1.7923,
      "relevant": false
     }
    ]
@@ -3777,43 +3803,43 @@
    "question": "How does the state space model handle long sequences without attention?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -1.118,
-   "abstained": true,
-   "outcome": "refused",
+   "confidence": 0.703,
+   "abstained": false,
+   "outcome": "answered_anyway",
    "results": [
     {
      "rank": 1,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 2",
+     "score": 0.7031,
+     "relevant": false
+    },
+    {
+     "rank": 2,
      "source": "attention_is_all_you_need.pdf",
      "locator": "page 7",
      "score": -1.1177,
      "relevant": false
     },
     {
-     "rank": 2,
+     "rank": 3,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 2",
+     "score": -1.8614,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "attention_is_all_you_need.pdf",
      "locator": "page 2",
      "score": -2.5131,
      "relevant": false
     },
     {
-     "rank": 3,
+     "rank": 5,
      "source": "layer_normalization.pdf",
      "locator": "page 9",
      "score": -3.0466,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "vision_transformer.pdf",
-     "locator": "page 8",
-     "score": -4.7847,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "bahdanau_attention.pdf",
-     "locator": "page 4",
-     "score": -4.9493,
      "relevant": false
     }
    ]
@@ -3824,22 +3850,22 @@
    "question": "How many dollars did it cost to train the model?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -1.127,
+   "confidence": -0.742,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 27",
-     "score": -1.1266,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 23",
+     "score": -0.7416,
      "relevant": false
     },
     {
      "rank": 2,
-     "source": "gpt3.pdf",
-     "locator": "page 39",
-     "score": -1.2804,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 27",
+     "score": -1.1266,
      "relevant": false
     },
     {
@@ -3933,28 +3959,28 @@
      "rank": 2,
      "source": "t5.pdf",
      "locator": "page 57",
-     "score": -9.606,
+     "score": -9.9012,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "t5.pdf",
-     "locator": "page 28",
-     "score": -9.739,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "gpt3.pdf",
      "locator": "page 9",
      "score": -10.2028,
      "relevant": false
     },
     {
+     "rank": 4,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 2",
+     "score": -10.2978,
+     "relevant": false
+    },
+    {
      "rank": 5,
-     "source": "colbert.pdf",
-     "locator": "page 9",
-     "score": -10.9279,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 8",
+     "score": -10.7594,
      "relevant": false
     }
    ]
@@ -3965,43 +3991,43 @@
    "question": "What random seed was used for the reported runs?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": 2.758,
+   "confidence": 4.264,
    "abstained": false,
    "outcome": "answered_anyway",
    "results": [
     {
      "rank": 1,
+     "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
+     "locator": "page 12",
+     "score": 4.2638,
+     "relevant": false
+    },
+    {
+     "rank": 2,
      "source": "lora.pdf",
      "locator": "page 18",
      "score": 2.7585,
      "relevant": false
     },
     {
-     "rank": 2,
+     "rank": 3,
      "source": "chain_of_thought.pdf",
      "locator": "page 15",
      "score": 1.61,
      "relevant": false
     },
     {
-     "rank": 3,
-     "source": "lora.pdf",
-     "locator": "page 18",
-     "score": 0.523,
-     "relevant": false
-    },
-    {
      "rank": 4,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 4",
-     "score": -0.2993,
+     "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
+     "locator": "page 12",
+     "score": -0.2143,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "t5.pdf",
-     "locator": "page 14",
-     "score": -3.5095,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 22",
+     "score": -3.5183,
      "relevant": false
     }
    ]
@@ -4012,36 +4038,36 @@
    "question": "What did the peer reviewers say about this work?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -5.464,
+   "confidence": -4.058,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 9",
-     "score": -5.4645,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 28",
+     "score": -4.0578,
      "relevant": false
     },
     {
      "rank": 2,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 15",
-     "score": -8.7239,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 12",
+     "score": -5.2304,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 10",
-     "score": -9.1035,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 1",
+     "score": -9.1265,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "gpt3.pdf",
-     "locator": "page 42",
-     "score": -9.5838,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 3",
+     "score": -9.3135,
      "relevant": false
     },
     {
@@ -4059,43 +4085,43 @@
    "question": "What were the authors paid for this research?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -4.138,
-   "abstained": true,
-   "outcome": "refused",
+   "confidence": 0.092,
+   "abstained": false,
+   "outcome": "answered_anyway",
    "results": [
     {
      "rank": 1,
-     "source": "bahdanau_attention.pdf",
-     "locator": "page 10",
-     "score": -4.1384,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 11",
+     "score": 0.0924,
      "relevant": false
     },
     {
      "rank": 2,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 27",
+     "score": -1.2242,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "an_agentic_approach_for_active_data_collection_travel_beha.pdf",
+     "locator": "page 22",
+     "score": -2.0415,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "gpt3.pdf",
      "locator": "page 48",
      "score": -5.4804,
      "relevant": false
     },
     {
-     "rank": 3,
-     "source": "gpt3.pdf",
-     "locator": "page 46",
-     "score": -6.3629,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "rag.pdf",
-     "locator": "page 10",
-     "score": -7.1267,
-     "relevant": false
-    },
-    {
      "rank": 5,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 1",
-     "score": -8.4081,
+     "source": "an_agentic_approach_for_active_data_collection_travel_beha.pdf",
+     "locator": "page 22",
+     "score": -6.2077,
      "relevant": false
     }
    ]
@@ -4106,43 +4132,43 @@
    "question": "Has this paper been retracted?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -7.764,
+   "confidence": -4.772,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
+     "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
+     "locator": "page 4",
+     "score": -4.7718,
+     "relevant": false
+    },
+    {
+     "rank": 2,
      "source": "word2vec.pdf",
      "locator": "page 1",
      "score": -7.7638,
      "relevant": false
     },
     {
-     "rank": 2,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 1",
-     "score": -8.3033,
-     "relevant": false
-    },
-    {
      "rank": 3,
-     "source": "t5.pdf",
-     "locator": "page 4",
-     "score": -8.8349,
+     "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
+     "locator": "page 21",
+     "score": -7.959,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "sentence_bert.pdf",
-     "locator": "page 9",
-     "score": -8.8911,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 19",
+     "score": -8.7588,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "bert.pdf",
-     "locator": "page 15",
-     "score": -9.0118,
+     "source": "t5.pdf",
+     "locator": "page 4",
+     "score": -8.8349,
      "relevant": false
     }
    ]
@@ -4153,43 +4179,43 @@
    "question": "How does flash attention reduce memory reads and writes?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -5.542,
+   "confidence": -1.356,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 11",
-     "score": -5.5418,
+     "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+     "locator": "page 1",
+     "score": -1.3558,
      "relevant": false
     },
     {
      "rank": 2,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 5",
-     "score": -5.8494,
+     "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+     "locator": "page 4",
+     "score": -2.7607,
      "relevant": false
     },
     {
      "rank": 3,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 2",
+     "score": -3.9088,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "lora.pdf",
      "locator": "page 5",
      "score": -5.9894,
      "relevant": false
     },
     {
-     "rank": 4,
-     "source": "faiss_billion_scale.pdf",
-     "locator": "page 5",
-     "score": -9.0206,
-     "relevant": false
-    },
-    {
      "rank": 5,
-     "source": "bahdanau_attention.pdf",
+     "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
      "locator": "page 4",
-     "score": -9.2705,
+     "score": -7.8575,
      "relevant": false
     }
    ]
@@ -4200,43 +4226,43 @@
    "question": "What load balancing loss is used for expert routing?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -8.356,
-   "abstained": true,
-   "outcome": "refused",
+   "confidence": 6.851,
+   "abstained": false,
+   "outcome": "answered_anyway",
    "results": [
     {
      "rank": 1,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 17",
+     "score": 6.8515,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 17",
+     "score": 3.7066,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 18",
+     "score": 2.2783,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "gpt3.pdf",
      "locator": "page 8",
      "score": -8.3559,
      "relevant": false
     },
     {
-     "rank": 2,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 12",
-     "score": -10.1822,
-     "relevant": false
-    },
-    {
-     "rank": 3,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 12",
-     "score": -10.6042,
-     "relevant": false
-    },
-    {
-     "rank": 4,
+     "rank": 5,
      "source": "batch_normalization.pdf",
      "locator": "page 1",
      "score": -10.767,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "batch_normalization.pdf",
-     "locator": "page 4",
-     "score": -10.9112,
      "relevant": false
     }
    ]
@@ -4247,43 +4273,43 @@
    "question": "How is the model quantized to 4-bit precision?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -2.975,
-   "abstained": true,
-   "outcome": "refused",
+   "confidence": 2.264,
+   "abstained": false,
+   "outcome": "answered_anyway",
    "results": [
     {
      "rank": 1,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 8",
+     "score": 2.2645,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 6",
+     "score": 2.1583,
+     "relevant": false
+    },
+    {
+     "rank": 3,
      "source": "faiss_billion_scale.pdf",
      "locator": "page 3",
      "score": -2.9748,
      "relevant": false
     },
     {
-     "rank": 2,
-     "source": "t5.pdf",
-     "locator": "page 34",
-     "score": -4.0393,
-     "relevant": false
-    },
-    {
-     "rank": 3,
-     "source": "gpt3.pdf",
-     "locator": "page 22",
-     "score": -4.645,
-     "relevant": false
-    },
-    {
      "rank": 4,
-     "source": "rag.pdf",
-     "locator": "page 19",
-     "score": -4.8503,
+     "source": "contractscrub_a_benchmark_for_final_review_of_legal_contra.pdf",
+     "locator": "page 16",
+     "score": -3.8362,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "gpt3.pdf",
-     "locator": "page 22",
-     "score": -5.319,
+     "source": "rag.pdf",
+     "locator": "page 19",
+     "score": -4.8503,
      "relevant": false
     }
    ]
@@ -4294,43 +4320,43 @@
    "question": "What is the cost per thousand inference requests?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -6.287,
+   "confidence": -4.602,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "t5.pdf",
-     "locator": "page 36",
-     "score": -6.2866,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 24",
+     "score": -4.6015,
      "relevant": false
     },
     {
      "rank": 2,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 24",
+     "score": -5.6785,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 7",
+     "score": -6.5299,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "vision_transformer.pdf",
      "locator": "page 20",
      "score": -7.5589,
      "relevant": false
     },
     {
-     "rank": 3,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 8",
-     "score": -9.3323,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "gpt3.pdf",
-     "locator": "page 20",
-     "score": -10.4365,
-     "relevant": false
-    },
-    {
      "rank": 5,
-     "source": "colbert.pdf",
-     "locator": "page 7",
-     "score": -10.4888,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 37",
+     "score": -8.6,
      "relevant": false
     }
    ]
@@ -4361,23 +4387,23 @@
     },
     {
      "rank": 3,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 7",
+     "score": -5.0258,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "faiss_billion_scale.pdf",
      "locator": "page 9",
      "score": -5.8127,
      "relevant": false
     },
     {
-     "rank": 4,
-     "source": "lora.pdf",
-     "locator": "page 3",
-     "score": -8.9595,
-     "relevant": false
-    },
-    {
      "rank": 5,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 7",
-     "score": -9.3654,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 1",
+     "score": -9.322,
      "relevant": false
     }
    ]
@@ -4388,43 +4414,43 @@
    "question": "What is the maximum context length in tokens?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": 1.644,
+   "confidence": 2.904,
    "abstained": false,
    "outcome": "answered_anyway",
    "results": [
     {
      "rank": 1,
+     "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
+     "locator": "page 15",
+     "score": 2.9036,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 1",
+     "score": 1.8689,
+     "relevant": false
+    },
+    {
+     "rank": 3,
      "source": "chain_of_thought.pdf",
      "locator": "page 7",
      "score": 1.6444,
      "relevant": false
     },
     {
-     "rank": 2,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 7",
-     "score": 0.8534,
-     "relevant": false
-    },
-    {
-     "rank": 3,
-     "source": "roberta.pdf",
-     "locator": "page 2",
-     "score": -1.7902,
-     "relevant": false
-    },
-    {
      "rank": 4,
-     "source": "gpt3.pdf",
-     "locator": "page 43",
-     "score": -2.2444,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 1",
+     "score": -0.2401,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "t5.pdf",
-     "locator": "page 23",
-     "score": -2.9661,
+     "source": "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
+     "locator": "page 12",
+     "score": -0.9581,
      "relevant": false
     }
    ]
@@ -4435,43 +4461,43 @@
    "question": "Under what licence were the model weights released?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": 0.172,
-   "abstained": false,
-   "outcome": "answered_anyway",
+   "confidence": -4.403,
+   "abstained": true,
+   "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "lora.pdf",
-     "locator": "page 18",
-     "score": 0.1724,
+     "source": "healmed_multilingual_evaluation_of_large_language_models_i.pdf",
+     "locator": "page 17",
+     "score": -4.4031,
      "relevant": false
     },
     {
      "rank": 2,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 6",
+     "score": -4.5029,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 6",
+     "score": -5.3222,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "lora.pdf",
      "locator": "page 18",
      "score": -5.3861,
      "relevant": false
     },
     {
-     "rank": 3,
-     "source": "layer_normalization.pdf",
-     "locator": "page 6",
-     "score": -9.0648,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "layer_normalization.pdf",
-     "locator": "page 4",
-     "score": -9.4743,
-     "relevant": false
-    },
-    {
      "rank": 5,
-     "source": "bahdanau_attention.pdf",
-     "locator": "page 7",
-     "score": -9.6439,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 3",
+     "score": -6.3307,
      "relevant": false
     }
    ]
@@ -4482,43 +4508,43 @@
    "question": "How many GPU-hours were budgeted before training began?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -2.327,
+   "confidence": -1.932,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 1",
+     "score": -1.9315,
+     "relevant": false
+    },
+    {
+     "rank": 2,
      "source": "attention_is_all_you_need.pdf",
      "locator": "page 7",
      "score": -2.3266,
      "relevant": false
     },
     {
-     "rank": 2,
+     "rank": 3,
+     "source": "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf",
+     "locator": "page 20",
+     "score": -3.1671,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "gpt3.pdf",
      "locator": "page 39",
      "score": -4.4049,
      "relevant": false
     },
     {
-     "rank": 3,
+     "rank": 5,
      "source": "gpt3.pdf",
      "locator": "page 9",
      "score": -4.9764,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 8",
-     "score": -5.9918,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "seq2seq.pdf",
-     "locator": "page 5",
-     "score": -6.4551,
      "relevant": false
     }
    ]

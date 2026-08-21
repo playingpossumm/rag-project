@@ -50,6 +50,44 @@ def norm(t: str) -> str:
     return re.sub(r"\s+", " ", t).lower()
 
 
+ABSTAIN = 0.0
+
+
+def audit_by_retrieval(golden: dict) -> list[tuple[str, float, str]]:
+    """Adversarial cases the pipeline now answers. Empty if the index is absent.
+
+    Loading the models costs ~20s, so this degrades to the term check rather
+    than making the audit unrunnable on a machine that has not indexed yet.
+    """
+    try:
+        from sentence_transformers import SentenceTransformer
+
+        from abstain import ABSTAIN_THRESHOLD
+        from hybrid import build_bm25
+        from retrieve import EMBEDDING_MODEL, load_index, retrieve
+    except Exception:  # noqa: BLE001
+        return []
+
+    try:
+        index, metadata = load_index()
+    except Exception:  # noqa: BLE001 - no index built yet
+        return []
+
+    model = SentenceTransformer(EMBEDDING_MODEL)
+    bm25 = build_bm25(metadata)
+    out = []
+    for case in golden["cases"]:
+        if not case.get("unanswerable"):
+            continue
+        hits = retrieve(case["question"], index, metadata, model, k=5, bm25=bm25)
+        if not hits:
+            continue
+        top = float(hits[0].get("rerank_score", 0.0))
+        if top >= ABSTAIN_THRESHOLD:
+            out.append((case["id"], top, hits[0]["source"]))
+    return out
+
+
 def main():
     chunks = json.loads(STORE.read_text(encoding="utf-8"))
     golden = json.loads(GOLDEN.read_text(encoding="utf-8"))
@@ -62,7 +100,21 @@ def main():
         by_source.setdefault(c["source"], []).append(norm(c["text"]))
     by_source = {s: " ".join(t) for s, t in by_source.items()}
 
-    # ---- 1. adversarial cases that may have become answerable --------------
+    # ---- 1a. ask the RETRIEVER, not a word list --------------------------
+    # The term list below caught 2 of 18 when the corpus grew 20 -> 36, and
+    # missed all 5 cases that actually became answerable. It could not have
+    # caught them: a paper discusses expert load balancing without ever writing
+    # "mixture of experts", so a literal term match is looking for the wrong
+    # thing.
+    #
+    # Retrieval is not looking for the wrong thing. If the reranker scores an
+    # "unanswerable" question above the abstention threshold, then either the
+    # label is stale or the gate is broken -- and both need a human to look.
+    # Using the system to audit its own labels is circular, but in the useful
+    # direction: it flags exactly where the two disagree.
+    scored = audit_by_retrieval(golden)
+
+    # ---- 1b. the subject-term check, kept as a second opinion -------------
     print("ADVERSARIAL CASES -- is the subject now in the corpus?")
     suspect = []
     for case in golden["cases"]:
@@ -81,6 +133,16 @@ def main():
             print(f"  SUSPECT {case['id']:<20} {kind:<10} now in: {shown}{more}")
         else:
             print(f"  ok      {case['id']:<20} {kind:<10} subject still absent")
+
+    if scored:
+        print("\n  ...and what retrieval says, which is the check that matters:")
+        for cid, top, src in scored:
+            print(f"  ANSWERED {cid:<19} scores {top:+6.2f} against {ABSTAIN}"
+                  f"  top hit: {src[:36]}")
+        missed = [c for c, _, _ in scored if c not in {i for i, _, _ in suspect}]
+        if missed:
+            print(f"\n  {len(missed)} of these were NOT flagged by the term list: "
+                  f"{', '.join(missed)}")
 
     # ---- 2. answerable cases that may now be ambiguous --------------------
     print("\nANSWERABLE CASES -- does the answer string now appear in other documents?")

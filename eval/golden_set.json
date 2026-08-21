@@ -1,5 +1,5 @@
 {
-  "corpus": "20 arXiv ML/NLP papers",
+  "corpus": "36 arXiv ML/NLP papers",
   "generated_by": "src/build_golden_set.py",
   "note": "Gold locations are DERIVED from answer strings against the current corpus, not hand-labelled, so labels cannot drift out of step with the documents. Multi-source falls out naturally: every location containing the answer is gold, matching the requirement to compile all relevant sources rather than pick one. Regenerate after any corpus change by re-running the generator.",
   "cases": [
@@ -114,6 +114,13 @@
           ]
         },
         {
+          "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+          "pages": [
+            6,
+            32
+          ]
+        },
+        {
           "source": "colbert.pdf",
           "pages": [
             7
@@ -123,6 +130,12 @@
           "source": "gpt3.pdf",
           "pages": [
             63
+          ]
+        },
+        {
+          "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+          "pages": [
+            19
           ]
         },
         {
@@ -389,6 +402,12 @@
       "answer_contains": "low-rank",
       "gold": [
         {
+          "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+          "pages": [
+            4
+          ]
+        },
+        {
           "source": "lora.pdf",
           "pages": [
             1,
@@ -403,9 +422,21 @@
             16,
             24
           ]
+        },
+        {
+          "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+          "pages": [
+            9
+          ]
+        },
+        {
+          "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+          "pages": [
+            13
+          ]
         }
       ],
-      "multi_source": false
+      "multi_source": true
     },
     {
       "id": "bert-mlm",
@@ -477,6 +508,12 @@
       "answer_contains": "siamese",
       "gold": [
         {
+          "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+          "pages": [
+            12
+          ]
+        },
+        {
           "source": "dense_passage_retrieval.pdf",
           "pages": [
             10
@@ -503,6 +540,18 @@
       "answer_contains": "patches",
       "gold": [
         {
+          "source": "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
+          "pages": [
+            16
+          ]
+        },
+        {
+          "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+          "pages": [
+            7
+          ]
+        },
+        {
           "source": "vision_transformer.pdf",
           "pages": [
             1,
@@ -516,7 +565,7 @@
           ]
         }
       ],
-      "multi_source": false
+      "multi_source": true
     },
     {
       "id": "faiss-pq",
@@ -885,9 +934,17 @@
             29,
             30
           ]
+        },
+        {
+          "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+          "pages": [
+            9,
+            16,
+            19
+          ]
         }
       ],
-      "multi_source": false
+      "multi_source": true
     },
     {
       "id": "cot-scale",
@@ -1139,6 +1196,12 @@
       "answer_contains": "in-context learning",
       "gold": [
         {
+          "source": "an_agentic_approach_for_active_data_collection_travel_beha.pdf",
+          "pages": [
+            14
+          ]
+        },
+        {
           "source": "chain_of_thought.pdf",
           "pages": [
             12,
@@ -1337,6 +1400,24 @@
           ]
         },
         {
+          "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+          "pages": [
+            32
+          ]
+        },
+        {
+          "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
+          "pages": [
+            10
+          ]
+        },
+        {
+          "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+          "pages": [
+            18
+          ]
+        },
+        {
           "source": "lora.pdf",
           "pages": [
             2,
@@ -1344,6 +1425,37 @@
             5,
             9,
             18
+          ]
+        },
+        {
+          "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+          "pages": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            25,
+            26,
+            27,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            41,
+            42,
+            43,
+            45
           ]
         },
         {
@@ -1409,11 +1521,52 @@
       "answer_contains": "degradation",
       "gold": [
         {
+          "source": "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
+          "pages": [
+            13
+          ]
+        },
+        {
+          "source": "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
+          "pages": [
+            8
+          ]
+        },
+        {
           "source": "dense_passage_retrieval.pdf",
           "pages": [
             1,
             6,
             12
+          ]
+        },
+        {
+          "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
+          "pages": [
+            6
+          ]
+        },
+        {
+          "source": "healmed_multilingual_evaluation_of_large_language_models_i.pdf",
+          "pages": [
+            5
+          ]
+        },
+        {
+          "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+          "pages": [
+            4,
+            5
+          ]
+        },
+        {
+          "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+          "pages": [
+            3,
+            18,
+            29,
+            36,
+            39
           ]
         },
         {
@@ -1445,6 +1598,12 @@
           "pages": [
             23,
             30
+          ]
+        },
+        {
+          "source": "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf",
+          "pages": [
+            8
           ]
         }
       ],
@@ -1481,9 +1640,30 @@
           ]
         },
         {
+          "source": "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
+          "pages": [
+            12,
+            14,
+            23
+          ]
+        },
+        {
+          "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+          "pages": [
+            2,
+            7
+          ]
+        },
+        {
           "source": "gpt3.pdf",
           "pages": [
             45
+          ]
+        },
+        {
+          "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+          "pages": [
+            41
           ]
         },
         {
@@ -1633,6 +1813,12 @@
       "answer_contains": "Colossal Clean Crawled Corpus",
       "gold": [
         {
+          "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+          "pages": [
+            10
+          ]
+        },
+        {
           "source": "t5.pdf",
           "pages": [
             1,
@@ -1642,7 +1828,7 @@
           ]
         }
       ],
-      "multi_source": false
+      "multi_source": true
     },
     {
       "id": "t5-text2text",
@@ -1800,6 +1986,12 @@
           "source": "attention_is_all_you_need.pdf",
           "pages": [
             7
+          ]
+        },
+        {
+          "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
+          "pages": [
+            6
           ]
         },
         {
