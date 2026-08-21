@@ -111,6 +111,18 @@
   .c-red .k { color: var(--red); }
   .c-amber { background: var(--amber-bg); border-color: var(--amber); }
   .c-amber .k { color: var(--amber); }
+
+  /* Scoped disclaimer. Uses tokens, not literals: the inline hex this replaced
+     painted a cream block with dark-brown text over the dark theme's near-black
+     ground. The sibling page (phase-1-field-notes.html) fixed this and this one
+     did not, because the fix was applied to one file rather than to both. */
+  .snapshot {
+    max-width: 900px; margin: 0 auto 4px; padding: 14px 18px;
+    border: 1px solid var(--amber); background: var(--amber-bg);
+    color: var(--ink); font-family: var(--font-body);
+    font-size: 15px; line-height: 1.5;
+  }
+  .snapshot b { color: var(--amber); }
   .c-plain .k { color: var(--accent); }
 
   ol.findings { counter-reset: f; list-style: none; padding: 0; margin: 24px 0 0; }
@@ -147,7 +159,13 @@
 
 <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch theme">theme</button>
 
-<div style="max-width:900px;margin:0 auto;padding:14px 18px;border:1px solid #8a5a12;background:#fdf4e3;color:#5a3c0c;font-family:Georgia,serif;font-size:15px;line-height:1.5"><b>Historical snapshot.</b> Figures on this page were measured on an earlier corpus and golden set. Three of its conclusions later reversed when the test set grew. Current measurements live in <code>eval/RESULTS.md</code> and <code>eval/results.json</code>.</div>
+<div class="snapshot"><b>Figures are a snapshot; status is current.</b> The runsheet and the
+comparison table below were measured on an earlier corpus and golden set &mdash; 23 answerable
+cases against today's 66 &mdash; and three of their conclusions later reversed when the test set
+grew. They are left as measured. Everything that describes what the system <em>does</em> was
+re-checked on 2026-08-21, including a &ldquo;done&rdquo; against Word, PowerPoint and Excel that
+was not true. Current measurements always live in <code>eval/RESULTS.md</code> and
+<code>eval/results.json</code>.</div>
 
 <div class="page">
 
@@ -218,16 +236,25 @@
               <td>retrieval-only default; no network calls</td></tr>
           <tr><td>Embedded in another tool</td><td class="status s-done">done</td>
               <td>Python <code>ask()</code>, HTTP server, JSON CLI &mdash; one shared function</td></tr>
-          <tr><td>PDF, Word, PowerPoint, Excel</td><td class="status s-done">done</td>
-              <td>all four verified; format-appropriate citations</td></tr>
-          <tr><td>Scanned documents</td><td class="status s-done">done</td>
-              <td>OCR recovered 29/29 words from a rasterised PDF</td></tr>
+          <tr><td>PDF, Word, PowerPoint, Excel</td><td class="status s-part">partial</td>
+              <td><strong>PDF only, in practice.</strong> The corpus is 20 PDFs; the
+              <code>.docx</code>, <code>.pptx</code> and <code>.xlsx</code> loaders are written
+              and have <strong>never run on a real file</strong>. The spreadsheet path is the
+              least trustworthy &mdash; rows are serialised to <code>Column: value</code> on an
+              assumption with no evidence behind it. This is the largest unknown in the
+              system</td></tr>
+          <tr><td>Scanned documents</td><td class="status s-part">partial</td>
+              <td>The OCR path recovered 29/29 words from a <em>synthetic</em> rasterised PDF.
+              It has never run on a real scan</td></tr>
           <tr><td>Progress visibility when indexing</td><td class="status s-done">done</td>
-              <td>structured events; UI and CLI share one source</td></tr>
+              <td>structured events; UI and CLI share one source. Displayed since 2026-08-21 &mdash;
+              until then they were emitted and nothing read them</td></tr>
           <tr><td>Google Drive</td><td class="status s-part">partial</td>
               <td>mounted folder works; <strong>native Google Docs do not</strong></td></tr>
           <tr><td>Corpus grows over time</td><td class="status s-part">partial</td>
-              <td>caches make re-index 8s; no true incremental add yet</td></tr>
+              <td>caches make an unchanged re-index <strong>0.76s</strong> and adding one document
+              to twenty 18.8s; no true incremental add yet. A folder can be pointed at by pasting
+              its path</td></tr>
           <tr><td>Generated prose answers</td><td class="status s-open">optional</td>
               <td>written, never executed &mdash; needs API credits</td></tr>
         </tbody>
@@ -338,7 +365,7 @@
           </tr>
           <tr>
             <td><strong>True incremental indexing</strong></td>
-            <td>Re-index is 8s cached, but still rebuilds the whole FAISS index. Adding one document should touch only that document.</td>
+            <td>Re-index is 0.76s cached, but still rebuilds the whole FAISS index. Adding one document should touch only that document &mdash; though profiling puts the rebuild at 0.01s, 0% of runtime, so the gain would be nil.</td>
             <td class="status">medium</td>
           </tr>
           <tr>
@@ -347,8 +374,8 @@
             <td class="status">large</td>
           </tr>
           <tr>
-            <td><strong>A real UI</strong></td>
-            <td>Currently CLI plus a local HTTP endpoint. Needed before anyone else can use it.</td>
+            <td><strong>Multi-user access</strong></td>
+            <td>The interface exists &mdash; one page at <code>/</code> with the pipeline map, the answer, per-stage tables, and settings that re-run retrieval on the question in front of you. It binds to loopback and assumes one person.</td>
             <td class="status">medium</td>
           </tr>
           <tr>
@@ -358,8 +385,8 @@
           </tr>
           <tr>
             <td><strong>Grow the golden set</strong></td>
-            <td>23 answerable cases means differences under ~0.05 are noise. Every number here carries that caveat.</td>
-            <td class="status">small</td>
+            <td>Done since this page was written: 23 answerable cases became 66, plus 18 adversarial. Growing it is what reversed three of the conclusions above, which is the argument for growing it again.</td>
+            <td class="status">done</td>
           </tr>
         </tbody>
       </table>
