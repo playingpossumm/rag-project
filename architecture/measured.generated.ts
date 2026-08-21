@@ -16,19 +16,23 @@ export const MEASURED: Record<string, { count: number; loc: number }> = {
   'evaluate': { count: 6, loc: 1117 },
   'fetch': { count: 1, loc: 82 },
   'generate': { count: 1, loc: 158 },
-  'goldenset': { count: 5, loc: 681 },
+  'goldenset': { count: 5, loc: 743 },
   'health': { count: 1, loc: 101 },
   'hybrid': { count: 1, loc: 108 },
-  'ingest': { count: 1, loc: 370 },
-  'loaders': { count: 1, loc: 291 },
+  'ingest': { count: 1, loc: 376 },
+  'loaders': { count: 1, loc: 305 },
   'ocr': { count: 1, loc: 111 },
   'parent': { count: 1, loc: 130 },
   'parsecache': { count: 1, loc: 104 },
   'probes': { count: 3, loc: 254 },
   'rerank': { count: 1, loc: 77 },
-  'retrieve': { count: 6, loc: 772 },
+  'retrieve': { count: 6, loc: 777 },
   'serve': { count: 1, loc: 591 },
   'trace': { count: 2, loc: 468 },
 }
 
-export const UNCLAIMED: string[] = []
+export const UNCLAIMED: string[] = [
+  'src/fetch_topic.py',
+  'src/make_documents.py',
+  'src/test_loaders.py',
+]

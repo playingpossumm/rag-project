@@ -2,7 +2,7 @@
   "date": "2026-08-21",
   "totals": {
     "files": 38,
-    "loc": 5992
+    "loc": 6079
   },
   "nodes": {
     "api": {
@@ -23,11 +23,11 @@
     },
     "ingest": {
       "count": 1,
-      "loc": 370
+      "loc": 376
     },
     "loaders": {
       "count": 1,
-      "loc": 291
+      "loc": 305
     },
     "ocr": {
       "count": 1,
@@ -51,7 +51,7 @@
     },
     "retrieve": {
       "count": 6,
-      "loc": 772
+      "loc": 777
     },
     "hybrid": {
       "count": 1,
@@ -83,7 +83,7 @@
     },
     "goldenset": {
       "count": 5,
-      "loc": 681
+      "loc": 743
     },
     "probes": {
       "count": 3,
