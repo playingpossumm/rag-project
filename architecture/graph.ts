@@ -87,9 +87,13 @@ const AUTHORED: Authored[] = [
       'A deliberate duplicate of the pipeline rather than debug flags threaded through ' +
       'retrieve(): a serving path that carries debug state is one that eventually ships ' +
       'it, and the two have opposite goals — one wants to be fast and forget, this one ' +
-      'wants to be slow and remember. A test asserts both agree on the final result, which ' +
-      'is what makes the duplication safe to keep.',
-    files: ['src/pipeline_trace.py'],
+      'wants to be slow and remember. This file claimed for months that a test held the ' +
+      'two together; the test did not exist, and the duplication was held together by ' +
+      'care alone. It exists now, and it earns its keep: retrieve() takes a different ' +
+      'path when reranking is off — shortlisting k rather than candidate_k, and skipping ' +
+      'the diversity cap — and the trace had to be taught the same, or it would have drawn ' +
+      'a pool and a cap the serving path never ran.',
+    files: ['src/pipeline_trace.py', 'src/test_trace.py'],
   },
 
   /* ========================================================== ingestion */
@@ -294,8 +298,12 @@ const AUTHORED: Authored[] = [
       'is the granularity a human can label reliably and it stays stable when chunking ' +
       'parameters change. Its own NDCG once printed 1.373 — impossible for a normalised ' +
       'metric — because several returned chunks shared one gold page. Caught only because ' +
-      'the number violated a bound the metric is known to have.',
-    files: ['src/evaluate.py'],
+      'the number violated a bound the metric is known to have. A companion script writes ' +
+      'the same run out case by case rather than in aggregate, which is what makes ' +
+      '[[“which cases did this break?”]] answerable — and which immediately showed that ' +
+      'the configuration documented as the default is measured on the weighted fusion ' +
+      'branch while the app serves RRF.',
+    files: ['src/evaluate.py', 'src/per_case.py'],
   },
   {
     id: 'goldenset', code: 'GS', name: 'Golden set', role: 'the labels', group: 'evaluation',

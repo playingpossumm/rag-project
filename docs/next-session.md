@@ -1,15 +1,16 @@
 # Next session — start here
 
-Written 2026-08-20. Paste the block below into a new session, or just read it.
-It is a pointer, not a substitute: `HANDOFF.md` is the cold-start document and
-carries the reasoning behind every decision named here.
+Written 2026-08-20, rewritten 2026-08-21 after the four technical items in the
+previous version were built. Paste the block below into a new session, or just
+read it. It is a pointer, not a substitute: `HANDOFF.md` is the cold-start
+document and carries the reasoning behind every decision named here.
 
 ---
 
 ```
 Project: C:\Users\owner\Desktop\rag-project
 
-Read HANDOFF.md FIRST — it's the cold-start doc, current as of 2026-08-20.
+Read HANDOFF.md FIRST — it's the cold-start doc, current as of 2026-08-21.
 docs/ui-brief.md is superseded in part; where it and HANDOFF §5 disagree, §5 wins.
 
 DIRECTION: dial the UI back. Keep it clean and simple. Focus on the technicals.
@@ -25,63 +26,70 @@ explain the mechanism well, so ask me before deleting it, but don't expand it.
 Run the server:  .venv\Scripts\python.exe src\serve.py  →  http://127.0.0.1:8000/
 
 Constraints:
-- Don't touch src/pipeline_trace.py or the retrieval code unless the task is
-  explicitly about retrieval.
+- Don't touch the retrieval code unless the task is explicitly about retrieval.
+  src/pipeline_trace.py is now an exception in one direction only: it takes
+  pipeline options, and src/test_trace.py asserts it still agrees with
+  retrieve() across all of them. Change one and run that test.
 - Chart palette is validated all-pairs for colourblind separation — no fourth
   hue without re-running the dataviz validator (HANDOFF §5).
 - No CDN. Fonts bundled in ui/fonts/ deliberately: the corpus may be private and
   the page must make no external request.
 - Light theme only.
 
-TECHNICAL WORK, in priority order:
+WHAT IS NOW WORTH DOING, in priority order:
 
-1. Live settings comparison. The settings panel shows real measured numbers from
-   eval/results.json, but toggling re-runs nothing. Needs an endpoint taking
-   pipeline options (rerank on/off, fusion, cap, expansion) and returning a fresh
-   trace. This is the strongest differentiator the project has — a closed product
-   structurally cannot offer it — and my own brief called it out as such.
+1. Point it at real documents. This is worth more than everything else
+   combined and only you can do it: the corpus is 20 PDFs, and load_docx,
+   load_pptx, load_xlsx and the whole OCR path have never run on a real file.
+   The mechanism now exists — the Local folder tab takes a pasted path, checks
+   it, and indexes it. The .xlsx path is the least trustworthy: rows are
+   serialised to "Column: value" on an assumption with no evidence behind it.
+   Point it at a folder with a spreadsheet and a deck in it, ask something only
+   they can answer, and see what breaks.
 
-2. Fix src/api.py:152 — `from generate_answer import synthesize`. No such module;
-   it's generate.py and has no `synthesize`. Lazy import inside the optional
-   generation branch, so it has never raised (no API credit). Decide what that
-   function should be, or delete the branch.
+2. Correct a mislabel in evaluate.py, now that per_case.json has exposed it.
+   The row documented everywhere as the default — "+ diversity cap 2/src" — is
+   measured on the WEIGHTED fusion branch, but DEFAULT_FUSION is "rrf", which is
+   what the app actually serves. The served configuration has never been in the
+   aggregate table. src/per_case.py measures it at hit 0.849 / MRR 0.754 /
+   NDCG 0.769 / src recall 0.773 against the documented 0.848 / 0.751 / 0.765 /
+   0.773, so nothing was ever wrong — but the label is, and this repo has been
+   bitten by exactly that before.
 
-3. Per-case eval data. evaluate.py already computes per-case outcomes behind
-   --per-case but only prints them. A small script writing them to JSON unlocks
-   real per-case analysis (and the "swarm" idea, if it ever comes back).
+3. Use the per-case data. eval/per_case.json now has all 84 outcomes. The
+   obvious question it can answer and nothing else can: is the ~15% cross-
+   document confusion the SAME fifteen percent from run to run, or does it move?
+   If it is stable, those cases are a fixture worth optimising against.
 
-4. Folder intake. The app shows local-folder and Drive tabs badged "not wired".
-   A pasted path is the cheap honest version — RAG_DATA_DIR already works
-   server-side. This is what makes the tool usable on real documents, and
-   HANDOFF §7 item 1 says the corpus being 20 PDFs and nothing else is worth
-   more than everything else combined.
-
-UI HOUSEKEEPING (small, do while you're in there):
-- ui/ambient.html + ui/ambient-fields.js are orphaned — index.html no longer
-  references them. Delete both, or wire the lattice back into the folio bar.
-  Serving them unused is the worst option.
-- ui/pipeline.html is a superseded prototype sharing the app's renderer. Delete
-  it or keep it as a bare harness, but don't evolve both.
+4. Generation, if there is ever credit. src/generate.py is fixed and exercised
+   to the network boundary but has still never completed a real call. When there
+   is credit: run it once, and consider adding server-side `fallbacks` (see
+   HANDOFF §7 item 3 for why it is deliberately not there yet).
 
 Skills: webapp-testing (Playwright is in .venv — screenshot and LOOK at every
 change; it has caught ~15 real defects here that reading the diff did not),
 dataviz, emil-design-eng. Don't reach for the design skills unless asked.
-
-State: everything committed, working tree clean, architecture drift zero.
 ```
 
 ---
 
 ## Why the prompt says what it says
 
-**Why "don't start another visual pass" is first.** The instruction is easy to
-drift from — a fresh session sees an unfinished-looking page and starts
+**Why "don't start another visual pass" is still first.** The instruction is easy
+to drift from — a fresh session sees an unfinished-looking page and starts
 redesigning. It is stated before anything else for that reason.
 
-**Why the corpus is under item 4 rather than item 1.** Pointing this at real
-documents is worth more than every other item combined (`HANDOFF.md` §7), but
-only the owner can supply the documents. Folder intake is the part an agent can
-actually build, so that is what the list asks for.
+**Why the corpus moved from item 4 to item 1.** In the previous version it sat
+last because only the owner could supply documents and an agent could not act on
+it. The folder intake removed that blocker: the mechanism now exists, so the
+remaining step is genuinely just pointing it somewhere, and it is back where its
+value says it belongs.
+
+**Why a mislabel is item 2.** It changes no number and no behaviour, which is
+precisely the kind of thing this repo has learned to distrust: the README once
+carried figures from a 23-case set under a heading claiming 84, and re-running
+the harness reversed three conclusions. A default that is documented as one
+configuration and served as another is the same failure one step earlier.
 
 **Why the design skills are named and then withheld.** They are installed and
 they are good, which is exactly why a session will reach for them by default.
@@ -89,5 +97,10 @@ they are good, which is exactly why a session will reach for them by default.
 **Why Playwright is singled out.** Rendering the page has caught roughly fifteen
 real defects in this repo that reading the diff did not — labels drawn at 6px
 inside a scaled canvas, a bounding box that measured every block as zero-width,
-a `requestAnimationFrame` timestamp arriving before its own start time. It is the
-single highest-yield habit here and the easiest one to skip.
+a `requestAnimationFrame` timestamp arriving before its own start time. The
+2026-08-21 session added four more, all invisible in the diff: score bars scaled
+to a cross-encoder range collapsing to stubs on the fusion scale, "+0.03" for
+every document at two decimal places, a latency row reporting 38ms against 35ms
+as though it meant something, and the map captioning "5 kept, 1 cut" beside a
+panel reading "nothing displaced". It is the single highest-yield habit here and
+the easiest one to skip.

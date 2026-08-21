@@ -6,8 +6,11 @@
 > **Where this file and `HANDOFF.md` §5 disagree, §5 is current.** Specifically
 > dead: *serif headings* (now all-sans Inter), *follow the system theme* (now
 > light only), and *ambient placement undecided* (decided, then orphaned in the
-> rewrite — see §5). The direction that survived: layered density, mono data,
-> and refusals made prominent and explained.
+> rewrite, then **deleted on 2026-08-21** along with `ui/ambient.html` and
+> `ui/ambient-fields.js` — the direction is now to dial the UI back, and an
+> animated generative masthead is the opposite of that; the code is in git at
+> `f2ab5de` if it is ever wanted). The direction that survived: layered density,
+> mono data, and refusals made prominent and explained.
 
 Answers from a design interview on 2026-08-19, recorded so the direction survives
 a session restart. These are the user's stated preferences, not inferences.

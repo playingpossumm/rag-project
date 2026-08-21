@@ -1,7 +1,8 @@
 # Handoff
 
-Written 2026-08-19 so a new session can pick this up cold. Everything here is
-measured or verifiable from the repo; where something is unverified it says so.
+Written 2026-08-19 so a new session can pick this up cold, updated 2026-08-21.
+Everything here is measured or verifiable from the repo; where something is
+unverified it says so.
 
 ---
 
@@ -80,7 +81,8 @@ query
        └─ abstain gate → confident / declined
 
 serve.py    GET /  (UI) · POST /ask · POST /api/trace · GET|POST /api/index/*
-pipeline_trace.py  re-runs retrieval keeping every intermediate ranking
+pipeline_trace.py  re-runs retrieval keeping every intermediate ranking,
+                   under any option combination the settings panel can ask for
 ```
 
 Defaults, all justified by measurement in `eval/RESULTS.md`:
@@ -152,13 +154,17 @@ One page, served at `/`. A folio bar (source tabs + corpus readout), a search
 field, then three panels that appear once you trace: **the pipeline** (the city),
 **the answer**, and a two-up of **settings** and **stages**.
 
+The settings panel **re-runs retrieval** as of 2026-08-21, and the folder tab
+takes a pasted path. Both are described under §7, which now records them as done
+rather than outstanding.
+
 | File | What it is |
 |---|---|
 | `ui/index.html` | the app |
 | `ui/pipeline-map.js` | the city — `buildCity` (corpus only), `buildRun` (one query), `drawScene`, `captions` |
 | `ui/fonts/*.woff2` | Inter + DM Mono, latin subsets, 78 KB, served from `/fonts/` |
-| `ui/pipeline.html` | **superseded** prototype at `/pipeline`; same renderer as the app. Delete it or keep it as a bare test harness, but do not evolve both |
-| `ui/ambient.html`, `ui/ambient-fields.js` | the four ambient fields and their chooser at `/ambient`. **Orphaned** — see below |
+*(`ui/pipeline.html`, `ui/ambient.html` and `ui/ambient-fields.js` were deleted on
+2026-08-21 — see "Ambient fields" below. They are in git if wanted back.)*
 
 ### Design direction — supersedes docs/ui-brief.md
 
@@ -215,10 +221,13 @@ validation is now moot; if anyone reintroduces dark, it must be re-run.
 
 The owner asked to see generative options side by side, saw four at `/ambient`,
 and chose **Lattice for the masthead, Fringe for the idle backdrop, at 0.6
-intensity**. That decision was implemented and then **lost in the app rewrite** —
-`ui/index.html` no longer references `ambient-fields.js` at all. Either wire the
-lattice back into the folio bar or delete the two files; leaving them served but
-unused is the worst of both.
+intensity**. That decision was implemented and then lost in the app rewrite.
+
+**Resolved 2026-08-21 by deleting** `ui/ambient.html`, `ui/ambient-fields.js`
+and `ui/pipeline.html`, along with their routes. Both options were open; the
+current direction is to dial the UI back, and wiring an animated generative
+field into the masthead is the opposite of that. The work is in git
+(`f2ab5de`, `f1ea450`) if the decision is ever revisited.
 
 ---
 
@@ -250,10 +259,22 @@ npm run architecture:check    # CI-style staleness check
 but "what this subsystem does" is where one pass is weakest. Worth the owner's
 editing pass.
 
-**A finding it surfaced, still unfixed:** `src/api.py:152` does
-`from generate_answer import synthesize`. No such module — it is `generate.py`,
-and it has no `synthesize`. A lazy import inside the optional generation branch,
-and generation has never run for lack of credit, so it has never raised.
+**A finding it surfaced, fixed 2026-08-21:** `src/api.py:152` did
+`from generate_answer import synthesize`, a module that has never existed.
+`generate.py` now exports `synthesize()` and `api.py` imports it from there.
+Reading the rest of that file against the data it actually receives turned up
+two more defects of the same kind — code that has never run is not code that
+works — and both are recorded in `generate.py`'s docstring:
+
+- `build_context()` read `chunk["page"]`. Chunks carry `locator`; there is no
+  `page` key. Every call would have died on KeyError.
+- `max_tokens=1024` predates thinking counting against the same ceiling on
+  `claude-opus-5`. Now 16000, with `effort="low"` as the actual cost control.
+
+Still unverified end to end: the account has no credit, so no real call has
+completed. What is now tested is everything up to the network boundary —
+`src/test_trace.py`'s sibling check in the session log stubbed the client and
+confirmed the model is handed exactly the passages the answer cites.
 
 ---
 
@@ -262,9 +283,10 @@ and generation has never run for lack of credit, so it has never raised.
 - Windows 11. Project at `C:\Users\owner\Desktop\rag-project`.
 - venv at `.venv` — **always use `.venv\Scripts\python.exe`**, not bare `python`.
 - Run the server: `.venv\Scripts\python.exe src\serve.py` → http://127.0.0.1:8000/
-- Routes: `/` the app · `/~/architecture` the map · `/ambient` the field chooser ·
-  `/pipeline` the superseded prototype · `/api/trace` · `/api/chunks` ·
-  `/api/corpus` · `/api/eval` · `/api/index/*` · `/fonts/*` · `/health`
+- Routes: `/` the app · `/~/architecture` the map · `/pipeline-map.js` ·
+  `/api/trace` (takes pipeline options) · `/api/chunks` · `/api/corpus` ·
+  `/api/eval` · `/api/index/inspect` · `/api/index/start` ·
+  `/api/index/status` · `/fonts/*` · `/health`
 - Playwright + Chromium installed in that venv. Use it; see §4.
 - `node` v24 available (the dataviz palette validator and architecture-map need it).
 - Console is cp1252 — scripts printing corpus text must
@@ -310,35 +332,72 @@ Mode, so `git pull` in a skills repo will not update them; re-copy instead.
    Mechanism understood; the obvious fix is ruled out by measurement (§4). The
    real fix is query decomposition, which needs an LLM → needs credit.
 3. **Generation is unverified end to end.** `generate.py` targets `claude-opus-5`
-   and has never completed a real call. Code written, evidence absent.
-4. **Folder linking** — deferred by the owner. Constraint already established: a
-   browser cannot read a filesystem path from a file picker, so it must be a
-   pasted path or drag-and-drop that copies into `data/`.
+   and has never completed a real call. Code written, evidence absent — but as of
+   2026-08-21 the code has at least been read against the data it receives, and
+   three defects fixed (§5b). Everything up to the network boundary is exercised
+   with a stubbed client. One judgement call left open deliberately: the current
+   API guidance is to pass server-side `fallbacks` on `claude-opus-5` calls so a
+   safety decline reroutes rather than stopping. It is **not** added here — it is
+   an unverifiable beta parameter on a path that has never run, and a refusal on
+   grounded Q&A over ML papers is close to hypothetical. `synthesize()` raises a
+   named error on `stop_reason == "refusal"` instead. Worth adding the moment
+   there is credit to test it with.
+4. **Folder linking** — **done 2026-08-21**, as a pasted path; see item 7. The
+   constraint recorded here was right and is why the design is what it is: a
+   browser cannot read a filesystem path from a file picker.
 5. **Google Drive native docs** — `.gdoc`/`.gsheet`/`.gslides` are pointers, not
    files. Needs the Drive API export path in `loaders.py`. Uploaded PDFs/Office
    files already work today via `RAG_DATA_DIR`.
 6. **No permissions model.** Fine for a local single-user tool; would matter if
    this ever served more than one person.
-7. **Folder and Drive intake is interface-only.** The app shows both as source
-   tabs badged `not wired`; clicking one explains what is missing and never
-   takes the selection, so the app is never in a dead state. Reading a local
-   folder needs a pasted path or drag-and-drop; Drive needs the export API.
-8. **The settings controls do not re-run retrieval.** The numbers beside each
-   option are real, read from `eval/results.json`, but toggling changes nothing.
-   This needs an endpoint that accepts pipeline options and returns a fresh
-   trace — the single highest-value UI thing left, and the owner's own brief
-   called it the strongest differentiator.
-9. **Three pieces of the agreed journey were never built**: the pool visibly
-   growing as documents are added, the 84-case "swarm" showing the golden set
-   running through the pipeline, and Act 1 (documents becoming the index).
-   `evaluate.py` already computes per-case outcomes behind `--per-case`; the
-   swarm needs a small script to write them to JSON, not a change to the
-   harness.
+7. **Drive intake is interface-only; local folders now work.** The app takes a
+   pasted folder path, checks it (`POST /api/index/inspect` reports what would
+   be indexed and what would be skipped, and refuses a folder with nothing
+   indexable in it), then indexes it. Drive is still a badged tab: native
+   `.gdoc`/`.gsheet` files are pointers and need the export API. Files that are
+   genuinely files in a synced Drive folder already work — point the folder
+   intake at the synced directory.
 
-Ranked by value: **(1) is worth more than everything else combined**, and only the
-owner can unblock it. **(8) is the next most valuable** — it turns the inspector
-into an experiment bench, and it is the thing a closed product structurally
-cannot offer.
+8. **The settings controls re-run retrieval.** Done 2026-08-21. `/api/trace`
+   takes `rerank`, `fusion`, `max_per_source` and `expansion`; the panel runs
+   the question twice — once at defaults, once at the current settings — and
+   reports what changed between them for that one question. The aggregate
+   numbers beside each option still come from `eval/results.json` and still
+   describe 84 cases; the two answer different questions on purpose.
+
+   Two honesty constraints fell out of building it, both load-bearing:
+
+   - With reranking off there is **no verdict**. The abstention threshold is
+     calibrated on cross-encoder scores; RRF scores are bounded near 0.03 and
+     always positive, so testing one against 0.0 would pass every query
+     including the ones that should be refused. `verdict.confident` is `null`
+     and the UI has a third state for it.
+   - `retrieve()` takes a **different path** when reranking is off — it
+     shortlists `k` rather than `candidate_k` and skips the diversity cap
+     entirely. `pipeline_trace` now mirrors that rather than drawing a
+     twenty-candidate pool and a cap the serving path never ran.
+     `src/test_trace.py` asserts the two agree across the option matrix
+     (80 checks). That test is what the module's docstring had claimed existed
+     since it was written; it did not.
+
+9. **Two of the three unbuilt journey pieces are still unbuilt** — the pool
+   visibly growing as documents are added, and Act 1. The third is unblocked:
+   `src/per_case.py` writes every case's outcome to `eval/per_case.json`
+   (84 rows: retrieved passages, per-passage relevance, confidence, and one of
+   `found` / `missed` / `refused` / `refused_wrongly` / `answered_anyway`).
+
+   It closed a real gap on its first run. `eval/results.json` measures the cap
+   only on the **weighted** fusion branch, so the row documented as the default
+   is `weighted + cap 2` — while `DEFAULT_FUSION` is `"rrf"`, which is what the
+   app actually serves. The served configuration had never been in the
+   aggregate table. It measures **hit 0.849 · MRR 0.754 · NDCG 0.769 · source
+   recall 0.773**, against the documented 0.848 / 0.751 / 0.765 / 0.773 — near
+   enough that nothing was ever wrong, and a mislabel worth correcting in
+   `evaluate.py`'s `finals` list.
+
+Ranked by value: **(1) is worth more than everything else combined**, and only
+the owner can unblock it — and the folder intake in (7) is now the mechanism for
+doing so, so it no longer needs files copied into `data/`. (8) is done.
 
 ---
 
@@ -373,5 +432,7 @@ disclaim current work.
 | `eval/results.json` | machine-readable, regenerated by `src/evaluate.py` |
 | `docs/next-session.md` | a paste-ready prompt for starting fresh, and why it says what it says |
 | `docs/ui-brief.md` | the UI design interview and direction (superseded in part) |
+| `eval/per_case.json` | every golden-set case's outcome, written by `src/per_case.py` |
+| `src/test_trace.py` | asserts the trace and the serving path agree under every option |
 | `docs/phase-1-field-notes.html` | mechanism-level explanation, Phases 1–3 (published artifact) |
 | `git log` | why each decision was made, including the reversals |

@@ -9,13 +9,13 @@
 
 export const MEASURED: Record<string, { count: number; loc: number }> = {
   'abstain': { count: 1, loc: 95 },
-  'api': { count: 1, loc: 157 },
+  'api': { count: 1, loc: 167 },
   'cli': { count: 1, loc: 65 },
   'diversify': { count: 1, loc: 95 },
   'embedcache': { count: 1, loc: 151 },
-  'evaluate': { count: 1, loc: 331 },
+  'evaluate': { count: 2, loc: 498 },
   'fetch': { count: 1, loc: 82 },
-  'generate': { count: 1, loc: 78 },
+  'generate': { count: 1, loc: 158 },
   'goldenset': { count: 5, loc: 681 },
   'health': { count: 1, loc: 101 },
   'hybrid': { count: 1, loc: 101 },
@@ -27,8 +27,8 @@ export const MEASURED: Record<string, { count: number; loc: number }> = {
   'probes': { count: 3, loc: 254 },
   'rerank': { count: 1, loc: 77 },
   'retrieve': { count: 1, loc: 158 },
-  'serve': { count: 1, loc: 398 },
-  'trace': { count: 1, loc: 208 },
+  'serve': { count: 1, loc: 497 },
+  'trace': { count: 2, loc: 468 },
 }
 
 export const UNCLAIMED: string[] = []

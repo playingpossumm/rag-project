@@ -157,6 +157,8 @@ in the other's metrics, so the harness reports both.
 | [`abstain.py`](src/abstain.py) | Calibrated confidence gate |
 | [`api.py`](src/api.py) | `ask()` — the single entry point |
 | [`evaluate.py`](src/evaluate.py) | hit rate, MRR, NDCG, source recall, context recall |
+| [`per_case.py`](src/per_case.py) | Per-case outcomes for all 84 golden-set questions, as JSON |
+| [`pipeline_trace.py`](src/pipeline_trace.py) | Re-runs retrieval keeping every intermediate ranking |
 
 Three interfaces — Python, HTTP, CLI — are all thin shells over one `ask()`
 function, so behaviour cannot drift between them.
@@ -205,11 +207,17 @@ python src/cli.py "What is late interaction in a retrieval model?"
 
 ```bash
 python src/evaluate.py         # reproduce every number in this README
-python src/serve.py            # local HTTP API on :8000
+python src/per_case.py         # per-case outcomes -> eval/per_case.json
+python src/test_trace.py       # the trace and the serving path still agree
+python src/serve.py            # local HTTP API and UI on :8000
 ```
 
 Set `RAG_DATA_DIR` to point at any folder — including a Google Drive for Desktop
-mount.
+mount. The UI does the same thing without an environment variable: the **Local
+folder** tab takes a pasted path, reports what it would index and what it would
+skip, and then indexes it. A browser cannot read a filesystem path out of a file
+picker, so pasting it is not a lesser version of a folder picker — it is the
+only version there is.
 
 ---
 
