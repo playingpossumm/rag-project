@@ -13,8 +13,8 @@ export const MEASURED: Record<string, { count: number; loc: number }> = {
   'cli': { count: 1, loc: 65 },
   'diversify': { count: 1, loc: 99 },
   'embedcache': { count: 1, loc: 151 },
-  'evaluate': { count: 6, loc: 1117 },
-  'fetch': { count: 1, loc: 82 },
+  'evaluate': { count: 7, loc: 1245 },
+  'fetch': { count: 3, loc: 487 },
   'generate': { count: 1, loc: 158 },
   'goldenset': { count: 5, loc: 743 },
   'health': { count: 1, loc: 101 },
@@ -31,8 +31,4 @@ export const MEASURED: Record<string, { count: number; loc: number }> = {
   'trace': { count: 2, loc: 468 },
 }
 
-export const UNCLAIMED: string[] = [
-  'src/fetch_topic.py',
-  'src/make_documents.py',
-  'src/test_loaders.py',
-]
+export const UNCLAIMED: string[] = []
