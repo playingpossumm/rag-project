@@ -76,6 +76,35 @@ button,input,textarea{font:inherit;color:inherit}
   transition:color 180ms var(--ease)}
 .top a:hover{color:var(--ink)}
 
+/* corpus picker: which documents the answers come from. Prominent because
+   switching it changes every answer on the page, and a control that silently
+   redefines the subject should not be tucked away. */
+.picker{position:relative}
+.picker>button{display:flex;align-items:center;gap:9px;background:var(--card);
+  border:1px solid var(--edge);border-radius:999px;padding:6px 13px 6px 12px;
+  cursor:pointer;font-size:13px;color:var(--ink);
+  transition:border-color 180ms var(--ease)}
+.picker>button:hover{border-color:var(--s1)}
+.picker>button .dot{width:6px;height:6px;border-radius:50%;background:var(--s3);flex:none}
+.picker>button .caret{width:5px;height:5px;border-right:1.5px solid var(--faint);
+  border-bottom:1.5px solid var(--faint);transform:rotate(45deg) translate(-1px,-1px)}
+.menu{position:absolute;right:0;top:calc(100% + 8px);min-width:290px;z-index:40;
+  background:var(--card);border:1px solid var(--edge);border-radius:12px;
+  padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.menu[hidden]{display:none}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;
+  border-radius:8px;padding:10px 12px;cursor:pointer;
+  transition:background 160ms var(--ease)}
+.menu button:hover:not(:disabled){background:var(--nest)}
+.menu button:disabled{opacity:.4;cursor:default}
+.menu .nm{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.menu .nm b{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:500;
+  color:var(--faint)}
+.menu button[aria-current="true"] .nm{color:var(--s1)}
+.menu .sub2{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+.menu .warn2{color:var(--warn)}
+.switching{opacity:.4;pointer-events:none}
+
 .wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
 
 /* --------------------------------------------------------------- hero
@@ -286,6 +315,12 @@ tr.out td{color:var(--faint)}
     <a href="/quality">Quality</a>
     <a href="/~/architecture">Architecture</a>
     <span class="lab" id="readout">loading</span>
+    <span class="picker" id="picker">
+      <button type="button" id="pickBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="dot"></span><span id="pickName">corpus</span><span class="caret"></span>
+      </button>
+      <div class="menu" id="pickMenu" hidden role="menu"></div>
+    </span>
   </nav>
 </div></header>
 
@@ -355,24 +390,33 @@ const readInk = () => {
 };
 
 let CITY = null, EVAL = null, INK = readInk(), N = 0, BUSY = false, GENERATE = false;
+let ACTIVE = null;
 const REPLAY_MS = 7000;
 const DEFAULTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window" };
 let BASELINE = null;
 
 /* ---------------------------------------------------------------- boot */
-Promise.all([
-  fetch("/api/chunks").then(r => r.json()),
-  fetch("/api/corpus").then(r => r.json()),
-  fetch("/api/eval").then(r => r.ok ? r.json() : null).catch(() => null),
-]).then(([chunks, corpus, evalData]) => {
-  CITY = buildCity(chunks); EVAL = evalData;
+/* Everything below the corpus depends on the corpus: the index drawing, the
+   example questions, and the score the gate compares against. Switching one
+   therefore reloads all of it rather than patching a label. */
+async function loadCorpus() {
+  const [chunks, corpus, evalData] = await Promise.all([
+    fetch("/api/chunks").then(r => r.json()),
+    fetch("/api/corpus").then(r => r.json()),
+    fetch("/api/eval").then(r => r.ok ? r.json() : null).catch(() => null),
+  ]);
+  CITY = buildCity(chunks); EVAL = evalData; ACTIVE = corpus.active || null;
   $("#readout").textContent = `${nf(corpus.chunks)} chunks · ${corpus.documents} docs`;
   $("#chips").innerHTML = (corpus.examples || []).map(x =>
     `<button class="chip" type="button" data-q="${esc(x.q)}">${esc(x.label)}</button>`).join("");
   $("#chips").querySelectorAll(".chip").forEach(b => {
     b.onclick = () => { $("#q").value = b.dataset.q; submit(); };
   });
+  if (ACTIVE) $("#pickName").textContent = ACTIVE.label;
   drawIdle();
+}
+
+Promise.all([loadCorpus(), loadPicker()]).then(() => {
   addEventListener("resize", drawIdle);
 }).catch(() => {
   $("#readout").textContent = "server unreachable";
@@ -398,6 +442,72 @@ function drawIdle() {
   drawScene(ctx, CITY, null, { ...INK, faint: "#6a6f72", other: "#6a6f72" },
             r.width, r.height, 1);
 }
+
+/* -------------------------------------------------------- corpus picker
+   The threshold is shown per corpus because it is not one number: the same
+   0.0 refuses 1.5% of answerable questions on the ML papers, 38.5% on the
+   bird corpus and 54.3% on the finance one. A corpus nobody has calibrated
+   says so rather than quietly borrowing another's. */
+async function loadPicker() {
+  const data = await fetch("/api/corpora").then(r => r.json()).catch(() => null);
+  if (!data) return;
+  $("#pickMenu").innerHTML = data.corpora.map(c => `
+    <button type="button" data-name="${esc(c.name)}" ${c.indexed ? "" : "disabled"}
+            aria-current="${c.name === data.active}">
+      <span class="nm">${esc(c.label)}<b>${c.name === data.active ? "in use" : ""}</b></span>
+      <span class="sub2 ${c.calibrated ? "" : "warn2"}">${
+        c.indexed
+          ? (c.calibrated
+              ? `refuses below ${c.threshold > 0 ? "+" : ""}${c.threshold.toFixed(1)}`
+              : "not calibrated · borrowing 0.0")
+          : "no index built"}</span>
+    </button>`).join("");
+  $("#pickMenu").querySelectorAll("button[data-name]").forEach(b => {
+    b.onclick = () => selectCorpus(b.dataset.name);
+  });
+}
+
+async function selectCorpus(name) {
+  if (BUSY || (ACTIVE && name === ACTIVE.name)) { closeMenu(); return; }
+  closeMenu();
+  document.body.classList.add("switching");
+  try {
+    const r = await fetch("/api/corpus/select", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || r.statusText);
+    // The thread is cleared, not kept. Answers already on the page came from
+    // different documents under a different threshold, and leaving them under a
+    // new corpus name would attribute them to documents that never saw the
+    // question.
+    $("#thread").innerHTML = "";
+    N = 0; BASELINE = null;
+    $("#hero").classList.remove("gone");
+    $("#dock").classList.add("hide");
+    $("#hero").append($("#form"), $("#genrow"));
+    await Promise.all([loadCorpus(), loadPicker()]);
+  } catch (err) {
+    $("#readout").textContent = err.message;
+  } finally {
+    document.body.classList.remove("switching");
+  }
+}
+
+const closeMenu = () => {
+  $("#pickMenu").hidden = true;
+  $("#pickBtn").setAttribute("aria-expanded", "false");
+};
+$("#pickBtn").onclick = e => {
+  e.stopPropagation();
+  const open = $("#pickMenu").hidden;
+  $("#pickMenu").hidden = !open;
+  $("#pickBtn").setAttribute("aria-expanded", String(open));
+};
+addEventListener("click", closeMenu);
+addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+$("#pickMenu").onclick = e => e.stopPropagation();
 
 /* ------------------------------------------------------------ composer */
 const ta = $("#q");

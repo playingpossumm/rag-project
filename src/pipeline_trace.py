@@ -70,6 +70,7 @@ def trace_pipeline(
     fusion: str = DEFAULT_FUSION,
     alpha: float = 0.5,
     expansion: str = "none",
+    threshold: float | None = None,
 ) -> dict:
     """Run retrieval, recording every intermediate ranking.
 
@@ -88,6 +89,15 @@ def trace_pipeline(
     from abstain import ABSTAIN_THRESHOLD
     from hybrid import build_bm25
     from rerank import rerank
+
+    # The gate's cut point belongs to the CORPUS, not to this module. Measured
+    # across three of them, the same 0.0 wrongly refuses 1.5% of answerable
+    # questions on ML papers, 38.5% on ornithology and 54.3% on quantitative
+    # finance. A caller serving more than one corpus must pass the value that
+    # corpus was calibrated at; the module constant is only a default for
+    # callers that have one.
+    if threshold is None:
+        threshold = ABSTAIN_THRESHOLD
 
     if fusion not in ("none", "rrf", "weighted"):
         raise ValueError(f"unknown fusion strategy: {fusion!r}")
@@ -307,14 +317,14 @@ def trace_pipeline(
     # A gate that cannot fail is worse than no gate, so with reranking off this
     # says it has no verdict rather than manufacturing one.
     gated = use_reranker and bool(final)
-    confident = (top >= ABSTAIN_THRESHOLD) if gated else None
+    confident = (top >= threshold) if gated else None
 
     if not final:
         explanation = "No candidates retrieved."
     elif gated:
         explanation = (
             f"Top passage scores {top:+.2f} against a threshold of "
-            f"{ABSTAIN_THRESHOLD:+.2f}. "
+            f"{threshold:+.2f}. "
             + ("Answering." if confident else
                "Below threshold -- the corpus likely does not contain this, "
                "so the honest response is to say so rather than return the "
@@ -347,7 +357,7 @@ def trace_pipeline(
             "confident": confident,
             "gated": gated,
             "confidence": round(top, 5 if not use_reranker else 3) if final else None,
-            "threshold": ABSTAIN_THRESHOLD,
+            "threshold": threshold,
             "documents": sources,
             "multi_document": len(sources) > 1,
             "explanation": explanation,
