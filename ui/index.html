@@ -702,9 +702,14 @@ function renderAnswer(data) {
   const lo = Math.min(...ranked.map(i => i.score), 0);
   const top_ = Math.max(...docs.map(d => d.best));
   const hi = top_ > lo ? top_ : lo + 1;
-  /* Cross-encoder scores are single digits; fusion scores are thousandths.
-     Two decimals renders the second as "+0.03" for everything. */
-  const sig = v => Math.abs(v) < 1 ? v.toFixed(4) : v.toFixed(2);
+  /* Cross-encoder scores are single digits; fusion scores are thousandths, so
+     two decimals renders the second as "+0.03" for everything. Precision is
+     chosen from THIS RUN's scale, not from each value: keying it off the value
+     printed a cross-encoder +0.9480 in the same column as +9.27, because 0.948
+     is under 1 while belonging to the single-digit scale. A column that changes
+     precision row by row reads as different quantities. */
+  const dp = Math.max(Math.abs(lo), Math.abs(hi)) < 1 ? 4 : 2;
+  const sig = v => v.toFixed(dp);
   /* The bar is scaled within this query, so on a decline -- where every score
      sits far below the threshold -- the best of a bad set would still fill it
      and read as confidence. The numbers already say rejected; the bar is
