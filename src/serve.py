@@ -211,6 +211,10 @@ INDEX_RUN = IndexRun()
 # Chosen to demonstrate the three behaviours worth seeing: a fact only lexical
 # matching finds reliably, a question whose distinguishing clause the ranking
 # must honour, and one the corpus cannot answer at all.
+# Fallback only. The real suggestions come from each corpus's own golden set
+# via eval/analytics.json -- see examples_for(). This list is what a fresh clone
+# with no eval run yet has to offer, and it is about the ML papers because that
+# is the corpus a fresh clone ships with.
 EXAMPLES = [
     {"label": "a specific figure",
      "q": "What BLEU score did the Transformer achieve on WMT 2014 English-to-German?"},
@@ -221,6 +225,32 @@ EXAMPLES = [
     {"label": "not in the corpus",
      "q": "What is the airspeed velocity of an unladen swallow?"},
 ]
+
+
+def examples_for(name: str | None) -> list[dict]:
+    """Suggested questions for one corpus, from questions already scored.
+
+    Every suggestion is drawn from that corpus's golden set, so it is a question
+    the harness has run and whose outcome is known -- including the adversarial
+    ones, which are meant to be refused. Inventing examples risks offering one
+    that happens to fail, which reads as a broken system rather than a
+    deliberate demonstration.
+
+    This was a real defect, not a hypothetical: the list was global and written
+    for the ML papers, so switching to the bird corpus still suggested asking
+    about BLEU scores on WMT 2014.
+    """
+    f = EVAL_DIR / "analytics.json"
+    if not name or not f.exists():
+        return EXAMPLES
+    try:
+        data = json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return EXAMPLES
+    for c in data.get("corpora", []):
+        if c.get("name") == name and c.get("examples"):
+            return c["examples"]
+    return EXAMPLES
 
 
 def inspect_folder(raw: str) -> tuple[Path, list[str], list[tuple[str, str]]]:
@@ -488,7 +518,8 @@ class Handler(BaseHTTPRequestHandler):
             # in. A page that can be pointed anywhere has to say where it points.
             from ingest import DATA_DIR
 
-            self._send(200, {**RES.stats(), "examples": EXAMPLES,
+            active = RES.corpus["name"] if RES.corpus else None
+            self._send(200, {**RES.stats(), "examples": examples_for(active),
                              "data_dir": str(DATA_DIR),
                              "active": corpus_info()})
 

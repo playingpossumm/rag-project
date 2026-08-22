@@ -85,9 +85,14 @@ button,input,textarea{font:inherit;color:inherit}
   cursor:pointer;font-size:13px;color:var(--ink);
   transition:border-color 180ms var(--ease)}
 .picker>button:hover{border-color:var(--s1)}
+.picker>button.on{border-color:var(--warn);color:var(--ink)}
 .picker>button .dot{width:6px;height:6px;border-radius:50%;background:var(--s3);flex:none}
 .picker>button .caret{width:5px;height:5px;border-right:1.5px solid var(--faint);
   border-bottom:1.5px solid var(--faint);transform:rotate(45deg) translate(-1px,-1px)}
+.menu.wide{min-width:454px;padding:0}
+.menu.wide .sets{padding:6px}
+.menu.wide .cmp{border-top:1px solid var(--hair);padding:11px 14px;
+  font-size:12.5px;color:var(--mute);line-height:1.5}
 .menu{position:absolute;right:0;top:calc(100% + 8px);min-width:334px;z-index:40;
   background:var(--card);border:1px solid var(--edge);border-radius:12px;
   padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.5)}
@@ -144,13 +149,25 @@ button,input,textarea{font:inherit;color:inherit}
 .go:active{transform:scale(.97)}
 .go:disabled{opacity:.35;cursor:default;transform:none}
 
-.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:680px}
-.chip{background:var(--card);border:1px solid var(--hair);border-radius:999px;
-  padding:7px 15px;font-size:13px;color:var(--dim);cursor:pointer;
-  transition:color 180ms var(--ease),border-color 180ms var(--ease),
-             transform 180ms var(--ease)}
-.chip:hover{color:var(--ink);border-color:var(--edge);transform:translateY(-1px)}
-.chip:active{transform:scale(.97)}
+/* Suggested questions. These were pills reading "a specific figure" and
+   "not in the corpus" -- which named the CATEGORY and hid the question, so
+   there was nothing to read and no way to tell what you were about to ask.
+   Now the question is the thing you read and the category labels the group. */
+.chips{width:100%;max-width:660px;text-align:left;
+  border:1px solid var(--hair);border-radius:var(--r);background:var(--card);
+  overflow:hidden}
+.chips .grp{display:flex;align-items:baseline;gap:10px;padding:11px 16px 5px}
+.chips .grp .k{font-family:var(--mono);font-size:9.5px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.chips .grp .e{margin-left:auto;font-family:var(--mono);font-size:9.5px;
+  color:var(--faint)}
+.chips .grp.adv .k{color:var(--warn)}
+.chip{display:block;width:100%;text-align:left;background:none;border:0;
+  border-top:1px solid transparent;padding:7px 16px;font:inherit;font-size:14px;
+  color:var(--dim);cursor:pointer;
+  transition:color 160ms var(--ease),background 160ms var(--ease)}
+.chip:hover{color:var(--ink);background:var(--nest)}
+.chips .grp + .chip{border-top:0}
 
 .genrow{display:flex;align-items:center;gap:11px;justify-content:center}
 .toggle{display:flex;align-items:center;gap:9px;cursor:pointer;background:none;
@@ -188,7 +205,16 @@ button,input,textarea{font:inherit;color:inherit}
 .declined .state .pip{background:var(--bad)} .declined .state .txt{color:var(--bad)}
 .ungated .state{background:rgba(217,164,65,.11);border-color:rgba(217,164,65,.32)}
 .ungated .state .pip{background:var(--warn)} .ungated .state .txt{color:var(--warn)}
-.head .score{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.why{margin:18px 0 4px}
+.why summary{display:inline-block;cursor:pointer;list-style:none;
+  font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faint);transition:color 160ms var(--ease)}
+.why summary::-webkit-details-marker{display:none}
+.why summary::before{content:"+ "}
+.why[open] summary::before{content:"– "}
+.why summary:hover{color:var(--dim)}
+.why p{margin:9px 0 0;font-size:13.5px;color:var(--mute);max-width:66ch}
+.why b{color:var(--dim);font-weight:600;font-family:var(--mono);font-size:13px}
 .head .fignum{margin-left:auto;font-family:var(--mono);font-size:10px;
   letter-spacing:.14em;color:var(--faint)}
 
@@ -326,6 +352,15 @@ tr.out td{color:var(--faint)}
       </button>
       <div class="menu" id="pickMenu" hidden role="menu"></div>
     </span>
+    <span class="picker" id="setwrap">
+      <button type="button" id="setBtn" aria-haspopup="true" aria-expanded="false">
+        <span id="setName">Settings</span><span class="caret"></span>
+      </button>
+      <div class="menu wide" id="setMenu" hidden role="menu">
+        <div class="sets" id="setBody"></div>
+        <div class="cmp" id="setCmp"></div>
+      </div>
+    </span>
   </nav>
 </div></header>
 
@@ -396,6 +431,10 @@ const readInk = () => {
 
 let CITY = null, EVAL = null, INK = readInk(), N = 0, BUSY = false, GENERATE = false;
 let ACTIVE = null;
+// The options the next question will run with, and everything about the last
+// one, so the top-bar panel can re-run it when a control changes.
+let OPTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window" };
+let LAST = null;
 const REPLAY_MS = 7000;
 const DEFAULTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window" };
 let BASELINE = null;
@@ -412,12 +451,27 @@ async function loadCorpus() {
   ]);
   CITY = buildCity(chunks); EVAL = evalData; ACTIVE = corpus.active || null;
   $("#readout").textContent = `${nf(corpus.chunks)} chunks · ${corpus.documents} docs`;
-  $("#chips").innerHTML = (corpus.examples || []).map(x =>
-    `<button class="chip" type="button" data-q="${esc(x.q)}">${esc(x.label)}</button>`).join("");
+  // Grouped by what kind of retrieval the question exercises. The adversarial
+  // group is labelled with what SHOULD happen, so a refusal reads as the
+  // demonstration it is rather than as a failure.
+  const groups = [];
+  for (const x of corpus.examples || []) {
+    const last = groups[groups.length - 1];
+    if (last && last.label === x.label) last.items.push(x);
+    else groups.push({ label: x.label, adversarial: x.adversarial, expect: x.expect, items: [x] });
+  }
+  $("#chips").innerHTML = groups.map(g => `
+    <div class="grp${g.adversarial ? " adv" : ""}">
+      <span class="k">${esc(g.label)}</span>
+      ${g.adversarial ? `<span class="e">${esc(g.expect || "should be refused")}</span>` : ""}
+    </div>
+    ${g.items.map(x => `<button class="chip" type="button"
+        data-q="${esc(x.q)}">${esc(x.q)}</button>`).join("")}`).join("");
   $("#chips").querySelectorAll(".chip").forEach(b => {
     b.onclick = () => { $("#q").value = b.dataset.q; submit(); };
   });
   if (ACTIVE) $("#pickName").textContent = ACTIVE.label;
+  renderSettings();
   idleLoop();
 }
 
@@ -529,12 +583,28 @@ const closeMenu = () => {
 $("#pickBtn").onclick = e => {
   e.stopPropagation();
   const open = $("#pickMenu").hidden;
+  closeSet();
   $("#pickMenu").hidden = !open;
   $("#pickBtn").setAttribute("aria-expanded", String(open));
 };
 addEventListener("click", closeMenu);
 addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
 $("#pickMenu").onclick = e => e.stopPropagation();
+
+const closeSet = () => {
+  $("#setMenu").hidden = true;
+  $("#setBtn").setAttribute("aria-expanded", "false");
+};
+$("#setBtn").onclick = e => {
+  e.stopPropagation();
+  const open = $("#setMenu").hidden;
+  closeMenu();
+  $("#setMenu").hidden = !open;
+  $("#setBtn").setAttribute("aria-expanded", String(open));
+};
+$("#setMenu").onclick = e => e.stopPropagation();
+addEventListener("click", closeSet);
+addEventListener("keydown", e => { if (e.key === "Escape") closeSet(); });
 
 /* ------------------------------------------------------------ composer */
 const ta = $("#q");
@@ -565,11 +635,13 @@ function submit() {
     dock.append($("#form"), $("#genrow"));
     dock.classList.remove("hide");
   }
-  ask(q);
+  // OPTS, not DEFAULTS: a setting changed before the first question was asked
+  // has to apply to that question rather than being silently dropped.
+  ask(q, OPTS);
 }
 
 /* ------------------------------------------------------------ one turn */
-async function ask(question, opts = DEFAULTS, into = null) {
+async function ask(question, opts = OPTS, into = null) {
   BUSY = true; $("#goBtn").disabled = true;
   const fresh = !into;
   const turn = into || newTurn(question);
@@ -638,22 +710,34 @@ function renderTurn(turn, question, data, opts) {
   const gen = data.generation || { state: "off" };
 
   const label = !gated ? "Can't tell" : v.confident ? "Answered" : "Not in your files";
-  const score = !gated
-    ? "no confidence score on this setting, so it cannot judge itself"
-    : `${sig(v.confidence)} · it needs ${v.threshold.toFixed(1)} to answer at all`;
+
+  // The header used to read "-9.23 · it needs 0.0 to answer at all", which is a
+  // debugger readout standing where the answer should be. The numbers are real
+  // and worth keeping, so they moved one level down into a disclosure rather
+  // than being deleted -- the answer reads plainly, the reasoning is one click
+  // away for anyone who wants it.
+  const why = !gated
+    ? `This setting has no confidence score, so the system cannot judge whether
+       it should have answered. The passages below are its best attempt either way.`
+    : v.confident
+      ? `The best passage scored <b>${sig(v.confidence)}</b>. This corpus answers
+         anything at or above <b>${v.threshold.toFixed(1)}</b> — a cut point measured
+         on its own questions, not a default carried over from another corpus.`
+      : `The best passage scored <b>${sig(v.confidence)}</b>, below the
+         <b>${v.threshold.toFixed(1)}</b> this corpus needs. That cut point was measured
+         on its own questions: above it, answers are almost always really there.`;
 
   const answerHTML = gen.state === "ok"
     ? `<div class="answer prose">${gen.text.split(/\n{2,}/)
         .map(p => `<p>${esc(p.trim())}</p>`).join("")}</div>`
     : v.confident === false
-      ? `<p class="answer">Your files do not cover this.</p>`
+      ? `<p class="answer">I could not find an answer to this in your documents.</p>`
       : `<p class="answer">${esc(fragment(top ? top.text : ""))}</p>`;
 
   turn.querySelector(".slot").innerHTML = `
     <div class="pad">
       <div class="head">
         <span class="state"><span class="pip"></span><span class="txt">${label}</span></span>
-        <span class="score">${esc(score)}</span>
         <span class="fignum">FIG.${String(N).padStart(2, "0")}</span>
       </div>
       ${answerHTML}
@@ -674,6 +758,8 @@ function renderTurn(turn, question, data, opts) {
              claim shows the file it came from.</p>`
           : `<p class="note">This is the text from your file, <b>word for word</b>.
              Nothing was rewritten, so nothing can be made up.</p>`}
+      <details class="why"><summary>Why it ${v.confident === false ? "did not answer" : "answered"}</summary>
+        <p>${why}</p></details>
       <div class="pills">
         ${docs.map(d => `<span class="pill"><i style="background:${colour(d.source)}"></i>
           ${esc(shortDoc(d.source))} <b>${d.n}</b></span>`).join("")}
@@ -730,16 +816,15 @@ function renderTurn(turn, question, data, opts) {
             </tbody></table></div>` : ""}
         </div>`).join("")}</div>
     </details>
-
-    <details class="more"><summary><span class="lab">Settings</span>
-      <span class="hint">change one and this question runs again</span></summary>
-      <div class="inner"><div class="sets">${settingsHTML(opts)}</div>
-        <div class="cmp"></div></div>
-    </details>`;
+`;
 
   wireCity(turn, run, data);
-  wireSettings(turn, question, opts);
-  renderCompare(turn, data, opts);
+  // Settings live in the top bar, not in here. They configure the next question
+  // rather than describing this answer, so nesting them among "Candidates" and
+  // "Each step" -- which are both records of what already happened -- put a
+  // control inside a log.
+  LAST = { question, opts, data, turn };
+  renderSettings();
 }
 
 /* ---------------------------------------------------------- the picture */
@@ -819,20 +904,39 @@ function settingsHTML(opts) {
     </div>`).join("");
 }
 
-function wireSettings(turn, question, opts) {
-  turn.querySelectorAll(".set").forEach(cell => {
+/* The panel reflects whatever the last answer was run with, and changing a
+   control re-runs that question. Before any question has been asked it simply
+   records the choice for the first one. */
+function renderSettings() {
+  const opts = LAST ? LAST.opts : OPTS;
+  $("#setBody").innerHTML = settingsHTML(opts);
+  const changed = JSON.stringify(opts) !== JSON.stringify(DEFAULTS);
+  $("#setName").textContent = changed ? "Settings · changed" : "Settings";
+  $("#setBtn").classList.toggle("on", changed);
+
+  $("#setBody").querySelectorAll(".set").forEach(cell => {
     cell.querySelectorAll(".opt").forEach(b => {
       b.onclick = () => {
         if (BUSY) return;
-        ask(question, { ...opts, [cell.dataset.key]: JSON.parse(b.dataset.val) }, turn);
+        const next = { ...opts, [cell.dataset.key]: JSON.parse(b.dataset.val) };
+        OPTS = next;
+        if (LAST) ask(LAST.question, next, LAST.turn || null);
+        else renderSettings();
       };
     });
   });
+  renderCompare($("#setMenu"), LAST?.data, opts);
 }
 
 function renderCompare(turn, data, opts) {
   const box = turn.querySelector(".cmp");
   if (!box) return;
+  if (!data) {
+    box.innerHTML = `<span class="lab">defaults</span> These are the settings it
+      normally uses. Ask something, then change one — the question runs again and
+      only what moved is shown.`;
+    return;
+  }
   if (JSON.stringify(opts) === JSON.stringify(DEFAULTS) || !BASELINE) {
     box.innerHTML = `<span class="lab">defaults</span> These are the settings it
       normally uses. Change one and the question runs again, showing only what moved.`;
