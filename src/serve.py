@@ -66,7 +66,11 @@ class Resources:
     """
 
     def __init__(self):
-        self.lock = threading.Lock()
+        # Reentrant on purpose. Helpers that read the index take this lock, and
+        # one of them was called from inside a block already holding it, which
+        # deadlocked the server on the first question rather than failing
+        # loudly. A plain Lock makes that mistake unrecoverable at runtime.
+        self.lock = threading.RLock()
         self._loaded = False
         self.corpus = None          # the active corpus config, see corpora.py
 
@@ -295,6 +299,38 @@ def inspect_folder(raw: str) -> tuple[Path, list[str], list[tuple[str, str]]]:
     return folder, supported, skipped
 
 
+def attribution_for(question: str, trace: dict, limit: int = 12) -> dict:
+    """Per-term BM25 contribution to the passages this run actually ranked.
+
+    Only the lexical half has a per-term story. Dense retrieval turns the whole
+    question into one 384-dimensional vector and the individual words stop
+    existing, so there is nothing to attribute -- which is the real difference
+    between the two retrievers rather than a gap in the reporting, and the UI
+    says so beside the drawing.
+
+    Read-only: it borrows the BM25 index the server already holds and calls
+    nothing in the pipeline, so it cannot change what retrieval returns.
+    """
+    try:
+        import term_attribution
+    except ImportError:
+        return {}
+    stages = {st["name"]: st for st in trace["stages"]}
+    ranked = (stages.get("reranked") or stages.get("fused")
+              or stages.get("dense") or {}).get("items", [])
+    ids = [int(i["chunk_id"]) for i in ranked[:limit]]
+    if not ids:
+        return {}
+    try:
+        with RES.lock:
+            out = term_attribution.attribute(question, RES.bm25, ids)
+    except Exception as exc:  # noqa: BLE001
+        # A missing heatmap is a smaller problem than a failed answer.
+        return {"error": f"{type(exc).__name__}: {exc}"}
+    out["chunk_ids"] = ids
+    return out
+
+
 def corpus_info() -> dict:
     """What the UI shows about the corpus it is talking to."""
     import corpora
@@ -370,6 +406,7 @@ def chat(question: str, payload: dict) -> dict:
                                threshold=RES.threshold(),
                                **trace_options(payload))
 
+    trace["attribution"] = attribution_for(question, trace)
     selected = trace["stages"][-1]["items"]
     generation = {"state": "off", "text": None, "reason": None}
 
@@ -643,6 +680,7 @@ class Handler(BaseHTTPRequestHandler):
                                             k=int(payload.get("k", 5)),
                                             threshold=RES.threshold(),
                                             **trace_options(payload))
+                result["attribution"] = attribution_for(question, result)
                 self._send(200, result)
             else:
                 answer = ask(
