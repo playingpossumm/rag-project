@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Retrieval Quality</title>
+<title>Retrieval Analytics</title>
 <style>
 /* Same fonts, tokens and devices as the app. This is a second view of one
    system, not a second design -- and nothing here is loaded from a network. */
@@ -15,8 +15,14 @@
   font-weight:500;font-display:swap;font-style:normal}
 
 /* Dark, matching the app. The three series hues are the dark-stepped values
-   re-validated all-pairs on this ground -- CVD dE 9.4, normal vision 20.9 --
-   not the light values dimmed, which fail the lightness band. */
+   validated all-pairs on this ground -- CVD dE 9.4, normal vision 20.9 -- not
+   the light values dimmed, which fail the lightness band.
+
+   COLOUR FOLLOWS THE CORPUS, everywhere on this page: ML papers is always
+   blue, ornithology always orange, quantitative finance always green. The
+   answerable/adversarial split is drawn filled vs hollow rather than as a
+   fourth hue, so the same blue never means two different things, and the
+   palette stays the validated three. */
 :root{
   --bg:#0b0c0d; --panel:#141618; --sunk:#1b1e21;
   --ink:#f4f6f7; --soft:#a9b0b5; --muted:#7d858b; --faint:#5b6368;
@@ -37,7 +43,8 @@ a{color:inherit}
   text-transform:uppercase;color:var(--faint)}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
-.folio{border-bottom:1px solid var(--rule);background:var(--panel)}
+.folio{border-bottom:1px solid var(--rule);background:var(--panel);
+  position:sticky;top:0;z-index:20}
 .folio-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:54px;
   display:flex;align-items:center;gap:22px}
 .folio .name{font-size:14px;font-weight:600;white-space:nowrap}
@@ -47,206 +54,544 @@ a{color:inherit}
 .folio a:hover{color:var(--ink)}
 
 .wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 96px}
-.panel{border:1px solid var(--rule);background:var(--panel);margin-top:24px}
-.phead{display:flex;align-items:baseline;gap:16px;padding:10px 16px;
+.panel{border:1px solid var(--rule);background:var(--panel);margin-top:24px;
+  border-radius:12px;overflow:hidden}
+.phead{display:flex;align-items:baseline;gap:16px;padding:11px 18px;
   border-bottom:1px solid var(--line);flex-wrap:wrap}
 .phead .right{margin-left:auto}
-.pbody{padding:18px 16px}
-.note{color:var(--muted);font-size:13px;max-width:78ch;margin:0 0 16px}
+.pbody{padding:20px 18px}
+.note{color:var(--muted);font-size:13px;max-width:78ch;margin:0 0 18px}
 .note b{color:var(--soft);font-weight:600}
+.note:last-child{margin-bottom:0}
+
+/* ---- corpus selector: the page compares three corpora, so which one the
+   single-corpus panels describe has to be explicit and switchable. */
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 4px}
+.pill{display:flex;align-items:center;gap:8px;background:var(--panel);
+  border:1px solid var(--rule);border-radius:999px;padding:7px 15px;cursor:pointer;
+  font:inherit;font-size:13px;color:var(--soft);transition:border-color 180ms var(--ease-out),
+  color 180ms var(--ease-out)}
+.pill:hover{color:var(--ink)}
+.pill .sw{width:8px;height:8px;border-radius:2px;flex:none}
+.pill[aria-pressed="true"]{color:var(--ink);border-color:var(--faint);background:var(--sunk)}
+.pill .n{font-family:var(--mono);font-size:10px;color:var(--faint)}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+  background:var(--line)}
+.tile{background:var(--panel);padding:15px 17px}
+.tile .v{font-family:var(--mono);font-size:25px;font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;line-height:1.15;margin-top:5px}
+.tile .c{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.35}
+
+/* ---- charts ---- */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:26px 34px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px 26px}
+.fig{min-width:0}
+.fig h3{margin:0 0 2px;font-size:12.5px;font-weight:600;letter-spacing:-.01em}
+.fig .sub{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:11px}
+svg{display:block;width:100%;overflow:visible}
+svg text{font-family:var(--mono);font-size:9.5px;fill:var(--faint);
+  font-variant-numeric:tabular-nums}
+svg text.name{font-family:var(--sans);font-size:11.5px;fill:var(--soft)}
+svg text.val{fill:var(--soft);font-weight:500}
+svg text.on{fill:var(--ink);font-weight:500}
+svg .axis{stroke:var(--line);stroke-width:1}
+svg .grid{stroke:var(--line);stroke-width:1;stroke-dasharray:2 4}
+svg .bar{transition:opacity 140ms var(--ease-out)}
+svg g.row:hover .bar{opacity:.72}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:9px;height:9px;border-radius:2px;display:block}
+.legend i.ring{background:none;border:1.5px solid currentColor;border-radius:50%}
+
+.tip{position:fixed;z-index:60;pointer-events:none;background:#000;
+  border:1px solid var(--rule);border-radius:8px;padding:7px 10px;font-size:12px;
+  color:var(--ink);box-shadow:0 12px 30px rgba(0,0,0,.6);max-width:250px}
+.tip[hidden]{display:none}
+.tip .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);display:block}
 
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;font-family:var(--mono);font-size:9.5px;font-weight:500;
   text-transform:uppercase;letter-spacing:.13em;color:var(--faint);
-  padding:0 12px 8px 0;border-bottom:1px solid var(--rule);white-space:nowrap}
-th.r,td.r{text-align:right;padding-right:0;padding-left:16px}
-td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+  padding:0 10px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
 tr:last-child td{border-bottom:0}
-tr.win td{font-weight:600}
-tr.win td:first-child::after{content:" ← shipped";font-family:var(--mono);
-  font-size:9px;letter-spacing:.12em;color:var(--good);font-weight:500}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .scroll{overflow-x:auto}
-
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  border-top:1px solid var(--line)}
-.tile{padding:14px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
-.tile:last-child{border-right:0}
-.tile .v{font-family:var(--mono);font-size:22px;letter-spacing:-.02em;margin-top:4px}
-.tile .s{color:var(--faint);font-size:11.5px;margin-top:2px}
-
-.split{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
-@media (max-width:900px){.split{grid-template-columns:1fr}}
-.case{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:8px 0;
-  border-bottom:1px solid var(--line);font-size:13px;align-items:baseline}
-.case:last-child{border-bottom:0}
-.case .k{font-family:var(--mono);font-size:10px;color:var(--faint);white-space:nowrap}
-.case .q{color:var(--muted);font-size:12.5px}
-.err{color:var(--critical)}
-.miss{color:var(--muted);font-style:italic;font-size:13px}
+details{margin-top:16px}
+summary{cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary:hover{color:var(--soft)}
+summary::before{content:"+ ";}
+details[open] summary::before{content:"- ";}
+.err{color:var(--serious);font-size:13px}
+:focus-visible{outline:2px solid var(--series-1);outline-offset:2px;border-radius:3px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body>
 
-<div class="folio"><div class="folio-in">
-  <span class="name">Retrieval Quality</span>
-  <span class="rule"></span>
+<header class="folio"><div class="folio-in">
+  <span class="name">Retrieval analytics</span>
   <a href="/">&larr; the inspector</a>
-  <a href="/~/architecture">the map</a>
+  <span class="rule"></span>
   <span class="lab" id="readout">loading</span>
-</div></div>
+</div></header>
 
-<div class="wrap">
-  <div class="tiles panel" id="tiles" style="margin-top:0;border-top:0"></div>
+<main class="wrap">
 
+  <p class="note" style="margin-bottom:18px">Every number on this page is
+  generated from <b>eval/results*.json</b> and <b>eval/per_case*.json</b> by
+  <b>src/build_analytics.py</b>. Nothing here is transcribed &mdash; four figures
+  in this project's docs were wrong once because they were copied out of a
+  terminal by hand after the configuration that produced them had changed.</p>
+
+  <div class="pills" id="pills"></div>
+  <div class="tiles panel" id="tiles" style="margin-top:14px"></div>
+
+  <!-- 1. the ladder ------------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><span class="lab">Against naive RAG</span>
-      <span class="right lab" id="e2e-n"></span></div>
+    <div class="phead"><span class="lab">What each mechanism is worth</span>
+      <span class="right lab" id="ladder-n"></span></div>
     <div class="pbody">
-      <p class="note">Every configuration the harness scores, end to end at k=5. <b>Source
-        recall</b> is the one ordinary RAG tutorials never track: it asks whether every
-        document that answers the question was returned, not whether one was.</p>
-      <div class="scroll"><table id="e2e"></table></div>
+      <p class="note">Each row adds one mechanism to the row above it, scored end
+      to end at k=5 on the same questions. <b>The cross-encoder is the largest
+      single gain</b> and the diversity cap is the only row that trades one
+      metric for another &mdash; it gives up ranking to return more of the
+      documents that answer the question, which is the trade this system chose.</p>
+      <div class="grid2" id="ladder"></div>
+      <details><summary>Table</summary><div class="scroll"><table id="ladder-t"></table></div></details>
     </div>
   </section>
 
-  <div class="split">
-    <section class="panel">
-      <div class="phead"><span class="lab">Where it fails</span>
-        <span class="right lab" id="fail-n"></span></div>
-      <div class="pbody">
-        <p class="note">Measured across six configurations. <b>Structural</b> cases fail
-          under every one — no fusion, reranking or cap change reaches them.</p>
-        <div id="hard"></div>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="phead"><span class="lab">Abstention</span>
-        <span class="right lab" id="thr-n"></span></div>
-      <div class="pbody">
-        <p class="note">What each threshold would cost. The <b>in cases</b> column is the
-          one to read: the rate column values one adversarial case at several answerable
-          ones, because the two populations differ in size.</p>
-        <div class="scroll"><table id="thr"></table></div>
-      </div>
-    </section>
-  </div>
-
+  <!-- 2. across corpora ---------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><span class="lab">Context expansion</span>
-      <span class="right lab">recall against tokens</span></div>
+    <div class="phead"><span class="lab">The same pipeline on three corpora</span>
+      <span class="right lab">shipped configuration</span></div>
     <div class="pbody">
-      <p class="note">Expansion cannot move a ranking metric — it changes how much text
-        each survivor carries, so it is measured by whether the returned text contains
-        the answer, and by what that costs.</p>
-      <div class="scroll"><table id="exp"></table></div>
+      <p class="note">The pipeline was tuned on the ML papers. Two further corpora
+      were built to find out how much of it is a property of the system and how
+      much of the documents it was tuned on.</p>
+      <div class="grid2" id="cross"></div>
+      <p class="note" style="margin-top:20px"><b>Source recall is not comparable
+      across these three as a raw number.</b> It is normalised by
+      <span class="num">min(|gold|, 5)</span>, and the corpora do not agree on how
+      many documents answer a question &mdash; so the finance corpus is scored
+      against a divisor <span id="div-gap" class="num"></span> larger than the ML
+      one and has to return more documents in the same five slots to score the
+      same.</p>
+      <div id="divisor" style="max-width:520px"></div>
     </div>
   </section>
-</div>
+
+  <!-- 3. the threshold ----------------------------------------------------- -->
+  <section class="panel">
+    <div class="phead"><span class="lab">The abstention threshold does not transfer</span>
+      <span class="right lab">the finding that matters</span></div>
+    <div class="pbody">
+      <p class="note">Every question scored by the cross-encoder, plotted on one
+      axis. <b>Filled marks are questions the corpus can answer; hollow rings are
+      adversarial questions whose answer is deliberately absent.</b> The gate
+      refuses everything left of its cut point, so the ideal threshold sits in the
+      gap between the two populations &mdash; and that gap is in a different place
+      on every corpus.</p>
+      <div id="dists"></div>
+      <div class="legend">
+        <span><i style="background:var(--soft)"></i>answerable &mdash; should be answered</span>
+        <span style="color:var(--soft)"><i class="ring"></i>adversarial &mdash; should be refused</span>
+      </div>
+      <p class="note" style="margin-top:22px">Moving each corpus to its own cut
+      point recovers answers at <b>no adversarial cost whatever</b> &mdash; the
+      same number of planted questions is still caught in every case. That is the
+      rare case of a strictly dominant change, and it is only visible because the
+      corpora were measured separately.</p>
+      <div class="grid2" id="cost"></div>
+    </div>
+  </section>
+
+  <!-- 4. the sweep --------------------------------------------------------- -->
+  <section class="panel">
+    <div class="phead"><span class="lab">What every cut point would cost</span>
+      <span class="right lab" id="sweep-n"></span></div>
+    <div class="pbody">
+      <p class="note">Counted in cases, not rates. <b>Rates are the wrong unit
+      here</b>: the two populations are different sizes, so subtracting one rate
+      from the other quietly values a single adversarial catch at several
+      answerable questions thrown away.</p>
+      <div id="sweep"></div>
+      <div class="legend">
+        <span><i style="background:var(--soft)"></i>solid &mdash; answerable questions refused, the cost</span>
+        <span><i style="background:var(--soft);opacity:.55"></i>dashed &mdash; adversarial questions caught, the benefit</span>
+        <span>vertical rule &mdash; this corpus's calibrated cut point</span>
+      </div>
+    </div>
+  </section>
+
+  <p class="note" style="margin-top:32px">This system does its job and is
+  measured honestly about where it does not. It is not competitive with
+  NotebookLM or Glean, which is not what it is for &mdash; it exists so every
+  stage of retrieval can be watched and every default can be made to earn its
+  place against a number.</p>
+</main>
+
+<div class="tip" id="tip" hidden></div>
 
 <script type="module">
 const $ = s => document.querySelector(s);
+const nf = n => Number(n).toLocaleString();
+const f3 = n => Number(n).toFixed(3);
 const esc = s => String(s).replace(/[&<>"]/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const f3 = v => (v == null || Number.isNaN(v)) ? "—" : Number(v).toFixed(3);
-const nf = n => Number(n).toLocaleString();
 
-const grab = async url => {
-  try { const r = await fetch(url); return r.ok ? await r.json() : null; }
-  catch { return null; }
+const HUE = ["var(--series-1)", "var(--series-2)", "var(--series-3)"];
+const SVGNS = "http://www.w3.org/2000/svg";
+const el = (n, a = {}) => {
+  const e = document.createElementNS(SVGNS, n);
+  for (const [k, v] of Object.entries(a)) e.setAttribute(k, v);
+  return e;
 };
 
-/* Each panel is filled independently and says so when its file is absent.
-   "not generated yet" and "measured as zero" must not look the same. */
-const absent = (el, cmd) => {
-  el.innerHTML = `<p class="miss">Not generated yet — run
-    <span class="num">${esc(cmd)}</span></p>`;
-};
-
-const [ev, pc, thr, hard, corpus] = await Promise.all([
-  grab("/api/eval"), grab("/api/per-case"), grab("/api/threshold"),
-  grab("/api/hard-cases"), grab("/api/corpus"),
-]);
-
-/* ---------------------------------------------------------------- tiles */
-const t = pc?.totals?.answerable, a = pc?.totals?.adversarial;
-$("#readout").textContent = corpus
-  ? `${nf(corpus.chunks)} chunks / ${corpus.documents} docs` : "server unreachable";
-$("#tiles").innerHTML = [
-  ["Corpus", corpus ? nf(corpus.chunks) : "—", corpus ? `${corpus.documents} documents` : ""],
-  ["Golden set", t ? t.n + a.n : "—", t ? `${t.n} answerable · ${a.n} adversarial` : ""],
-  ["Hit rate @5", f3(t?.hit_rate), "a relevant page returned"],
-  ["Source recall", f3(t?.src_recall), "of the documents that answer"],
-  ["Refused wrongly", t ? t.refused_wrongly : "—", t ? `of ${t.n} answerable` : ""],
-  ["Answered anyway", a ? a.answered_anyway : "—", a ? `of ${a.n} adversarial` : ""],
-].map(([k, v, s]) => `<div class="tile"><div class="lab">${esc(k)}</div>
-  <div class="v">${esc(String(v))}</div><div class="s">${esc(s)}</div></div>`).join("");
-
-/* ------------------------------------------------------------ end to end */
-if (!ev?.end_to_end) absent($("#e2e").parentElement, "python src/evaluate.py");
-else {
-  const rows = Object.entries(ev.end_to_end);
-  const SHIPPED = "+ diversity 2/src";
-  $("#e2e-n").textContent = `${rows.length} configurations`;
-  $("#e2e").innerHTML = `<thead><tr><th>Pipeline</th><th class="r">any-hit</th>
-      <th class="r">MRR</th><th class="r">NDCG</th><th class="r">src recall</th>
-    </tr></thead><tbody>${rows.map(([name, m]) => `
-      <tr class="${name === SHIPPED ? "win" : ""}">
-        <td>${esc(name)}</td>
-        <td class="r num">${f3(m.hit_rate)}</td>
-        <td class="r num">${f3(m.mrr)}</td>
-        <td class="r num">${f3(m.ndcg)}</td>
-        <td class="r num">${f3(m.src_recall)}</td>
-      </tr>`).join("")}</tbody>`;
+/* ---- one tooltip, shared. Charts are interactive by default; a value the
+   reader has to squint at an axis to recover is a value that was not shown. */
+const tip = $("#tip");
+function hover(node, html) {
+  node.addEventListener("pointerenter", e => {
+    tip.innerHTML = html; tip.hidden = false; move(e);
+  });
+  node.addEventListener("pointermove", move);
+  node.addEventListener("pointerleave", () => { tip.hidden = true; });
+  function move(e) {
+    const r = tip.getBoundingClientRect();
+    const x = Math.min(e.clientX + 14, innerWidth - r.width - 8);
+    const y = Math.max(8, e.clientY - r.height - 12);
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
 }
 
-/* --------------------------------------------------------------- failures */
-if (!hard?.structural) {
-  absent($("#hard"), "src/failure_overlap.py runs/*.json --emit-fixture eval/hard_cases.json");
+/* ---- horizontal bars. Rounded data-ends, anchored to the baseline, a 2px
+   gap between neighbours, and the value direct-laboured on every row so the
+   axis is a reference rather than the only way to read the chart. */
+function hbars(host, title, sub, rows, opts = {}) {
+  const fig = document.createElement("div");
+  fig.className = "fig";
+  fig.innerHTML = `<h3>${esc(title)}</h3><div class="sub">${esc(sub)}</div>`;
+  const LH = 26, PAD_L = opts.padLeft ?? 118;
+  const PAD_R = opts.delta ? 108 : 54, H = rows.length * LH + 16;
+  const W = 430;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+                          "aria-label": `${title}. ${sub}` });
+  const max = opts.max ?? Math.max(...rows.map(r => r.v), 0.0001);
+  const plot = W - PAD_L - PAD_R;
+
+  rows.forEach((r, i) => {
+    const y = i * LH + 8;
+    const g = el("g", { class: "row" });
+    const nm = el("text", { x: PAD_L - 10, y: y + 12, "text-anchor": "end",
+                            class: r.on ? "name on" : "name" });
+    nm.textContent = r.k;
+    g.append(nm);
+    const w = Math.max(1.5, (r.v / max) * plot);
+    const bar = el("rect", { x: PAD_L, y: y + 4, width: w, height: 11, rx: 4,
+                             fill: r.c || HUE[0], class: "bar",
+                             opacity: r.on === false ? 0.45 : 1 });
+    g.append(bar);
+    const val = el("text", { x: PAD_L + w + 8, y: y + 12,
+                             class: r.on ? "val on" : "val" });
+    val.textContent = opts.fmt ? opts.fmt(r.v) : f3(r.v);
+    g.append(val);
+
+    // Bars are anchored at zero and stay there; truncating the axis to make a
+    // 0.02 gain look large is the oldest chart lie there is. The change from
+    // the row above is stated in text instead.
+    if (opts.delta && i > 0) {
+      const d = r.v - rows[i - 1].v;
+      if (Math.abs(d) >= 0.0005) {
+        const dt = el("text", { x: W - 2, y: y + 12, "text-anchor": "end" });
+        dt.textContent = (d > 0 ? "+" : "−") + Math.abs(d).toFixed(3);
+        dt.setAttribute("fill", "var(--muted)");
+        g.append(dt);
+      }
+    }
+    hover(g, `<span class="k">${esc(r.k)}</span>${esc(title)} ${
+      opts.fmt ? opts.fmt(r.v) : f3(r.v)}${r.note ? "<br>" + esc(r.note) : ""}`);
+    svg.append(g);
+  });
+  const ax = el("line", { x1: PAD_L, y1: 4, x2: PAD_L, y2: H - 6, class: "axis" });
+  svg.append(ax);
+  fig.append(svg);
+  host.append(fig);
+}
+
+/* ---- distribution strip. Every case is a mark; the overlap between the two
+   populations is the whole point, and a median would hide it. */
+function strip(host, c, domain, last) {
+  const W = 900, H = last ? 86 : 68, PAD_L = 156, PAD_R = 26;
+  const plot = W - PAD_L - PAD_R;
+  const x = v => PAD_L + ((v - domain[0]) / (domain[1] - domain[0])) * plot;
+
+  const fig = document.createElement("div");
+  fig.className = "fig";
+  fig.style.marginBottom = "6px";
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+    "aria-label": `${c.label}: ${c.n_answerable} answerable and ${c.n_adversarial} adversarial scores` });
+
+  const nm = el("text", { x: PAD_L - 14, y: 36, "text-anchor": "end", class: "name on" });
+  nm.textContent = c.label;
+  const sz = el("text", { x: PAD_L - 14, y: 51, "text-anchor": "end" });
+  sz.textContent = `${c.n_answerable} + ${c.n_adversarial} cases`;
+  svg.append(nm, sz);
+
+  // Gridlines on every strip, but the numbered axis only on the last one --
+  // three corpora share one scale, and printing it three times says otherwise.
+  for (let v = Math.ceil(domain[0] / 2) * 2; v <= domain[1]; v += 2) {
+    svg.append(el("line", { x1: x(v), y1: 16, x2: x(v), y2: 58, class: "grid" }));
+    if (last) {
+      const t = el("text", { x: x(v), y: 76, "text-anchor": "middle" });
+      t.textContent = v > 0 ? "+" + v : String(v);
+      svg.append(t);
+    }
+  }
+
+  // The two cut points, both named. An unlabelled rule on a chart about where
+  // to put a rule is the one line that has to be labelled.
+  const rule = (v, colour, dash, label) => {
+    svg.append(el("line", { x1: x(v), y1: 14, x2: x(v), y2: 58,
+      stroke: colour, "stroke-width": 1.4, "stroke-dasharray": dash }));
+    const t = el("text", { x: x(v), y: 9, "text-anchor": "middle" });
+    t.setAttribute("fill", colour === "var(--faint)" ? "var(--faint)" : colour);
+    t.textContent = label;
+    svg.append(t);
+  };
+  rule(0, "var(--faint)", "3 3", c.threshold === 0 ? "" : "old global 0.0");
+  rule(c.threshold, HUE[c.i], "",
+       (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1) +
+       (c.threshold === 0 ? " — calibrated here" : " calibrated"));
+
+  const dot = (v, filled, kind) => {
+    const cy = filled ? 30 : 48;
+    const n = filled
+      ? el("circle", { cx: x(v), cy, r: 3.4, fill: HUE[c.i], opacity: .85 })
+      : el("circle", { cx: x(v), cy, r: 3.2, fill: "none",
+                       stroke: HUE[c.i], "stroke-width": 1.4, opacity: .9 });
+    hover(n, `<span class="k">${esc(kind)}</span>score ${v > 0 ? "+" : ""}${v.toFixed(2)}
+      <br>${v < c.threshold ? "refused" : "answered"} at ${c.threshold > 0 ? "+" : ""}${c.threshold.toFixed(1)}`);
+    svg.append(n);
+  };
+  for (const v of c.dist.answerable) dot(v, true, "answerable");
+  for (const v of c.dist.adversarial) dot(v, false, "adversarial");
+
+  fig.append(svg);
+  host.append(fig);
+}
+
+/* ---- the sweep, one small multiple per corpus.
+
+   Six lines in a single frame was unreadable: three corpora x two measures,
+   with all three "caught" series plateauing on the same value so their labels
+   landed on top of each other. Splitting by corpus also lets each panel carry
+   its own calibrated cut point, which is the thing each panel is about.
+
+   Both series on a panel are counts of cases, so they share one axis honestly.
+   Two y-scales would let any pair of lines be made to cross wherever the author
+   wanted, which is why this chart never has them. */
+function sweepPanel(host, c) {
+  const W = 360, H = 190, PAD_L = 30, PAD_R = 16, PAD_T = 16, PAD_B = 30;
+  const xs = c.sweep.map(z => z.t);
+  const dom = [Math.min(...xs), Math.max(...xs)];
+  const maxY = Math.max(c.n_answerable, c.n_adversarial);
+  const x = v => PAD_L + ((v - dom[0]) / (dom[1] - dom[0])) * (W - PAD_L - PAD_R);
+  const y = v => H - PAD_B - (v / maxY) * (H - PAD_T - PAD_B);
+
+  const fig = document.createElement("div");
+  fig.className = "fig";
+  fig.innerHTML = `<h3>${esc(c.label)}</h3><div class="sub">${
+    c.n_answerable} answerable · ${c.n_adversarial} adversarial</div>`;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+    "aria-label": `${c.label}: answerable questions refused and adversarial questions caught, by threshold` });
+
+  const tick = Math.max(1, Math.round(maxY / 4));
+  for (let v = 0; v <= maxY; v += tick) {
+    svg.append(el("line", { x1: PAD_L, y1: y(v), x2: W - PAD_R, y2: y(v), class: "grid" }));
+    const t = el("text", { x: PAD_L - 7, y: y(v) + 3.5, "text-anchor": "end" });
+    t.textContent = v; svg.append(t);
+  }
+  for (let v = Math.ceil(dom[0] / 4) * 4; v <= dom[1]; v += 4) {
+    const t = el("text", { x: x(v), y: H - PAD_B + 15, "text-anchor": "middle" });
+    t.textContent = v > 0 ? "+" + v : String(v); svg.append(t);
+  }
+  svg.append(el("line", { x1: PAD_L, y1: H - PAD_B, x2: W - PAD_R, y2: H - PAD_B, class: "axis" }));
+
+  // the old global 0.0, and this corpus's own calibrated point
+  svg.append(el("line", { x1: x(0), y1: PAD_T, x2: x(0), y2: H - PAD_B,
+    stroke: "var(--faint)", "stroke-width": 1, "stroke-dasharray": "3 3" }));
+  svg.append(el("line", { x1: x(c.threshold), y1: PAD_T, x2: x(c.threshold),
+    y2: H - PAD_B, stroke: HUE[c.i], "stroke-width": 1.3 }));
+  const cut = el("text", { x: x(c.threshold), y: PAD_T - 5, "text-anchor": "middle" });
+  cut.setAttribute("fill", HUE[c.i]);
+  cut.textContent = (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1);
+  svg.append(cut);
+
+  // Cost solid, benefit dashed. Identity never rests on colour alone: the two
+  // lines differ in dash as well, and each is direct-labelled at its end.
+  const line = (key, dash) => {
+    const d = c.sweep.map((z, i) => `${i ? "L" : "M"}${x(z.t)},${y(z[key])}`).join("");
+    svg.append(el("path", { d, fill: "none", stroke: HUE[c.i], "stroke-width": 2,
+      "stroke-dasharray": dash, opacity: key === "caught" ? .62 : .95,
+      "stroke-linejoin": "round", "stroke-linecap": "round" }));
+  };
+  line("refused", "");
+  line("caught", "3 3");
+
+  for (const z of c.sweep) {
+    const band = el("rect", { x: x(z.t) - 4, y: PAD_T, width: 8,
+      height: H - PAD_T - PAD_B, fill: "transparent" });
+    hover(band, `<span class="k">threshold ${z.t > 0 ? "+" : ""}${z.t}</span>
+      ${z.refused} of ${c.n_answerable} answerable refused<br>
+      ${z.caught} of ${c.n_adversarial} adversarial caught`);
+    svg.append(band);
+  }
+  fig.append(svg);
+  host.append(fig);
+}
+
+/* -------------------------------------------------------------------- boot */
+const j = async u => { try { const r = await fetch(u); return r.ok ? await r.json() : null; }
+                       catch { return null; } };
+
+const A = await j("/api/analytics");
+if (!A || !A.corpora?.length) {
+  $("#readout").textContent = "no data";
+  document.querySelector("main").insertAdjacentHTML("afterbegin",
+    `<p class="err">eval/analytics.json is missing. Run
+     <span class="num">python src/build_analytics.py</span>.</p>`);
 } else {
-  $("#fail-n").textContent = `${hard.structural.length} structural`;
-  $("#hard").innerHTML = hard.structural.map(c => `
-    <div class="case"><span class="k">${esc(c.kind)}</span>
-      <span><b>${esc(c.id)}</b><br><span class="q">${esc(c.question)}</span></span>
-    </div>`).join("")
-    + (hard.slips_the_gate?.length ? `
-      <p class="note" style="margin:16px 0 6px"><b>${hard.slips_the_gate.length} adversarial
-        questions</b> are answered under every gated configuration — a threshold question,
-        not a retrieval one.</p>
-      ${hard.slips_the_gate.map(c => `<div class="case">
-        <span class="k">${c.confidence > 0 ? "+" : ""}${Number(c.confidence).toFixed(2)}</span>
-        <span class="q">${esc(c.question)}</span></div>`).join("")}` : "");
-}
+  A.corpora.forEach((c, i) => { c.i = i; });
+  let active = A.corpora[0];
 
-/* -------------------------------------------------------------- threshold */
-if (!thr?.sweep) absent($("#thr").parentElement, "python src/calibrate_threshold.py --emit eval/threshold.json");
-else {
-  const shipped = thr.shipped_threshold;
-  $("#thr-n").textContent = `shipped ${shipped >= 0 ? "+" : ""}${shipped.toFixed(1)}`;
-  $("#thr").innerHTML = `<thead><tr><th>Threshold</th><th class="r">refuses</th>
-      <th class="r">wrongly refuses</th><th class="r">in cases</th></tr></thead>
-    <tbody>${thr.sweep.filter(r => r.threshold >= -1 && r.threshold <= 3).map(r => `
-      <tr class="${r.threshold === shipped ? "win" : ""}">
-        <td class="num">${r.threshold >= 0 ? "+" : ""}${r.threshold}</td>
-        <td class="r num">${r.caught.length} / ${thr.n_adversarial}</td>
-        <td class="r num">${r.wrongly_refused.length} / ${thr.n_answerable}</td>
-        <td class="r num">${r.caught.length} caught, ${r.wrongly_refused.length} lost</td>
-      </tr>`).join("")}</tbody>`;
-}
+  $("#readout").textContent =
+    `${A.corpora.length} corpora · ${A.corpora.reduce((n, c) => n + c.n_answerable + c.n_adversarial, 0)} labelled cases`;
 
-/* -------------------------------------------------------------- expansion */
-if (!ev?.expansion) absent($("#exp").parentElement, "python src/evaluate.py");
-else {
-  $("#exp").innerHTML = `<thead><tr><th>Mode</th><th class="r">context recall</th>
-      <th class="r">tokens/query</th><th class="r">blocks</th></tr></thead>
-    <tbody>${Object.entries(ev.expansion).map(([k, m]) => `
-      <tr class="${k.startsWith("window") ? "win" : ""}">
-        <td>${esc(k)}</td>
-        <td class="r num">${f3(m.context_recall)}</td>
-        <td class="r num">${nf(m.tokens_per_query)}</td>
-        <td class="r num">${m.blocks_per_query}</td>
-      </tr>`).join("")}</tbody>`;
+  /* corpus pills */
+  $("#pills").innerHTML = A.corpora.map((c, i) => `
+    <button class="pill" type="button" data-i="${i}" aria-pressed="${i === 0}">
+      <span class="sw" style="background:${HUE[i]}"></span>${esc(c.label)}
+      <span class="n">${c.documents} docs</span>
+    </button>`).join("");
+  $("#pills").querySelectorAll(".pill").forEach(b => {
+    b.onclick = () => {
+      active = A.corpora[+b.dataset.i];
+      $("#pills").querySelectorAll(".pill").forEach(o =>
+        o.setAttribute("aria-pressed", String(o === b)));
+      renderActive();
+    };
+  });
+
+  /* ---- panels that describe one corpus */
+  function renderActive() {
+    const c = active;
+    const shipped = c.ladder.find(r => r.config === "+ diversity 2/src") || c.ladder.at(-1);
+    $("#tiles").innerHTML = [
+      ["Corpus", nf(c.chunks), `${c.documents} documents · ${Object.keys(c.formats).join(" ").toUpperCase()}`],
+      ["Golden set", c.n_answerable + c.n_adversarial,
+       `${c.n_answerable} answerable · ${c.n_adversarial} adversarial`],
+      ["Hit rate @5", f3(shipped.hit_rate), "a relevant passage returned"],
+      ["Source recall", f3(shipped.src_recall), "of the documents that answer"],
+      ["Threshold", (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1),
+       c.calibrated ? "calibrated on this corpus" : "borrowed — not calibrated"],
+      ["Wrongly refused", `${c.at_calibrated.refused} / ${c.n_answerable}`,
+       `${c.at_zero.refused} at the old global 0.0`],
+    ].map(([k, v, s]) =>
+      `<div class="tile"><div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
+       <div class="c">${esc(s)}</div></div>`).join("");
+
+    $("#ladder-n").textContent = `${c.label} · ${c.n_answerable} answerable cases`;
+    const host = $("#ladder"); host.innerHTML = "";
+    const SHIP = "+ diversity 2/src";
+    const NAMES = {
+      "dense, no rerank": "Dense only",
+      "dense + rerank": "+ cross-encoder",
+      "rrf + rerank": "+ BM25, fused",
+      "+ diversity 2/src": "+ cap 2 per doc",
+      "+ diversity 1/src": "+ cap 1 per doc",
+    };
+    for (const [key, title] of [["hit_rate", "Hit rate @5"], ["mrr", "MRR"],
+                                ["ndcg", "NDCG"], ["src_recall", "Source recall"]]) {
+      hbars(host, title, key === "src_recall" ? "documents that answer, returned"
+                       : key === "hit_rate" ? "any relevant passage in the top 5"
+                       : key === "mrr" ? "how high the first relevant passage sits"
+                       : "rank quality over all relevant passages",
+        c.ladder.map(r => ({
+          k: NAMES[r.config] || r.config, v: r[key], c: HUE[c.i],
+          on: r.config === SHIP,
+          note: r.config === SHIP ? "shipped configuration" : "",
+        })), { max: 1, delta: true });
+    }
+
+    $("#ladder-t").innerHTML =
+      `<tr><th>Configuration</th><th class="n">Hit rate</th><th class="n">MRR</th>
+       <th class="n">NDCG</th><th class="n">Source recall</th></tr>` +
+      c.ladder.map(r => `<tr><td>${esc(NAMES[r.config] || r.config)}${
+        r.config === SHIP ? ' <span class="lab" style="color:var(--good)">shipped</span>' : ""}</td>
+        <td class="n">${f3(r.hit_rate)}</td><td class="n">${f3(r.mrr)}</td>
+        <td class="n">${f3(r.ndcg)}</td><td class="n">${f3(r.src_recall)}</td></tr>`).join("");
+  }
+
+  /* ---- panels that compare all three */
+  const shippedOf = c => c.ladder.find(r => r.config === "+ diversity 2/src") || c.ladder.at(-1);
+  const cross = $("#cross");
+  for (const [key, title, sub] of [
+    ["hit_rate", "Hit rate @5", "any relevant passage in the top 5"],
+    ["mrr", "MRR", "how high the first relevant passage sits"],
+    ["ndcg", "NDCG", "rank quality over all relevant passages"],
+    ["src_recall", "Source recall", "documents that answer, returned"]]) {
+    hbars(cross, title, sub, A.corpora.map(c => ({
+      k: c.label, v: shippedOf(c)[key], c: HUE[c.i],
+      note: `${c.documents} documents`,
+    })), { max: 1, padLeft: 132 });
+  }
+
+  const lo = Math.min(...A.corpora.map(c => c.gold_divisor));
+  const hi = Math.max(...A.corpora.map(c => c.gold_divisor));
+  $("#div-gap").textContent = ((hi / lo - 1) * 100).toFixed(0) + "%";
+  hbars($("#divisor"), "Mean scoring divisor", "min(|gold|, 5), averaged over answerable cases",
+    A.corpora.map(c => ({ k: c.label, v: c.gold_divisor, c: HUE[c.i],
+      note: `${c.gold_mean} gold documents per question on average` })),
+    { max: Math.ceil(hi), fmt: v => v.toFixed(2), padLeft: 132 });
+
+  /* ---- the threshold */
+  const allScores = A.corpora.flatMap(c => [...c.dist.answerable, ...c.dist.adversarial]);
+  const dom = [Math.floor(Math.min(...allScores)) - 0.5, Math.ceil(Math.max(...allScores)) + 0.5];
+  A.corpora.forEach((c, i) =>
+    strip($("#dists"), c, dom, i === A.corpora.length - 1));
+
+  const cost = $("#cost");
+  hbars(cost, "Answerable questions wrongly refused", "at the old global 0.0, then at each corpus's own cut point",
+    A.corpora.flatMap(c => [
+      { k: c.label + " @ 0.0", v: c.at_zero.refused, c: HUE[c.i], on: false,
+        note: `${(c.at_zero.refused / c.n_answerable * 100).toFixed(1)}% of ${c.n_answerable}` },
+      { k: `at ${c.threshold > 0 ? "+" : ""}${c.threshold.toFixed(1)}`, v: c.at_calibrated.refused,
+        c: HUE[c.i], on: true,
+        note: `${(c.at_calibrated.refused / c.n_answerable * 100).toFixed(1)}% of ${c.n_answerable}` },
+    ]), { fmt: v => String(v), padLeft: 148 });
+  hbars(cost, "Adversarial questions still caught", "unchanged by the move — this is what makes it a free change",
+    A.corpora.flatMap(c => [
+      { k: c.label + " @ 0.0", v: c.at_zero.caught, c: HUE[c.i], on: false,
+        note: `of ${c.n_adversarial} planted` },
+      { k: `at ${c.threshold > 0 ? "+" : ""}${c.threshold.toFixed(1)}`, v: c.at_calibrated.caught,
+        c: HUE[c.i], on: true, note: `of ${c.n_adversarial} planted` },
+    ]), { fmt: v => String(v), padLeft: 148 });
+
+  $("#sweep-n").textContent = "counted in cases, not rates";
+  $("#sweep").className = "grid3";
+  for (const c of A.corpora) sweepPanel($("#sweep"), c);
+
+  renderActive();
 }
 </script>
 </body>

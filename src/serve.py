@@ -451,6 +451,17 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, EVAL_FILE.read_bytes(), "application/json; charset=utf-8")
 
+        elif route == "/api/analytics":
+            # Everything the analytics page plots, for every corpus at once --
+            # the page compares them, so it cannot be scoped to the active one.
+            # Regenerate with src/build_analytics.py after any eval run.
+            f = EVAL_DIR / "analytics.json"
+            if not f.exists():
+                self._send(404, {"error": "eval/analytics.json is missing -- "
+                                          "run python src/build_analytics.py"})
+                return
+            self._raw(200, f.read_bytes(), "application/json; charset=utf-8")
+
         elif route == "/api/chunks":
             # Which document each chunk belongs to, so the UI can draw the index
             # as one block per document at its true size. Dividing the total

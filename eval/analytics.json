@@ -1,0 +1,861 @@
+{
+ "generated_by": "src/build_analytics.py",
+ "corpora": [
+  {
+   "name": "llm",
+   "label": "ML & NLP papers",
+   "documents": 36,
+   "chunks": 5459,
+   "formats": {
+    "pdf": 36
+   },
+   "threshold": 0.0,
+   "calibrated": true,
+   "n_answerable": 66,
+   "n_adversarial": 18,
+   "ladder": [
+    {
+     "config": "dense, no rerank",
+     "hit_rate": 0.803,
+     "mrr": 0.589,
+     "ndcg": 0.64,
+     "src_recall": 0.641
+    },
+    {
+     "config": "dense + rerank",
+     "hit_rate": 0.803,
+     "mrr": 0.706,
+     "ndcg": 0.713,
+     "src_recall": 0.671
+    },
+    {
+     "config": "rrf + rerank",
+     "hit_rate": 0.864,
+     "mrr": 0.752,
+     "ndcg": 0.761,
+     "src_recall": 0.695
+    },
+    {
+     "config": "+ diversity 2/src",
+     "hit_rate": 0.848,
+     "mrr": 0.749,
+     "ndcg": 0.761,
+     "src_recall": 0.738
+    },
+    {
+     "config": "+ diversity 1/src",
+     "hit_rate": 0.803,
+     "mrr": 0.734,
+     "ndcg": 0.743,
+     "src_recall": 0.787
+    }
+   ],
+   "pool": [
+    {
+     "config": "dense",
+     "hit_rate": 0.879,
+     "mrr": 0.597,
+     "ndcg": 0.652,
+     "src_recall": 0.812
+    },
+    {
+     "config": "rrf",
+     "hit_rate": 0.924,
+     "mrr": 0.715,
+     "ndcg": 0.727,
+     "src_recall": 0.792
+    },
+    {
+     "config": "weighted a=0.3",
+     "hit_rate": 0.939,
+     "mrr": 0.725,
+     "ndcg": 0.738,
+     "src_recall": 0.792
+    },
+    {
+     "config": "weighted a=0.5",
+     "hit_rate": 0.939,
+     "mrr": 0.718,
+     "ndcg": 0.727,
+     "src_recall": 0.79
+    },
+    {
+     "config": "weighted a=0.7",
+     "hit_rate": 0.939,
+     "mrr": 0.666,
+     "ndcg": 0.699,
+     "src_recall": 0.799
+    }
+   ],
+   "dist": {
+    "answerable": [
+     -3.821,
+     0.161,
+     0.658,
+     0.966,
+     1.212,
+     2.084,
+     2.308,
+     2.489,
+     2.513,
+     2.966,
+     3.047,
+     3.087,
+     3.244,
+     3.334,
+     3.473,
+     3.55,
+     3.698,
+     3.752,
+     3.755,
+     3.793,
+     3.875,
+     3.998,
+     4.106,
+     4.165,
+     4.319,
+     4.35,
+     4.385,
+     4.448,
+     4.45,
+     4.545,
+     4.643,
+     4.668,
+     4.723,
+     4.934,
+     5.252,
+     5.32,
+     5.397,
+     5.455,
+     5.602,
+     5.816,
+     5.86,
+     5.905,
+     5.928,
+     5.977,
+     5.995,
+     6.056,
+     6.113,
+     6.136,
+     6.357,
+     6.363,
+     6.386,
+     6.395,
+     6.539,
+     6.642,
+     7.002,
+     7.074,
+     7.128,
+     7.17,
+     7.325,
+     7.572,
+     7.824,
+     7.899,
+     8.163,
+     8.229,
+     8.834,
+     9.584
+    ],
+    "adversarial": [
+     -9.517,
+     -4.772,
+     -4.602,
+     -4.403,
+     -4.058,
+     -1.932,
+     -1.356,
+     -0.742,
+     -0.177,
+     0.092,
+     0.433,
+     0.703,
+     1.114,
+     2.264,
+     2.904,
+     4.216,
+     4.264,
+     6.851
+    ]
+   },
+   "median_answerable": 4.829,
+   "median_adversarial": -0.042,
+   "sweep": [
+    {
+     "t": -8.0,
+     "refused": 0,
+     "caught": 1
+    },
+    {
+     "t": -7.5,
+     "refused": 0,
+     "caught": 1
+    },
+    {
+     "t": -7.0,
+     "refused": 0,
+     "caught": 1
+    },
+    {
+     "t": -6.5,
+     "refused": 0,
+     "caught": 1
+    },
+    {
+     "t": -6.0,
+     "refused": 0,
+     "caught": 1
+    },
+    {
+     "t": -5.5,
+     "refused": 0,
+     "caught": 1
+    },
+    {
+     "t": -5.0,
+     "refused": 0,
+     "caught": 1
+    },
+    {
+     "t": -4.5,
+     "refused": 0,
+     "caught": 3
+    },
+    {
+     "t": -4.0,
+     "refused": 0,
+     "caught": 5
+    },
+    {
+     "t": -3.5,
+     "refused": 1,
+     "caught": 5
+    },
+    {
+     "t": -3.0,
+     "refused": 1,
+     "caught": 5
+    },
+    {
+     "t": -2.5,
+     "refused": 1,
+     "caught": 5
+    },
+    {
+     "t": -2.0,
+     "refused": 1,
+     "caught": 5
+    },
+    {
+     "t": -1.5,
+     "refused": 1,
+     "caught": 6
+    },
+    {
+     "t": -1.0,
+     "refused": 1,
+     "caught": 7
+    },
+    {
+     "t": -0.5,
+     "refused": 1,
+     "caught": 8
+    },
+    {
+     "t": 0.0,
+     "refused": 1,
+     "caught": 9
+    },
+    {
+     "t": 0.5,
+     "refused": 2,
+     "caught": 11
+    },
+    {
+     "t": 1.0,
+     "refused": 4,
+     "caught": 12
+    },
+    {
+     "t": 1.5,
+     "refused": 5,
+     "caught": 13
+    },
+    {
+     "t": 2.0,
+     "refused": 5,
+     "caught": 13
+    },
+    {
+     "t": 2.5,
+     "refused": 8,
+     "caught": 14
+    },
+    {
+     "t": 3.0,
+     "refused": 10,
+     "caught": 15
+    },
+    {
+     "t": 3.5,
+     "refused": 15,
+     "caught": 15
+    },
+    {
+     "t": 4.0,
+     "refused": 22,
+     "caught": 15
+    }
+   ],
+   "at_zero": {
+    "refused": 1,
+    "caught": 9
+   },
+   "at_calibrated": {
+    "refused": 1,
+    "caught": 9
+   },
+   "gold_mean": 2.67,
+   "gold_divisor": 2.3
+  },
+  {
+   "name": "birds",
+   "label": "Ornithology",
+   "documents": 45,
+   "chunks": 900,
+   "formats": {
+    "docx": 12,
+    "pptx": 12,
+    "xlsx": 11,
+    "pdf": 10
+   },
+   "threshold": -3.0,
+   "calibrated": true,
+   "n_answerable": 26,
+   "n_adversarial": 6,
+   "ladder": [
+    {
+     "config": "dense, no rerank",
+     "hit_rate": 0.769,
+     "mrr": 0.551,
+     "ndcg": 0.588,
+     "src_recall": 0.644
+    },
+    {
+     "config": "dense + rerank",
+     "hit_rate": 0.808,
+     "mrr": 0.58,
+     "ndcg": 0.634,
+     "src_recall": 0.671
+    },
+    {
+     "config": "rrf + rerank",
+     "hit_rate": 0.769,
+     "mrr": 0.56,
+     "ndcg": 0.615,
+     "src_recall": 0.723
+    },
+    {
+     "config": "+ diversity 2/src",
+     "hit_rate": 0.808,
+     "mrr": 0.57,
+     "ndcg": 0.635,
+     "src_recall": 0.762
+    },
+    {
+     "config": "+ diversity 1/src",
+     "hit_rate": 0.731,
+     "mrr": 0.551,
+     "ndcg": 0.595,
+     "src_recall": 0.782
+    }
+   ],
+   "pool": [
+    {
+     "config": "dense",
+     "hit_rate": 0.962,
+     "mrr": 0.569,
+     "ndcg": 0.622,
+     "src_recall": 0.854
+    },
+    {
+     "config": "rrf",
+     "hit_rate": 0.885,
+     "mrr": 0.567,
+     "ndcg": 0.611,
+     "src_recall": 0.841
+    },
+    {
+     "config": "weighted a=0.3",
+     "hit_rate": 0.885,
+     "mrr": 0.464,
+     "ndcg": 0.538,
+     "src_recall": 0.846
+    },
+    {
+     "config": "weighted a=0.5",
+     "hit_rate": 0.923,
+     "mrr": 0.559,
+     "ndcg": 0.611,
+     "src_recall": 0.854
+    },
+    {
+     "config": "weighted a=0.7",
+     "hit_rate": 0.962,
+     "mrr": 0.512,
+     "ndcg": 0.623,
+     "src_recall": 0.87
+    }
+   ],
+   "dist": {
+    "answerable": [
+     -10.619,
+     -8.276,
+     -7.281,
+     -4.55,
+     -2.974,
+     -2.306,
+     -0.992,
+     -0.953,
+     -0.535,
+     -0.509,
+     0.397,
+     1.206,
+     1.233,
+     1.819,
+     1.869,
+     1.974,
+     2.586,
+     3.273,
+     4.096,
+     4.872,
+     4.931,
+     5.032,
+     5.144,
+     5.422,
+     5.788,
+     6.628
+    ],
+    "adversarial": [
+     -10.722,
+     -10.391,
+     -9.978,
+     -8.852,
+     -7.979,
+     1.921
+    ]
+   },
+   "median_answerable": 1.526,
+   "median_adversarial": -9.415,
+   "sweep": [
+    {
+     "t": -8.0,
+     "refused": 2,
+     "caught": 4
+    },
+    {
+     "t": -7.5,
+     "refused": 2,
+     "caught": 5
+    },
+    {
+     "t": -7.0,
+     "refused": 3,
+     "caught": 5
+    },
+    {
+     "t": -6.5,
+     "refused": 3,
+     "caught": 5
+    },
+    {
+     "t": -6.0,
+     "refused": 3,
+     "caught": 5
+    },
+    {
+     "t": -5.5,
+     "refused": 3,
+     "caught": 5
+    },
+    {
+     "t": -5.0,
+     "refused": 3,
+     "caught": 5
+    },
+    {
+     "t": -4.5,
+     "refused": 4,
+     "caught": 5
+    },
+    {
+     "t": -4.0,
+     "refused": 4,
+     "caught": 5
+    },
+    {
+     "t": -3.5,
+     "refused": 4,
+     "caught": 5
+    },
+    {
+     "t": -3.0,
+     "refused": 4,
+     "caught": 5
+    },
+    {
+     "t": -2.5,
+     "refused": 5,
+     "caught": 5
+    },
+    {
+     "t": -2.0,
+     "refused": 6,
+     "caught": 5
+    },
+    {
+     "t": -1.5,
+     "refused": 6,
+     "caught": 5
+    },
+    {
+     "t": -1.0,
+     "refused": 6,
+     "caught": 5
+    },
+    {
+     "t": -0.5,
+     "refused": 10,
+     "caught": 5
+    },
+    {
+     "t": 0.0,
+     "refused": 10,
+     "caught": 5
+    },
+    {
+     "t": 0.5,
+     "refused": 11,
+     "caught": 5
+    },
+    {
+     "t": 1.0,
+     "refused": 11,
+     "caught": 5
+    },
+    {
+     "t": 1.5,
+     "refused": 13,
+     "caught": 5
+    },
+    {
+     "t": 2.0,
+     "refused": 16,
+     "caught": 6
+    },
+    {
+     "t": 2.5,
+     "refused": 16,
+     "caught": 6
+    },
+    {
+     "t": 3.0,
+     "refused": 17,
+     "caught": 6
+    },
+    {
+     "t": 3.5,
+     "refused": 18,
+     "caught": 6
+    },
+    {
+     "t": 4.0,
+     "refused": 18,
+     "caught": 6
+    }
+   ],
+   "at_zero": {
+    "refused": 10,
+    "caught": 5
+   },
+   "at_calibrated": {
+    "refused": 4,
+    "caught": 5
+   },
+   "gold_mean": 2.62,
+   "gold_divisor": 2.54
+  },
+  {
+   "name": "quant",
+   "label": "Quantitative finance",
+   "documents": 35,
+   "chunks": 6184,
+   "formats": {
+    "pdf": 35
+   },
+   "threshold": -4.0,
+   "calibrated": true,
+   "n_answerable": 35,
+   "n_adversarial": 6,
+   "ladder": [
+    {
+     "config": "dense, no rerank",
+     "hit_rate": 0.486,
+     "mrr": 0.295,
+     "ndcg": 0.334,
+     "src_recall": 0.34
+    },
+    {
+     "config": "dense + rerank",
+     "hit_rate": 0.514,
+     "mrr": 0.39,
+     "ndcg": 0.405,
+     "src_recall": 0.31
+    },
+    {
+     "config": "rrf + rerank",
+     "hit_rate": 0.543,
+     "mrr": 0.408,
+     "ndcg": 0.427,
+     "src_recall": 0.322
+    },
+    {
+     "config": "+ diversity 2/src",
+     "hit_rate": 0.543,
+     "mrr": 0.41,
+     "ndcg": 0.437,
+     "src_recall": 0.361
+    },
+    {
+     "config": "+ diversity 1/src",
+     "hit_rate": 0.543,
+     "mrr": 0.401,
+     "ndcg": 0.435,
+     "src_recall": 0.415
+    }
+   ],
+   "pool": [
+    {
+     "config": "dense",
+     "hit_rate": 0.686,
+     "mrr": 0.312,
+     "ndcg": 0.378,
+     "src_recall": 0.491
+    },
+    {
+     "config": "rrf",
+     "hit_rate": 0.629,
+     "mrr": 0.314,
+     "ndcg": 0.38,
+     "src_recall": 0.51
+    },
+    {
+     "config": "weighted a=0.3",
+     "hit_rate": 0.6,
+     "mrr": 0.32,
+     "ndcg": 0.356,
+     "src_recall": 0.534
+    },
+    {
+     "config": "weighted a=0.5",
+     "hit_rate": 0.629,
+     "mrr": 0.292,
+     "ndcg": 0.362,
+     "src_recall": 0.526
+    },
+    {
+     "config": "weighted a=0.7",
+     "hit_rate": 0.657,
+     "mrr": 0.314,
+     "ndcg": 0.383,
+     "src_recall": 0.538
+    }
+   ],
+   "dist": {
+    "answerable": [
+     -8.61,
+     -7.206,
+     -6.666,
+     -6.41,
+     -5.581,
+     -4.124,
+     -3.434,
+     -2.304,
+     -1.655,
+     -1.63,
+     -1.287,
+     -1.229,
+     -1.15,
+     -1.053,
+     -0.66,
+     -0.619,
+     -0.479,
+     -0.381,
+     -0.21,
+     0.048,
+     0.078,
+     0.331,
+     0.365,
+     0.517,
+     1.033,
+     1.045,
+     1.19,
+     1.272,
+     1.705,
+     1.881,
+     2.237,
+     2.914,
+     4.536,
+     4.886,
+     6.26
+    ],
+    "adversarial": [
+     -11.146,
+     -10.938,
+     -6.908,
+     -6.676,
+     -6.593,
+     -6.101
+    ]
+   },
+   "median_answerable": -0.381,
+   "median_adversarial": -6.792,
+   "sweep": [
+    {
+     "t": -8.0,
+     "refused": 1,
+     "caught": 2
+    },
+    {
+     "t": -7.5,
+     "refused": 1,
+     "caught": 2
+    },
+    {
+     "t": -7.0,
+     "refused": 2,
+     "caught": 2
+    },
+    {
+     "t": -6.5,
+     "refused": 3,
+     "caught": 5
+    },
+    {
+     "t": -6.0,
+     "refused": 4,
+     "caught": 6
+    },
+    {
+     "t": -5.5,
+     "refused": 5,
+     "caught": 6
+    },
+    {
+     "t": -5.0,
+     "refused": 5,
+     "caught": 6
+    },
+    {
+     "t": -4.5,
+     "refused": 5,
+     "caught": 6
+    },
+    {
+     "t": -4.0,
+     "refused": 6,
+     "caught": 6
+    },
+    {
+     "t": -3.5,
+     "refused": 6,
+     "caught": 6
+    },
+    {
+     "t": -3.0,
+     "refused": 7,
+     "caught": 6
+    },
+    {
+     "t": -2.5,
+     "refused": 7,
+     "caught": 6
+    },
+    {
+     "t": -2.0,
+     "refused": 8,
+     "caught": 6
+    },
+    {
+     "t": -1.5,
+     "refused": 10,
+     "caught": 6
+    },
+    {
+     "t": -1.0,
+     "refused": 14,
+     "caught": 6
+    },
+    {
+     "t": -0.5,
+     "refused": 16,
+     "caught": 6
+    },
+    {
+     "t": 0.0,
+     "refused": 19,
+     "caught": 6
+    },
+    {
+     "t": 0.5,
+     "refused": 23,
+     "caught": 6
+    },
+    {
+     "t": 1.0,
+     "refused": 24,
+     "caught": 6
+    },
+    {
+     "t": 1.5,
+     "refused": 28,
+     "caught": 6
+    },
+    {
+     "t": 2.0,
+     "refused": 30,
+     "caught": 6
+    },
+    {
+     "t": 2.5,
+     "refused": 31,
+     "caught": 6
+    },
+    {
+     "t": 3.0,
+     "refused": 32,
+     "caught": 6
+    },
+    {
+     "t": 3.5,
+     "refused": 32,
+     "caught": 6
+    },
+    {
+     "t": 4.0,
+     "refused": 32,
+     "caught": 6
+    }
+   ],
+   "at_zero": {
+    "refused": 19,
+    "caught": 6
+   },
+   "at_calibrated": {
+    "refused": 6,
+    "caught": 6
+   },
+   "gold_mean": 4.14,
+   "gold_divisor": 3.26
+  }
+ ]
+}
