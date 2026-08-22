@@ -359,12 +359,19 @@ function inflight(ctx, T, link, ink, a, t) {
   }
 }
 
+/* How far the leader runs out of the plate, in world units, and how much
+   vertical room the three rows of text need, in pixels. The fit reads both --
+   keeping them here is what stops the solver's idea of a label and the drawn
+   label from disagreeing, which is how the BM25 caption came to be clipped. */
+const LEADER = 13;
+const LABEL_PX = 52;
+
 /* A leader line out of the plate to its label -- the reference's annotation
    device, and the reason labels never collide with the next plate. */
 function annotate(ctx, T, plate, city, run, ink, a, dim) {
   const up = plate.lead === 1;
   const from = T(plate.u, plate.v, plate.z + (up ? plate.w : -plate.w));
-  const to = T(plate.u, plate.v, plate.z + (up ? plate.w + 13 : -plate.w - 13));
+  const to = T(plate.u, plate.v, plate.z + (up ? plate.w + LEADER : -plate.w - LEADER));
 
   ctx.save();
   ctx.globalAlpha = a * 0.5;
@@ -463,18 +470,27 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null)
   ctx.clearRect(0, 0, W, H);
   if (!city) return;
 
+  // An annotation is two things in two different units, and fitting them as
+  // one was the bug. The leader line is LEADER world units long and scales
+  // with the drawing; the three rows of text are a fixed pixel height and do
+  // not. The old probe reserved 42 world units for both -- against a leader
+  // that is actually 13 -- so roughly half the vertical budget was reserved
+  // for ink that is never drawn, the solver shrank everything to fit it, and
+  // the slack showed up as an empty band above the plates.
   const probe = [];
   for (const p of PLATES) {
     for (const c of corners(p.w)) probe.push(project(p.u + c.u, p.v + c.v, p.z));
-    // the annotation stack, so a label is never clipped by the canvas edge
-    probe.push(project(p.u, p.v, p.z + (p.lead === 1 ? p.w + 42 : -p.w - 42)));
+    const tip = p.w + LEADER;
+    probe.push(project(p.u, p.v, p.z + (p.lead === 1 ? tip : -tip)));
   }
   const xs = probe.map(p => p.x), ys = probe.map(p => p.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
 
-  const pad = 16;
-  const s = Math.min((W - pad * 2) / (maxX - minX), (H - pad * 2) / (maxY - minY));
+  const padX = 18;
+  const padY = LABEL_PX;              // the text stack only -- see above
+  const s = Math.min((W - padX * 2) / (maxX - minX),
+                     (H - padY * 2) / (maxY - minY));
   const ox = W / 2 - ((minX + maxX) / 2) * s;
   const oy = H / 2 - ((minY + maxY) / 2) * s;
   const T = (u, v, z) => { const p = project(u, v, z); return { x: ox + p.x * s, y: oy + p.y * s }; };

@@ -316,7 +316,9 @@ button,input,textarea{font:inherit;color:inherit}
   font-size:10px;color:var(--faint)}
 .legend i{width:7px;height:7px;border-radius:2px}
 .legend i.w{background:var(--wire)}
-canvas.city{display:block;width:100%;height:clamp(280px,32vw,400px)}
+/* The drawing wants roughly 3:1 once its labels are counted honestly, so the
+   height tracks the width instead of sitting at a constant. */
+canvas.city{display:block;width:100%;height:clamp(300px,29vw,430px)}
 .vizfoot{display:flex;align-items:center;gap:14px;
   padding:10px clamp(22px,3.4vw,34px) 18px;flex-wrap:wrap}
 .vizfoot .cap{color:var(--mute);font-size:13px;flex:1;min-width:220px;line-height:1.5}
