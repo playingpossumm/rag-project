@@ -118,7 +118,17 @@ class Resources:
 
     def stats(self) -> dict:
         docs = sorted({c["source"] for c in self.metadata})
-        return {"chunks": len(self.metadata), "documents": len(docs), "sources": docs}
+        # The real document title, so the interface can say "Attention Is All
+        # You Need" instead of "attention_is_all_you_need". The loaders already
+        # extract it; nothing downstream was using it. First non-empty wins --
+        # every chunk of a document carries the same one.
+        titles: dict[str, str] = {}
+        for c in self.metadata:
+            t = (c.get("title") or "").strip()
+            if t and c["source"] not in titles:
+                titles[c["source"]] = t
+        return {"chunks": len(self.metadata), "documents": len(docs),
+                "sources": docs, "titles": titles}
 
 
 RES = Resources()

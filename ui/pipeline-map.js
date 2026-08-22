@@ -41,20 +41,26 @@ const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
 
 /* label side: 1 above, -1 below. Leader lines run vertically out of the plate
    to the text, the way the reference annotates its diagrams. */
+/* `cells` is the matrix each stage is drawn as: [columns, rows], sized to the
+   number of candidates that stage actually carries. Every plate is a grid of
+   real cells rather than a mesh with marks scattered on it, so a stage reads
+   the way a layer of activations reads -- occupied cells bright, empty cells
+   present but dark. The index keeps its own treatment because 5,459 passages
+   is a field, not a matrix. */
 const PLATES = [
-  { id: "corpus",   n: "01", ...at(0, 0),   w: 13, grid: 8, lead: 1,
+  { id: "corpus",   n: "01", ...at(0, 0),   w: 13,  cells: null, lead: 1,
     label: "Index",              term: c => `${c.total.toLocaleString()} passages · ${c.docs} documents` },
-  { id: "dense",    n: "02", ...at(1, 15),  w: 6.5, grid: 4, lead: 1,
+  { id: "dense",    n: "02", ...at(1, 15),  w: 6.5, cells: [5, 4], lead: 1,
     label: "Dense retrieval",    term: () => "embedding similarity" },
-  { id: "sparse",   n: "03", ...at(1, -15), w: 6.5, grid: 4, lead: -1,
+  { id: "sparse",   n: "03", ...at(1, -15), w: 6.5, cells: [5, 4], lead: -1,
     label: "BM25",               term: () => "lexical match" },
-  { id: "fused",    n: "04", ...at(2, 0),   w: 7.5, grid: 4, lead: 1,
+  { id: "fused",    n: "04", ...at(2, 0),   w: 7.5, cells: [5, 4], lead: 1,
     label: "Rank fusion",        term: () => "both rankings combined" },
-  { id: "reranked", n: "05", ...at(3, 0),   w: 7.5, grid: 4, lead: -1,
+  { id: "reranked", n: "05", ...at(3, 0),   w: 7.5, cells: [5, 4], lead: -1,
     label: "Cross-encoder",      term: () => "query and passage scored together" },
-  { id: "selected", n: "06", ...at(4, 0),   w: 6,  grid: 3, lead: 1,
+  { id: "selected", n: "06", ...at(4, 0),   w: 6,   cells: [5, 1], lead: 1,
     label: "Diversity cap",      term: () => "max 2 per document" },
-  { id: "answer",   n: "07", ...at(5, 0),   w: 5,  grid: 2, lead: -1,
+  { id: "answer",   n: "07", ...at(5, 0),   w: 5,   cells: [5, 1], lead: -1,
     label: "Answer",             term: () => "cited passages" },
 ];
 
@@ -73,7 +79,35 @@ const easeOut = t => 1 - Math.pow(1 - t, 3);
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const lerp = (a, b, t) => a + (b - a) * t;
 
-const SLOTS = 4;
+/* Cell `i` of a plate's matrix, in reading order: left to right, top to bottom,
+   which is also rank order. Returns the centre and the half-extents, so the
+   caller can draw the cell as an isometric quad rather than a point. */
+function cellAt(plate, i) {
+  const [cols, rows] = plate.cells || [1, 1];
+  const cw = (plate.w * 2) / cols, ch = (plate.w * 2) / rows;
+  const cx = i % cols, cy = Math.floor(i / cols) % rows;
+  const GAP = 0.16;                       // fraction of a cell left as gutter
+  return {
+    u: plate.u - plate.w + cw * (cx + 0.5),
+    v: plate.v - plate.w + ch * (cy + 0.5),
+    du: (cw / 2) * (1 - GAP),
+    dv: (ch / 2) * (1 - GAP),
+  };
+}
+
+function drawCell(ctx, T, c, z, fill, stroke, a, lw = 0.8) {
+  const p = [T(c.u - c.du, c.v - c.dv, z), T(c.u + c.du, c.v - c.dv, z),
+             T(c.u + c.du, c.v + c.dv, z), T(c.u - c.du, c.v + c.dv, z)];
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.beginPath();
+  ctx.moveTo(p[0].x, p[0].y);
+  for (let i = 1; i < 4; i++) ctx.lineTo(p[i].x, p[i].y);
+  ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
+  ctx.restore();
+}
 
 function palette(sources, ink) {
   const slots = [ink.s1, ink.s2, ink.s3];
@@ -82,14 +116,11 @@ function palette(sources, ink) {
   return src => m.get(src) || ink.other;
 }
 
-function slot(plate, i, n) {
-  const cols = Math.min(SLOTS, Math.max(1, n));
-  const rows = Math.max(1, Math.ceil(n / cols));
-  const cx = i % cols, cy = Math.floor(i / cols);
-  const su = (plate.w * 1.35) / (cols + 1);
-  const sv = (plate.w * 1.35) / (rows + 1);
-  return { u: plate.u - plate.w * 0.68 + su * (cx + 1),
-           v: plate.v - plate.w * 0.68 + sv * (cy + 1) };
+/* A candidate's home on its stage. Position IS rank -- first cell, top left --
+   so the same passage visibly moves between plates when the cross-encoder
+   reorders it, which is the one thing the reranker stage has to show. */
+function slot(plate, i) {
+  return cellAt(plate, i);
 }
 
 /* ------------------------------------------------------------- the index */
@@ -132,7 +163,11 @@ export function buildRun(trace, city, ink) {
   for (const plate of PLATES) {
     const st = byName.get(plate.id);
     if (!st) continue;
-    const items = st.items.slice(0, SLOTS * 3);
+    // As many candidates as this stage's matrix has cells. Taking more would
+    // silently wrap them onto occupied cells; taking a fixed number would leave
+    // the wider stages looking half-empty when they were full.
+    const [cols, rows] = plate.cells || [1, 1];
+    const items = st.items.slice(0, cols * rows);
     placed.set(plate.id, items.map((it, i) => ({
       ...it, ...slot(plate, i, items.length), z: plate.z,
       lives: survivors.has(it.chunk_id),
@@ -216,21 +251,21 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
   const pts = corners(plate.w).map(c => T(plate.u + c.u, plate.v + c.v, plate.z));
   ctx.save();
 
-  // mesh first, so the outline sits cleanly on top of it. It arrives after the
-  // outline has closed -- an empty frame reads as a plate, a loose grid does not.
-  const meshF = clamp01((f - 0.45) / 0.55);
-  if (meshF > 0) {
-    ctx.strokeStyle = ink.other;
-    ctx.globalAlpha = a * meshF * (dim ? 0.16 : 0.3);
-    ctx.lineWidth = 0.6;
-    for (let i = 1; i < plate.grid; i++) {
-      const t = -plate.w + (2 * plate.w * i) / plate.grid;
-      const p1 = T(plate.u + t, plate.v - plate.w, plate.z);
-      const p2 = T(plate.u + t, plate.v + plate.w, plate.z);
-      const q1 = T(plate.u - plate.w, plate.v + t, plate.z);
-      const q2 = T(plate.u + plate.w, plate.v + t, plate.z);
-      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(q1.x, q1.y); ctx.lineTo(q2.x, q2.y); ctx.stroke();
+  // The empty matrix. Every slot the stage can hold is drawn, so a stage that
+  // filled four of twenty looks different from one that filled twenty -- with a
+  // mesh they looked identical. Cells arrive after the outline closes: an empty
+  // frame reads as a plate, loose cells read as debris.
+  const cellF = clamp01((f - 0.4) / 0.6);
+  if (cellF > 0 && plate.cells) {
+    const [cols, rows] = plate.cells;
+    // Staggered by column so the matrix fills the way the flow runs, left to
+    // right, rather than materialising all at once.
+    for (let i = 0; i < cols * rows; i++) {
+      const col = i % cols;
+      const s = clamp01((cellF - (col / cols) * 0.35) / 0.65);
+      if (s <= 0) continue;
+      drawCell(ctx, T, cellAt(plate, i), plate.z,
+               null, ink.other, a * s * (dim ? 0.14 : 0.26), 0.6);
     }
   }
 
@@ -488,10 +523,15 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null)
           else mark(ctx, p, 1.1, null, ink.other, ma * 0.4);
         }
       } else if (ft >= 0.995) {
-        for (const m of run?.placed.get(plate.id) || []) {
-          const p = T(m.u, m.v, plate.z + 0.5);
-          if (m.lives) mark(ctx, p, 3.4, m.colour, null, ma);
-          else mark(ctx, p, 2.2, null, ink.other, ma * 0.4);
+        // Occupied cells, filled. Brightness is RANK -- one unit that means the
+        // same thing on every plate, so a passage getting brighter between two
+        // stages is a real promotion. The scores underneath are in four
+        // different units and would not compare.
+        const items = run?.placed.get(plate.id) || [];
+        for (const m of items) {
+          const k = 1 - ((m.rank - 1) / Math.max(items.length, 1)) * 0.7;
+          drawCell(ctx, T, m, plate.z, m.lives ? m.colour : ink.other, null,
+                   ma * (m.lives ? k : k * 0.4));
         }
       }
     }
