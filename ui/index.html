@@ -104,19 +104,29 @@ button,input,textarea{font:inherit;color:inherit}
 .trayTab:hover{color:var(--ink);border-color:var(--edge)}
 .trayTab .ico{width:6px;height:6px;border-radius:50%;background:var(--wire);flex:none}
 .trayTab.on .ico{background:var(--warn)}
-.trayPanel{width:0;overflow:hidden;opacity:0;
+/* Transform and opacity, not width. Animating width relayouts the panel and
+   everything in it on every frame; a transform is composited. The panel sits
+   at its full size and slides the short distance in from the edge it is
+   anchored to, which is also where it comes from. visibility is transitioned
+   with a delay so a closed panel leaves the accessibility tree without
+   cutting the fade short. */
+.trayPanel{position:absolute;right:100%;top:50%;width:min(430px,86vw);
+  transform:translate(14px,-50%);opacity:0;visibility:hidden;pointer-events:none;
   background:var(--card);border:1px solid var(--hair);border-radius:12px 0 0 12px;
   box-shadow:-18px 0 44px rgba(0,0,0,.5);
-  transition:width 220ms var(--ease),opacity 160ms var(--ease)}
-.tray[data-open="true"] .trayPanel{width:min(430px,86vw);opacity:1}
-.trayPanel[hidden]{display:none}
+  transition:transform 220ms var(--ease),opacity 150ms var(--ease),
+             visibility 0s linear 220ms}
+.tray[data-open="true"] .trayPanel{transform:translate(0,-50%);opacity:1;
+  visibility:visible;pointer-events:auto;transition-delay:0s}
 .trayPanel .sets{padding:8px}
 .trayPanel .cmp{border-top:1px solid var(--hair);padding:12px 15px;
   font-size:12.5px;color:var(--mute);line-height:1.5}
 @media (prefers-reduced-motion:reduce){
-  /* Reduced motion means gentler, not none: the panel still fades so the
-     change is legible, it just does not travel. */
-  .trayPanel{transition:opacity 160ms linear}
+  /* Gentler, not none: the panel still fades so the change stays legible, it
+     just does not travel. */
+  .trayPanel{transform:translate(0,-50%);
+    transition:opacity 150ms linear,visibility 0s linear 150ms}
+  .tray[data-open="true"] .trayPanel{transition-delay:0s}
 }
 @media (max-width:720px){ .tray{top:auto;bottom:0;transform:none} }
 
@@ -449,7 +459,7 @@ tr.out td{color:var(--faint)}
       <span class="ico" aria-hidden="true"></span>
       <span class="tt" id="setName">Settings</span>
     </button>
-    <div class="trayPanel" id="setMenu" hidden>
+    <div class="trayPanel" id="setMenu">
       <div class="sets" id="setBody"></div>
       <div class="cmp" id="setCmp"></div>
     </div>
@@ -743,27 +753,18 @@ addEventListener("click", closeMenu);
 addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
 $("#pickMenu").onclick = e => e.stopPropagation();
 
+// One attribute drives it. The panel is always in the layout, so there is no
+// frame to wait for and no timer to unwind -- CSS retargets from wherever the
+// transform currently is, which means a fast open/close/open does not jump.
 const closeSet = () => {
   $("#tray").dataset.open = "false";
   $("#setBtn").setAttribute("aria-expanded", "false");
-  // Kept in the layout until the width transition finishes, so it collapses
-  // rather than vanishing.
-  setTimeout(() => {
-    if ($("#tray").dataset.open !== "true") $("#setMenu").hidden = true;
-  }, 240);
 };
 $("#setBtn").onclick = e => {
   e.stopPropagation();
   const open = $("#tray").dataset.open !== "true";
   closeMenu();
-  if (open) {
-    $("#setMenu").hidden = false;
-    // One frame with the panel in the layout at width 0, so the transition has
-    // a start value to run from.
-    requestAnimationFrame(() => { $("#tray").dataset.open = "true"; });
-  } else {
-    closeSet();
-  }
+  $("#tray").dataset.open = String(open);
   $("#setBtn").setAttribute("aria-expanded", String(open));
 };
 $("#tray").onclick = e => e.stopPropagation();
@@ -1119,7 +1120,6 @@ function renderSettings() {
   const changed = JSON.stringify(opts) !== JSON.stringify(DEFAULTS);
   $("#setName").textContent = changed ? "Settings · changed" : "Settings";
   $("#setBtn").classList.toggle("on", changed);
-  $("#setMenu").hidden = $("#tray").dataset.open !== "true";
 
   $("#setBody").querySelectorAll(".set").forEach(cell => {
     cell.querySelectorAll(".opt").forEach(b => {
