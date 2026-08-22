@@ -89,10 +89,37 @@ button,input,textarea{font:inherit;color:inherit}
 .picker>button .dot{width:6px;height:6px;border-radius:50%;background:var(--s3);flex:none}
 .picker>button .caret{width:5px;height:5px;border-right:1.5px solid var(--faint);
   border-bottom:1.5px solid var(--faint);transform:rotate(45deg) translate(-1px,-1px)}
-.menu.wide{min-width:454px;padding:0}
-.menu.wide .sets{padding:6px}
-.menu.wide .cmp{border-top:1px solid var(--hair);padding:11px 14px;
+/* ---- the settings tray -------------------------------------------------
+   Right edge, vertically centred, collapsed to a tab. Entering motion is
+   ease-out and under 300ms; it moves on transform and opacity only, and never
+   scales from zero -- the panel slides in from the edge it is anchored to,
+   which is where it actually comes from. */
+.tray{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:50;
+  display:flex;align-items:center;gap:0}
+.trayTab{display:flex;align-items:center;gap:9px;background:var(--card);
+  border:1px solid var(--hair);border-right:0;border-radius:10px 0 0 10px;
+  padding:13px 13px 13px 14px;cursor:pointer;font:inherit;font-size:12.5px;
+  color:var(--dim);writing-mode:vertical-rl;
+  transition:color 160ms var(--ease),border-color 160ms var(--ease)}
+.trayTab:hover{color:var(--ink);border-color:var(--edge)}
+.trayTab .ico{width:6px;height:6px;border-radius:50%;background:var(--wire);flex:none}
+.trayTab.on .ico{background:var(--warn)}
+.trayPanel{width:0;overflow:hidden;opacity:0;
+  background:var(--card);border:1px solid var(--hair);border-radius:12px 0 0 12px;
+  box-shadow:-18px 0 44px rgba(0,0,0,.5);
+  transition:width 220ms var(--ease),opacity 160ms var(--ease)}
+.tray[data-open="true"] .trayPanel{width:min(430px,86vw);opacity:1}
+.trayPanel[hidden]{display:none}
+.trayPanel .sets{padding:8px}
+.trayPanel .cmp{border-top:1px solid var(--hair);padding:12px 15px;
   font-size:12.5px;color:var(--mute);line-height:1.5}
+@media (prefers-reduced-motion:reduce){
+  /* Reduced motion means gentler, not none: the panel still fades so the
+     change is legible, it just does not travel. */
+  .trayPanel{transition:opacity 160ms linear}
+}
+@media (max-width:720px){ .tray{top:auto;bottom:0;transform:none} }
+
 .menu{position:absolute;right:0;top:calc(100% + 8px);min-width:334px;z-index:40;
   background:var(--card);border:1px solid var(--edge);border-radius:12px;
   padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.5)}
@@ -384,15 +411,6 @@ tr.out td{color:var(--faint)}
       </button>
       <div class="menu" id="pickMenu" hidden role="menu"></div>
     </span>
-    <span class="picker" id="setwrap">
-      <button type="button" id="setBtn" aria-haspopup="true" aria-expanded="false">
-        <span id="setName">Settings</span><span class="caret"></span>
-      </button>
-      <div class="menu wide" id="setMenu" hidden role="menu">
-        <div class="sets" id="setBody"></div>
-        <div class="cmp" id="setCmp"></div>
-      </div>
-    </span>
   </nav>
 </div></header>
 
@@ -417,6 +435,21 @@ tr.out td{color:var(--faint)}
   </section>
 
   <div id="thread"></div>
+
+  <!-- Settings float rather than sitting in the bar: they are used rarely and
+       apply to the whole session, so they belong out of the reading column but
+       always reachable. -->
+  <aside class="tray" id="tray">
+    <button class="trayTab" id="setBtn" type="button"
+            aria-expanded="false" aria-controls="setMenu">
+      <span class="ico" aria-hidden="true"></span>
+      <span class="tt" id="setName">Settings</span>
+    </button>
+    <div class="trayPanel" id="setMenu" hidden>
+      <div class="sets" id="setBody"></div>
+      <div class="cmp" id="setCmp"></div>
+    </div>
+  </aside>
   <div class="dock hide" id="dock"></div>
 </div>
 
@@ -441,8 +474,51 @@ const clean = s => String(s)
   .replace(/(^|\s)[*_]{1,2}(?=\S)|(?<=\S)[*_]{1,2}(?=\s|$)/g, "$1")
   .replace(/\s+/g, " ").trim();
 
-/* Chunks are cut on a token boundary, so a passage routinely starts and ends
-   mid-sentence. Marking both ends says "a fragment of something longer". */
+/* Chunks are cut on a token boundary, so a passage routinely stops
+   mid-sentence -- and when the answer is the number right after "we use a rate
+   of", stopping there hides the very thing that was asked for. That was not
+   hypothetical: "what label smoothing value was used" returned a passage
+   ending "...we use a rate of _" and the reader never saw 0.1.
+
+   Window expansion already retrieved the neighbouring chunks and every
+   selected item carries them as `context.text`; the interface simply was not
+   reading it. This walks forward from the end of the chunk to the end of the
+   sentence it was cut in the middle of. Nothing is fetched and nothing is
+   rewritten -- it is the same text the system already had. */
+function completed(item) {
+  const chunk = clean(item?.text || "");
+  const full = clean(item?.context?.text || "");
+  if (!full || !chunk) return chunk;
+
+  // Anchor on both ends of the chunk and return one contiguous slice of the
+  // window, rather than gluing the chunk onto a continuation. The two strings
+  // are cleaned separately and markdown does not survive that identically --
+  // a chunk ending "a rate of _" becomes "a rate of Pdrop" once the emphasis
+  // marker has a word to attach to -- so any seam between them is unreliable.
+  const key = t => t.replace(/[^A-Za-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  const fullKey = key(full), chunkKey = key(chunk);
+  if (!chunkKey) return chunk;
+
+  const tail = chunkKey.slice(-40);
+  const hit = fullKey.indexOf(tail);
+  if (hit < 0) return chunk;                      // window did not contain it
+
+  // Walk the cleaned text and the key together to recover the real offset.
+  let ci = 0, fi = 0;
+  const want = hit + tail.length;
+  while (fi < full.length && ci < want) {
+    if (key(full[fi])) ci += key(full[fi]).length;
+    fi++;
+  }
+  const rest = full.slice(fi, fi + 320);
+  const finish = rest.match(/^[^.!?]*[.!?]/);
+  if (!finish) return chunk;
+
+  const head = fullKey.indexOf(chunkKey.slice(0, 40));
+  return (head >= 0 ? full.slice(0, fi) : chunk) + finish[0];
+}
+
+/* Marking both ends says "a fragment of something longer". */
 const fragment = s => {
   const t = clean(s);
   if (!t) return t;
@@ -466,6 +542,24 @@ let ACTIVE = null;
 // The options the next question will run with, and everything about the last
 // one, so the top-bar panel can re-run it when a control changes.
 let OPTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window" };
+
+/* filename -> the document's real title, from the index metadata. A citation
+   reading "lora" tells you nothing; "LoRA: Low-Rank Adaptation of Large
+   Language Models" is the thing you would look for on a shelf. Falls back to a
+   tidied filename when a document has no extractable title. */
+let TITLES = {};
+function docName(source) {
+  const t = TITLES[source];
+  if (t) {
+    // Some PDFs set their title in full caps. Sentence-case those; leave
+    // mixed-case titles alone, since their capitalisation is deliberate.
+    const fixed = t === t.toUpperCase()
+      ? t.toLowerCase().replace(/(^|[:.]\s*)([a-z])/g, (_, p, c) => p + c.toUpperCase())
+      : t;
+    return fixed.length > 72 ? fixed.slice(0, 71).trimEnd() + "…" : fixed;
+  }
+  return shortDoc(source).replace(/[_-]+/g, " ");
+}
 let LAST = null;
 const REPLAY_MS = 7000;
 const DEFAULTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window" };
@@ -482,6 +576,7 @@ async function loadCorpus() {
     fetch("/api/eval").then(r => r.ok ? r.json() : null).catch(() => null),
   ]);
   CITY = buildCity(chunks); EVAL = evalData; ACTIVE = corpus.active || null;
+  TITLES = corpus.titles || {};
   $("#readout").textContent = `${nf(corpus.chunks)} chunks · ${corpus.documents} docs`;
   // Grouped by what kind of retrieval the question exercises. The adversarial
   // group is labelled with what SHOULD happen, so a refusal reads as the
@@ -624,17 +719,29 @@ addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
 $("#pickMenu").onclick = e => e.stopPropagation();
 
 const closeSet = () => {
-  $("#setMenu").hidden = true;
+  $("#tray").dataset.open = "false";
   $("#setBtn").setAttribute("aria-expanded", "false");
+  // Kept in the layout until the width transition finishes, so it collapses
+  // rather than vanishing.
+  setTimeout(() => {
+    if ($("#tray").dataset.open !== "true") $("#setMenu").hidden = true;
+  }, 240);
 };
 $("#setBtn").onclick = e => {
   e.stopPropagation();
-  const open = $("#setMenu").hidden;
+  const open = $("#tray").dataset.open !== "true";
   closeMenu();
-  $("#setMenu").hidden = !open;
+  if (open) {
+    $("#setMenu").hidden = false;
+    // One frame with the panel in the layout at width 0, so the transition has
+    // a start value to run from.
+    requestAnimationFrame(() => { $("#tray").dataset.open = "true"; });
+  } else {
+    closeSet();
+  }
   $("#setBtn").setAttribute("aria-expanded", String(open));
 };
-$("#setMenu").onclick = e => e.stopPropagation();
+$("#tray").onclick = e => e.stopPropagation();
 addEventListener("click", closeSet);
 addEventListener("keydown", e => { if (e.key === "Escape") closeSet(); });
 
@@ -764,7 +871,7 @@ function renderTurn(turn, question, data, opts) {
         .map(p => `<p>${esc(p.trim())}</p>`).join("")}</div>`
     : v.confident === false
       ? `<p class="answer">I could not find an answer to this in your documents.</p>`
-      : `<p class="answer">${esc(fragment(top ? top.text : ""))}</p>`;
+      : `<p class="answer">${esc(fragment(completed(top)))}</p>`;
 
   turn.querySelector(".slot").innerHTML = `
     <div class="pad">
@@ -775,7 +882,7 @@ function renderTurn(turn, question, data, opts) {
       ${answerHTML}
       ${top && v.confident !== false ? `<div class="cite">
         <i style="background:${colour(top.source)}"></i>
-        ${esc(shortDoc(top.source))} · ${esc(top.locator)}</div>` : ""}
+        ${esc(docName(top.source))} · ${esc(top.locator)}</div>` : ""}
       ${gen.state === "unavailable" ? `<div class="warnbox">
         <span class="k">could not write it out</span>
         It could not write this one out, so you are getting the passage itself.
@@ -786,24 +893,18 @@ function renderTurn(turn, question, data, opts) {
            answer the question. Handing you the nearest thing it found would be
            <b>worse than saying nothing</b>.</p>`
         : gen.state === "ok"
-          ? `<p class="note">Written using only the ${sel.length} passages below. Every
-             claim shows the file it came from.</p>`
-          : `<p class="note">This is the text from your file, <b>word for word</b>.
-             Nothing was rewritten, so nothing can be made up.</p>`}
+          ? `<p class="note">Written from the ${sel.length} passages below.</p>`
+          : ""}
       <details class="why"><summary>Why it ${v.confident === false ? "did not answer" : "answered"}</summary>
         <p>${why}</p></details>
       <div class="pills">
         ${docs.map(d => `<span class="pill"><i style="background:${colour(d.source)}"></i>
-          ${esc(shortDoc(d.source))} <b>${d.n}</b></span>`).join("")}
+          ${esc(docName(d.source))} <b>${d.n}</b></span>`).join("")}
         <span class="pill">${data.ms.toFixed(0)}<b>ms</b></span>
         ${data.context ? `<span class="pill">${nf(data.context.chars)}<b>chars</b></span>` : ""}
       </div>
     </div>
 
-    <div class="stack"></div>
-
-    <details class="more"><summary><span class="lab">Spatial view</span>
-      <span class="hint">the same run as a pipeline diagram</span></summary>
     <div class="viz">
       <div class="vizhead"><span class="lab">How it found this</span>
         <span class="legend">
@@ -818,7 +919,8 @@ function renderTurn(turn, question, data, opts) {
         <button class="replay" type="button">Replay</button>
       </div>
     </div>
-    </details>
+
+    <div class="stack"></div>
 
     <details class="more"><summary><span class="lab">Candidates</span>
       <span class="hint">${ranked.length} looked at, ${sel.length} used</span></summary>
@@ -828,7 +930,7 @@ function renderTurn(turn, question, data, opts) {
         <tbody>${ranked.map(i => `
           <tr class="${sel.some(s => s.chunk_id === i.chunk_id) ? "" : "out"}">
             <td class="r num">${i.rank}</td>
-            <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(shortDoc(i.source))}</div>
+            <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(docName(i.source))}</div>
                 <div class="loc">${esc(i.locator)}</div></td>
             <td><div class="snip">${esc(clean(i.text))}</div></td>
             <td class="r num">${typeof i.score === "number" ? sig(i.score) : ""}</td>
@@ -846,7 +948,7 @@ function renderTurn(turn, question, data, opts) {
             <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th><th class="r">Score</th></tr></thead>
             <tbody>${s.items.slice(0, 6).map(i => `
               <tr><td class="r num">${i.rank}</td>
-                <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(shortDoc(i.source))}</div>
+                <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(docName(i.source))}</div>
                     <div class="loc">${esc(i.locator)}</div></td>
                 <td><div class="snip">${esc(clean(i.text))}</div></td>
                 <td class="r num">${typeof i.score === "number" ? i.score : ""}</td></tr>`).join("")}
@@ -865,102 +967,44 @@ function renderTurn(turn, question, data, opts) {
   renderSettings();
 }
 
-/* ------------------------------------------------------- the layer stack
-   One column per candidate passage, held across every row, so a column is that
-   passage's whole life: found by dense, missed by BM25, promoted by the
-   cross-encoder, kept by the cap. The attention block below shares the same
-   columns, which is the only reason the two can be read against each other. */
-const STAGE_ROWS = [
-  ["dense", "dense"], ["sparse", "bm25"], ["fused", "fused"],
-  ["reranked", "reranked"], ["selected", "kept"],
-];
-
+/* --------------------------------------------------------- attention map
+   Which words in the question did the lexical matching, per passage. The
+   pipeline itself is drawn isometrically above; this is the one thing that
+   drawing cannot carry, because it is indexed by query term rather than by
+   stage. Exact, not estimated: BM25 sums over query terms. */
 function renderStack(turn, data, colour, sig) {
   const host = turn.querySelector(".stack");
   if (!host) return;
   const att = data.attribution || {};
+  if (!att.terms?.length) { host.innerHTML = ""; host.hidden = true; return; }
+  host.hidden = false;
+
   const byName = new Map(data.stages.map(s => [s.name, s]));
-  const sel = new Set((byName.get("selected")?.items || []).map(i => i.chunk_id));
-
-  // Columns come from the attribution when there is one so both blocks line up
-  // exactly; otherwise from whichever ranked stage ran.
-  let cols = att.chunk_ids;
-  if (!cols || !cols.length) {
-    const r = byName.get("reranked") || byName.get("fused") || byName.get("dense");
-    cols = (r?.items || []).slice(0, 12).map(i => i.chunk_id);
-  }
-  if (!cols.length) { host.innerHTML = ""; return; }
-
   const src = new Map();
   for (const st of data.stages) for (const i of st.items) src.set(i.chunk_id, i);
+  const cols = att.chunk_ids;
+  const max = Math.max(...att.matrix.flat(), 0.0001);
 
-  const tmpl = `132px repeat(${cols.length}, minmax(0, 1fr))`;
   const out = [`<div class="rl"></div>`];
   cols.forEach((_, i) => out.push(
     `<div class="cn">${String(i + 1).padStart(2, "0")}</div>`));
-
-  // Which retriever actually found the passages that survived. On a question
-  // turning on a rare term this comes out lopsided, and that lopsidedness is
-  // the argument for running both retrievers -- worth stating rather than
-  // leaving the reader to count cells.
-  const dense = new Set((byName.get("dense")?.items || []).map(i => i.chunk_id));
-  const sparse = new Set((byName.get("sparse")?.items || []).map(i => i.chunk_id));
-  const only = (a, b) => cols.filter(id => a.has(id) && !b.has(id)).length;
-  const found = { d: only(dense, sparse), s: only(sparse, dense),
-                  both: cols.filter(id => dense.has(id) && sparse.has(id)).length };
-
-  for (const [name, label] of STAGE_ROWS) {
-    const st = byName.get(name);
-    if (!st || st.skipped) continue;
-    const items = st.items;
-    const rank = new Map(items.map(i => [i.chunk_id, i]));
-    out.push(`<div class="rl${name === "selected" ? " on" : ""}">${esc(label)}</div>`);
-    for (const id of cols) {
-      const it = rank.get(id);
-      if (!it) { out.push(`<div class="cell gone"></div>`); continue; }
-      // Brightest at rank 1, never fading to invisible -- present-but-last and
-      // absent are different facts and must not look the same.
-      const k = 1 - ((it.rank - 1) / Math.max(items.length, 1)) * 0.86;
-      const c = sel.has(id) ? colour(it.source) : "var(--wire)";
-      const score = typeof it.score === "number" ? ` · score ${sig(it.score)}` : "";
-      const moved = it.delta ? ` · moved ${it.delta > 0 ? "+" : ""}${it.delta}` : "";
-      out.push(`<div class="cell has" style="background:${c};opacity:${k.toFixed(2)}"
-        title="${esc(label)} · rank ${it.rank} of ${items.length}${score}${moved}
-${esc(shortDoc(it.source))} · ${esc(it.locator)}"></div>`);
-    }
-  }
-
-  if (att.terms?.length) {
-    out.push(`<div class="sep"></div>`);
-    const flat = att.matrix.flat();
-    const max = Math.max(...flat, 0.0001);
-    att.terms.forEach((t, r) => {
-      out.push(`<div class="rl">${esc(t)}</div>`);
-      att.matrix[r].forEach((v, ci) => {
-        if (v <= 0) { out.push(`<div class="cell"></div>`); return; }
-        out.push(`<div class="cell has" style="background:var(--dim);opacity:${
-          (0.18 + (v / max) * 0.82).toFixed(2)}"
-          title="&quot;${esc(t)}&quot; contributed ${v.toFixed(2)} of this passage's BM25 score"></div>`);
-      });
+  att.terms.forEach((t, r) => {
+    out.push(`<div class="rl">${esc(t)}</div>`);
+    att.matrix[r].forEach((v, ci) => {
+      const it = src.get(cols[ci]);
+      out.push(v <= 0
+        ? `<div class="cell"></div>`
+        : `<div class="cell has" style="opacity:${(0.18 + (v / max) * 0.82).toFixed(2)}"
+             title="&quot;${esc(t)}&quot; contributed ${v.toFixed(2)} to ${
+               esc(docName(it?.source || ""))}"></div>`);
     });
-  }
+  });
 
   host.innerHTML = `
-    <div class="hd"><span class="lab">Every candidate, every stage</span>
-      <span class="k">${cols.length} passages · brighter = ranked higher · hover for the score</span></div>
-    <div class="grid" style="grid-template-columns:${tmpl}">${out.join("")}</div>
-    <p class="ft">Of these ${cols.length} candidates,
-      <b>${found.d}</b> were found by dense retrieval alone,
-      <b>${found.s}</b> by BM25 alone and
-      <b>${found.both}</b> by both.${
-        found.both === 0 && cols.length > 4
-          ? " The two retrievers agreed on nothing here, which is the case hybrid search exists for."
-          : ""}</p>
-    ${att.terms?.length ? `<p class="ft">The lower block is <b>which words did the
-      lexical matching</b>. Dense retrieval has no equivalent — it turns the whole
-      question into one 384-number vector and the individual words stop existing.
-      That asymmetry is the difference between the two retrievers, not a gap in the
-      drawing.</p>` : ""}`;
+    <div class="hd"><span class="lab">Which words matched</span>
+      <span class="k">BM25 only — dense retrieval has no per-word equivalent</span></div>
+    <div class="grid" style="grid-template-columns:118px repeat(${cols.length}, minmax(0, 1fr))">
+      ${out.join("")}</div>`;
 }
 
 /* ---------------------------------------------------------- the picture */
@@ -1049,6 +1093,7 @@ function renderSettings() {
   const changed = JSON.stringify(opts) !== JSON.stringify(DEFAULTS);
   $("#setName").textContent = changed ? "Settings · changed" : "Settings";
   $("#setBtn").classList.toggle("on", changed);
+  $("#setMenu").hidden = $("#tray").dataset.open !== "true";
 
   $("#setBody").querySelectorAll(".set").forEach(cell => {
     cell.querySelectorAll(".opt").forEach(b => {
