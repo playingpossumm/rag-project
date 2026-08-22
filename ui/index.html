@@ -419,11 +419,11 @@ async function loadCorpus() {
     b.onclick = () => { $("#q").value = b.dataset.q; submit(); };
   });
   if (ACTIVE) $("#pickName").textContent = ACTIVE.label;
-  drawIdle();
+  idleLoop();
 }
 
 Promise.all([loadCorpus(), loadPicker()]).then(() => {
-  addEventListener("resize", drawIdle);
+  addEventListener("resize", () => drawIdle());
 }).catch(() => {
   $("#readout").textContent = "server unreachable";
   $("#hero").insertAdjacentHTML("beforeend",
@@ -433,9 +433,12 @@ Promise.all([loadCorpus(), loadPicker()]).then(() => {
 /* The corpus at rest: every block and road already there, nothing lit. Passing
    a null run draws the city with no query, which is exactly the state the
    layout was designed around -- structure exists before the question. */
-function drawIdle() {
+let idleRaf = 0;
+function drawIdle(clock = 0) {
   const cv = $("#idle");
-  if (!cv || !CITY || $("#hero").classList.contains("gone")) return;
+  if (!cv || !CITY || $("#hero").classList.contains("gone")) {
+    cancelAnimationFrame(idleRaf); idleRaf = 0; return;
+  }
   const ctx = cv.getContext("2d");
   const dpr = Math.min(devicePixelRatio || 1, 2);
   const r = cv.getBoundingClientRect();
@@ -446,7 +449,22 @@ function drawIdle() {
   // subject, whereas in a card it is the quiet ground that lets the coloured
   // survivors read.
   drawScene(ctx, CITY, null, { ...INK, faint: "#6a6f72", other: "#6a6f72" },
-            r.width, r.height, 1);
+            r.width, r.height, 1, STILL ? null : clock);
+}
+
+/* The idle drawing is of a process, so one faint pulse walks the spine rather
+   than leaving it looking like a diagram of a dead system. Reduced-motion gets
+   the same drawing with the pulse omitted, not a different drawing. */
+const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function idleLoop() {
+  cancelAnimationFrame(idleRaf);
+  if (STILL) { drawIdle(); return; }
+  const t0 = performance.now();
+  const step = now => {
+    drawIdle(now - t0);
+    if (idleRaf) idleRaf = requestAnimationFrame(step);
+  };
+  idleRaf = requestAnimationFrame(step);
 }
 
 /* -------------------------------------------------------- corpus picker
