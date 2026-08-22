@@ -205,6 +205,38 @@ button,input,textarea{font:inherit;color:inherit}
 .declined .state .pip{background:var(--bad)} .declined .state .txt{color:var(--bad)}
 .ungated .state{background:rgba(217,164,65,.11);border-color:rgba(217,164,65,.32)}
 .ungated .state .pip{background:var(--warn)} .ungated .state .txt{color:var(--warn)}
+/* ---- the layer stack -------------------------------------------------
+   Stages down, candidate passages across, one column per passage all the way
+   down so a column IS that passage's whole life through the pipeline. The
+   attention block underneath shares those columns exactly, which is the only
+   reason the two can be read against each other.
+
+   Shade is RANK, not score: rank is one unit that means the same thing on
+   every row, so a cell brightening between rows is a real move. The scores
+   underneath are in four different units -- cosine, BM25 weight, RRF, a
+   cross-encoder logit -- and shading by them would make rows incomparable.
+   The true value with its real unit is on hover. */
+.stack{border-top:1px solid var(--hair);padding:20px 22px 22px}
+.stack .hd{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.stack .hd .lab{white-space:nowrap}
+.stack .hd .k{margin-left:auto;font-family:var(--mono);font-size:9.5px;
+  color:var(--faint);letter-spacing:.06em}
+.grid{display:grid;gap:2px;align-items:center}
+.grid .rl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);text-align:right;padding-right:11px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid .rl.on{color:var(--dim)}
+.cell{height:16px;border-radius:3px;background:var(--nest);position:relative;
+  transition:transform 120ms var(--ease)}
+.cell.has{cursor:default}
+.cell.has:hover{transform:scaleY(1.35);z-index:2}
+.cell.gone{background:transparent;border:1px dashed var(--hair)}
+.grid .sep{grid-column:1/-1;height:1px;background:var(--hair);margin:9px 0}
+.grid .cn{font-family:var(--mono);font-size:8px;color:var(--faint);text-align:center;
+  overflow:hidden}
+.stack .ft{margin-top:12px;font-size:12.5px;color:var(--mute);max-width:70ch}
+.stack .ft b{color:var(--dim);font-weight:600}
+
 .why{margin:18px 0 4px}
 .why summary{display:inline-block;cursor:pointer;list-style:none;
   font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.13em;
@@ -768,6 +800,10 @@ function renderTurn(turn, question, data, opts) {
       </div>
     </div>
 
+    <div class="stack"></div>
+
+    <details class="more"><summary><span class="lab">Spatial view</span>
+      <span class="hint">the same run as a pipeline diagram</span></summary>
     <div class="viz">
       <div class="vizhead"><span class="lab">How it found this</span>
         <span class="legend">
@@ -782,6 +818,7 @@ function renderTurn(turn, question, data, opts) {
         <button class="replay" type="button">Replay</button>
       </div>
     </div>
+    </details>
 
     <details class="more"><summary><span class="lab">Candidates</span>
       <span class="hint">${ranked.length} looked at, ${sel.length} used</span></summary>
@@ -818,6 +855,7 @@ function renderTurn(turn, question, data, opts) {
     </details>
 `;
 
+  renderStack(turn, data, colour, sig);
   wireCity(turn, run, data);
   // Settings live in the top bar, not in here. They configure the next question
   // rather than describing this answer, so nesting them among "Candidates" and
@@ -825,6 +863,104 @@ function renderTurn(turn, question, data, opts) {
   // control inside a log.
   LAST = { question, opts, data, turn };
   renderSettings();
+}
+
+/* ------------------------------------------------------- the layer stack
+   One column per candidate passage, held across every row, so a column is that
+   passage's whole life: found by dense, missed by BM25, promoted by the
+   cross-encoder, kept by the cap. The attention block below shares the same
+   columns, which is the only reason the two can be read against each other. */
+const STAGE_ROWS = [
+  ["dense", "dense"], ["sparse", "bm25"], ["fused", "fused"],
+  ["reranked", "reranked"], ["selected", "kept"],
+];
+
+function renderStack(turn, data, colour, sig) {
+  const host = turn.querySelector(".stack");
+  if (!host) return;
+  const att = data.attribution || {};
+  const byName = new Map(data.stages.map(s => [s.name, s]));
+  const sel = new Set((byName.get("selected")?.items || []).map(i => i.chunk_id));
+
+  // Columns come from the attribution when there is one so both blocks line up
+  // exactly; otherwise from whichever ranked stage ran.
+  let cols = att.chunk_ids;
+  if (!cols || !cols.length) {
+    const r = byName.get("reranked") || byName.get("fused") || byName.get("dense");
+    cols = (r?.items || []).slice(0, 12).map(i => i.chunk_id);
+  }
+  if (!cols.length) { host.innerHTML = ""; return; }
+
+  const src = new Map();
+  for (const st of data.stages) for (const i of st.items) src.set(i.chunk_id, i);
+
+  const tmpl = `132px repeat(${cols.length}, minmax(0, 1fr))`;
+  const out = [`<div class="rl"></div>`];
+  cols.forEach((_, i) => out.push(
+    `<div class="cn">${String(i + 1).padStart(2, "0")}</div>`));
+
+  // Which retriever actually found the passages that survived. On a question
+  // turning on a rare term this comes out lopsided, and that lopsidedness is
+  // the argument for running both retrievers -- worth stating rather than
+  // leaving the reader to count cells.
+  const dense = new Set((byName.get("dense")?.items || []).map(i => i.chunk_id));
+  const sparse = new Set((byName.get("sparse")?.items || []).map(i => i.chunk_id));
+  const only = (a, b) => cols.filter(id => a.has(id) && !b.has(id)).length;
+  const found = { d: only(dense, sparse), s: only(sparse, dense),
+                  both: cols.filter(id => dense.has(id) && sparse.has(id)).length };
+
+  for (const [name, label] of STAGE_ROWS) {
+    const st = byName.get(name);
+    if (!st || st.skipped) continue;
+    const items = st.items;
+    const rank = new Map(items.map(i => [i.chunk_id, i]));
+    out.push(`<div class="rl${name === "selected" ? " on" : ""}">${esc(label)}</div>`);
+    for (const id of cols) {
+      const it = rank.get(id);
+      if (!it) { out.push(`<div class="cell gone"></div>`); continue; }
+      // Brightest at rank 1, never fading to invisible -- present-but-last and
+      // absent are different facts and must not look the same.
+      const k = 1 - ((it.rank - 1) / Math.max(items.length, 1)) * 0.86;
+      const c = sel.has(id) ? colour(it.source) : "var(--wire)";
+      const score = typeof it.score === "number" ? ` · score ${sig(it.score)}` : "";
+      const moved = it.delta ? ` · moved ${it.delta > 0 ? "+" : ""}${it.delta}` : "";
+      out.push(`<div class="cell has" style="background:${c};opacity:${k.toFixed(2)}"
+        title="${esc(label)} · rank ${it.rank} of ${items.length}${score}${moved}
+${esc(shortDoc(it.source))} · ${esc(it.locator)}"></div>`);
+    }
+  }
+
+  if (att.terms?.length) {
+    out.push(`<div class="sep"></div>`);
+    const flat = att.matrix.flat();
+    const max = Math.max(...flat, 0.0001);
+    att.terms.forEach((t, r) => {
+      out.push(`<div class="rl">${esc(t)}</div>`);
+      att.matrix[r].forEach((v, ci) => {
+        if (v <= 0) { out.push(`<div class="cell"></div>`); return; }
+        out.push(`<div class="cell has" style="background:var(--dim);opacity:${
+          (0.18 + (v / max) * 0.82).toFixed(2)}"
+          title="&quot;${esc(t)}&quot; contributed ${v.toFixed(2)} of this passage's BM25 score"></div>`);
+      });
+    });
+  }
+
+  host.innerHTML = `
+    <div class="hd"><span class="lab">Every candidate, every stage</span>
+      <span class="k">${cols.length} passages · brighter = ranked higher · hover for the score</span></div>
+    <div class="grid" style="grid-template-columns:${tmpl}">${out.join("")}</div>
+    <p class="ft">Of these ${cols.length} candidates,
+      <b>${found.d}</b> were found by dense retrieval alone,
+      <b>${found.s}</b> by BM25 alone and
+      <b>${found.both}</b> by both.${
+        found.both === 0 && cols.length > 4
+          ? " The two retrievers agreed on nothing here, which is the case hybrid search exists for."
+          : ""}</p>
+    ${att.terms?.length ? `<p class="ft">The lower block is <b>which words did the
+      lexical matching</b>. Dense retrieval has no equivalent — it turns the whole
+      question into one 384-number vector and the individual words stop existing.
+      That asymmetry is the difference between the two retrievers, not a gap in the
+      drawing.</p>` : ""}`;
 }
 
 /* ---------------------------------------------------------- the picture */
