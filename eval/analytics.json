@@ -315,7 +315,69 @@
     "caught": 9
    },
    "gold_mean": 2.67,
-   "gold_divisor": 2.3
+   "gold_divisor": 2.3,
+   "examples": [
+    {
+     "q": "Does the adaptation method add inference latency?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What problem does normalizing layer inputs address?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What label smoothing value was used during training?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What subword tokenization scheme is used?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What dropout rate was applied for regularization?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which optimizer was used, and with what beta values?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What is late interaction in a retrieval model?",
+     "label": "several documents look right",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "How are all NLP tasks cast into a single format?",
+     "label": "several documents look right",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Has this paper been retracted?",
+     "label": "not in the corpus",
+     "adversarial": true,
+     "expect": "should be refused"
+    },
+    {
+     "q": "How is the reward model trained for RLHF?",
+     "label": "not in the corpus",
+     "adversarial": true,
+     "expect": "should be refused"
+    }
+   ]
   },
   {
    "name": "birds",
@@ -582,7 +644,69 @@
     "caught": 5
    },
    "gold_mean": 2.62,
-   "gold_divisor": 2.54
+   "gold_divisor": 2.54,
+   "examples": [
+    {
+     "q": "What organ do birds use to produce song?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What is the fused collarbone of a bird called?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which wing measurement compares span against width?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which pigment gives feathers their black and brown colouring?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which dietary pigments produce red and yellow feather colour?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What is the period of sitting on eggs before hatching called?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which corvid behaviour involves shaping objects into implements?",
+     "label": "several documents look right",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What term describes chicks able to move and feed themselves soon after hatching?",
+     "label": "several documents look right",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "How does insulin regulate blood glucose in humans?",
+     "label": "not in the corpus",
+     "adversarial": true,
+     "expect": "should be refused"
+    },
+    {
+     "q": "How does a proof of stake protocol reach consensus?",
+     "label": "not in the corpus",
+     "adversarial": true,
+     "expect": "should be refused"
+    }
+   ]
   },
   {
    "name": "quant",
@@ -855,7 +979,69 @@
     "caught": 6
    },
    "gold_mean": 4.14,
-   "gold_divisor": 3.26
+   "gold_divisor": 3.26,
+   "examples": [
+    {
+     "q": "What measures the tendency of assets to crash together?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which performance ratio penalises only downside deviation?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which ratio measures active return per unit of tracking error?",
+     "label": "a specific figure",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which style of trading operates at sub-second timescales?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which effect describes past winners continuing to outperform?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What is the simulation of a strategy over historical data called?",
+     "label": "spread across documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which class of models treats variance itself as a random process?",
+     "label": "several documents look right",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "Which coherent risk measure averages the losses beyond a quantile?",
+     "label": "several documents look right",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
+     "q": "What organ do birds use to produce song?",
+     "label": "not in the corpus",
+     "adversarial": true,
+     "expect": "should be refused"
+    },
+    {
+     "q": "What was the closing price of AAPL yesterday?",
+     "label": "not in the corpus",
+     "adversarial": true,
+     "expect": "should be refused"
+    }
+   ]
   }
  ]
 }

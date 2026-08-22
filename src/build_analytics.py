@@ -55,6 +55,54 @@ def sweep(ans: list[float], adv: list[float], lo=-8.0, hi=4.0, step=0.5):
     return out
 
 
+# What each case kind is called on screen. The harness's own vocabulary --
+# "fact", "multi", "cross-doc" -- describes how a case was constructed, which is
+# the labeller's concern. A reader picking a question wants to know what kind of
+# retrieval it will exercise.
+KIND_LABEL = {
+    "fact": "a specific figure",
+    "multi": "spread across documents",
+    "cross-doc": "several documents look right",
+}
+ADVERSARIAL = "not in the corpus"
+
+# Roughly how many of each to offer, in the order they should be shown. Weighted
+# towards the two kinds that show the system doing something a plain keyword
+# search would not.
+QUOTA = [("fact", 3), ("multi", 3), ("cross-doc", 2), ("__adv__", 2)]
+
+
+def examples(cases: list[dict]) -> list[dict]:
+    """A few real, already-scored questions per corpus.
+
+    Drawn from the golden set rather than written for the occasion, so every
+    suggestion is one the harness has actually run and whose outcome is known --
+    including the adversarial ones, which are supposed to be refused. A made-up
+    example that happens to fail would look like a broken system.
+    """
+    buckets: dict[str, list[dict]] = {}
+    for c in cases:
+        key = "__adv__" if c["unanswerable"] else c.get("kind", "fact")
+        buckets.setdefault(key, []).append(c)
+
+    out = []
+    for key, n in QUOTA:
+        pool = buckets.get(key, [])
+        # Shortest first: a suggestion has to be readable at a glance, and the
+        # long ones are long because they carry three clauses of qualification.
+        pool = sorted(pool, key=lambda c: len(c["question"]))[:n]
+        for c in pool:
+            out.append({
+                "q": c["question"],
+                "label": ADVERSARIAL if key == "__adv__" else KIND_LABEL.get(key, key),
+                "adversarial": key == "__adv__",
+                # Known from the harness, so the UI can say what should happen
+                # without pretending to predict it.
+                "expect": "should be refused" if key == "__adv__" else "should be answered",
+            })
+    return out
+
+
 def build():
     data = {"generated_by": "src/build_analytics.py", "corpora": []}
     reg = corpora.registry()
@@ -109,6 +157,11 @@ def build():
             # how many documents answer a question.
             "gold_mean": round(st.mean(gold), 2),
             "gold_divisor": round(st.mean([min(g, 5) for g in gold]), 2),
+
+            # Suggested questions for this corpus. The UI used to offer one
+            # global list written for the ML papers, so switching to the bird
+            # corpus still suggested asking about BLEU scores on WMT 2014.
+            "examples": examples(cases),
         }
         data["corpora"].append(entry)
         print(f"  {name}: {len(ans)} answerable, {len(adv)} adversarial, "

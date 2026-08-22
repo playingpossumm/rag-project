@@ -363,6 +363,37 @@ all, and it never loses a rare term.</p>
 
 <!-- ============================================================== 04 -->
 <section id="c4">
+<!-- GEN:bm25 -->
+<figure>
+  <div class="fignum">FIG. 03 — WHAT THE LEXICAL HALF IS WORTH, PER CORPUS</div>
+  <svg viewBox="0 0 740 188" role="img" aria-label="Candidate pool hit rate with dense retrieval alone versus dense fused with BM25, on three corpora.">
+    <g font-family="Newsreader, Georgia, serif" font-size="13" fill="#dcdedf">
+      <text x="172.0" y="18.0" text-anchor="start" fill="#7f858a" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">candidate pool @20 — any relevant passage found</text>
+      <text x="160.0" y="42.0" text-anchor="end" fill="#dcdedf" font-size="13">ML &amp; NLP papers</text>
+      <rect x="172.0" y="33.0" width="418.4" height="9" rx="3" fill="#3987e5" opacity="0.42"/>
+      <text x="597.4" y="41.5" text-anchor="start" fill="#a8adb1" font-size="10.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.879</text>
+      <rect x="172.0" y="48.0" width="439.8" height="9" rx="3" fill="#3987e5" opacity="1.0"/>
+      <text x="618.8" y="56.5" text-anchor="start" fill="#a8adb1" font-size="10.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.924</text>
+      <text x="736.0" y="49.0" text-anchor="end" fill="#3fb950" font-size="11.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+0.045</text>
+      <text x="160.0" y="86.0" text-anchor="end" fill="#dcdedf" font-size="13">Ornithology</text>
+      <rect x="172.0" y="77.0" width="457.9" height="9" rx="3" fill="#d95926" opacity="0.42"/>
+      <text x="636.9" y="85.5" text-anchor="start" fill="#a8adb1" font-size="10.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.962</text>
+      <rect x="172.0" y="92.0" width="421.3" height="9" rx="3" fill="#d95926" opacity="1.0"/>
+      <text x="600.3" y="100.5" text-anchor="start" fill="#a8adb1" font-size="10.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.885</text>
+      <text x="736.0" y="93.0" text-anchor="end" fill="#f0685f" font-size="11.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">−0.077</text>
+      <text x="160.0" y="130.0" text-anchor="end" fill="#dcdedf" font-size="13">Quantitative finance</text>
+      <rect x="172.0" y="121.0" width="326.5" height="9" rx="3" fill="#199e70" opacity="0.42"/>
+      <text x="505.5" y="129.5" text-anchor="start" fill="#a8adb1" font-size="10.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.686</text>
+      <rect x="172.0" y="136.0" width="299.4" height="9" rx="3" fill="#199e70" opacity="1.0"/>
+      <text x="478.4" y="144.5" text-anchor="start" fill="#a8adb1" font-size="10.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.629</text>
+      <text x="736.0" y="137.0" text-anchor="end" fill="#f0685f" font-size="11.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">−0.057</text>
+      <text x="172.0" y="182.0" text-anchor="start" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">pale = dense only  ·  solid = with BM25 fused in</text>
+    </g>
+  </svg>
+  <figcaption>On the corpus the system was tuned on, adding BM25 is the single largest gain in the pipeline. On both corpora built afterwards it <b>costs</b> pool coverage. One reversal is noise; two pointing the same way is a pattern, and the plausible mechanism is that questions about birds and the prose answering them share ordinary vocabulary, so BM25 promotes passages that merely repeat common words. Hybrid search is a default worth re-testing per corpus rather than assuming.</figcaption>
+</figure>
+<!-- /GEN:bm25 -->
+
 <h2 class="ch"><span class="n">Chapter 04</span>Merging two rankings that disagree</h2>
 <p class="lede">Their scores cannot be compared, so the scores get thrown away.</p>
 
@@ -374,7 +405,7 @@ corpus statistics. Adding them is meaningless.</p>
 <p>The fix is to discard the scores entirely and use only <em>positions</em>.</p>
 
 <figure>
-  <div class="fignum">FIG. 03 — RECIPROCAL RANK FUSION, WORKED</div>
+  <div class="fignum">FIG. 04 — RECIPROCAL RANK FUSION, WORKED</div>
   <div class="plot">
   <svg viewBox="0 0 700 236" role="img" aria-label="A worked example of reciprocal rank fusion. Passage A is ranked 1 by dense and 30 by sparse, scoring 0.0164 plus 0.0111 for 0.0275. Passage B is ranked 4 by both, scoring 0.0156 twice for 0.0312, and therefore wins despite never being first.">
     <g font-family="JetBrains Mono, monospace" font-size="11" fill="#dcdedf">
@@ -430,7 +461,7 @@ vectors long before the question existed. The passage was never allowed to know 
 being asked of it.</p>
 
 <figure>
-  <div class="fignum">FIG. 04 — TWO ARCHITECTURES</div>
+  <div class="fignum">FIG. 05 — TWO ARCHITECTURES</div>
   <div class="plot">
   <svg viewBox="0 0 700 250" role="img" aria-label="Left: a bi-encoder passes query and passage through separate encoders producing two vectors that meet only at a final cosine comparison, with passage vectors precomputed at index time. Right: a cross-encoder concatenates query and passage into one sequence through a single encoder that outputs a relevance score directly.">
     <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7f858a"/></marker></defs>
@@ -491,6 +522,38 @@ expensive stage.</p>
 
 <!-- ============================================================== 06 -->
 <section id="c6">
+<!-- GEN:ladder -->
+<figure>
+  <div class="fignum">FIG. 06 — EACH MECHANISM, MEASURED SEPARATELY</div>
+  <svg viewBox="0 0 740 195" role="img" aria-label="Mean reciprocal rank for each configuration, each row adding one mechanism to the row above.">
+    <g font-family="Newsreader, Georgia, serif" font-size="13" fill="#dcdedf">
+      <text x="226.0" y="18.0" text-anchor="start" fill="#7f858a" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">MRR — how high the first relevant passage sits</text>
+      <text x="214.0" y="52.0" text-anchor="end" fill="#a8adb1" font-size="13">dense retrieval alone</text>
+      <rect x="226.0" y="43.0" width="246.2" height="11" rx="3" fill="#3987e5" opacity="0.5"/>
+      <text x="479.2" y="52.5" text-anchor="start" fill="#a8adb1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.589</text>
+      <text x="214.0" y="79.0" text-anchor="end" fill="#a8adb1" font-size="13">+ cross-encoder rerank</text>
+      <rect x="226.0" y="70.0" width="295.1" height="11" rx="3" fill="#3987e5" opacity="0.5"/>
+      <text x="528.1" y="79.5" text-anchor="start" fill="#a8adb1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.706</text>
+      <text x="736.0" y="79.5" text-anchor="end" fill="#3fb950" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+0.117</text>
+      <text x="214.0" y="106.0" text-anchor="end" fill="#a8adb1" font-size="13">+ BM25, fused by RRF</text>
+      <rect x="226.0" y="97.0" width="314.3" height="11" rx="3" fill="#3987e5" opacity="0.5"/>
+      <text x="547.3" y="106.5" text-anchor="start" fill="#a8adb1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.752</text>
+      <text x="736.0" y="106.5" text-anchor="end" fill="#3fb950" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+0.046</text>
+      <text x="214.0" y="133.0" text-anchor="end" fill="#f3f3f1" font-size="13">+ diversity cap, 2 per document</text>
+      <rect x="226.0" y="124.0" width="313.1" height="11" rx="3" fill="#3987e5" opacity="1.0"/>
+      <text x="546.1" y="133.5" text-anchor="start" fill="#f3f3f1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.749</text>
+      <text x="736.0" y="133.5" text-anchor="end" fill="#f0685f" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">−0.003</text>
+      <text x="597.1" y="133.5" text-anchor="start" fill="#3fb950" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">shipped</text>
+      <text x="214.0" y="160.0" text-anchor="end" fill="#a8adb1" font-size="13">+ diversity cap, 1 per document</text>
+      <rect x="226.0" y="151.0" width="306.8" height="11" rx="3" fill="#3987e5" opacity="0.5"/>
+      <text x="539.8" y="160.5" text-anchor="start" fill="#a8adb1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.734</text>
+      <text x="736.0" y="160.5" text-anchor="end" fill="#f0685f" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">−0.015</text>
+    </g>
+  </svg>
+  <figcaption>The cross-encoder is the largest single gain in the system and the most expensive thing in it, which is the trade the architecture is built around: retrieve cheaply and widely, then re-read a shortlist properly. Note that the last row is worse than the one above it — the tighter cap is not shipped.</figcaption>
+</figure>
+<!-- /GEN:ladder -->
+
 <h2 class="ch"><span class="n">Chapter 06</span>Stopping one document taking every slot</h2>
 <p class="lede">A metric that says 1.000 while the answer is a quarter complete.</p>
 
@@ -532,6 +595,33 @@ set grew.</p>
 
 <!-- ============================================================== 07 -->
 <section id="c7">
+<!-- GEN:cap -->
+<figure>
+  <div class="fignum">FIG. 07 — THE DIVERSITY CAP IS A TRADE, NOT A FREE WIN</div>
+  <svg viewBox="0 0 740 174" role="img" aria-label="Hit rate and source recall, with and without the two-passages-per-document cap.">
+    <g font-family="Newsreader, Georgia, serif" font-size="13" fill="#dcdedf">
+      <text x="210.0" y="18.0" text-anchor="start" fill="#7f858a" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">before and after the cap, everything else held</text>
+      <text x="198.0" y="48.0" text-anchor="end" fill="#f3f3f1" font-size="13.5">Hit rate @5</text>
+      <text x="198.0" y="64.0" text-anchor="end" fill="#5d6367" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">any relevant passage in the top five</text>
+      <rect x="210.0" y="38.0" width="362.9" height="11" rx="3" fill="#3987e5" opacity="0.42"/>
+      <text x="579.9" y="47.5" text-anchor="start" fill="#a8adb1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.864</text>
+      <rect x="210.0" y="55.0" width="356.2" height="11" rx="3" fill="#3987e5" opacity="1.0"/>
+      <text x="573.2" y="64.5" text-anchor="start" fill="#f3f3f1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.848</text>
+      <text x="736.0" y="56.0" text-anchor="end" fill="#f0685f" font-size="12" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">−0.016</text>
+      <text x="198.0" y="110.0" text-anchor="end" fill="#f3f3f1" font-size="13.5">Source recall</text>
+      <text x="198.0" y="126.0" text-anchor="end" fill="#5d6367" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">every document that answers, returned</text>
+      <rect x="210.0" y="100.0" width="291.9" height="11" rx="3" fill="#3987e5" opacity="0.42"/>
+      <text x="508.9" y="109.5" text-anchor="start" fill="#a8adb1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.695</text>
+      <rect x="210.0" y="117.0" width="310.0" height="11" rx="3" fill="#3987e5" opacity="1.0"/>
+      <text x="527.0" y="126.5" text-anchor="start" fill="#f3f3f1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.738</text>
+      <text x="736.0" y="118.0" text-anchor="end" fill="#3fb950" font-size="12" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+0.043</text>
+      <text x="210.0" y="168.0" text-anchor="start" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">pale = without the cap  ·  solid = with it</text>
+    </g>
+  </svg>
+  <figcaption>Capping each document at two passages costs a little ranking and buys more of the documents that answer the question. Which side of that trade is right depends on whether you want the best passage or the fullest answer; this system chose coverage, and the figure is here so the cost is visible rather than buried.</figcaption>
+</figure>
+<!-- /GEN:cap -->
+
 <h2 class="ch"><span class="n">Chapter 07</span>Growing the passage back out</h2>
 <p class="lede">Ranking wants small passages. Reading wants large ones.</p>
 
@@ -578,39 +668,203 @@ like a real answer.</p>
 <p>The reranker's score is a genuine measure of "does this passage answer this
 question", so it can be compared against a line. Below the line, the system refuses.</p>
 
+<!-- GEN:thresholds -->
 <figure>
-  <div class="fignum">FIG. 05 — THE TWO POPULATIONS OVERLAP</div>
-  <div class="plot">
-  <svg viewBox="0 0 700 210" role="img" aria-label="A number line from minus 10 to plus 10 showing that answerable questions have a median score of plus 4.93 with a minimum of minus 4.02, while unanswerable questions have a median of minus 2.33 with a maximum of plus 2.76. The two ranges overlap between minus 4 and plus 2.76, so no threshold separates them cleanly.">
-    <g font-family="JetBrains Mono, monospace" font-size="10" fill="#7f858a">
-      <line x1="40" y1="150" x2="670" y2="150" stroke="#33363a"/>
-      <text x="40" y="168" text-anchor="middle">−10</text>
-      <text x="355" y="168" text-anchor="middle">0</text>
-      <text x="670" y="168" text-anchor="middle">+10</text>
-      <line x1="355" y1="42" x2="355" y2="156" stroke="#3fb950" stroke-dasharray="4 3"/>
-      <text x="355" y="34" text-anchor="middle" fill="#3fb950">THRESHOLD 0.0</text>
-
-      <rect x="228" y="60" width="447" height="24" fill="#3987e5" opacity="0.16" stroke="#3987e5"/>
-      <text x="46" y="77" fill="#3987e5">ANSWERABLE</text>
-      <circle cx="510" cy="72" r="4" fill="#3987e5"/>
-      <text x="510" y="55" text-anchor="middle" fill="#dcdedf">median +4.93</text>
-      <text x="222" y="76" text-anchor="end" fill="#5d6367">min −4.02</text>
-
-      <rect x="56" y="104" width="386" height="24" fill="#d95926" opacity="0.16" stroke="#d95926"/>
-      <text x="46" y="140" fill="#d95926">UNANSWERABLE</text>
-      <circle cx="282" cy="116" r="4" fill="#d95926"/>
-      <text x="282" y="99" text-anchor="middle" fill="#dcdedf">median −2.33</text>
-      <text x="404" y="143" fill="#5d6367">max +2.76</text>
-
-      <rect x="228" y="56" width="214" height="76" fill="none" stroke="#f0685f" stroke-dasharray="3 3"/>
-      <text x="335" y="192" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-size="13" fill="#f0685f">the overlap — no line separates these cleanly</text>
+  <div class="fignum">FIG. 08 — WHY ONE REFUSAL THRESHOLD CANNOT SERVE THREE CORPORA</div>
+  <svg viewBox="0 0 740 282" role="img" aria-label="Cross-encoder confidence for every labelled question on three corpora, answerable and adversarial shown separately.">
+    <g font-family="Newsreader, Georgia, serif" font-size="13" fill="#dcdedf">
+      <text x="154.0" y="50.0" text-anchor="end" fill="#f3f3f1" font-size="13">ML &amp; NLP papers</text>
+      <text x="154.0" y="66.0" text-anchor="end" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">66 + 18 cases</text>
+      <line x1="458.3" y1="34" x2="458.3" y2="82" stroke="#5d6367" stroke-width="1" stroke-dasharray="3 3"/>
+      <line x1="458.3" y1="34" x2="458.3" y2="82" stroke="#3987e5" stroke-width="1.5"/>
+      <text x="458.3" y="30.0" text-anchor="middle" fill="#3987e5" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.0 calibrated</text>
+      <circle cx="363.9" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="462.3" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="474.6" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="482.2" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="488.3" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="509.8" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="515.3" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="519.8" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="520.4" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="531.6" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="533.6" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="534.6" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="538.5" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="540.7" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="544.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="546.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="549.7" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="551.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="551.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="552.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="554.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="557.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="559.8" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="561.2" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="565.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="565.8" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="566.7" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="568.2" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="568.3" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="570.6" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="573.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="573.7" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="575.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="580.2" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="588.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="589.8" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="591.7" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="593.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="596.8" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="602.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="603.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="604.2" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="604.8" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="606.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="606.5" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="608.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="609.4" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="610.0" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="615.4" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="615.6" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="616.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="616.4" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="619.9" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="622.5" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="631.4" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="633.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="634.5" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="635.5" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="639.3" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="645.4" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="651.7" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="653.5" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="660.1" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="661.7" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="676.6" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="695.2" cy="48" r="3.2" fill="#3987e5" opacity=".85"/>
+      <circle cx="223.1" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="340.4" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="344.6" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="349.5" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="358.0" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="410.6" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="424.8" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="440.0" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="453.9" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="460.6" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="469.0" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="475.7" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="485.8" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="514.3" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="530.1" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="562.5" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="563.7" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <circle cx="627.6" cy="68" r="3" fill="none" stroke="#3987e5" stroke-width="1.4" opacity=".9"/>
+      <text x="154.0" y="124.0" text-anchor="end" fill="#f3f3f1" font-size="13">Ornithology</text>
+      <text x="154.0" y="140.0" text-anchor="end" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">26 + 6 cases</text>
+      <line x1="458.3" y1="108" x2="458.3" y2="156" stroke="#5d6367" stroke-width="1" stroke-dasharray="3 3"/>
+      <line x1="384.2" y1="108" x2="384.2" y2="156" stroke="#d95926" stroke-width="1.5"/>
+      <text x="384.2" y="104.0" text-anchor="middle" fill="#d95926" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">-3.0 calibrated</text>
+      <text x="458.3" y="104.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">old 0.0</text>
+      <circle cx="195.9" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="253.8" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="278.4" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="345.8" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="384.8" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="401.3" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="433.8" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="434.7" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="445.1" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="445.7" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="468.1" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="488.1" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="488.8" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="503.3" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="504.5" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="507.1" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="522.2" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="539.2" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="559.5" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="578.7" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="580.2" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="582.7" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="585.4" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="592.3" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="601.4" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="622.1" cy="122" r="3.2" fill="#d95926" opacity=".85"/>
+      <circle cx="193.3" cy="142" r="3" fill="none" stroke="#d95926" stroke-width="1.4" opacity=".9"/>
+      <circle cx="201.5" cy="142" r="3" fill="none" stroke="#d95926" stroke-width="1.4" opacity=".9"/>
+      <circle cx="211.7" cy="142" r="3" fill="none" stroke="#d95926" stroke-width="1.4" opacity=".9"/>
+      <circle cx="239.5" cy="142" r="3" fill="none" stroke="#d95926" stroke-width="1.4" opacity=".9"/>
+      <circle cx="261.1" cy="142" r="3" fill="none" stroke="#d95926" stroke-width="1.4" opacity=".9"/>
+      <circle cx="505.8" cy="142" r="3" fill="none" stroke="#d95926" stroke-width="1.4" opacity=".9"/>
+      <text x="154.0" y="198.0" text-anchor="end" fill="#f3f3f1" font-size="13">Quantitative finance</text>
+      <text x="154.0" y="214.0" text-anchor="end" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">35 + 6 cases</text>
+      <line x1="458.3" y1="182" x2="458.3" y2="230" stroke="#5d6367" stroke-width="1" stroke-dasharray="3 3"/>
+      <line x1="359.4" y1="182" x2="359.4" y2="230" stroke="#199e70" stroke-width="1.5"/>
+      <text x="359.4" y="178.0" text-anchor="middle" fill="#199e70" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">-4.0 calibrated</text>
+      <text x="458.3" y="178.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">old 0.0</text>
+      <circle cx="245.5" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="280.2" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="293.6" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="299.9" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="320.4" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="356.4" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="373.4" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="401.4" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="417.4" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="418.0" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="426.5" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="427.9" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="429.9" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="432.3" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="442.0" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="443.0" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="446.5" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="448.9" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="453.1" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="459.5" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="460.2" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="466.5" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="467.3" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="471.1" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="483.8" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="484.1" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="487.7" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="489.7" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="500.4" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="504.8" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="513.6" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="530.3" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="570.4" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="579.1" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="613.0" cy="196" r="3.2" fill="#199e70" opacity=".85"/>
+      <circle cx="182.8" cy="216" r="3" fill="none" stroke="#199e70" stroke-width="1.4" opacity=".9"/>
+      <circle cx="188.0" cy="216" r="3" fill="none" stroke="#199e70" stroke-width="1.4" opacity=".9"/>
+      <circle cx="287.6" cy="216" r="3" fill="none" stroke="#199e70" stroke-width="1.4" opacity=".9"/>
+      <circle cx="293.3" cy="216" r="3" fill="none" stroke="#199e70" stroke-width="1.4" opacity=".9"/>
+      <circle cx="295.4" cy="216" r="3" fill="none" stroke="#199e70" stroke-width="1.4" opacity=".9"/>
+      <circle cx="307.5" cy="216" r="3" fill="none" stroke="#199e70" stroke-width="1.4" opacity=".9"/>
+      <text x="161.7" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">-12</text>
+      <text x="211.2" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">-10</text>
+      <text x="260.6" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">-8</text>
+      <text x="310.0" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">-6</text>
+      <text x="359.4" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">-4</text>
+      <text x="408.9" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">-2</text>
+      <text x="458.3" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0</text>
+      <text x="507.7" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+2</text>
+      <text x="557.2" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+4</text>
+      <text x="606.6" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+6</text>
+      <text x="656.0" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+8</text>
+      <text x="705.5" y="266.0" text-anchor="middle" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">+10</text>
+      <text x="168.0" y="278.0" text-anchor="start" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">filled = answerable  ·  hollow = adversarial, the answer is deliberately absent</text>
     </g>
   </svg>
-  </div>
-  <figcaption>66 answerable questions and 18 written to be unanswerable. The
-  distributions overlap, so the threshold is a deliberate trade rather than a clean
-  split. Everything below turns on which error you would rather make.</figcaption>
+  <figcaption>Each corpus was measured separately, and the gap between the two populations lands somewhere different every time. The shipped 0.0 refuses 1 of 66 answerable questions on the ML papers, 10 of 26 on the bird corpus and 19 of 35 on the finance one. Moving each to its own cut point recovers those answers while catching <b>exactly as many</b> adversarial questions — strictly dominant, and invisible until the corpora were scored apart.</figcaption>
 </figure>
+<!-- /GEN:thresholds -->
 
 <div class="note warn"><span class="k">The subtlety worth being able to explain</span>
   <p>The evaluation tool recommends a threshold of <strong>+2</strong>. The system ships
@@ -696,6 +950,30 @@ source recall</strong>.</p>
 
 <!-- ============================================================== 10 -->
 <section id="c10">
+<!-- GEN:divisor -->
+<figure>
+  <div class="fignum">FIG. 09 — THE MEASUREMENT ARTEFACT UNDER SOURCE RECALL</div>
+  <svg viewBox="0 0 740 140" role="img" aria-label="The average number of documents a question is scored against, per corpus.">
+    <g font-family="Newsreader, Georgia, serif" font-size="13" fill="#dcdedf">
+      <text x="210.0" y="18.0" text-anchor="start" fill="#7f858a" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">mean min(|gold|, 5) — the divisor source recall is scored against</text>
+      <text x="198.0" y="47.0" text-anchor="end" fill="#dcdedf" font-size="13">ML &amp; NLP papers</text>
+      <rect x="210.0" y="38.0" width="268.1" height="11" rx="3" fill="#3987e5" opacity="1.0"/>
+      <text x="485.1" y="47.0" text-anchor="start" fill="#f3f3f1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">2.30</text>
+      <text x="736.0" y="47.0" text-anchor="end" fill="#5d6367" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">2.67 gold docs/question</text>
+      <text x="198.0" y="77.0" text-anchor="end" fill="#dcdedf" font-size="13">Ornithology</text>
+      <rect x="210.0" y="68.0" width="296.1" height="11" rx="3" fill="#d95926" opacity="1.0"/>
+      <text x="513.1" y="77.0" text-anchor="start" fill="#f3f3f1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">2.54</text>
+      <text x="736.0" y="77.0" text-anchor="end" fill="#5d6367" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">2.62 gold docs/question</text>
+      <text x="198.0" y="107.0" text-anchor="end" fill="#dcdedf" font-size="13">Quantitative finance</text>
+      <rect x="210.0" y="98.0" width="380.0" height="11" rx="3" fill="#199e70" opacity="1.0"/>
+      <text x="597.0" y="107.0" text-anchor="start" fill="#f3f3f1" font-size="11" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">3.26</text>
+      <text x="736.0" y="107.0" text-anchor="end" fill="#5d6367" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">4.14 gold docs/question</text>
+    </g>
+  </svg>
+  <figcaption>Source recall is normalised by min(|gold|, 5). The finance corpus averages 4.14 gold documents per question against the ML corpus's 2.67, so it is scored against a divisor 42% larger and must return more documents in the same five slots to earn the same number. Its lower score is substantially a property of its labels, not of the retriever — which is the sort of thing that gets written up as a regression if nobody checks.</figcaption>
+</figure>
+<!-- /GEN:divisor -->
+
 <h2 class="ch"><span class="n">Chapter 10</span>Five times measurement beat the plan</h2>
 <p class="lede">The most valuable habit in the project, as evidence rather than advice.</p>
 
@@ -776,49 +1054,83 @@ project's own record insists those are different things.</p>
 <section id="c12">
 <h2 class="ch"><span class="n">Chapter 12</span>Does any of it transfer?</h2>
 <p class="lede">Every number so far describes one corpus of machine-learning papers.
-A second corpus answers a different question: which of these are properties of the
+Two further corpora answer a different question: which of these are properties of the
 <em>system</em>, and which are properties of the <em>documents</em>?</p>
 
-<p>45 Wikipedia ornithology documents were indexed and scored against 26 questions
-written against them. Deliberately mixed — 12 Word, 12 PowerPoint, 11 Excel, 10 PDF —
-because three of those loaders had never seen a real file.</p>
+<p><strong>45 Wikipedia ornithology documents</strong>, scored against 26 questions
+written against them. Deliberately mixed &mdash; 12 Word, 12 PowerPoint, 11 Excel,
+10 PDF &mdash; because three of those loaders had never seen a real file.
+<strong>35 arXiv quantitative-finance papers</strong>, scored against 35 questions.
+Papers rather than encyclopaedia entries, like the original corpus, but a field the
+embedding model has seen far less of.</p>
 
+<!-- GEN:tbl_transfer -->
 <div class="tw">
 <table>
-  <thead><tr><th>shipped pipeline</th><th class="r">ML papers (36)</th><th class="r">ornithology (45)</th></tr></thead>
+  <thead><tr><th>shipped pipeline</th><th class="r">ML &amp; NLP papers (36)</th><th class="r">Ornithology (45)</th><th class="r">Quantitative finance (35)</th></tr></thead>
   <tbody>
-    <tr><td>hit rate</td><td class="r m">0.848</td><td class="r m">0.808</td></tr>
-    <tr><td>MRR</td><td class="r m">0.749</td><td class="r m">0.570</td></tr>
-    <tr><td>NDCG</td><td class="r m">0.761</td><td class="r m">0.635</td></tr>
-    <tr><td>source recall</td><td class="r m">0.738</td><td class="r m">0.762</td></tr>
+    <tr><td>hit rate</td><td class="r m"><strong>0.848</strong></td><td class="r m">0.808</td><td class="r m">0.543</td></tr>
+    <tr><td>MRR</td><td class="r m"><strong>0.749</strong></td><td class="r m">0.570</td><td class="r m">0.410</td></tr>
+    <tr><td>NDCG</td><td class="r m"><strong>0.761</strong></td><td class="r m">0.635</td><td class="r m">0.437</td></tr>
+    <tr><td>source recall</td><td class="r m">0.738</td><td class="r m"><strong>0.762</strong></td><td class="r m">0.361</td></tr>
   </tbody>
 </table>
 </div>
+<!-- /GEN:tbl_transfer -->
 
-<p>Ranking is materially worse and source recall slightly better. Both point the same
-way: encyclopaedia prose states a fact once, in ordinary words, so the right passage is
-found but sits lower — and the answer is spread across fewer documents, which are
-correspondingly easier to cover.</p>
+<p>Ranking degrades most, and it degrades for a reason worth stating: encyclopaedia
+prose states a fact once, in ordinary words, so the right passage is found but sits
+lower. The finance corpus is weaker on every measure &mdash; but before concluding that
+retrieval is broken on it, read the next paragraph, because a good part of that gap is
+in the labels rather than in the retriever.</p>
+
+<div class="note"><span class="k">Part of the finance gap is a measurement artefact</span>
+  <p>Source recall is normalised by <span class="m">min(|gold|, 5)</span>. The finance
+  corpus averages <strong>4.14</strong> gold documents per question against the ML
+  corpus's <strong>2.67</strong>, so it is scored against a divisor 42% larger and has
+  to return more documents in the same five slots to earn the same number. The
+  questions were also written definitionally &mdash; asking what a term means of papers
+  that <em>assume</em> the term and move on &mdash; which spreads gold across many
+  documents that each mention it in passing. Some of the gap is real; an unknown part
+  of it is the golden set, and saying so is cheaper than a week spent tuning against
+  an artefact.</p>
+</div>
 
 <div class="note bad"><span class="k">The threshold does not transfer at all</span>
   <p>This is the finding that invalidates a default rather than nudging one.</p>
+  <!-- GEN:tbl_threshold -->
   <div class="tw">
   <table>
-    <thead><tr><th></th><th class="r">answerable median</th><th class="r">wrongly refused at 0.0</th></tr></thead>
+    <thead><tr><th></th><th class="r">refused at 0.0</th><th class="r">calibrated</th><th class="r">refused there</th><th class="r">adversarial caught</th></tr></thead>
     <tbody>
-      <tr><td>ML papers</td><td class="r m">+4.93</td><td class="r m">1 of 66 — 1.5%</td></tr>
-      <tr><td>ornithology</td><td class="r m">+1.82</td><td class="r m"><strong>10 of 26 — 38.5%</strong></td></tr>
+      <tr><td>ML &amp; NLP papers</td><td class="r m">1 of 66 &mdash; 1.5%</td><td class="r m">0.0</td><td class="r m">1 of 66</td><td class="r m">9 &rarr; 9 of 18</td></tr>
+      <tr><td>Ornithology</td><td class="r m"><strong>10 of 26 &mdash; 38.5%</strong></td><td class="r m">-3.0</td><td class="r m">4 of 26</td><td class="r m">5 &rarr; 5 of 6</td></tr>
+      <tr><td>Quantitative finance</td><td class="r m"><strong>19 of 35 &mdash; 54.3%</strong></td><td class="r m">-4.0</td><td class="r m">6 of 35</td><td class="r m">6 &rarr; 6 of 6</td></tr>
     </tbody>
   </table>
   </div>
+<!-- /GEN:tbl_threshold -->
   <p>The shipped refusal threshold rejects <strong>more than a third</strong> of the
-  questions the bird corpus can actually answer. On its own sweep the best cut point is
-  <strong>−6</strong> — six full points from the shipped value.</p>
-  <p>The cross-encoder simply scores encyclopaedia prose lower than it scores academic
-  papers. A cut point calibrated on one corpus says very little about another.
-  <strong>A corpus nobody has calibrated is running on a number derived from somebody
-  else's documents.</strong></p>
+  questions the bird corpus can answer, and <strong>more than half</strong> of the
+  finance one's. Moving each corpus to its own cut point recovers those answers while
+  catching <strong>exactly as many</strong> adversarial questions in every case &mdash;
+  6 recovered on birds, 13 on finance, nothing given up for either.</p>
+  <p>The cross-encoder simply scores some prose lower than others, and how much lower
+  is a property of the documents. A cut point calibrated on one corpus says very little
+  about another. <strong>A corpus nobody has calibrated is running on a number derived
+  from somebody else's documents.</strong> That is why the threshold now lives in
+  <span class="m">corpora.json</span> beside the documents it was measured on, rather
+  than in a constant the next corpus inherits by accident.</p>
 </div>
+
+<h3>Hybrid search may not transfer either</h3>
+
+<p>The figure in Chapter 3 is the other half of this chapter. Adding BM25 is the single
+largest gain on the corpus the system was tuned on, and on <em>both</em> corpora built
+afterwards it costs pool coverage. One reversal is inside the noise a 26-question set
+can resolve; two pointing the same way is a pattern. It is recorded rather than acted
+on &mdash; changing a default on this evidence would be repeating the mistake this
+chapter is about &mdash; but the next thing to measure is no longer in doubt.</p>
 
 <h3>Three bugs that only a mixed-format corpus could reveal</h3>
 <p>Everything before this ran on PDFs alone. Adding Word, PowerPoint and Excel found
@@ -850,6 +1162,48 @@ three defects, none of which an all-PDF corpus can produce:</p>
 
 <!-- ============================================================== 13 -->
 <section id="c13">
+<!-- GEN:transfer -->
+<figure>
+  <div class="fignum">FIG. 10 — THE SAME PIPELINE ON THREE CORPORA</div>
+  <svg viewBox="0 0 740 153" role="img" aria-label="Hit rate, MRR and source recall for the shipped pipeline on each of the three corpora.">
+    <g font-family="Newsreader, Georgia, serif" font-size="13" fill="#dcdedf">
+      <text x="150.0" y="20.0" text-anchor="start" fill="#f3f3f1" font-size="12.5">Hit rate @5</text>
+      <line x1="150.0" y1="34" x2="317.33333333333337" y2="34" stroke="#26282b"/>
+      <rect x="150.0" y="44.0" width="141.9" height="13" rx="3" fill="#3987e5" opacity="1.0"/>
+      <text x="297.9" y="54.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.848</text>
+      <text x="138.0" y="54.5" text-anchor="end" fill="#dcdedf" font-size="12.5">ML &amp; NLP papers</text>
+      <text x="138.0" y="66.0" text-anchor="end" fill="#5d6367" font-size="9" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">36 docs</text>
+      <rect x="150.0" y="63.0" width="135.2" height="13" rx="3" fill="#d95926" opacity="1.0"/>
+      <text x="291.2" y="73.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.808</text>
+      <text x="138.0" y="73.5" text-anchor="end" fill="#dcdedf" font-size="12.5">Ornithology</text>
+      <text x="138.0" y="85.0" text-anchor="end" fill="#5d6367" font-size="9" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">45 docs</text>
+      <rect x="150.0" y="82.0" width="90.9" height="13" rx="3" fill="#199e70" opacity="1.0"/>
+      <text x="246.9" y="92.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.543</text>
+      <text x="138.0" y="92.5" text-anchor="end" fill="#dcdedf" font-size="12.5">Quantitative finance</text>
+      <text x="138.0" y="104.0" text-anchor="end" fill="#5d6367" font-size="9" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">35 docs</text>
+      <text x="351.3" y="20.0" text-anchor="start" fill="#f3f3f1" font-size="12.5">MRR</text>
+      <line x1="351.33333333333337" y1="34" x2="518.6666666666667" y2="34" stroke="#26282b"/>
+      <rect x="351.3" y="44.0" width="125.3" height="13" rx="3" fill="#3987e5" opacity="1.0"/>
+      <text x="482.7" y="54.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.749</text>
+      <rect x="351.3" y="63.0" width="95.4" height="13" rx="3" fill="#d95926" opacity="1.0"/>
+      <text x="452.7" y="73.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.570</text>
+      <rect x="351.3" y="82.0" width="68.6" height="13" rx="3" fill="#199e70" opacity="1.0"/>
+      <text x="425.9" y="92.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.410</text>
+      <text x="552.7" y="20.0" text-anchor="start" fill="#f3f3f1" font-size="12.5">Source recall</text>
+      <line x1="552.6666666666667" y1="34" x2="720.0000000000001" y2="34" stroke="#26282b"/>
+      <rect x="552.7" y="44.0" width="123.5" height="13" rx="3" fill="#3987e5" opacity="1.0"/>
+      <text x="682.2" y="54.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.738</text>
+      <rect x="552.7" y="63.0" width="127.5" height="13" rx="3" fill="#d95926" opacity="1.0"/>
+      <text x="686.2" y="73.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.762</text>
+      <rect x="552.7" y="82.0" width="60.4" height="13" rx="3" fill="#199e70" opacity="1.0"/>
+      <text x="619.1" y="92.5" text-anchor="start" fill="#a8adb1" font-size="10" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">0.361</text>
+      <text x="150.0" y="143.0" text-anchor="start" fill="#5d6367" font-size="9.5" font-family="JetBrains Mono, ui-monospace, Consolas, monospace">shipped configuration, scored on each corpus's own golden set</text>
+    </g>
+  </svg>
+  <figcaption>Ranking degrades most: encyclopaedia prose states a fact once, in ordinary words, so the right passage is found but sits lower. The finance corpus is weakest on every measure, and the figure above explains part of why before anyone concludes retrieval is broken on it.</figcaption>
+</figure>
+<!-- /GEN:transfer -->
+
 <h2 class="ch"><span class="n">Chapter 13</span>Why build it at all</h2>
 <p class="lede">The honest answer is not "better answers".</p>
 
