@@ -210,7 +210,9 @@ button,input,textarea{font:inherit;color:inherit}
 .toggle[aria-pressed="true"] .sw::after{transform:translateX(13px);background:var(--s1)}
 
 /* ------------------------------------------------------------ the thread */
-#thread{padding-bottom:30px}
+/* Clearance for the fixed composer, or the last thing on the page always
+   sits underneath it. */
+#thread{padding-bottom:132px}
 .turn{margin-top:26px;animation:rise 420ms var(--ease) both;scroll-margin-top:74px}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.turn{animation:none}}
@@ -490,32 +492,53 @@ function completed(item) {
   const full = clean(item?.context?.text || "");
   if (!full || !chunk) return chunk;
 
-  // Anchor on both ends of the chunk and return one contiguous slice of the
-  // window, rather than gluing the chunk onto a continuation. The two strings
-  // are cleaned separately and markdown does not survive that identically --
-  // a chunk ending "a rate of _" becomes "a rate of Pdrop" once the emphasis
-  // marker has a word to attach to -- so any seam between them is unreliable.
-  const key = t => t.replace(/[^A-Za-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
-  const fullKey = key(full), chunkKey = key(chunk);
-  if (!chunkKey) return chunk;
+  // Chunk and window are cleaned separately and markdown does not survive
+  // identically -- a chunk ending "a rate of _" becomes "a rate of Pdrop" once
+  // the emphasis marker has a word to attach to. So both are reduced to
+  // letters, digits and single spaces for matching, alongside a map back to
+  // the real offsets, and the text returned is a slice of the original.
+  const build = t => {
+    let key = "";
+    const map = [];
+    let space = true;
+    for (let i = 0; i < t.length; i++) {
+      if (/[A-Za-z0-9]/.test(t[i])) { key += t[i]; map.push(i); space = false; }
+      else if (!space) { key += " "; map.push(i); space = true; }
+    }
+    return { key, map };
+  };
+  const F = build(full), C = build(chunk);
+  if (C.key.length < 20) return chunk;
 
-  const tail = chunkKey.slice(-40);
-  const hit = fullKey.indexOf(tail);
-  if (hit < 0) return chunk;                      // window did not contain it
+  const tail = C.key.slice(-40);
+  const tHit = F.key.indexOf(tail);
+  if (tHit < 0) return chunk;                       // window did not contain it
 
-  // Walk the cleaned text and the key together to recover the real offset.
-  let ci = 0, fi = 0;
-  const want = hit + tail.length;
-  while (fi < full.length && ci < want) {
-    if (key(full[fi])) ci += key(full[fi]).length;
-    fi++;
+  // The chunk's own span inside the window. Slicing from 0 instead of from
+  // here is what put the previous chunk's mangled results table at the top of
+  // the answer.
+  const hHit = F.key.indexOf(C.key.slice(0, 40));
+  const from = hHit >= 0 ? F.map[hHit] : 0;
+  const to = F.map[Math.min(tHit + tail.length, F.map.length - 1)] + 1;
+
+  // Finish the sentence the chunk was cut in the middle of, then carry on for
+  // up to two more. One is not always enough: the chunk here stops at "we use
+  // a rate of", the dropout figure completes that sentence, and the label
+  // smoothing value the question actually asked for is the sentence after it.
+  //
+  // The terminator must be followed by whitespace or the end. Without that
+  // lookahead the decimal point in "0.1" ends the sentence, and the answer
+  // came out as "a rate of Pdrop = 0".
+  const rest = full.slice(to, to + 420);
+  let grown = "", cursor = 0;
+  for (let n = 0; n < 3 && cursor < rest.length; n++) {
+    const m = rest.slice(cursor).match(/^[\s\S]*?[.!?](?=\s|$)/);
+    if (!m) break;
+    grown += m[0];
+    cursor += m[0].length;
+    if (grown.length > 300) break;
   }
-  const rest = full.slice(fi, fi + 320);
-  const finish = rest.match(/^[^.!?]*[.!?]/);
-  if (!finish) return chunk;
-
-  const head = fullKey.indexOf(chunkKey.slice(0, 40));
-  return (head >= 0 ? full.slice(0, fi) : chunk) + finish[0];
+  return full.slice(from, to) + grown;
 }
 
 /* Marking both ends says "a fragment of something longer". */
@@ -994,7 +1017,8 @@ function renderStack(turn, data, colour, sig) {
       const it = src.get(cols[ci]);
       out.push(v <= 0
         ? `<div class="cell"></div>`
-        : `<div class="cell has" style="opacity:${(0.18 + (v / max) * 0.82).toFixed(2)}"
+        : `<div class="cell has" style="background:var(--dim);opacity:${
+             (0.3 + (v / max) * 0.7).toFixed(2)}"
              title="&quot;${esc(t)}&quot; contributed ${v.toFixed(2)} to ${
                esc(docName(it?.source || ""))}"></div>`);
     });
