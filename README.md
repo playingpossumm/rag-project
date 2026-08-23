@@ -1,27 +1,63 @@
-# rag-project
+# retrieval visualized
 
-A document question-answering system that retrieves passages from your own files
-and cites exactly where each came from — page, slide, or spreadsheet row.
+A retrieval-augmented generation system you can watch work. Ask a question of a
+set of documents and the interface draws the whole search — what dense retrieval
+and BM25 each found, what fusion and the cross-encoder did to the ranking, what
+the diversity cap cut, and which passages the answer actually stands on, cited
+down to the page, slide or spreadsheet row.
 
-**The point of this repository is not that it implements retrieval-augmented
-generation. It is that every design decision in it was measured — and four
-conclusions that had already been written up as results turned out to be wrong.**
+**The point of this repository is not that it implements RAG. It is that every
+design decision in it was measured — and several conclusions that had already
+been written up as results turned out to be wrong.**
 
 ```
                        any-hit@5    MRR    NDCG   source recall
-  naive RAG                0.788  0.601   0.645           0.704
-  + cross-encoder rerank   0.788  0.710   0.715           0.711
-  + hybrid BM25 fusion     0.864  0.757   0.766           0.742
-  + diversity cap (2/src)  0.848  0.754   0.769           0.773
+  naive RAG                0.803  0.589   0.640           0.641
+  + cross-encoder rerank   0.803  0.706   0.713           0.671
+  + hybrid BM25 fusion     0.864  0.752   0.761           0.695
+  + diversity cap (2/src)  0.848  0.749   0.761           0.738
 ```
 
-20 documents, 2,768 chunks, 84 labelled evaluation cases. Reproduce with
-`python src/evaluate.py`; every figure here is written to
-[`eval/results.json`](eval/results.json) by that command.
+36 arXiv ML/NLP papers, 5,459 passages, 84 labelled evaluation cases. Reproduce
+with `python src/evaluate.py`; every figure above is written to
+[`eval/results.json`](eval/results.json) by that command and copied here from it.
 
-Note the last row: the diversity cap **trades** hit rate for source recall
-rather than adding one for free. An earlier, smaller golden set said it was
-free. It was wrong — see finding 6.
+Note the last row: the diversity cap **trades** hit rate for source recall rather
+than adding one for free. An earlier, smaller golden set said it was free. It was
+wrong — see finding 6.
+
+## Three sets of documents, and a threshold that does not transfer
+
+The system ships with three corpora, deliberately unlike each other:
+
+| set | documents | passages | formats | refuses below |
+|---|---|---|---|---|
+| ML & NLP papers | 36 | 5,459 | PDF | 0.0 |
+| Ornithology | 45 | 900 | DOCX, PPTX, XLSX, PDF | −3.0 |
+| Quantitative finance | 35 | 6,184 | PDF | −4.0 |
+
+The abstention threshold — the score below which the system declines to answer
+— had been a module constant for most of this project's life, with a comment
+guessing it was "a property of the data, not of the model". Measured across all
+three, that guess is right, and the size of it is the finding:
+
+```
+                        wrongly refused at 0.0
+  ML & NLP papers        1 of 66    ( 1.5%)
+  ornithology           10 of 26    (38.5%)
+  quantitative finance  19 of 35    (54.3%)
+```
+
+The same number that served the original corpus for its whole life throws away
+more than a third of the answers retrieval had already found on the other two.
+Each set now carries its own calibrated threshold in
+[`corpora.json`](corpora.json), beside the documents it was derived from. A set
+with no calibration says so rather than silently borrowing another's.
+
+One question makes it concrete. *"Which ratio of body mass to wing area governs
+flight performance?"* scores **−0.99** — refused under the ML threshold,
+answered under the ornithology one, and correct either way for the corpus being
+asked.
 
 ---
 
@@ -208,9 +244,20 @@ Generation is an optional layer, not a dependency.
 python -m venv .venv && .venv/Scripts/activate     # Windows
 pip install -r requirements.txt
 
-python src/fetch_corpus.py     # 20 arXiv papers (or drop your own in data/)
+python src/fetch_corpus.py     # 36 arXiv papers (or drop your own in data/)
 python src/ingest.py           # build the index
-python src/cli.py "What is late interaction in a retrieval model?"
+python src/serve.py            # then open http://127.0.0.1:8000
+```
+
+The other two sets are built by topic rather than by a list of paper IDs — a
+wrong ID downloads a real paper under a confidently wrong filename, so the
+fetcher queries the arXiv and Wikipedia APIs instead:
+
+```bash
+python src/fetch_topic.py --topic birds --out data-birds
+python src/make_documents.py --src data-birds   # .docx/.pptx/.xlsx/.pdf
+RAG_STORE_DIR=store-birds RAG_DATA_DIR=data-birds python src/ingest.py
+python src/calibrate_threshold.py --golden eval/golden-birds.json
 ```
 
 ```bash
@@ -220,7 +267,12 @@ python src/hard_cases.py       # only the cases nothing gets right, in ~20s
 python src/test_metrics.py     # the scoring functions, hand-computed (ms)
 python src/test_trace.py       # the trace and the serving path still agree
 python src/serve.py            # local HTTP API and UI on :8000
+python src/test_loaders.py     # .docx/.pptx/.xlsx/.pdf round-trips
 ```
+
+The server binds to 127.0.0.1 on purpose and makes no external request: the
+documents may be private, and the interface's fonts are bundled rather than
+pulled from a CDN for the same reason.
 
 Set `RAG_DATA_DIR` to point at any folder — including a Google Drive for Desktop
 mount. The UI does the same thing without an environment variable: the **Local
@@ -228,6 +280,32 @@ folder** tab takes a pasted path, reports what it would index and what it would
 skip, and then indexes it. A browser cannot read a filesystem path out of a file
 picker, so pasting it is not a lesser version of a folder picker — it is the
 only version there is.
+
+---
+
+## The interface
+
+`python src/serve.py`, then <http://127.0.0.1:8000>.
+
+Pick a set of documents, ask a question, and the answer arrives with the passage
+it came from, cited to the page, slide, or spreadsheet rows. A passage pulled
+out of a spreadsheet is shown as the table it came from rather than as a
+paragraph with the column headers left in the middle of the sentence.
+
+Underneath it, the retrieval result: the score, read in the units it is actually
+in — a cross-encoder logit running roughly −11 to +11, not a probability —
+along with which documents were drawn on, how much document text was read, and
+how long it took.
+
+Below that the search is drawn as a schematic: seven stages, each a block of
+sheets whose depth tracks how many candidates are still in play, so the funnel
+from 5,459 passages down to five is the shape of the picture rather than a
+number written under it. Colour means one thing only — this passage is in your
+answer.
+
+Every answer states what it was run with, and the four retrieval settings can be
+changed from there; changing one re-runs the same question and shows what moved.
+Each carries the measurement that justifies its default.
 
 ---
 
