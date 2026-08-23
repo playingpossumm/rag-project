@@ -32,16 +32,20 @@
 
 export const shortDoc = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
 
-/* A true isometric is 30 degrees, which turns an upright panel a long way off
-   face-on and shows more of its side than of the matrix printed on it. This is
-   shallower: the panels read almost front-on, the ground plane flattens, and
-   the drawing stops looking like it is being viewed from a corner. */
-const ISO = (30 * Math.PI) / 180;
+/* 60 degrees, not the 30 of a true isometric. At 30 an upright panel sits too
+   square to the reader and the stack behind it has nowhere to go; at 60 the
+   panels turn far enough that the depth of a block is the first thing you
+   read, which is the point of drawing them as blocks. */
+const ISO = (60 * Math.PI) / 180;
 const KX = Math.cos(ISO);
 const KY = Math.sin(ISO);
 const project = (u, v, z) => ({ x: (u - v) * KX, y: (u + v) * KY - z });
 
-const FLOW = 21;
+/* Step spacing in world units. It has to be read together with ISO: the
+   on-screen gap between stages is 2 * FLOW * cos(ISO), so raising the angle
+   narrows the drawing unless this rises with it. At 60 degrees cos is 0.5, so
+   this is roughly double what a 30-degree layout needed. */
+const FLOW = 66;
 const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
 
 /* label side: 1 above, -1 below. Leader lines run vertically out of the plate
@@ -353,16 +357,19 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
   // volume of data, which is what a stage is.
   for (let i = layers - 1; i >= 1; i--) {
     const k = layerAt(plate, i);
-    const depth = 1 - (i / layers) * 0.6;     // deeper sheets recede
+    // Only a little dimmer with depth. Fading them out turned the block into a
+    // ghost of itself; a layer of a network is not less real for being behind
+    // the one in front of it, and the stack has to read as one solid object.
+    const depth = 1 - (i / layers) * 0.22;
     if (cellsIn > 0 && plate.cells) {
       const [cols, rows] = plate.cells;
       for (let n = 0; n < cols * rows; n++) {
         drawCell(ctx, T, plate, cellAt(plate, n, k),
-                 null, ink.other, a * cellsIn * depth * (dim ? 0.07 : 0.15), 0.5);
+                 null, ink.other, a * cellsIn * depth * (dim ? 0.16 : 0.34), 0.55);
       }
     }
     const q = plateCorners(plate, k).map(c => T(c.u, c.v, c.z));
-    ctx.globalAlpha = a * back * depth * (dim ? 0.12 : 0.26);
+    ctx.globalAlpha = a * back * depth * (dim ? 0.26 : 0.5);
     ctx.strokeStyle = ink.other;
     ctx.lineWidth = 0.7;
     ctx.beginPath();
@@ -370,6 +377,23 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
     for (let e = 1; e < 4; e++) ctx.lineTo(q[e].x, q[e].y);
     ctx.closePath();
     ctx.stroke();
+  }
+
+  // The four edges joining the back sheet to the front one. Without them the
+  // sheets are separate quads that happen to line up; with them the stage is a
+  // single extruded block, which is what makes the depth read at a glance.
+  if (layers > 1) {
+    const bk = plateCorners(plate, layerAt(plate, layers - 1))
+      .map(c => T(c.u, c.v, c.z));
+    ctx.globalAlpha = a * back * (dim ? 0.2 : 0.42);
+    ctx.strokeStyle = ink.other;
+    ctx.lineWidth = 0.7;
+    for (let e = 0; e < 4; e++) {
+      ctx.beginPath();
+      ctx.moveTo(bk[e].x, bk[e].y);
+      ctx.lineTo(pts[e].x, pts[e].y);
+      ctx.stroke();
+    }
   }
 
   // The empty matrix. Every slot the stage can hold is drawn, so a stage that
@@ -614,7 +638,11 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
 
-  const padX = 18;
+  // Labels are centred on their plate, so the first and last ones hang off the
+  // ends of the drawing by roughly half their own width. Eighteen pixels was
+  // enough when the fit still reserved world space for labels; it is not now,
+  // and "5,459 PASSAGES · 36 DOCUMENTS" was losing its first word.
+  const padX = 122;
   const padY = LABEL_PX;              // the text stack only -- see above
   const s = Math.min((W - padX * 2) / (maxX - minX),
                      (H - padY * 2) / (maxY - minY));
@@ -667,13 +695,13 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
         const sheets = plate.layers || 1;
         for (let i = sheets - 1; i >= 0; i--) {
           const k = layerAt(plate, i);
-          const depth = i === 0 ? 1 : 1 - (i / sheets) * 0.62;
+          const depth = i === 0 ? 1 : 1 - (i / sheets) * 0.25;
           for (const m of city.marks) {
             const w = ptAt(plate, m.u, m.v, k);
             const p = T(w.u, w.v, w.z);
             const hit = i === 0 ? run?.lit.get(m.id) : null;
             if (hit) mark(ctx, p, 2.2, hit.colour || ink.faint, null, ma);
-            else mark(ctx, p, 1.1, null, ink.other, ma * 0.4 * depth);
+            else mark(ctx, p, 1.1, null, ink.other, ma * 0.62 * depth);
           }
         }
       } else if (ft >= 0.995) {
