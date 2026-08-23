@@ -341,6 +341,28 @@ def attribution_for(question: str, trace: dict, limit: int = 12) -> dict:
     return out
 
 
+def attach_locators(trace: dict) -> dict:
+    """Put the structured locator back on every traced item.
+
+    pipeline_trace flattens it to "{kind} {value}" for its own printing, which
+    throws away the row range on a spreadsheet chunk and leaves a citation
+    reading "sheet Notes" with no idea which rows. The full dict is sitting in
+    the index metadata, so it is looked up here rather than changing what the
+    trace itself carries -- this is a display concern.
+    """
+    # chunk_id IS the row position in metadata -- retrieve.py and hybrid.py both
+    # assign it from the FAISS row -- so this is an index, not a search.
+    meta = RES.metadata
+    for stage in trace.get("stages", []):
+        for item in stage.get("items", []):
+            cid = item.get("chunk_id")
+            if isinstance(cid, int) and 0 <= cid < len(meta):
+                loc = meta[cid].get("locator")
+                if isinstance(loc, dict):
+                    item["loc"] = loc
+    return trace
+
+
 def corpus_info() -> dict:
     """What the UI shows about the corpus it is talking to."""
     import corpora
@@ -411,10 +433,10 @@ def chat(question: str, payload: dict) -> dict:
     from pipeline_trace import trace_pipeline
 
     with RES.lock:
-        trace = trace_pipeline(question, RES.index, RES.metadata, RES.model,
-                               bm25=RES.bm25, k=int(payload.get("k", 5)),
-                               threshold=RES.threshold(),
-                               **trace_options(payload))
+        trace = attach_locators(trace_pipeline(
+            question, RES.index, RES.metadata, RES.model, bm25=RES.bm25,
+            k=int(payload.get("k", 5)), threshold=RES.threshold(),
+            **trace_options(payload)))
 
     trace["attribution"] = attribution_for(question, trace)
     selected = trace["stages"][-1]["items"]
@@ -685,11 +707,10 @@ class Handler(BaseHTTPRequestHandler):
                 from pipeline_trace import trace_pipeline  # not 'trace': shadows a stdlib module
 
                 with RES.lock:
-                    result = trace_pipeline(question, RES.index, RES.metadata,
-                                            RES.model, bm25=RES.bm25,
-                                            k=int(payload.get("k", 5)),
-                                            threshold=RES.threshold(),
-                                            **trace_options(payload))
+                    result = attach_locators(trace_pipeline(
+                        question, RES.index, RES.metadata, RES.model,
+                        bm25=RES.bm25, k=int(payload.get("k", 5)),
+                        threshold=RES.threshold(), **trace_options(payload)))
                 result["attribution"] = attribution_for(question, result)
                 self._send(200, result)
             else:
