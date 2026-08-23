@@ -360,6 +360,34 @@ canvas.city{display:block;width:100%;height:clamp(300px,29vw,430px)}
 .more[open] > summary::after{transform:rotate(-135deg) translateY(1px)}
 .more .inner{padding:0 clamp(22px,3.4vw,34px) 26px}
 
+/* ---- the detail panel --------------------------------------------------
+   Candidates, matched words and the stage history are three views of one run,
+   so they are one object with three tabs rather than three blocks competing
+   for the space under the answer. It borrows the disclosure chrome above. */
+.detail{border-top:1px solid var(--hair)}
+.detail > summary{cursor:pointer;list-style:none;padding:15px clamp(22px,3.4vw,34px);
+  display:flex;align-items:center;gap:12px;transition:background 180ms var(--ease)}
+.detail > summary::-webkit-details-marker{display:none}
+.detail > summary:hover{background:var(--nest)}
+.detail > summary .lab{color:var(--dim)}
+.detail > summary .hint{color:var(--faint);font-size:12.5px}
+.detail > summary::after{content:"";width:7px;height:7px;margin-left:auto;flex:none;
+  border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);
+  transform:rotate(45deg) translateY(-2px);transition:transform 220ms var(--ease)}
+.detail[open] > summary::after{transform:rotate(-135deg) translateY(1px)}
+
+.tabs{display:flex;gap:4px;padding:0 clamp(22px,3.4vw,34px);
+  border-bottom:1px solid var(--hair)}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;
+  margin-bottom:-1px;padding:9px 12px 11px;cursor:pointer;font:inherit;
+  font-size:13px;color:var(--faint);
+  transition:color 160ms var(--ease),border-color 160ms var(--ease)}
+.tabs button:hover{color:var(--dim)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--s1)}
+.detail .pane{padding-top:18px}
+.detail .pane[hidden]{display:none}
+.detail .pane .inner{padding:0 clamp(22px,3.4vw,34px) 26px}
+
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 th{text-align:left;font-family:var(--mono);font-size:9px;font-weight:500;
   text-transform:uppercase;letter-spacing:.13em;color:var(--faint);
@@ -666,7 +694,18 @@ let OPTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window"
    tidied filename when a document has no extractable title. */
 let TITLES = {};
 function docName(source) {
-  const t = TITLES[source];
+  let t = TITLES[source];
+  if (t) {
+    // Titles come out of the document, so they carry whatever the extractor
+    // picked up with them. A run of hashes inside a word is a markdown heading
+    // marker that landed mid-title -- "large lan### guage models" -- so the
+    // word is rejoined rather than left with a hole in it.
+    t = t.replace(/(\w)\s*#{2,}\s*(\w)/g, "$1$2")
+         .replace(/#{1,6}/g, " ")
+         .replace(/\*+|_{2,}/g, "")
+         .replace(/\s+/g, " ")
+         .trim();
+  }
   if (t) {
     // Some PDFs set their title in full caps. Sentence-case those; leave
     // mixed-case titles alone, since their capitalisation is deliberate.
@@ -1048,12 +1087,21 @@ function renderTurn(turn, question, data, opts) {
       </div>
     </div>
 
-    <div class="stack"></div>
+    <details class="detail"><summary>
+      <span class="lab">Detail</span>
+      <span class="hint">${ranked.length} candidates${
+        data.attribution?.terms?.length
+          ? ` · ${data.attribution.terms.length} query terms` : ""} · ${
+        data.stages.length} stages</span></summary>
 
-    <details class="more"><summary><span class="lab">Candidates</span>
-      <span class="hint">${ranked.length} looked at, ${sel.length} used</span></summary>
-      <div class="inner"><div class="scroll"><table>
-        <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th>
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" data-pane="cands" aria-selected="true">Candidates</button>
+        <button type="button" role="tab" data-pane="words" aria-selected="false">Words matched</button>
+        <button type="button" role="tab" data-pane="steps" aria-selected="false">Each step</button>
+      </div>
+
+      <div class="pane" data-pane="cands"><div class="inner"><div class="scroll"><table>
+        <thead><tr><th class="r"></th><th>Document</th><th>Passage</th>
           <th class="r">Score</th><th class="r">Move</th></tr></thead>
         <tbody>${ranked.map(i => `
           <tr class="${sel.some(s => s.chunk_id === i.chunk_id) ? "" : "out"}">
@@ -1063,12 +1111,9 @@ function renderTurn(turn, question, data, opts) {
             <td><div class="snip">${esc(clean(i.text))}</div></td>
             <td class="r num">${typeof i.score === "number" ? sig(i.score) : ""}</td>
             <td class="r num">${i.delta > 0 ? "+" + i.delta : i.delta < 0 ? i.delta : "·"}</td>
-          </tr>`).join("")}</tbody></table></div></div>
-    </details>
-
-    <details class="more"><summary><span class="lab">Each step</span>
-      <span class="hint">what happened, in order</span></summary>
-      <div class="inner">${data.stages.map((s, n) => `
+          </tr>`).join("")}</tbody></table></div></div></div>
+      <div class="pane" data-pane="words" hidden><div class="stack"></div></div>
+      <div class="pane" data-pane="steps" hidden><div class="inner">${data.stages.map((s, n) => `
         <div class="stage"><h4>${String(n + 1).padStart(2, "0")} · ${esc(s.title)}</h4>
           <span class="lab">${esc(s.skipped || s.note)}</span>
           <p>${esc(s.detail)}</p>
@@ -1081,11 +1126,12 @@ function renderTurn(turn, question, data, opts) {
                 <td><div class="snip">${esc(clean(i.text))}</div></td>
                 <td class="r num">${typeof i.score === "number" ? i.score : ""}</td></tr>`).join("")}
             </tbody></table></div>` : ""}
-        </div>`).join("")}</div>
+        </div>`).join("")}</div></div>
     </details>
 `;
 
   renderStack(turn, data, colour, sig);
+  wireTabs(turn);
   wireCity(turn, run, data);
   // Settings live in the top bar, not in here. They configure the next question
   // rather than describing this answer, so nesting them among "Candidates" and
@@ -1093,6 +1139,30 @@ function renderTurn(turn, question, data, opts) {
   // control inside a log.
   LAST = { question, opts, data, turn };
   renderSettings();
+}
+
+/* Three views of one run, so they are one object with three tabs rather than
+   three blocks competing under the answer. Collapsed by default: the answer,
+   its citation and the diagram are the page, and several questions in a row
+   stay scannable. */
+function wireTabs(turn) {
+  const tabs = [...turn.querySelectorAll('.detail [role="tab"]')];
+  const panes = [...turn.querySelectorAll(".detail .pane")];
+  if (!tabs.length) return;
+
+  const show = name => {
+    tabs.forEach(t => t.setAttribute("aria-selected", String(t.dataset.pane === name)));
+    panes.forEach(pn => { pn.hidden = pn.dataset.pane !== name; });
+  };
+  tabs.forEach(t => { t.onclick = () => show(t.dataset.pane); });
+
+  // Nothing matched means nothing to show; the tab goes rather than opening on
+  // an empty panel.
+  const words = turn.querySelector('.pane[data-pane="words"] .stack');
+  if (!words || !words.innerHTML.trim()) {
+    turn.querySelector('[data-pane="words"][role="tab"]')?.remove();
+    turn.querySelector('.pane[data-pane="words"]')?.remove();
+  }
 }
 
 /* --------------------------------------------------------- attention map
@@ -1130,8 +1200,8 @@ function renderStack(turn, data, colour, sig) {
   });
 
   host.innerHTML = `
-    <div class="hd"><span class="lab">Which words matched</span>
-      <span class="k">BM25 only — dense retrieval has no per-word equivalent</span></div>
+    <div class="hd"><span class="k">BM25 only — dense retrieval has no
+      per-word equivalent</span></div>
     <div class="grid" style="grid-template-columns:118px repeat(${cols.length}, minmax(0, 1fr))">
       ${out.join("")}</div>`;
 }
