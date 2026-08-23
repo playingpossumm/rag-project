@@ -119,6 +119,18 @@ button,input,textarea{font:inherit;color:inherit}
 .tray[data-open="true"] .trayPanel{transform:translate(0,-50%);opacity:1;
   visibility:visible;pointer-events:auto;transition-delay:0s}
 .trayPanel .sets{padding:8px}
+.traysets{padding:10px 8px 4px;border-bottom:1px solid var(--hair);margin-bottom:6px}
+.traysets .top2{padding:0 8px}
+.traysets .sdesc{padding:0 8px}
+.trayset{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:none;border:1px solid transparent;border-radius:9px;
+  padding:9px 10px;cursor:pointer;font:inherit;font-size:13.5px;color:var(--dim);
+  transition:background 150ms var(--ease),color 150ms var(--ease)}
+.trayset:hover:not(:disabled){background:var(--nest);color:var(--ink)}
+.trayset:disabled{opacity:.4;cursor:default}
+.trayset[aria-pressed="true"]{border-color:var(--s1);color:var(--ink)}
+.trayset .cnt{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)}
+
 .trayPanel .sdesc{margin:0 0 9px;font-size:12px;line-height:1.55;color:var(--faint);
   max-width:52ch}
 .trayPanel .cmp{border-top:1px solid var(--hair);padding:12px 15px;
@@ -600,6 +612,12 @@ tr.out td{color:var(--faint)}
       <span class="tt" id="setName">Settings</span>
     </button>
     <div class="trayPanel" id="setMenu">
+      <!-- The set of documents lives in the hero, and the hero is gone once a
+           thread exists, so after the first question there was no way back to
+           it. It belongs here too: this panel is what an answer points at when
+           you want to know why it came out the way it did, and which documents
+           were searched is the first part of that. -->
+      <div class="traysets" id="traysets"></div>
       <div class="sets" id="setBody"></div>
       <div class="cmp" id="setCmp"></div>
     </div>
@@ -1015,8 +1033,23 @@ async function loadPicker() {
         <span class="fmt">${Object.keys(c.formats || {}).join(" · ").toUpperCase()}</span>`
       : `<span class="cnt warn2">no index built</span>`}
     </button>`).join("");
+  $("#traysets").innerHTML = `
+    <div class="top2"><h5>Documents</h5></div>
+    <p class="sdesc">Which set the search runs over. Changing it clears the
+      thread — answers already on the page came from different documents.</p>
+    ${data.corpora.map(c => `
+      <button type="button" class="trayset" data-name="${esc(c.name)}"
+              ${c.indexed ? "" : "disabled"}
+              aria-pressed="${c.name === data.active}">
+        <span class="nm">${esc(c.label)}</span>
+        <span class="cnt">${c.indexed ? `${nf(c.documents)} docs` : "no index"}</span>
+      </button>`).join("")}`;
+
   $("#setgrid").querySelectorAll("button[data-name]").forEach(b => {
     b.onclick = () => selectCorpus(b.dataset.name);
+  });
+  $("#traysets").querySelectorAll("button[data-name]").forEach(b => {
+    b.onclick = e => { e.stopPropagation(); selectCorpus(b.dataset.name); };
   });
 }
 

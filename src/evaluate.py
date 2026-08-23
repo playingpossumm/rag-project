@@ -199,6 +199,21 @@ def main():
     print(f"corpus: {index.ntotal} chunks | cases: {len(answerable)} answerable, "
           f"{len(adversarial)} adversarial | k={args.k}, candidates={args.candidate_k}\n")
 
+    # "corpus" and "abstention" have been declared and left empty since this
+    # file was written, so every document quoting a corpus size was quoting a
+    # hand-maintained number -- which is the exact failure results.json exists
+    # to prevent. eval/RESULTS.md still said 20 papers and 2,768 chunks long
+    # after the corpus reached 36 and 5,459.
+    emitted["corpus"] = {
+        "chunks": int(index.ntotal),
+        "documents": len({c["source"] for c in metadata}),
+        "answerable_cases": len(answerable),
+        "adversarial_cases": len(adversarial),
+        "k": args.k,
+        "candidate_k": args.candidate_k,
+        "golden": str(args.golden),
+    }
+
     # ---- Layer 1: candidate pool quality (no reranking) -------------------
     # This is where fusion is judged. Sparse-only is included as a reference
     # point, not a candidate configuration.
@@ -331,6 +346,8 @@ def main():
         n_caught = sum(1 for s in adv_scores if s < t)
         n_false = sum(1 for s in ans_scores if s < t)
         counts[t] = (n_caught, n_false)
+        emitted["abstention"].setdefault("sweep", []).append(
+            {"threshold": t, "caught": n_caught, "false_abstain": n_false})
         caught = n_caught / len(adv_scores)
         false_ab = n_false / len(ans_scores)
         net = caught - false_ab
@@ -362,6 +379,11 @@ def main():
     print("  note: false abstention is the costlier error -- refusing a question the")
     print("        corpus CAN answer is worse than answering a weak one with citations,")
     print(f"        which is why the shipped threshold stays at {shipped:+.1f}.")
+    emitted["abstention"]["shipped_threshold"] = float(shipped)
+    emitted["abstention"]["best_net_threshold"] = best[0]
+    emitted["abstention"]["n_answerable"] = len(ans_scores)
+    emitted["abstention"]["n_adversarial"] = len(adv_scores)
+    emitted["abstention"]["answerable_median"] = sorted(ans_scores)[len(ans_scores) // 2]
 
 
     if args.emit:

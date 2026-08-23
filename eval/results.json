@@ -1,5 +1,13 @@
 {
-  "corpus": {},
+  "corpus": {
+    "chunks": 5459,
+    "documents": 36,
+    "answerable_cases": 66,
+    "adversarial_cases": 18,
+    "k": 5,
+    "candidate_k": 20,
+    "golden": "C:\\Users\\owner\\Desktop\\rag-project\\eval\\golden_set.json"
+  },
   "candidate_pool": {
     "dense": {
       "hit_rate": 0.879,
@@ -87,6 +95,69 @@
       "blocks_per_query": 4.5
     }
   },
-  "abstention": {},
+  "abstention": {
+    "sweep": [
+      {
+        "threshold": -10,
+        "caught": 0,
+        "false_abstain": 0
+      },
+      {
+        "threshold": -8,
+        "caught": 1,
+        "false_abstain": 0
+      },
+      {
+        "threshold": -6,
+        "caught": 1,
+        "false_abstain": 0
+      },
+      {
+        "threshold": -5,
+        "caught": 1,
+        "false_abstain": 0
+      },
+      {
+        "threshold": -4,
+        "caught": 5,
+        "false_abstain": 0
+      },
+      {
+        "threshold": -3,
+        "caught": 5,
+        "false_abstain": 1
+      },
+      {
+        "threshold": -2,
+        "caught": 5,
+        "false_abstain": 1
+      },
+      {
+        "threshold": -1,
+        "caught": 7,
+        "false_abstain": 1
+      },
+      {
+        "threshold": 0,
+        "caught": 9,
+        "false_abstain": 1
+      },
+      {
+        "threshold": 1,
+        "caught": 12,
+        "false_abstain": 4
+      },
+      {
+        "threshold": 2,
+        "caught": 13,
+        "false_abstain": 5
+      }
+    ],
+    "shipped_threshold": 0.0,
+    "best_net_threshold": 2,
+    "n_answerable": 66,
+    "n_adversarial": 18,
+    "answerable_median": 4.934403419494629
+  },
   "generated_by": "src/evaluate.py"
 }
