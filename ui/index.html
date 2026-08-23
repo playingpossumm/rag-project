@@ -395,9 +395,20 @@ tr.out td{color:var(--faint)}
 .cmp table{margin-top:10px;max-width:460px}
 
 /* ------------------------------------------------------------- composer */
+/* Sticky, so it is there when you want it -- but sticky also means it sits on
+   top of whatever you are reading, and the pipeline diagram is the tallest
+   thing on the page, so the bottom row of its labels was permanently underneath
+   the composer. It steps out of the way while you are scrolled up inside an
+   answer and comes back at the end of the thread, or as soon as it is focused. */
 .dock{position:sticky;bottom:0;z-index:20;padding:14px 0 20px;
-  background:linear-gradient(to top,var(--ground) 66%,transparent)}
+  background:linear-gradient(to top,var(--ground) 66%,transparent);
+  transition:transform 200ms var(--ease),opacity 150ms var(--ease)}
+.dock.away{transform:translateY(calc(100% + 14px));opacity:0;pointer-events:none}
 .dock.hide{display:none}
+@media (prefers-reduced-motion:reduce){
+  .dock{transition:opacity 150ms linear}
+  .dock.away{transform:none}
+}
 .dock .field{max-width:none}
 .dock .genrow{justify-content:flex-start;margin-top:10px;padding-left:4px}
 
@@ -830,6 +841,25 @@ $("#tray").onclick = e => e.stopPropagation();
 addEventListener("click", closeSet);
 addEventListener("keydown", e => { if (e.key === "Escape") closeSet(); });
 
+/* ---------------------------------------------------------- dock stepping
+   The composer is only in the way when you are reading something above it.
+   Near the end of the thread -- or focused, or mid-compose -- it stays. */
+const dockEl = $("#dock");
+let dockRaf = 0;
+function syncDock() {
+  dockRaf = 0;
+  if (dockEl.classList.contains("hide")) return;
+  const gap = document.documentElement.scrollHeight - (scrollY + innerHeight);
+  const busy = dockEl.contains(document.activeElement) || $("#q").value.trim();
+  dockEl.classList.toggle("away", gap > 150 && !busy);
+}
+addEventListener("scroll", () => {
+  if (!dockRaf) dockRaf = requestAnimationFrame(syncDock);
+}, { passive: true });
+addEventListener("resize", syncDock);
+addEventListener("focusin", syncDock);
+addEventListener("focusout", () => setTimeout(syncDock, 0));
+
 /* ------------------------------------------------------------ composer */
 const ta = $("#q");
 const grow = () => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + "px"; };
@@ -858,6 +888,7 @@ function submit() {
     const dock = $("#dock");
     dock.append($("#form"), $("#genrow"));
     dock.classList.remove("hide");
+    syncDock();
   }
   // OPTS, not DEFAULTS: a setting changed before the first question was asked
   // has to apply to that question rather than being silently dropped.
