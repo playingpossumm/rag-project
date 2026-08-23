@@ -322,6 +322,35 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .stack .ft{margin-top:12px;font-size:12.5px;color:var(--mute);max-width:70ch}
 .stack .ft b{color:var(--dim);font-weight:600}
 
+/* ---- the retrieval result ----------------------------------------------
+   Replaces a "why it answered" disclosure. The score, what it means in the
+   units it is actually in, and the three numbers worth knowing -- which
+   documents, how much text, how long. Open, not folded: it is the reading of
+   the result, not a footnote to it. */
+.result{margin:26px 0 2px;padding:16px 18px;border:1px solid var(--hair);
+  border-radius:12px;background:var(--nest)}
+.rhead{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.rhead .lab{color:var(--dim)}
+.score{margin-left:auto;display:inline-flex;align-items:baseline;gap:8px;
+  font-family:var(--mono);font-size:15px;color:var(--ink)}
+.score em{font-style:normal;font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase}
+.score.strong em{color:var(--s3)}
+.score.clear em{color:var(--s1)}
+.score.weak em,.score.marginal em{color:var(--warn)}
+.result > p{margin:0;font-size:13.5px;line-height:1.6;color:var(--mute);max-width:70ch}
+.result > p b{color:var(--dim);font-weight:600;font-family:var(--mono);font-size:13px}
+.result .thin{margin-top:10px;padding-left:12px;border-left:2px solid var(--warn);
+  color:var(--dim)}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;margin-top:16px;padding-top:15px;border-top:1px solid var(--hair)}
+.rgrid > div{display:flex;flex-direction:column;gap:6px}
+.rgrid .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--faint)}
+.rgrid .vv{display:flex;flex-wrap:wrap;gap:6px;font-size:14px;color:var(--ink)}
+.rgrid .vv.mono{font-family:var(--mono);font-size:14.5px}
+.rgrid .note2{font-size:12px;line-height:1.5;color:var(--faint)}
+
 .why{margin:18px 0 4px}
 .why summary{display:inline-block;cursor:pointer;list-style:none;
   font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.13em;
@@ -336,10 +365,21 @@ body.switching .sets{opacity:.45;pointer-events:none}
   letter-spacing:.14em;color:var(--faint)}
 
 /* the answer is the biggest thing on the page */
-.answer{font-size:clamp(18px,2.1vw,22px);line-height:1.52;letter-spacing:-.015em;
-  max-width:38em;margin:0;color:var(--ink)}
+/* The answer is the one thing on the card you are meant to read, so it is set
+   heavier than everything around it -- the passage is quoted, and it should
+   look quoted rather than blend into the explanation underneath. */
+.answer{font-size:clamp(18px,2.1vw,22px);line-height:1.5;letter-spacing:-.017em;
+  font-weight:600;max-width:38em;margin:0;color:var(--ink)}
 .answer.prose{font-size:16.5px;line-height:1.68;letter-spacing:-.005em;max-width:64ch}
 .answer.prose p{margin:0 0 14px}
+/* A passage out of a spreadsheet is shown as the table it came from. */
+.answer.cells{font-size:15px;font-weight:400;line-height:1.55;border-collapse:collapse;
+  width:100%;max-width:64ch;letter-spacing:0}
+.answer.cells th{width:1%;white-space:nowrap;text-align:left;vertical-align:top;
+  padding:7px 18px 7px 0;font-family:var(--mono);font-size:10.5px;font-weight:500;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.answer.cells td{padding:7px 0;vertical-align:top;color:var(--ink)}
+.answer.cells tr + tr th,.answer.cells tr + tr td{border-top:1px solid var(--hair)}
 .answer.prose p:last-child{margin-bottom:0}
 .cite{display:inline-flex;align-items:center;gap:9px;margin-top:18px;
   background:var(--nest);border:1px solid var(--hair);border-radius:999px;
@@ -686,13 +726,83 @@ function completed(item) {
     cursor += m[0].length;
     // "i.e." and friends end in a period followed by a space and are not the
     // end of anything, so they do not count against the three-sentence budget.
-    if (/(?:i\.e|e\.g|et al|cf|vs|Fig|Eq|Sec|approx|resp)\.$/i.test(grown.trim())) {
+    if (/\b(?:i\.e|e\.g|et al|cf|vs|Fig|Eq|Sec|approx|resp)\.$/i.test(grown.trim())) {
       n--;
       continue;
     }
     if (grown.length > 300) break;
   }
   return (full.slice(from, to) + grown).trim();
+}
+
+/* A spreadsheet row does not become prose by being pulled out of a
+   spreadsheet. The xlsx loader serialises cells as "Header: value", so a
+   passage out of one reads "Length: 356 Topic: Song; Detail: Parrots are
+   unusual among birds..." -- a table printed as a paragraph, with the column
+   names stranded in the middle of the sentence.
+
+   Split it back into pairs and it can be shown as what it is. Returns null for
+   anything genuinely prose, which is most passages. */
+function tabular(text) {
+  const parts = String(text)
+    .split(/(?=\b[A-Z][A-Za-z][A-Za-z ]{0,18}:\s)/)
+    .map(t => t.trim())
+    .filter(Boolean);
+  const rows = [];
+  let stray = 0;
+  for (const part of parts) {
+    const m = part.match(/^([A-Z][A-Za-z][A-Za-z ]{0,18}):\s*([\s\S]+?);?$/);
+    if (m) rows.push([m[1].trim(), m[2].trim()]);
+    else stray += part.length;
+  }
+  // Three labelled cells and almost nothing outside them. A paragraph that
+  // happens to contain one colon must not become a table.
+  return rows.length >= 3 && stray < 40 ? rows : null;
+}
+
+
+/* Where in the document a passage came from. The trace flattens the locator
+   to "{kind} {value}" for its own printing; serve.py puts the structured one
+   back as `loc`, which is the only place the row range on a spreadsheet chunk
+   survives. "section (untitled)" is a heading the extractor never found, and
+   saying so is more use than printing the word untitled. */
+function where(item) {
+  const l = item && item.loc;
+  if (!l) {
+    const flat = String((item && item.locator) || "").trim();
+    return /untitled/i.test(flat) ? "" : flat;
+  }
+  const v = l.value;
+  if (l.kind === "page") return `page ${v}`;
+  if (l.kind === "slide") return `slide ${v}`;
+  if (l.kind === "part") return `part ${v}`;
+  if (l.kind === "table") return `table ${Number(v) + 1}`;
+  if (l.kind === "sheet") {
+    const rows = l.rows ? `, rows ${String(l.rows).replace(/-/, "–")}` : "";
+    return `sheet “${v}”${rows}`;
+  }
+  if (l.kind === "section") {
+    return /untitled/i.test(String(v)) ? "opening section" : `section “${v}”`;
+  }
+  return `${l.kind} ${v}`;
+}
+
+/* What a relevance score means, in the units it is actually in.
+
+   The number is the cross-encoder's logit for (question, passage). It is not a
+   probability and does not run 0..1 -- ms-marco-MiniLM puts it roughly between
+   -11 and +11. The bands below are read off that scale, so they mean the same
+   thing on every set of documents. The refusal line is separate and per-set,
+   which is why it is not what the bands are measured against. */
+function reading(score, threshold) {
+  if (score >= 5) return { band: "strong",
+    text: "the passage answers the question directly" };
+  if (score >= 1) return { band: "clear",
+    text: "the passage is on topic and carries the answer" };
+  if (score >= -2) return { band: "weak",
+    text: "on topic, but the answer may be partial or implied" };
+  return { band: "marginal",
+    text: `only just past this set’s cut-off of ${threshold.toFixed(1)}` };
 }
 
 /* Marking both ends says "a fragment of something longer". */
@@ -731,6 +841,20 @@ let OPTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window"
    Language Models" is the thing you would look for on a shelf. Falls back to a
    tidied filename when a document has no extractable title. */
 let TITLES = {};
+/* Titles are not unique -- the bird set carries bird_vocalization as .docx,
+   .pdf and .pptx, all titled the same. Where a title is shared, the file type
+   is what tells them apart, so it goes on the end. */
+let DUPTITLES = new Set();
+function indexTitles() {
+  const seen = new Map();
+  DUPTITLES = new Set();
+  for (const [src, t] of Object.entries(TITLES)) {
+    const key = String(t).trim().toLowerCase();
+    if (seen.has(key) && seen.get(key) !== src) DUPTITLES.add(key);
+    seen.set(key, src);
+  }
+}
+
 function docName(source) {
   let t = TITLES[source];
   if (t) {
@@ -745,12 +869,23 @@ function docName(source) {
          .trim();
   }
   if (t) {
+    // The bird and finance sets were built from article slugs, so their titles
+    // arrive entirely lower case -- "bird vocalization". Capitalise the first
+    // letter and leave the rest, which is the convention those articles use
+    // anyway ("Arctic tern", not "Arctic Tern").
+    if (t === t.toLowerCase()) t = t.charAt(0).toUpperCase() + t.slice(1);
+
     // Some PDFs set their title in full caps. Sentence-case those; leave
     // mixed-case titles alone, since their capitalisation is deliberate.
     const fixed = t === t.toUpperCase()
       ? t.toLowerCase().replace(/(^|[:.]\s*)([a-z])/g, (_, p, c) => p + c.toUpperCase())
       : t;
-    return fixed.length > 72 ? fixed.slice(0, 71).trimEnd() + "…" : fixed;
+    const short = fixed.length > 72 ? fixed.slice(0, 71).trimEnd() + "…" : fixed;
+    if (DUPTITLES.has(String(TITLES[source]).trim().toLowerCase())) {
+      const ext = String(source).split(".").pop();
+      if (ext && ext.length <= 5) return `${short} (${ext.toUpperCase()})`;
+    }
+    return short;
   }
   return shortDoc(source).replace(/[_-]+/g, " ");
 }
@@ -771,6 +906,7 @@ async function loadCorpus() {
   ]);
   CITY = buildCity(chunks); EVAL = evalData; ACTIVE = corpus.active || null;
   TITLES = corpus.titles || {};
+  indexTitles();
   // Grouped by what kind of retrieval the question exercises. The adversarial
   // group is labelled with what SHOULD happen, so a refusal reads as the
   // demonstration it is rather than as a failure.
@@ -1011,8 +1147,7 @@ function newTurn(question) {
   const el = document.createElement("section");
   el.className = "turn";
   el.innerHTML = `
-    <div class="q"><span class="lab" style="padding-top:6px">You</span>
-      <span class="t">${esc(question)}</span></div>
+    <div class="q"><span class="t">${esc(question)}</span></div>
     <div class="card"><div class="slot">
       <div class="thinking"><span class="bar"></span>looking through ${nf(CITY.total)} passages</div>
     </div></div>`;
@@ -1053,33 +1188,47 @@ function renderTurn(turn, question, data, opts) {
   // than being deleted -- the answer reads plainly, the reasoning is one click
   // away for anyone who wants it.
   const why = !gated
-    ? `This setting has no confidence score, so the system cannot judge whether
-       it should have answered. The passages below are its best attempt either way.`
+    ? `This setting produces no relevance score, so there is nothing to judge
+       the passages against. What is below is the best the search could do,
+       unranked by confidence.`
     : v.confident
-      ? `The best passage scored <b>${sig(v.confidence)}</b>. This corpus answers
-         anything at or above <b>${v.threshold.toFixed(1)}</b> — a cut point measured
-         on its own questions, not a default carried over from another corpus.`
-      : `The best passage scored <b>${sig(v.confidence)}</b>, below the
-         <b>${v.threshold.toFixed(1)}</b> this corpus needs. That cut point was measured
-         on its own questions: above it, answers are almost always really there.`;
+      ? `The best passage scored <b>${sig(v.confidence)}</b> — ${reading(v.confidence, v.threshold).text}.
+         The number is a relevance judgement from the cross-encoder, which reads
+         the question and the passage together; it runs roughly −11 to +11 and
+         is not a probability.`
+      : `Nothing scored high enough to answer with. The closest passage reached
+         <b>${sig(v.confidence)}</b>, and everything below that is further away
+         still. The passages are shown so you can see what was considered.`;
+
+  // The cited passage can be a bare heading -- "Bird vocalization", 17
+  // characters -- which clears the gate on score alone and answers nothing.
+  // Worth saying out loud rather than presenting as the answer.
+  const thin = top && v.confident !== false && clean(top.text).length < 120
+    ? clean(top.text).length : 0;
+  const read = gated ? reading(v.confidence, v.threshold) : null;
+
+  const cells = top && v.confident !== false ? tabular(clean(top.text)) : null;
 
   const answerHTML = gen.state === "ok"
     ? `<div class="answer prose">${gen.text.split(/\n{2,}/)
         .map(p => `<p>${esc(p.trim())}</p>`).join("")}</div>`
     : v.confident === false
       ? `<p class="answer">I could not find an answer to this in your documents.</p>`
+    : cells
+      ? `<table class="answer cells"><tbody>${cells.map(([k, val]) =>
+          `<tr><th>${esc(k)}</th><td>${esc(val)}</td></tr>`).join("")}</tbody></table>`
       : `<p class="answer">${esc(fragment(completed(top)))}</p>`;
 
   turn.querySelector(".slot").innerHTML = `
     <div class="pad">
-      <div class="head">
+      ${v.confident === false ? `<div class="head">
         <span class="state"><span class="pip"></span><span class="txt">${label}</span></span>
-        <span class="fignum">FIG.${String(N).padStart(2, "0")}</span>
-      </div>
+      </div>` : ""}
       ${answerHTML}
       ${top && v.confident !== false ? `<div class="cite">
         <i style="background:${colour(top.source)}"></i>
-        ${esc(docName(top.source))} · ${esc(top.locator)}</div>` : ""}
+        <span>${esc(docName(top.source))}${
+          where(top) ? ` · ${esc(where(top))}` : ""}</span></div>` : ""}
       ${gen.state === "unavailable" ? `<div class="warnbox">
         <span class="k">could not write it out</span>
         It could not write this one out, so you are getting the passage itself.
@@ -1092,23 +1241,39 @@ function renderTurn(turn, question, data, opts) {
         : gen.state === "ok"
           ? `<p class="note">Written from the ${sel.length} passages below.</p>`
           : ""}
-      <details class="why"><summary>Why it ${v.confident === false ? "did not answer" : "answered"}</summary>
-        <p>${why}</p></details>
-      <div class="pills">
-        ${docs.map(d => `<span class="pill"><i style="background:${colour(d.source)}"></i>
-          ${esc(docName(d.source))} <b>${d.n}</b></span>`).join("")}
-        <span class="pill">${data.ms.toFixed(0)}<b>ms</b></span>
-        ${data.context ? `<span class="pill">${nf(data.context.chars)}<b>chars</b></span>` : ""}
+      <div class="result">
+        <div class="rhead"><span class="lab">Retrieval result</span>${
+          gated ? `<span class="score ${read.band}">${sig(v.confidence)}
+            <em>${read.band}</em></span>` : ""}</div>
+        <p>${why}</p>
+        ${thin ? `<p class="thin">The cited passage is only
+          ${thin} characters long — a heading or a fragment rather than a
+          statement. Retrieval ranked it first, but there is little there to
+          answer with. Turning context expansion back on, or reranking, usually
+          replaces it with the passage around it.</p>` : ""}
+        <div class="rgrid">
+          <div><span class="k">Documents drawn on</span>
+            <span class="vv">${docs.map(d =>
+              `<span class="pill"><i style="background:${colour(d.source)}"></i>
+                 ${esc(docName(d.source))} <b>${d.n}</b></span>`).join("")}</span>
+            <span class="note2">${docs.length === 1
+              ? "One document carried every passage used."
+              : `${docs.length} documents, with the count showing how many passages came from each.`}</span></div>
+          <div><span class="k">Passage text read</span>
+            <span class="vv mono">${data.context ? nf(data.context.chars) : "—"} characters</span>
+            <span class="note2">How much document text the answer was drawn
+              from${data.context && data.context.blocks
+                ? `, across ${data.context.blocks} passages` : ""}.</span></div>
+          <div><span class="k">Time taken</span>
+            <span class="vv mono">${data.ms.toFixed(0)} ms</span>
+            <span class="note2">Search, scoring and reranking. No model was
+              called to write prose.</span></div>
+        </div>
       </div>
     </div>
 
     <div class="viz">
-      <div class="vizhead"><span class="lab">How it found this</span>
-        <span class="legend">
-          <span><i style="background:${colour(docs[0]?.source || "")}"></i>used</span>
-          <span><i class="w"></i>looked at, not used</span>
-        </span>
-      </div>
+      <div class="vizhead"><span class="lab">The RAG process</span></div>
       <canvas class="city"></canvas>
       <div class="vizfoot">
         <span class="cap"></span>
