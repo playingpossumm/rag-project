@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Retrieval visualized</title>
+<title>Retrieval</title>
 <style>
 /* ---------------------------------------------------------------- type
    Inter and DM Mono, served from this repo. No CDN, no external request: the
@@ -160,16 +160,11 @@ button,input,textarea{font:inherit;color:inherit}
    thread exists, then moves to the bottom -- so the page never shows an empty
    conversation with the input parked somewhere else entirely. */
 .hero{min-height:calc(100vh - 56px);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;text-align:center;
-  padding:32px 0 64px;gap:clamp(14px,2.2vh,24px)}
-/* The hero holds five things now -- headline, blurb, diagram, the document
-   sets and the question field -- and the field is the only one you can act on,
-   so the type and the gaps are sized off viewport HEIGHT as well as width to
-   keep it above the fold on a short screen. */
-.hero h1{font-weight:700;font-size:clamp(30px,min(5vw,6.2vh),54px);line-height:1.03;
-  letter-spacing:-.042em;margin:0;max-width:19ch;text-wrap:balance}
+  align-items:center;justify-content:center;text-align:center;padding:40px 0 80px;gap:26px}
+.hero h1{font-weight:700;font-size:clamp(32px,5.6vw,60px);line-height:1.02;
+  letter-spacing:-.042em;margin:0;max-width:15ch;text-wrap:balance}
 .hero h1 em{font-style:normal;color:var(--mute)}
-.hero p{color:var(--dim);font-size:clamp(14px,1.7vh,16px);max-width:58ch;margin:0}
+.hero p{color:var(--dim);font-size:16px;max-width:52ch;margin:0}
 .hero.gone{display:none}
 .heroviz{width:100%;max-width:900px;margin:-6px 0 -14px}
 /* A column wants height, not width. Capped so the stack and its side labels
@@ -178,7 +173,7 @@ button,input,textarea{font:inherit;color:inherit}
    look good on a desktop pushed the composer -- the only thing on this page
    you can act on -- below the fold on a short laptop screen. */
 .heroviz canvas{display:block;width:100%;
-  height:clamp(190px,min(26vw,27vh),340px)}
+  height:clamp(240px,min(30vw,38vh),400px)}
 
 /* ------------------------------------------------------------- the field */
 .field{width:100%;max-width:660px;display:flex;align-items:flex-end;gap:8px;
@@ -201,42 +196,7 @@ button,input,textarea{font:inherit;color:inherit}
    "not in the corpus" -- which named the CATEGORY and hid the question, so
    there was nothing to read and no way to tell what you were about to ask.
    Now the question is the thing you read and the category labels the group. */
-/* ---- choosing a set of documents ---------------------------------------
-   First decision on the page, so it is a row of real cards rather than a
-   control in a corner. Size and file formats are what distinguish these from
-   each other; the abstention threshold each was calibrated at is real and
-   still applied, but it describes the machinery, not the reading material. */
-.pickset{width:100%;max-width:860px;display:flex;flex-direction:column;
-  align-items:center;gap:12px}
-.setlab{font-family:var(--mono);font-size:10px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--faint)}
-.sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-  gap:10px;width:100%}
-.sets .set{display:flex;flex-direction:column;gap:5px;text-align:left;
-  background:var(--card);border:1px solid var(--hair);border-radius:12px;
-  padding:14px 16px;cursor:pointer;font:inherit;
-  transition:border-color 160ms var(--ease),background 160ms var(--ease)}
-.sets .set:hover:not(:disabled){border-color:var(--edge);background:var(--nest)}
-.sets .set:disabled{opacity:.45;cursor:default}
-.sets .set[aria-pressed="true"]{border-color:var(--s1);background:var(--nest)}
-.sets .set .nm{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
-.sets .set .nm b{margin-left:auto;font-family:var(--mono);font-size:9.5px;
-  font-weight:500;color:var(--s1);letter-spacing:.08em;text-transform:uppercase}
-.sets .set .cnt{font-size:12.5px;color:var(--mute)}
-.sets .set .fmt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
-  color:var(--faint)}
-.sets .set .warn2{color:var(--warn)}
-body.switching .sets{opacity:.45;pointer-events:none}
-
-/* Suggestions hang under the field rather than sitting under it permanently,
-   so an empty page is a question and a set of documents, nothing else. */
-.field{position:relative}
-.chips[hidden]{display:none}
-.chips{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:30;
-  max-height:min(52vh,420px);overflow:auto;
-  background:var(--card);border:1px solid var(--edge);border-radius:14px;
-  box-shadow:0 20px 48px rgba(0,0,0,.55);
-  text-align:left;
+.chips{width:100%;max-width:660px;text-align:left;
   border:1px solid var(--hair);border-radius:var(--r);background:var(--card);
   overflow:hidden}
 .chips .grp{display:flex;align-items:baseline;gap:10px;padding:11px 16px 5px}
@@ -500,35 +460,37 @@ tr.out td{color:var(--faint)}
 <body>
 
 <header class="top"><div class="top-in">
-  <span class="brand">retrieval visualized<span>/</span></span>
+  <span class="brand">retrieval<span>/</span></span>
   <nav>
     <a href="/quality">Analytics</a>
+    <span class="lab" id="readout">loading</span>
+    <span class="picker" id="picker">
+      <button type="button" id="pickBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="dot"></span><span id="pickName">corpus</span><span class="caret"></span>
+      </button>
+      <div class="menu" id="pickMenu" hidden role="menu"></div>
+    </span>
   </nav>
 </div></header>
 
 <div class="wrap">
   <section class="hero" id="hero">
-    <h1>Retrieval-Augmented Generation.<br><em>See how it answers.</em></h1>
-    <p>RAG answers a question by searching a set of documents first and quoting
-      what it finds, rather than recalling it. This runs that search in front of
-      you and draws every stage of it — what was found, what was cut, and which
-      passages the answer is standing on.</p>
+    <h1>Ask your documents.<br><em>See how it answered.</em></h1>
+    <p>It searches your files two ways at once, picks the passages that fit best, and
+      shows you each step. If the answer is not in there, it says so instead of
+      guessing.</p>
     <div class="heroviz"><canvas id="idle"></canvas></div>
-
-    <!-- Which documents to search comes before what to ask. The answer, the
-         threshold it is judged against and the questions worth asking all
-         change with it, so it cannot be an afterthought in a corner. -->
-    <div class="pickset" id="pickset">
-      <span class="setlab">Pick a set of documents</span>
-      <div class="sets" id="setgrid"></div>
-    </div>
-
     <form class="field" id="form">
-      <textarea id="q" rows="1" placeholder="Ask a question, or pick one below"
+      <textarea id="q" rows="1" placeholder="Ask something about your documents"
                 aria-label="Your question"></textarea>
       <button class="go" id="goBtn" type="submit">Ask</button>
     </form>
-    <div class="chips" id="chips" hidden></div>
+    <div class="chips" id="chips"></div>
+    <div class="genrow" id="genrow">
+      <button class="toggle" id="gen" type="button" aria-pressed="false">
+        <span class="sw"></span><span>Write it out as prose</span></button>
+      <span class="lab" id="genhint">off · you get the passage itself</span>
+    </div>
   </section>
 
   <div id="thread"></div>
@@ -771,6 +733,7 @@ async function loadCorpus() {
   ]);
   CITY = buildCity(chunks); EVAL = evalData; ACTIVE = corpus.active || null;
   TITLES = corpus.titles || {};
+  $("#readout").textContent = `${nf(corpus.chunks)} chunks · ${corpus.documents} docs`;
   // Grouped by what kind of retrieval the question exercises. The adversarial
   // group is labelled with what SHOULD happen, so a refusal reads as the
   // demonstration it is rather than as a failure.
@@ -783,13 +746,14 @@ async function loadCorpus() {
   $("#chips").innerHTML = groups.map(g => `
     <div class="grp${g.adversarial ? " adv" : ""}">
       <span class="k">${esc(g.label)}</span>
-      ${g.adversarial ? `<span class="e">not in these documents</span>` : ""}
+      ${g.adversarial ? `<span class="e">${esc(g.expect || "should be refused")}</span>` : ""}
     </div>
     ${g.items.map(x => `<button class="chip" type="button"
         data-q="${esc(x.q)}">${esc(x.q)}</button>`).join("")}`).join("");
   $("#chips").querySelectorAll(".chip").forEach(b => {
-    b.onclick = () => { $("#q").value = b.dataset.q; hideChips(); submit(); };
+    b.onclick = () => { $("#q").value = b.dataset.q; submit(); };
   });
+  if (ACTIVE) $("#pickName").textContent = ACTIVE.label;
   renderSettings();
   idleLoop();
 }
@@ -797,7 +761,7 @@ async function loadCorpus() {
 Promise.all([loadCorpus(), loadPicker()]).then(() => {
   addEventListener("resize", () => drawIdle());
 }).catch(() => {
-  $("#setgrid").textContent = "Server unreachable.";
+  $("#readout").textContent = "server unreachable";
   $("#hero").insertAdjacentHTML("beforeend",
     `<p class="err">Start the server: <span class="num">.venv\\Scripts\\python.exe src\\serve.py</span></p>`);
 });
@@ -847,28 +811,29 @@ function idleLoop() {
 async function loadPicker() {
   const data = await fetch("/api/corpora").then(r => r.json()).catch(() => null);
   if (!data) return;
-  // Documents, passages and file formats -- what the set IS. The abstention
-  // threshold each one was calibrated at is real and still applies, but it is
-  // a number about the machinery, not about the reading material, and it does
-  // not help anyone choose between ornithology and finance.
-  $("#setgrid").innerHTML = data.corpora.map(c => `
-    <button type="button" class="set" data-name="${esc(c.name)}"
-            ${c.indexed ? "" : "disabled"}
-            aria-pressed="${c.name === data.active}">
-      <span class="nm">${esc(c.label)}${
-        c.name === data.active ? `<b>in use</b>` : ""}</span>
+  $("#pickMenu").innerHTML = data.corpora.map(c => `
+    <button type="button" data-name="${esc(c.name)}" ${c.indexed ? "" : "disabled"}
+            aria-current="${c.name === data.active}">
+      <span class="nm">${esc(c.label)}<b>${c.name === data.active ? "in use" : ""}</b></span>
       ${c.indexed ? `
-        <span class="cnt">${nf(c.documents)} documents · ${nf(c.chunks)} passages</span>
-        <span class="fmt">${Object.keys(c.formats || {}).join(" · ").toUpperCase()}</span>`
-      : `<span class="cnt warn2">no index built</span>`}
+        <span class="sub2">${nf(c.documents)} docs · ${nf(c.chunks)} passages</span>
+        <span class="row2">
+          <span class="fmt">${Object.keys(c.formats || {}).join(" ").toUpperCase()}</span>
+          <span class="thr ${c.calibrated ? "" : "warn2"}">${
+            c.calibrated
+              ? `refuses below ${c.threshold > 0 ? "+" : ""}${c.threshold.toFixed(1)}`
+              : "not calibrated · borrowing 0.0"}</span>
+        </span>`
+      : `<span class="sub2 warn2">no index built</span>`}
     </button>`).join("");
-  $("#setgrid").querySelectorAll("button[data-name]").forEach(b => {
+  $("#pickMenu").querySelectorAll("button[data-name]").forEach(b => {
     b.onclick = () => selectCorpus(b.dataset.name);
   });
 }
 
 async function selectCorpus(name) {
-  if (BUSY || (ACTIVE && name === ACTIVE.name)) return;
+  if (BUSY || (ACTIVE && name === ACTIVE.name)) { closeMenu(); return; }
+  closeMenu();
   document.body.classList.add("switching");
   try {
     const r = await fetch("/api/corpus/select", {
@@ -878,22 +843,36 @@ async function selectCorpus(name) {
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || r.statusText);
     // The thread is cleared, not kept. Answers already on the page came from
-    // different documents under a different threshold, and leaving them under
-    // a new heading would attribute them to documents that never saw the
+    // different documents under a different threshold, and leaving them under a
+    // new corpus name would attribute them to documents that never saw the
     // question.
     $("#thread").innerHTML = "";
     N = 0; BASELINE = null;
     $("#hero").classList.remove("gone");
     $("#dock").classList.add("hide");
-    $("#hero").insertBefore($("#form"), $("#chips"));
+    $("#hero").append($("#form"), $("#genrow"));
     await Promise.all([loadCorpus(), loadPicker()]);
   } catch (err) {
-    const g = $("#setgrid");
-    if (g) g.dataset.error = err.message;
+    $("#readout").textContent = err.message;
   } finally {
     document.body.classList.remove("switching");
   }
 }
+
+const closeMenu = () => {
+  $("#pickMenu").hidden = true;
+  $("#pickBtn").setAttribute("aria-expanded", "false");
+};
+$("#pickBtn").onclick = e => {
+  e.stopPropagation();
+  const open = $("#pickMenu").hidden;
+  closeSet();
+  $("#pickMenu").hidden = !open;
+  $("#pickBtn").setAttribute("aria-expanded", String(open));
+};
+addEventListener("click", closeMenu);
+addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+$("#pickMenu").onclick = e => e.stopPropagation();
 
 // One attribute drives it. The panel is always in the layout, so there is no
 // frame to wait for and no timer to unwind -- CSS retargets from wherever the
@@ -905,6 +884,7 @@ const closeSet = () => {
 $("#setBtn").onclick = e => {
   e.stopPropagation();
   const open = $("#tray").dataset.open !== "true";
+  closeMenu();
   $("#tray").dataset.open = String(open);
   $("#setBtn").setAttribute("aria-expanded", String(open));
 };
@@ -931,23 +911,6 @@ addEventListener("resize", syncDock);
 addEventListener("focusin", syncDock);
 addEventListener("focusout", () => setTimeout(syncDock, 0));
 
-/* ---------------------------------------------------------- suggestions
-   The example questions stay out of the way until the field is touched. A wall
-   of buttons under an empty input reads as the thing you are supposed to do; a
-   list that opens when you click into the field reads as help. */
-const chips = $("#chips");
-const showChips = () => { if (chips.children.length) chips.hidden = false; };
-const hideChips = () => { chips.hidden = true; };
-$("#q").addEventListener("focus", showChips);
-$("#q").addEventListener("input", () => {
-  // Once you are writing your own question the list is noise.
-  if ($("#q").value.trim()) hideChips(); else showChips();
-});
-addEventListener("click", e => {
-  if (!e.target.closest("#chips") && !e.target.closest(".field")) hideChips();
-});
-addEventListener("keydown", e => { if (e.key === "Escape") hideChips(); });
-
 /* ------------------------------------------------------------ composer */
 const ta = $("#q");
 const grow = () => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + "px"; };
@@ -956,6 +919,13 @@ ta.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
 });
 $("#form").onsubmit = e => { e.preventDefault(); submit(); };
+$("#gen").onclick = () => {
+  GENERATE = !GENERATE;
+  $("#gen").setAttribute("aria-pressed", String(GENERATE));
+  $("#genhint").textContent = GENERATE
+    ? "on · needs credit, falls back to the passage"
+    : "off · you get the passage itself";
+};
 
 function submit() {
   const q = ta.value.trim();
@@ -967,7 +937,7 @@ function submit() {
   if (!N) {
     $("#hero").classList.add("gone");
     const dock = $("#dock");
-    dock.append($("#form"));
+    dock.append($("#form"), $("#genrow"));
     dock.classList.remove("hide");
     syncDock();
   }
