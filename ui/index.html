@@ -530,13 +530,66 @@ function completed(item) {
   // here is what put the previous chunk's mangled results table at the top of
   // the answer.
   const hHit = F.key.indexOf(C.key.slice(0, 40));
-  const from = hHit >= 0 ? F.map[hHit] : 0;
+  let from = hHit >= 0 ? F.map[hHit] : 0;
   const to = F.map[Math.min(tHit + tail.length, F.map.length - 1)] + 1;
 
-  // Finish the sentence the chunk was cut in the middle of, then carry on for
-  // up to two more. One is not always enough: the chunk here stops at "we use
-  // a rate of", the dropout figure completes that sentence, and the label
-  // smoothing value the question actually asked for is the sentence after it.
+  // ---- open on a sentence, and on prose ---------------------------------
+  // A chunk boundary lands wherever 210 tokens ran out, so a passage routinely
+  // opens mid-clause. Worse, papers are full of things that are not prose at
+  // all -- an extracted results table reads "56 2.0 · 10[19] 1.2 · 10[20]
+  // Deep-Att + PosUnk Ensemble [39] 40.4", a formula reads "MultiHead(Q, K, V)
+  // = Concat(head1, ..., headh)W [O]" -- and opening on either is worse than
+  // opening mid-sentence.
+  //
+  // So: collect candidate opening positions earliest-first (the sentence
+  // before the chunk, the chunk's own start, then each sentence start inside
+  // it) and take the first one that actually begins prose.
+  const prose = t => {
+    const words = t.match(/[A-Za-z]{3,}/g) || [];
+    const noise = (t.match(/[0-9=()[\]{}|+*\/^_\\]/g) || []).length;
+    return words.length >= 8 && noise < words.length * 1.4;
+  };
+  // The average over 170 characters is not enough on its own: twenty
+  // characters of leftover table ahead of a clean paragraph get diluted away
+  // by the paragraph. The first line has to stand up by itself.
+  const opensClean = t => {
+    const head = t.slice(0, 48);
+    return /^[A-Z"“(]/.test(head) && (head.match(/[0-9]/g) || []).length <= 3;
+  };
+
+  const winFrom = Math.max(0, from - 300);
+  const span = to - from;
+  const starts = [];
+
+  // Behind the chunk: the end of the sentence before it.
+  const back = full.slice(winFrom, from);
+  const bStop = [...back.matchAll(/[.!?](?=\s)/g)].pop();
+  if (bStop) starts.push(winFrom + bStop.index + 1);
+
+  // Inside it: each sentence start, but only in the first part -- skipping
+  // most of a passage to find a tidy opening loses more than it gains.
+  for (const m of full.slice(from, to).matchAll(/[.!?]\s+(?=[A-Z"“(])/g)) {
+    const at = from + m.index + m[0].length;
+    if (at - from < span * 0.45) starts.push(at);
+  }
+
+  // The chunk's own start is the fallback, tried last. It is prose often
+  // enough to win on the prose test alone, and it is the one candidate that
+  // is guaranteed NOT to be a sentence boundary -- taking it early is how the
+  // passage came to open on "] to the output of each sub-layer".
+  starts.push(from);
+
+  const pick = starts.find(i => {
+    if (i >= to - 60) return false;
+    const t = full.slice(i, i + 170);
+    return opensClean(t) && prose(t);
+  });
+  if (pick !== undefined) from = pick;
+
+  // ---- finish the sentence it was cut in the middle of -------------------
+  // One is not always enough: the chunk here stops at "we use a rate of", the
+  // dropout figure completes that sentence, and the label smoothing value the
+  // question actually asked for is the sentence after it.
   //
   // The terminator must be followed by whitespace or the end. Without that
   // lookahead the decimal point in "0.1" ends the sentence, and the answer
@@ -548,9 +601,15 @@ function completed(item) {
     if (!m) break;
     grown += m[0];
     cursor += m[0].length;
+    // "i.e." and friends end in a period followed by a space and are not the
+    // end of anything, so they do not count against the three-sentence budget.
+    if (/(?:i\.e|e\.g|et al|cf|vs|Fig|Eq|Sec|approx|resp)\.$/i.test(grown.trim())) {
+      n--;
+      continue;
+    }
     if (grown.length > 300) break;
   }
-  return full.slice(from, to) + grown;
+  return (full.slice(from, to) + grown).trim();
 }
 
 /* Marking both ends says "a fragment of something longer". */
