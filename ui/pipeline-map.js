@@ -36,7 +36,7 @@ export const shortDoc = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
    face-on and shows more of its side than of the matrix printed on it. This is
    shallower: the panels read almost front-on, the ground plane flattens, and
    the drawing stops looking like it is being viewed from a corner. */
-const ISO = (17 * Math.PI) / 180;
+const ISO = (30 * Math.PI) / 180;
 const KX = Math.cos(ISO);
 const KY = Math.sin(ISO);
 const project = (u, v, z) => ({ x: (u - v) * KX, y: (u + v) * KY - z });
@@ -46,26 +46,36 @@ const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
 
 /* label side: 1 above, -1 below. Leader lines run vertically out of the plate
    to the text, the way the reference annotates its diagrams. */
-/* `cells` is the matrix each stage is drawn as: [columns, rows], sized to the
+/* `layers` is how many sheets deep a stage is drawn, and it is not decoration:
+   it tracks how much is still in play. The index is six sheets of dense field
+   because 5,459 passages is a lot of paper; retrieval cuts that to twenty and
+   the block thins; by the answer it is a single sheet of five rows. The funnel
+   is the shape of the drawing, not something written underneath it.
+
+   Every sheet carries its stage's matrix. Empty frames behind a filled face
+   read as a picture frame around the real thing; filled sheets read as a
+   volume of data, which is what a stage actually is.
+
+   `cells` is the matrix each stage is drawn as: [columns, rows], sized to the
    number of candidates that stage actually carries. Every plate is a grid of
    real cells rather than a mesh with marks scattered on it, so a stage reads
    the way a layer of activations reads -- occupied cells bright, empty cells
    present but dark. The index keeps its own treatment because 5,459 passages
    is a field, not a matrix. */
 const SPEC = [
-  { id: "corpus", layers: 5,   n: "01", step: 0, lift: 0,   w: 13,  cells: null,   lead: 1,
+  { id: "corpus", layers: 6,   n: "01", step: 0, lift: 0,   w: 13,  cells: null,   lead: 1,
     label: "Index",              term: c => `${c.total.toLocaleString()} passages · ${c.docs} documents` },
   { id: "dense", layers: 4,    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1,
     label: "Dense retrieval",    term: () => "embedding similarity" },
   { id: "sparse", layers: 4,   n: "03", step: 1, lift: -15, w: 6.5, cells: [5, 4], lead: -1,
     label: "BM25",               term: () => "lexical match" },
-  { id: "fused", layers: 4,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1,
+  { id: "fused", layers: 3,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1,
     label: "Rank fusion",        term: () => "both rankings combined" },
-  { id: "reranked", layers: 4, n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1,
+  { id: "reranked", layers: 3, n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1,
     label: "Cross-encoder",      term: () => "query and passage scored together" },
-  { id: "selected", layers: 3, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1,
+  { id: "selected", layers: 2, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1,
     label: "Diversity cap",      term: () => "max 2 per document" },
-  { id: "answer", layers: 3,   n: "07", step: 5, lift: 0,   w: 5,   cells: [1, 5], lead: -1,
+  { id: "answer", layers: 1,   n: "07", step: 5, lift: 0,   w: 5,   cells: [1, 5], lead: -1,
     label: "Answer",             term: () => "cited passages" },
 ];
 
@@ -159,20 +169,20 @@ const lerp = (a, b, t) => a + (b - a) * t;
 /* Cell `i` of a plate's matrix, in reading order: left to right, top to
    bottom, which is also rank order. Coordinates are in the plate's own plane,
    so the same code lays out a floor tile and an upright panel. */
-function cellAt(plate, i) {
+function cellAt(plate, i, k = plate.front) {
   const [cols, rows] = plate.cells || [1, 1];
   const cw = (plate.w * 2) / cols, ch = (plate.h * 2) / rows;
   const cx = i % cols, cy = Math.floor(i / cols) % rows;
   const GAP = 0.16;                       // fraction of a cell left as gutter
   const s = -plate.w + cw * (cx + 0.5);
   const t = plate.h - ch * (cy + 0.5);    // first row at the top
-  return { ...ptAt(plate, s, t), s, t,
+  return { ...ptAt(plate, s, t, k), s, t, k,
            ds: (cw / 2) * (1 - GAP), dt: (ch / 2) * (1 - GAP) };
 }
 
 function drawCell(ctx, T, plate, c, fill, stroke, a, lw = 0.8) {
   const q = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([i, j]) => {
-    const w = ptAt(plate, c.s + i * c.ds, c.t + j * c.dt);
+    const w = ptAt(plate, c.s + i * c.ds, c.t + j * c.dt, c.k ?? plate.front);
     return T(w.u, w.v, w.z);
   });
   ctx.save();
@@ -334,22 +344,32 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
   // They are frames only: the matrix belongs to the face you are looking at,
   // and repeating it on every panel would read as five stages, not one.
   const layers = plate.layers || 1;
-  if (layers > 1) {
-    const back = clamp01((f - 0.25) / 0.5);
-    for (let i = layers - 1; i >= 1; i--) {
-      const q = plateCorners(plate, layerAt(plate, i)).map(c => T(c.u, c.v, c.z));
-      // Deeper panels are fainter, so the block reads as receding rather than
-      // as several plates that happen to overlap.
-      const depth = 1 - (i / layers) * 0.55;
-      ctx.globalAlpha = a * back * depth * (dim ? 0.16 : 0.34);
-      ctx.strokeStyle = ink.other;
-      ctx.lineWidth = 0.7;
-      ctx.beginPath();
-      ctx.moveTo(q[0].x, q[0].y);
-      for (let e = 1; e < 4; e++) ctx.lineTo(q[e].x, q[e].y);
-      ctx.closePath();
-      ctx.stroke();
+  const back = clamp01((f - 0.25) / 0.5);
+  const cellsIn = clamp01((f - 0.4) / 0.6);
+
+  // The sheets behind the face, drawn back to front so nearer ones overlap.
+  // Each carries its stage's matrix: an empty frame behind a filled face reads
+  // as a picture frame around the real thing, where a filled sheet reads as a
+  // volume of data, which is what a stage is.
+  for (let i = layers - 1; i >= 1; i--) {
+    const k = layerAt(plate, i);
+    const depth = 1 - (i / layers) * 0.6;     // deeper sheets recede
+    if (cellsIn > 0 && plate.cells) {
+      const [cols, rows] = plate.cells;
+      for (let n = 0; n < cols * rows; n++) {
+        drawCell(ctx, T, plate, cellAt(plate, n, k),
+                 null, ink.other, a * cellsIn * depth * (dim ? 0.07 : 0.15), 0.5);
+      }
     }
+    const q = plateCorners(plate, k).map(c => T(c.u, c.v, c.z));
+    ctx.globalAlpha = a * back * depth * (dim ? 0.12 : 0.26);
+    ctx.strokeStyle = ink.other;
+    ctx.lineWidth = 0.7;
+    ctx.beginPath();
+    ctx.moveTo(q[0].x, q[0].y);
+    for (let e = 1; e < 4; e++) ctx.lineTo(q[e].x, q[e].y);
+    ctx.closePath();
+    ctx.stroke();
   }
 
   // The empty matrix. Every slot the stage can hold is drawn, so a stage that
@@ -639,14 +659,22 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
     const ma = clamp01((f - 0.6) / 0.4);
     if (ma > 0) {
       if (plate.id === "corpus") {
-        for (const m of city.marks) {
-          const hit = run?.lit.get(m.id);
-          // The field is laid out in the plate's own plane, so it stands up
-          // with the plate instead of staying flat inside an upright frame.
-          const w = ptAt(plate, m.u, m.v);
-          const p = T(w.u, w.v, w.z);
-          if (hit) mark(ctx, p, 2.2, hit.colour || ink.faint, null, ma);
-          else mark(ctx, p, 1.1, null, ink.other, ma * 0.4);
+        // Every sheet of the index carries the field, not just the front
+        // one. 5,459 passages is the one quantity on this drawing that is
+        // genuinely large, and a stack of dense sheets is what that looks
+        // like. Only the front sheet lights up: a passage is one passage, and
+        // repeating its colour six times would claim six.
+        const sheets = plate.layers || 1;
+        for (let i = sheets - 1; i >= 0; i--) {
+          const k = layerAt(plate, i);
+          const depth = i === 0 ? 1 : 1 - (i / sheets) * 0.62;
+          for (const m of city.marks) {
+            const w = ptAt(plate, m.u, m.v, k);
+            const p = T(w.u, w.v, w.z);
+            const hit = i === 0 ? run?.lit.get(m.id) : null;
+            if (hit) mark(ctx, p, 2.2, hit.colour || ink.faint, null, ma);
+            else mark(ctx, p, 1.1, null, ink.other, ma * 0.4 * depth);
+          }
         }
       } else if (ft >= 0.995) {
         // Occupied cells, filled. Brightness is RANK -- one unit that means the
