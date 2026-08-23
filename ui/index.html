@@ -133,6 +133,12 @@ button,input,textarea{font:inherit;color:inherit}
 
 .trayPanel .sdesc{margin:0 0 9px;font-size:12px;line-height:1.55;color:var(--faint);
   max-width:52ch}
+.oldlink{display:flex;align-items:baseline;gap:10px;
+  border-top:1px solid var(--hair);padding:12px 15px;
+  font-size:12.5px;color:var(--faint);text-decoration:none;
+  transition:color 160ms var(--ease)}
+.oldlink:hover{color:var(--dim)}
+.oldlink span{margin-left:auto;font-family:var(--mono);font-size:10px}
 .trayPanel .cmp{border-top:1px solid var(--hair);padding:12px 15px;
   font-size:12.5px;color:var(--mute);line-height:1.5}
 @media (prefers-reduced-motion:reduce){
@@ -418,11 +424,11 @@ body.switching .sets{opacity:.45;pointer-events:none}
   letter-spacing:.14em;color:var(--faint)}
 
 /* the answer is the biggest thing on the page */
-/* The answer is the one thing on the card you are meant to read, so it is set
-   heavier than everything around it -- the passage is quoted, and it should
-   look quoted rather than blend into the explanation underneath. */
+/* The passage is quoted at normal weight; the sentence that answers is the
+   only thing set bold. Bolding the whole block made all of it shout. */
 .answer{font-size:clamp(18px,2.1vw,22px);line-height:1.5;letter-spacing:-.017em;
-  font-weight:600;max-width:38em;margin:0;color:var(--ink)}
+  max-width:38em;margin:0;color:var(--mute)}
+.answer mark{background:none;color:var(--ink);font-weight:600}
 .answer.prose{font-size:16.5px;line-height:1.68;letter-spacing:-.005em;max-width:64ch}
 .answer.prose p{margin:0 0 14px}
 /* A passage out of a spreadsheet is shown as the table it came from. */
@@ -431,7 +437,9 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .answer.cells th{width:1%;white-space:nowrap;text-align:left;vertical-align:top;
   padding:7px 18px 7px 0;font-family:var(--mono);font-size:10.5px;font-weight:500;
   letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
-.answer.cells td{padding:7px 0;vertical-align:top;color:var(--ink)}
+.answer.cells td{padding:7px 0;vertical-align:top;color:var(--mute)}
+.answer.cells tr.hit th{color:var(--dim)}
+.answer.cells mark{background:none;color:var(--ink);font-weight:600}
 .answer.cells tr + tr th,.answer.cells tr + tr td{border-top:1px solid var(--hair)}
 .answer.prose p:last-child{margin-bottom:0}
 .cite{display:inline-flex;align-items:center;gap:9px;margin-top:18px;
@@ -658,6 +666,11 @@ tr.out td{color:var(--faint)}
       <div class="traysets" id="traysets"></div>
       <div class="sets" id="setBody"></div>
       <div class="cmp" id="setCmp"></div>
+      <!-- The front page as it stood before this pass, served from the same
+           server against the same live API, so the two can be compared in a
+           browser rather than in a diff. -->
+      <a class="oldlink" href="/archive">Previous version of this page
+        <span>23 Aug 2026</span></a>
     </div>
   </aside>
   <div class="dock hide" id="dock"></div>
@@ -806,6 +819,68 @@ function completed(item) {
     if (grown.length > 300) break;
   }
   return (full.slice(from, to) + grown).trim();
+}
+
+/* The passage is context; one sentence in it is usually the answer. Setting
+   the whole block bold made all of it shout and none of it stand out, which is
+   the opposite of pointing at the answer.
+
+   The sentence is chosen the way the retrieval chose the passage: overlap with
+   the words of the question, rare words counting for more than common ones.
+   It is a highlight, not a claim -- the surrounding sentences stay readable at
+   normal weight, so a wrong pick costs nothing but a misplaced emphasis. */
+const STOP = new Set(("a an and are as at be by do does for from has have how in is it its of on or "
+  + "that the this to was were what when where which who why with your you").split(" "));
+
+function markAnswer(text, question) {
+  const qWords = String(question).toLowerCase().match(/[a-z0-9]{3,}/g) || [];
+  const want = [...new Set(qWords)].filter(w => !STOP.has(w));
+  if (!want.length) return esc(text);
+
+  // Sentence boundaries, keeping the terminator with its sentence. The
+  // lookahead stops "0.1" and "i.e." from splitting one in half.
+  const parts = text.split(/(?<=[.!?])(?=\s+[A-Z"“(])/);
+  if (parts.length < 2) return esc(text);
+
+  // Rarer words are worth more: a term appearing in one sentence out of six
+  // says more about which sentence answers than one appearing in all of them.
+  const spread = {};
+  for (const w of want) {
+    spread[w] = parts.filter(seg => seg.toLowerCase().includes(w)).length || parts.length;
+  }
+  let best = -1, bestScore = 0;
+  parts.forEach((seg, i) => {
+    const low = seg.toLowerCase();
+    let sc = 0;
+    for (const w of want) if (low.includes(w)) sc += 1 / spread[w];
+    // Long sentences hit more words by chance; normalise, gently.
+    sc /= Math.sqrt(Math.max(seg.trim().length, 40));
+    if (sc > bestScore) { bestScore = sc; best = i; }
+  });
+  if (best < 0) return esc(text);
+
+  return parts.map((seg, i) =>
+    i === best ? `<mark>${esc(seg)}</mark>` : esc(seg)).join("");
+}
+
+/* Which cell of a table answers, scored the same way as which sentence. */
+function bestCell(cells, question) {
+  const want = [...new Set((String(question).toLowerCase().match(/[a-z0-9]{3,}/g) || []))]
+    .filter(w => !STOP.has(w));
+  if (!want.length) return -1;
+  const spread = {};
+  for (const w of want) {
+    spread[w] = cells.filter(([, v]) => String(v).toLowerCase().includes(w)).length || cells.length;
+  }
+  let best = -1, top = 0;
+  cells.forEach(([, v], i) => {
+    const low = String(v).toLowerCase();
+    let sc = 0;
+    for (const w of want) if (low.includes(w)) sc += 1 / spread[w];
+    sc /= Math.sqrt(Math.max(String(v).length, 40));
+    if (sc > top) { top = sc; best = i; }
+  });
+  return best;
 }
 
 /* A spreadsheet row does not become prose by being pulled out of a
@@ -1388,9 +1463,15 @@ function renderTurn(turn, question, data, opts) {
     : v.confident === false
       ? `<p class="answer">I could not find an answer to this in your documents.</p>`
     : cells
-      ? `<table class="answer cells"><tbody>${cells.map(([k, val]) =>
-          `<tr><th>${esc(k)}</th><td>${esc(val)}</td></tr>`).join("")}</tbody></table>`
-      : `<p class="answer">${esc(fragment(completed(top)))}</p>`;
+      ? `<table class="answer cells"><tbody>${(() => {
+          // Same idea as the prose highlight: the answering CELL is marked,
+          // not every cell in the row-dump.
+          const best = bestCell(cells, question);
+          return cells.map(([k, val], i) =>
+            `<tr${i === best ? ' class="hit"' : ""}><th>${esc(k)}</th>
+               <td>${i === best ? `<mark>${esc(val)}</mark>` : esc(val)}</td></tr>`).join("");
+        })()}</tbody></table>`
+      : `<p class="answer">${markAnswer(fragment(completed(top)), question)}</p>`;
 
   turn.querySelector(".slot").innerHTML = `
     <div class="pad">
