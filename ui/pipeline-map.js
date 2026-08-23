@@ -32,20 +32,33 @@
 
 export const shortDoc = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
 
-/* 60 degrees, not the 30 of a true isometric. At 30 an upright panel sits too
-   square to the reader and the stack behind it has nowhere to go; at 60 the
-   panels turn far enough that the depth of a block is the first thing you
-   read, which is the point of drawing them as blocks. */
-const ISO = (60 * Math.PI) / 180;
-const KX = Math.cos(ISO);
-const KY = Math.sin(ISO);
+/* Two numbers, not one angle.
+ *
+ * A single isometric angle drives the horizontal spread and the camera height
+ * together, which is why turning it up to get more depth also tipped the whole
+ * scene over and looked down on it from above. They are separate here:
+ *
+ *   SPREAD -- how much the two ground axes fan out horizontally.
+ *   RISE   -- how far above the ground plane the camera sits. This is the one
+ *             that reads as "viewing angle". Near zero is eye level; a true
+ *             isometric is 0.5; the old 60-degree setting was 0.87, which is
+ *             looking down on the drawing from most of the way above it.
+ *
+ * Height (z) always projects 1:1 to screen y, so lowering RISE flattens the
+ * ground plane without collapsing the vertical separation between dense
+ * retrieval and BM25.
+ */
+const SPREAD = 0.97;
+const RISE = 0.15;
+const KX = SPREAD;
+const KY = RISE;
 const project = (u, v, z) => ({ x: (u - v) * KX, y: (u + v) * KY - z });
 
 /* Step spacing in world units. It has to be read together with ISO: the
    on-screen gap between stages is 2 * FLOW * cos(ISO), so raising the angle
    narrows the drawing unless this rises with it. At 60 degrees cos is 0.5, so
    this is roughly double what a 30-degree layout needed. */
-const FLOW = 66;
+const FLOW = 34;
 const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
 
 /* label side: 1 above, -1 below. Leader lines run vertically out of the plate
