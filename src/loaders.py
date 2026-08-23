@@ -40,6 +40,30 @@ BOILERPLATE_MARKERS = (
 )
 
 
+# A continuation line is plain prose directly under the heading: no marker of
+# its own, not an author block, not a code fence, and not the start of the body.
+# Anything with structure is a new element, not the rest of the title.
+_TITLE_STOP = ("#", "*", "`", "|", ">", "-", "[", "!")
+
+
+def _rejoin_wrapped(text: str, following: list[str]) -> str:
+    """Reattach title lines that lost their heading marker to a line wrap."""
+    if text.endswith((".", "?", "!", ":")):
+        return text                      # a finished line does not continue
+    for nxt in following:
+        cand = nxt.strip()
+        if not cand:
+            break                        # a blank line ends the title
+        if cand.startswith(_TITLE_STOP) or cand[0].isdigit():
+            break
+        if "@" in cand or len(cand) > 120:
+            break                        # an author or email block, or body text
+        text = f"{text} {cand}".strip()
+        if text.endswith((".", "?", "!")):
+            break
+    return text
+
+
 def extract_title(units: list[dict], path: Path) -> str:
     """Best available human title for a document.
 
@@ -54,13 +78,24 @@ def extract_title(units: list[dict], path: Path) -> str:
     """
     candidates = []
     for unit in units[:1]:  # the title, if anywhere, is on the first unit
-        for line in unit["text"].splitlines():
+        lines = unit["text"].splitlines()
+        for i, line in enumerate(lines):
             stripped = line.strip()
             if not stripped.startswith("#"):
                 continue
             depth = len(stripped) - len(stripped.lstrip("#"))
             text = stripped.lstrip("#").strip()
-            if not (8 <= len(text) <= 160) or text[0].isdigit():
+
+            # A long title on a PDF cover wraps, and only the first line keeps
+            # the heading marker -- the rest is a plain line underneath it. The
+            # heading alone then reads as a sentence cut in half: "OenoBench: A
+            # Wine-Domain Benchmark for". Pull the continuation back on.
+            # Three lines of lookahead: a long paper title routinely wraps to
+            # three on a cover page. The join stops at the first blank or
+            # structured line regardless, so a larger window costs nothing.
+            text = _rejoin_wrapped(text, lines[i + 1:i + 4])
+
+            if not (8 <= len(text) <= 200) or text[0].isdigit():
                 continue
             if any(marker in text.lower() for marker in BOILERPLATE_MARKERS):
                 continue

@@ -788,6 +788,30 @@ function completed(item) {
   // passage came to open on "] to the output of each sub-layer".
   starts.push(from);
 
+  /* Some passages have no sentence boundary to start at and still open on
+     debris: a complexity table and a section heading run straight into the
+     prose as "O(1) O(n/r) 3.5 Positional Encoding Since our model contains no
+     recurrence". There is nothing to walk back to, so instead walk FORWARD
+     past the leading tokens that are not words.
+
+     A token counts as a word when it is alphabetic and at least two letters
+     long, which is what stops this eating the "In" of "In addition". Capped at
+     six tokens, and only applied when something dropped was actually debris --
+     carrying a digit or a bracket -- so ordinary prose is never trimmed. */
+  const trimDebris = t => {
+    const toks = t.split(/(\s+)/);
+    let i = 0, dropped = 0, sawJunk = false;
+    while (i < toks.length && dropped < 12) {
+      const w = toks[i];
+      if (!w.trim()) { i++; continue; }
+      const bare = w.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "");
+      if (/^[A-Za-z]{2,}$/.test(bare)) break;
+      if (/[0-9()[\]{}/=]/.test(w)) sawJunk = true;
+      i++; dropped++;
+    }
+    return sawJunk && dropped ? toks.slice(i).join("").trimStart() : t;
+  };
+
   const pick = starts.find(i => {
     if (i >= to - 60) return false;
     const t = full.slice(i, i + 170);
@@ -818,7 +842,7 @@ function completed(item) {
     }
     if (grown.length > 300) break;
   }
-  return (full.slice(from, to) + grown).trim();
+  return trimDebris((full.slice(from, to) + grown).trim());
 }
 
 /* The passage is context; one sentence in it is usually the answer. Setting
