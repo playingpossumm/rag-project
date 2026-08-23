@@ -999,36 +999,45 @@ let TITLES = {};
 const ICON_SPREAD = 0.97, ICON_RISE = 0.44;
 const ipt = (u, v, z) => [((u - v) * ICON_SPREAD), ((u + v) * ICON_RISE - z)];
 
-/* One flat sheet, as a closed path in icon space. */
+/* Closed paths in icon space. `isoSheet` lies flat on the ground plane at
+   height z; `isoBar` stands upright, spanning one ground axis and the
+   vertical; `isoPoly` takes arbitrary ground-plane points, for a shape that is
+   neither. */
+const ipath = pts => "M" + pts.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join("L") + "Z";
+
 function isoSheet(cx, cy, w, d, z) {
-  const pts = [[-w, -d], [w, -d], [w, d], [-w, d]]
-    .map(([u, v]) => ipt(cx + u, cy + v, z));
-  return "M" + pts.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join("L") + "Z";
+  return ipath([[-w, -d], [w, -d], [w, d], [-w, d]].map(([u, v]) => ipt(cx + u, cy + v, z)));
+}
+function isoBar(u, v, w, h) {
+  return ipath([[-w, 0], [w, 0], [w, h], [-w, h]].map(([du, z]) => ipt(u + du, v, z)));
+}
+function isoPoly(cx, cy, pts, z = 0) {
+  return ipath(pts.map(([u, v]) => ipt(cx + u, cy + v, z)));
 }
 
-/* Marks say something true about the set they stand for:
-     llm    even stack of identical sheets -- one format, many papers
-     birds  sheets of visibly different sizes -- four file formats
-     quant  upright bars on a baseline -- the only set that is about series */
+/* A mark per set, saying what the set is about rather than standing in for it
+   generically. All three are drawn on the same projection as the pipeline
+   diagram, so they read as parts of one drawing rather than borrowed icons. */
 function setIcon(name) {
-  const A = { llm: [], birds: [], quant: [] };
-  let paths = [];
+  let paths;
   if (name === "birds") {
+    // A bird seen from above, on the ground plane -- the one shape that is
+    // unmistakably the subject at this size. Nose forward, wings swept back.
     paths = [
-      { d: isoSheet(0, 0, 7.5, 5.5, -3), o: 0.35 },
-      { d: isoSheet(0.5, -0.5, 5.5, 6.5, 1), o: 0.55 },
-      { d: isoSheet(-0.5, 0.5, 6.5, 4, 5), o: 1, lit: true },
+      { d: isoSheet(0, 0, 9, 7, -5), o: 0.22 },                    // ground
+      { d: isoPoly(0, 0, [[0, -8], [-9, 3], [0, 1], [9, 3]], 1), o: 1, lit: true },
+      { d: isoPoly(0, 0, [[0, 1], [-1.6, 7], [1.6, 7]], 1), o: 0.7 },   // tail
     ];
   } else if (name === "quant") {
+    // Upright bars on a baseline: the only set that is about series over time.
     paths = [
-      { d: isoSheet(-4, 0, 1.6, 1.6, -4), o: 0.4 },
-      { d: isoSheet(-4, 0, 1.6, 1.6, 0), o: 0.4 },
-      { d: isoSheet(0, 0, 1.6, 1.6, -4), o: 0.55 },
-      { d: isoSheet(0, 0, 1.6, 1.6, 2), o: 0.55 },
-      { d: isoSheet(4, 0, 1.6, 1.6, -4), o: 1, lit: true },
-      { d: isoSheet(4, 0, 1.6, 1.6, 5), o: 1, lit: true },
+      { d: isoSheet(0, 0, 10, 2.5, 0), o: 0.22 },
+      { d: isoBar(-6.4, 0, 2.9, 5), o: 0.45 },
+      { d: isoBar(0, 0, 2.9, 8.5), o: 0.7 },
+      { d: isoBar(6.4, 0, 2.9, 12), o: 1, lit: true },
     ];
   } else {
+    // A squared-up stack of identical sheets: many papers, one format.
     paths = [
       { d: isoSheet(0, 0, 7, 5, -4), o: 0.3 },
       { d: isoSheet(0, 0, 7, 5, -1), o: 0.45 },
@@ -1039,7 +1048,7 @@ function setIcon(name) {
   const body = paths.map(p =>
     `<path d="${p.d}" fill="none" stroke="${p.lit ? "var(--s1)" : "currentColor"}"
        stroke-width="1.1" stroke-linejoin="round" opacity="${p.o}"/>`).join("");
-  return `<svg viewBox="-16 -13 32 26" width="34" height="28" aria-hidden="true">${body}</svg>`;
+  return `<svg viewBox="-17 -15 34 30" width="36" height="30" aria-hidden="true">${body}</svg>`;
 }
 
 /* Titles are not unique -- the bird set carries bird_vocalization as .docx,
