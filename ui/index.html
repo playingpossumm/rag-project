@@ -167,7 +167,13 @@ button,input,textarea{font:inherit;color:inherit}
 .hero p{color:var(--dim);font-size:16px;max-width:52ch;margin:0}
 .hero.gone{display:none}
 .heroviz{width:100%;max-width:900px;margin:-6px 0 -14px}
-.heroviz canvas{display:block;width:100%;height:clamp(230px,30vw,370px)}
+/* A column wants height, not width. Capped so the stack and its side labels
+   sit as one block instead of stranding a narrow diagram in a very wide box. */
+.heroviz canvas{display:block;width:min(100%,780px);margin:0 auto;
+  /* Height tracks the viewport's height as well as its width: on a short
+     laptop screen a column tall enough to look good pushed the composer, which
+     is the only thing on this page you can act on, below the fold. */
+  height:clamp(240px,min(32vw,40vh),430px)}
 
 /* ------------------------------------------------------------- the field */
 .field{width:100%;max-width:660px;display:flex;align-items:flex-end;gap:8px;
@@ -733,8 +739,11 @@ function drawIdle(clock = 0) {
   // Brighter wire here than inside an answer: on the hero this drawing IS the
   // subject, whereas in a card it is the quiet ground that lets the coloured
   // survivors read.
+  // The hero stacks: a column of matrices with data descending through them
+  // reads as layers, and fills a hero's proportions. The answer's diagram
+  // stays a row -- a process is read left to right.
   drawScene(ctx, CITY, null, { ...INK, faint: "#6a6f72", other: "#6a6f72" },
-            r.width, r.height, 1, STILL ? null : clock);
+            r.width, r.height, 1, STILL ? null : clock, "column");
 }
 
 /* The idle drawing is of a process, so one faint pulse walks the spine rather
