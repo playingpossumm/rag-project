@@ -1,9 +1,12 @@
 # Retrieval evaluation results
 
-> **Generated from [`results.json`](results.json), written by `src/evaluate.py`.**
-> If this file disagrees with that one, this file is stale.
+> **Figures copied from [`results.json`](results.json), written by
+> `src/evaluate.py`.** If this file disagrees with that one, this file is stale.
+> It was stale: it claimed 20 papers and 2,768 chunks long after the corpus
+> reached 36 and 5,459, because `results.json` declared a
+> `corpus` key and never filled it. It fills it now.
 
-**Corpus:** 20 arXiv ML/NLP papers -> 2,768 chunks (210 tokens, 40 overlap).
+**Corpus:** 36 arXiv ML/NLP papers -> 5,459 chunks (210 tokens, 40 overlap).
 **Golden set:** 66 answerable (30 multi-source) + 18 adversarial, labels *derived*
 from answer strings against the current corpus rather than hand-written.
 **Reproduce:** `python src/evaluate.py`
