@@ -47,22 +47,67 @@ const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
    the way a layer of activations reads -- occupied cells bright, empty cells
    present but dark. The index keeps its own treatment because 5,459 passages
    is a field, not a matrix. */
-const PLATES = [
-  { id: "corpus",   n: "01", ...at(0, 0),   w: 13,  cells: null, lead: 1,
+const SPEC = [
+  { id: "corpus",   n: "01", step: 0, lift: 0,   w: 13,  cells: null,   lead: 1,
     label: "Index",              term: c => `${c.total.toLocaleString()} passages · ${c.docs} documents` },
-  { id: "dense",    n: "02", ...at(1, 15),  w: 6.5, cells: [5, 4], lead: 1,
+  { id: "dense",    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1,
     label: "Dense retrieval",    term: () => "embedding similarity" },
-  { id: "sparse",   n: "03", ...at(1, -15), w: 6.5, cells: [5, 4], lead: -1,
+  { id: "sparse",   n: "03", step: 1, lift: -15, w: 6.5, cells: [5, 4], lead: -1,
     label: "BM25",               term: () => "lexical match" },
-  { id: "fused",    n: "04", ...at(2, 0),   w: 7.5, cells: [5, 4], lead: 1,
+  { id: "fused",    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1,
     label: "Rank fusion",        term: () => "both rankings combined" },
-  { id: "reranked", n: "05", ...at(3, 0),   w: 7.5, cells: [5, 4], lead: -1,
+  { id: "reranked", n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1,
     label: "Cross-encoder",      term: () => "query and passage scored together" },
-  { id: "selected", n: "06", ...at(4, 0),   w: 6,   cells: [5, 1], lead: 1,
+  { id: "selected", n: "06", step: 4, lift: 0,   w: 6,   cells: [5, 1], lead: 1,
     label: "Diversity cap",      term: () => "max 2 per document" },
-  { id: "answer",   n: "07", ...at(5, 0),   w: 5,   cells: [5, 1], lead: -1,
+  { id: "answer",   n: "07", step: 5, lift: 0,   w: 5,   cells: [5, 1], lead: -1,
     label: "Answer",             term: () => "cited passages" },
 ];
+
+/* Two layouts off one spec.
+ *
+ *   "row"    -- the flow runs left to right and the two retrievers are
+ *               separated by height. This is the answer's diagram: a process
+ *               is read left to right and that is not negotiable.
+ *   "column" -- the flow runs top to bottom and the two retrievers are
+ *               separated sideways. This is the hero, where a vertical stack
+ *               of matrices reads as what it is, layers with data passing
+ *               through them, and fills a hero's proportions instead of
+ *               stretching across it three plates high.
+ *
+ * Both project through the same isometric transform, so a plate is the same
+ * object in both and only its position changes.
+ */
+const COL_FLOW = 33;
+const COL_SPLIT = 13;               // sideways separation of dense and BM25
+const LAYOUT = {};
+
+function platesFor(orient = "row") {
+  if (LAYOUT[orient]) return LAYOUT[orient];
+  const col = orient === "column";
+  LAYOUT[orient] = SPEC.map(d => {
+    const side = Math.sign(d.lift);
+    const base = col
+      ? { u: d.step * COL_FLOW + side * COL_SPLIT,
+          v: d.step * COL_FLOW - side * COL_SPLIT, z: 0 }
+      : { u: d.step * FLOW, v: -d.step * FLOW, z: d.lift };
+    return { ...d, ...base };
+  });
+  return LAYOUT[orient];
+}
+
+/* Where a plate's leader line ends, in world space. The fit and the label
+   drawing both read this, so they cannot disagree about how much room an
+   annotation needs -- which is the bug that clipped the BM25 caption. */
+function leaderTip(plate, orient) {
+  const s = plate.lead;
+  if (orient === "column") {
+    // Sideways, out of the plate's left or right vertex.
+    const d = plate.w + LEADER / (2 * KX);
+    return { u: plate.u + s * d, v: plate.v - s * d, z: plate.z };
+  }
+  return { u: plate.u, v: plate.v, z: plate.z + s * (plate.w + LEADER) };
+}
 
 const STEPS = 6;                    // steps 0..5, not plates -- see header
 const SPAN = 1 / STEPS;
@@ -152,7 +197,7 @@ export function buildCity(chunks) {
 }
 
 /* ---------------------------------------------------------------- a run */
-export function buildRun(trace, city, ink) {
+export function buildRun(trace, city, ink, orient = "row") {
   if (!trace || !city) return null;
   const byName = new Map(trace.stages.map(s => [s.name, s]));
   const final = byName.get("selected")?.items || [];
@@ -160,7 +205,7 @@ export function buildRun(trace, city, ink) {
   const survivors = new Set(final.map(i => i.chunk_id));
 
   const placed = new Map();
-  for (const plate of PLATES) {
+  for (const plate of platesFor(orient)) {
     const st = byName.get(plate.id);
     if (!st) continue;
     // As many candidates as this stage's matrix has cells. Taking more would
@@ -175,7 +220,7 @@ export function buildRun(trace, city, ink) {
     })));
   }
   const sel = placed.get("selected") || [];
-  const ap = PLATES.find(p => p.id === "answer");
+  const ap = platesFor(orient).find(p => p.id === "answer");
   placed.set("answer", sel.map((m, i) => ({ ...m, ...slot(ap, i, sel.length), z: ap.z })));
 
   const lit = new Map();
@@ -238,7 +283,7 @@ export function buildRun(trace, city, ink) {
       both: (byName.get("fused")?.items || []).filter(i => i.agreement).length,
       biggest,
     },
-    skipped: new Set(PLATES.map(p => p.id).filter(id => byName.get(id)?.skipped)),
+    skipped: new Set(SPEC.map(p => p.id).filter(id => byName.get(id)?.skipped)),
   };
 }
 
@@ -368,10 +413,15 @@ const LABEL_PX = 52;
 
 /* A leader line out of the plate to its label -- the reference's annotation
    device, and the reason labels never collide with the next plate. */
-function annotate(ctx, T, plate, city, run, ink, a, dim) {
-  const up = plate.lead === 1;
-  const from = T(plate.u, plate.v, plate.z + (up ? plate.w : -plate.w));
-  const to = T(plate.u, plate.v, plate.z + (up ? plate.w + LEADER : -plate.w - LEADER));
+function annotate(ctx, T, plate, city, run, ink, a, dim, orient) {
+  const col = orient === "column";
+  const side = plate.lead;                  // row: above/below. column: right/left.
+  const up = side === 1;
+  const tip = leaderTip(plate, orient);
+  const from = col
+    ? T(plate.u + side * plate.w, plate.v - side * plate.w, plate.z)
+    : T(plate.u, plate.v, plate.z + side * plate.w);
+  const to = T(tip.u, tip.v, tip.z);
 
   ctx.save();
   ctx.globalAlpha = a * 0.5;
@@ -379,7 +429,9 @@ function annotate(ctx, T, plate, city, run, ink, a, dim) {
   ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
 
   ctx.globalAlpha = a;
-  ctx.textAlign = "center";
+  // Sideways labels hang off the end of their leader and read outward; stacked
+  // labels stay centred over the plate.
+  ctx.textAlign = col ? (up ? "left" : "right") : "center";
   ctx.textBaseline = "middle";
 
   // Always reads number, name, detail from the top down, whichever side it is
@@ -394,11 +446,14 @@ function annotate(ctx, T, plate, city, run, ink, a, dim) {
       font: "500 9px 'DM Mono', ui-monospace, monospace", fill: ink.muted },
   ];
   const LH = 14;
-  // Above: the last row sits nearest the plate, so the stack grows upward.
-  const first = up ? to.y - (rows.length - 1) * LH - 4 : to.y + 6;
+  // Column: the three rows straddle the leader. Row: the last row sits nearest
+  // the plate, so the stack grows away from it and still reads top-down.
+  const first = col ? to.y - LH
+                    : (up ? to.y - (rows.length - 1) * LH - 4 : to.y + 6);
+  const tx = col ? to.x + (up ? 8 : -8) : to.x;
   rows.forEach((r, i) => {
     ctx.fillStyle = r.fill; ctx.font = r.font;
-    ctx.fillText(r.text, to.x, first + i * LH);
+    ctx.fillText(r.text, tx, first + i * LH);
   });
   ctx.restore();
 }
@@ -415,8 +470,8 @@ const LEGS = [["corpus", "dense"], ["corpus", "sparse"], ["dense", "fused"],
               ["sparse", "fused"], ["fused", "reranked"],
               ["reranked", "selected"], ["selected", "answer"]];
 
-function spine(ctx, T, ink, formation) {
-  const P = id => PLATES.find(x => x.id === id);
+function spine(ctx, T, ink, formation, orient) {
+  const P = id => platesFor(orient).find(x => x.id === id);
   ctx.save();
   ctx.strokeStyle = ink.other;
   ctx.lineWidth = 0.7;
@@ -466,7 +521,8 @@ function pulse(ctx, T, ink, clock) {
   ctx.restore();
 }
 
-export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null) {
+export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
+                          orient = "row") {
   ctx.clearRect(0, 0, W, H);
   if (!city) return;
 
@@ -477,18 +533,21 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null)
   // that is actually 13 -- so roughly half the vertical budget was reserved
   // for ink that is never drawn, the solver shrank everything to fit it, and
   // the slack showed up as an empty band above the plates.
+  const PL = platesFor(orient);
   const probe = [];
-  for (const p of PLATES) {
+  for (const p of PL) {
     for (const c of corners(p.w)) probe.push(project(p.u + c.u, p.v + c.v, p.z));
-    const tip = p.w + LEADER;
-    probe.push(project(p.u, p.v, p.z + (p.lead === 1 ? tip : -tip)));
+    const t = leaderTip(p, orient);
+    probe.push(project(t.u, t.v, t.z));
   }
   const xs = probe.map(p => p.x), ys = probe.map(p => p.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
 
-  const padX = 18;
-  const padY = LABEL_PX;              // the text stack only -- see above
+  // Label text runs vertically off a stacked layout and horizontally off a
+  // sideways one, so the pixel reservation swaps with the orientation.
+  const padX = orient === "column" ? 132 : 18;
+  const padY = orient === "column" ? 22 : LABEL_PX;
   const s = Math.min((W - padX * 2) / (maxX - minX),
                      (H - padY * 2) / (maxY - minY));
   const ox = W / 2 - ((minX + maxX) / 2) * s;
@@ -510,12 +569,12 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null)
 
   ctx.lineJoin = "round"; ctx.lineCap = "round";
 
-  spine(ctx, T, ink, formation);
+  spine(ctx, T, ink, formation, orient);
   if (progress >= 1) pulse(ctx, T, ink, clock);
 
   // Strict flow order: the passages arriving at a plate, then the plate they
   // land on. Nothing is ever drawn on top of a connector already on screen.
-  PLATES.forEach(plate => {
+  PL.forEach(plate => {
     const f = formation(plate.step);
     if (f <= 0) return;
     const dim = run?.skipped.has(plate.id);
@@ -552,7 +611,7 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null)
       }
     }
 
-    annotate(ctx, T, plate, city, run, ink, f, dim);
+    annotate(ctx, T, plate, city, run, ink, f, dim, orient);
   });
 }
 
