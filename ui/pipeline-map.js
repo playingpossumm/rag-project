@@ -728,10 +728,10 @@ function runSub(id, run) {
     case "corpus": return `${run.city.total.toLocaleString()} passages`;
     case "dense": return `${c.dense} candidates`;
     case "sparse": return c.sparse ? `${c.sparse} candidates` : "no term matched";
-    case "fused": return `${c.both} found by both`;
-    case "reranked": return c.biggest && c.biggest.delta
-      ? `largest move ${c.biggest.delta > 0 ? "+" : ""}${c.biggest.delta}`
-      : `${c.reranked} rescored`;
+    case "fused": return `${c.both} in both lists`;
+    // "largest move +15" reads as a score, not a change of position. The plate
+    // label says what happened; the caption below carries which passage moved.
+    case "reranked": return `${c.reranked} rescored`;
     case "selected": return `${c.selected} kept`;
     case "answer": return `${c.selected} passages`;
     default: return "";
@@ -739,30 +739,67 @@ function runSub(id, run) {
 }
 
 /* ------------------------------------------------------------- captions
-   Neutral and factual. Each says what the stage did and what it cost or
-   found -- no second sentence explaining why the design is good. */
+   Each caption says three things: what the stage did, what came out of it, and
+   how the next set is chosen. A count on its own -- "20 candidates" -- tells
+   you the size of something without telling you what it is or why it shrank.
+
+   Counts are real, taken from the run. Mechanism is described without quoting
+   configuration numbers that a setting could change underneath the sentence. */
 export function captions(run) {
   if (!run) return [];
   const c = run.counts;
   const big = c.biggest && c.biggest.delta ? c.biggest : null;
   return [
     { title: "Index",
-      text: `${run.city.total.toLocaleString()} passages across ${run.city.docs} documents, embedded and indexed ahead of the query.` },
+      text: `${run.city.docs} documents were split into ${run.city.total.toLocaleString()} `
+          + `overlapping passages -- overlapping so a sentence that straddles a `
+          + `boundary survives whole in one of them -- and each was turned into a `
+          + `vector once, before any question was asked. Every stage after this `
+          + `one is narrowing this set down.` },
+
     { title: "Dense retrieval",
-      text: `Embedding similarity against the whole index. ${c.dense} candidates.` },
+      text: `The question is turned into a vector the same way the passages were, `
+          + `and the ${c.dense} nearest by cosine similarity are taken. This finds `
+          + `passages that mean the same thing as the question even when they share `
+          + `none of its words.` },
+
     { title: "BM25",
-      text: `Lexical match over the same index, run in parallel. ${c.sparse} candidates. It catches rare tokens embeddings average away.` },
+      text: c.sparse
+        ? `The same index searched a second way, by word overlap, weighting rare `
+          + `words far above common ones. ${c.sparse} candidates. It runs alongside `
+          + `dense retrieval rather than after it, and catches the exact terms -- a `
+          + `species name, a symbol -- that an embedding averages away.`
+        : `No word in the question appears in the index, so lexical search returned `
+          + `nothing and the result rests on dense retrieval alone.` },
+
     { title: "Rank fusion",
-      text: `Both rankings combined by position rather than score. ${c.both} passages appear in both lists.` },
+      text: `The two lists are merged by POSITION rather than score, because a `
+          + `cosine similarity and a BM25 weight are different units and cannot be `
+          + `compared directly. A passage both methods rank highly rises above one `
+          + `only a single method liked. ${c.both} of them appeared in both lists.` },
+
     { title: "Cross-encoder",
-      text: big
-        ? `Query and passage scored together rather than compared as separate vectors. Largest move: ${shortDoc(big.source)}, ${big.delta > 0 ? "+" : ""}${big.delta} places.`
-        : `Query and passage scored together rather than compared as separate vectors. Order largely unchanged.` },
+      text: `Until now the question and each passage were scored apart and compared. `
+          + `Here they are read together by a second model, one pair at a time -- `
+          + `slower, and much better at telling a passage that mentions the subject `
+          + `from one that answers the question. `
+          + (big
+              ? `Biggest correction: ${shortDoc(big.source)} moved `
+                + `${big.delta > 0 ? "up" : "down"} ${Math.abs(big.delta)} places.`
+              : `The order barely changed, which means the first two stages already `
+                + `had it roughly right.`) },
+
     { title: "Diversity cap",
-      text: `At most two passages per document. ${c.selected} kept.` },
+      text: `At most two passages from any one document, so a single thorough `
+          + `document cannot fill every slot and hide a second source that also `
+          + `answers. ${c.selected} kept.` },
+
     { title: run.confident ? "Answer" : "Below threshold",
       text: run.confident
-        ? `Top score clears the abstention threshold. ${c.selected} passages cited.`
-        : `Top score falls below the abstention threshold, so nothing is returned as an answer.` },
+        ? `The ${c.selected} passages above are what the answer is drawn from and `
+          + `what gets cited. Nothing outside them reached the answer.`
+        : `The best passage scored below the point where answers from this set are `
+          + `usually really there, so nothing is returned. The candidates are still `
+          + `listed, so you can see what was considered and judge for yourself.` },
   ];
 }

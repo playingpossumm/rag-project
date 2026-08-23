@@ -119,6 +119,8 @@ button,input,textarea{font:inherit;color:inherit}
 .tray[data-open="true"] .trayPanel{transform:translate(0,-50%);opacity:1;
   visibility:visible;pointer-events:auto;transition-delay:0s}
 .trayPanel .sets{padding:8px}
+.trayPanel .sdesc{margin:0 0 9px;font-size:12px;line-height:1.55;color:var(--faint);
+  max-width:52ch}
 .trayPanel .cmp{border-top:1px solid var(--hair);padding:12px 15px;
   font-size:12.5px;color:var(--mute);line-height:1.5}
 @media (prefers-reduced-motion:reduce){
@@ -351,6 +353,16 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .rgrid .vv.mono{font-family:var(--mono);font-size:14.5px}
 .rgrid .note2{font-size:12px;line-height:1.5;color:var(--faint)}
 
+/* What this answer was produced with, and the way in to changing it. */
+.ranwith{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+.ranwith .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--faint)}
+.ranwith .vv{font-size:13px;color:var(--mute)}
+.ranwith .tweak{margin-left:auto;background:none;border:1px solid var(--hair);
+  border-radius:999px;padding:6px 14px;cursor:pointer;font:inherit;font-size:12.5px;
+  color:var(--dim);transition:border-color 160ms var(--ease),color 160ms var(--ease)}
+.ranwith .tweak:hover{border-color:var(--edge);color:var(--ink)}
+
 .why{margin:18px 0 4px}
 .why summary{display:inline-block;cursor:pointer;list-style:none;
   font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.13em;
@@ -524,6 +536,8 @@ tr.out td{color:var(--faint)}
   .dock.away{transform:none}
 }
 .dock .field{max-width:none}
+/* Docked at the bottom of the window, the list has nowhere to go downward. */
+.dock .chips{top:auto;bottom:calc(100% + 8px)}
 .dock .genrow{justify-content:flex-start;margin-top:10px;padding-left:4px}
 
 .thinking{display:flex;align-items:center;gap:14px;padding:34px clamp(22px,3.4vw,34px);
@@ -564,11 +578,14 @@ tr.out td{color:var(--faint)}
     </div>
 
     <form class="field" id="form">
-      <textarea id="q" rows="1" placeholder="Ask a question, or pick one below"
+      <textarea id="q" rows="1" placeholder="Ask a question, or pick one from the list"
                 aria-label="Your question"></textarea>
       <button class="go" id="goBtn" type="submit">Ask</button>
+      <!-- Inside the field, so it follows it down to the dock after the first
+           answer. A follow-up should be able to come from the same list the
+           first question did, rather than leaving you to invent one. -->
+      <div class="chips" id="chips" hidden></div>
     </form>
-    <div class="chips" id="chips" hidden></div>
   </section>
 
   <div id="thread"></div>
@@ -1021,7 +1038,7 @@ async function selectCorpus(name) {
     N = 0; BASELINE = null;
     $("#hero").classList.remove("gone");
     $("#dock").classList.add("hide");
-    $("#hero").insertBefore($("#form"), $("#chips"));
+    $("#hero").appendChild($("#form"));
     await Promise.all([loadCorpus(), loadPicker()]);
   } catch (err) {
     const g = $("#setgrid");
@@ -1034,6 +1051,10 @@ async function selectCorpus(name) {
 // One attribute drives it. The panel is always in the layout, so there is no
 // frame to wait for and no timer to unwind -- CSS retargets from wherever the
 // transform currently is, which means a fast open/close/open does not jump.
+const openSet = () => {
+  $("#tray").dataset.open = "true";
+  $("#setBtn").setAttribute("aria-expanded", "true");
+};
 const closeSet = () => {
   $("#tray").dataset.open = "false";
   $("#setBtn").setAttribute("aria-expanded", "false");
@@ -1270,6 +1291,16 @@ function renderTurn(turn, question, data, opts) {
               called to write prose.</span></div>
         </div>
       </div>
+
+      <!-- Settings were reachable only from a tab on the edge of the window,
+           which is the wrong place for the thing that explains why an answer
+           came out the way it did. Every answer now states what it was run
+           with, and opens the panel from here. -->
+      <div class="ranwith">
+        <span class="k">Run with</span>
+        <span class="vv">${esc(optsSummary(opts))}</span>
+        <button class="tweak" type="button">Change and re-run</button>
+      </div>
     </div>
 
     <div class="viz">
@@ -1325,6 +1356,10 @@ function renderTurn(turn, question, data, opts) {
     </details>
 `;
 
+  const tweak = turn.querySelector(".tweak");
+  // The document-level handler that closes the panel on an outside click sees
+  // this one too, and closed it in the same tick it opened.
+  if (tweak) tweak.onclick = e => { e.stopPropagation(); openSet(); };
   renderStack(turn, data, colour, sig);
   wireTabs(turn);
   wireCity(turn, run, data);
@@ -1453,18 +1488,41 @@ const g = (o, k) => (o && o[k] != null ? o[k].toFixed(3) : "—");
 function settingsHTML(opts) {
   const e2e = EVAL?.end_to_end || {}, exp = EVAL?.expansion || {};
   const S = [
-    { h: "Reranking", u: "MRR", key: "rerank", opts: [
+    { h: "Reranking", u: "MRR", key: "rerank",
+      d: `A second model reads the question and each passage together and
+          reorders them. Slower, and much better at telling a passage that
+          mentions the subject from one that answers the question. The number
+          is mean reciprocal rank — how near the top the right passage lands,
+          measured on this project's own question set.`,
+      opts: [
       ["On", true, g(e2e["dense + rerank"], "mrr")],
       ["Off", false, g(e2e["dense, no rerank"], "mrr")]] },
-    { h: "Fusion", u: "hit rate", key: "fusion", opts: [
+    { h: "Fusion", u: "hit rate", key: "fusion",
+      d: `How the two searches are combined. RRF merges them by position, which
+          works because a cosine similarity and a BM25 weight cannot be compared
+          directly; weighted blends the scores anyway; dense drops lexical
+          search entirely. The number is how often the right passage appears
+          anywhere in the top five.`,
+      opts: [
       ["RRF", "rrf", g(e2e["rrf + rerank"], "hit_rate")],
       ["Weighted", "weighted", g(e2e["weighted + rerank"], "hit_rate")],
       ["Dense", "none", g(e2e["dense + rerank"], "hit_rate")]] },
-    { h: "Diversity cap", u: "source recall", key: "max_per_source", opts: [
+    { h: "Diversity cap", u: "source recall", key: "max_per_source",
+      d: `A limit on how many passages one document may contribute, so a single
+          thorough document cannot fill every slot and hide a second source that
+          also answers. The number is the share of the documents that should
+          have been cited which actually were.`,
+      opts: [
       ["2/src", 2, g(e2e["+ diversity 2/src"], "src_recall")],
       ["1/src", 1, g(e2e["+ diversity 1/src"], "src_recall")],
       ["None", null, g(e2e["rrf + rerank"], "src_recall")]] },
-    { h: "Context", u: "context recall", key: "expansion", opts: [
+    { h: "Context", u: "context recall", key: "expansion",
+      d: `How much text around a matched passage is read back. Passages are cut
+          on a fixed length, so an answer often finishes just past the edge —
+          window pulls in the neighbours on either side, page pulls the whole
+          page. The number is how often the full answer ends up inside what was
+          read.`,
+      opts: [
       ["Window", "window", g(exp["window +/-1"], "context_recall")],
       ["Page", "page", g(exp["page"], "context_recall")],
       ["None", "none", g(exp["none (chunks)"], "context_recall")]] },
@@ -1472,11 +1530,24 @@ function settingsHTML(opts) {
   return S.map(s => `
     <div class="set" data-key="${s.key}">
       <div class="top2"><h5>${s.h}</h5><span class="lab u">${s.u}</span></div>
+      <p class="sdesc">${s.d}</p>
       <div class="opts">${s.opts.map(([k, val, num]) => `
         <button class="opt" type="button" data-val='${JSON.stringify(val)}'
           aria-pressed="${JSON.stringify(val) === JSON.stringify(opts[s.key])}">
           <span class="k">${k}</span><span class="v">${num}</span></button>`).join("")}</div>
     </div>`).join("");
+}
+
+/* The four settings in one line, in the order the pipeline applies them. */
+function optsSummary(o) {
+  return [
+    o.rerank ? "reranking on" : "reranking off",
+    o.fusion === "rrf" ? "RRF fusion"
+      : o.fusion === "weighted" ? "weighted fusion" : "dense only",
+    o.max_per_source ? `${o.max_per_source} per document` : "no diversity cap",
+    o.expansion === "window" ? "window context"
+      : o.expansion === "page" ? "page context" : "no context",
+  ].join(" · ");
 }
 
 /* The panel reflects whatever the last answer was run with, and changing a
