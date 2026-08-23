@@ -169,11 +169,11 @@ button,input,textarea{font:inherit;color:inherit}
 .heroviz{width:100%;max-width:900px;margin:-6px 0 -14px}
 /* A column wants height, not width. Capped so the stack and its side labels
    sit as one block instead of stranding a narrow diagram in a very wide box. */
-.heroviz canvas{display:block;width:min(100%,780px);margin:0 auto;
-  /* Height tracks the viewport's height as well as its width: on a short
-     laptop screen a column tall enough to look good pushed the composer, which
-     is the only thing on this page you can act on, below the fold. */
-  height:clamp(240px,min(32vw,40vh),430px)}
+/* Height tracks the viewport's height as well as its width: tall enough to
+   look good on a desktop pushed the composer -- the only thing on this page
+   you can act on -- below the fold on a short laptop screen. */
+.heroviz canvas{display:block;width:100%;
+  height:clamp(240px,min(30vw,38vh),400px)}
 
 /* ------------------------------------------------------------- the field */
 .field{width:100%;max-width:660px;display:flex;align-items:flex-end;gap:8px;
@@ -650,6 +650,12 @@ const readInk = () => {
 
 let CITY = null, EVAL = null, INK = readInk(), N = 0, BUSY = false, GENERATE = false;
 let ACTIVE = null;
+
+/* How a plate sits: "upright" stands it on the ground plane like a panel,
+   "flat" lays it down like a floor tile. One constant for both canvases --
+   the hero and the answer have to be the same drawing, or the answer stops
+   looking like the thing the front page explained. */
+const MAP = "upright";
 // The options the next question will run with, and everything about the last
 // one, so the top-bar panel can re-run it when a control changes.
 let OPTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window" };
@@ -739,11 +745,8 @@ function drawIdle(clock = 0) {
   // Brighter wire here than inside an answer: on the hero this drawing IS the
   // subject, whereas in a card it is the quiet ground that lets the coloured
   // survivors read.
-  // The hero stacks: a column of matrices with data descending through them
-  // reads as layers, and fills a hero's proportions. The answer's diagram
-  // stays a row -- a process is read left to right.
   drawScene(ctx, CITY, null, { ...INK, faint: "#6a6f72", other: "#6a6f72" },
-            r.width, r.height, 1, STILL ? null : clock, "column");
+            r.width, r.height, 1, STILL ? null : clock, MAP);
 }
 
 /* The idle drawing is of a process, so one faint pulse walks the spine rather
@@ -955,7 +958,7 @@ function renderTurn(turn, question, data, opts) {
   const rr = data.stages.find(s => s.name === "reranked");
   const ranked = (rr?.items?.length ? rr.items
     : data.stages.find(s => s.name === "fused")?.items) || [];
-  const run = buildRun(data, CITY, INK);
+  const run = buildRun(data, CITY, INK, MAP);
   const colour = run.colour;
   const gated = v.gated !== false;
   turn.className = "turn " + (!gated ? "ungated" : v.confident ? "" : "declined");
@@ -1146,7 +1149,8 @@ function wireCity(turn, run, data) {
     if (!r.width) return;
     cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawScene(ctx, CITY, run, INK, r.width, r.height, Number(scrub.value) / 100);
+    drawScene(ctx, CITY, run, INK, r.width, r.height, Number(scrub.value) / 100,
+              null, MAP);
   };
   const at = (t, move = true) => {
     t = Math.max(0, Math.min(1, t));
