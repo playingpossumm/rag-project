@@ -224,8 +224,37 @@ button,input,textarea{font:inherit;color:inherit}
   align-items:center;gap:12px}
 .setlab{font-family:var(--mono);font-size:10px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--faint)}
-.sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-  gap:10px;width:100%}
+.dd{position:relative;width:min(100%,440px)}
+.ddbtn{display:flex;align-items:center;gap:13px;width:100%;text-align:left;
+  background:var(--card);border:1px solid var(--hair);border-radius:12px;
+  padding:12px 15px;cursor:pointer;font:inherit;color:var(--ink);
+  transition:border-color 160ms var(--ease)}
+.ddbtn:hover,.ddbtn[aria-expanded="true"]{border-color:var(--edge)}
+.ddbtn .ico,.ddopt .ico,.trayset .ico{flex:none;display:flex;color:var(--wire)}
+.ddbtn .txt,.ddopt .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ddbtn .nm{font-size:14.5px}
+.ddbtn .cnt{font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ddbtn .caret{margin-left:auto;flex:none;width:6px;height:6px;
+  border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);
+  transform:rotate(45deg) translateY(-2px);transition:transform 200ms var(--ease)}
+.ddbtn[aria-expanded="true"] .caret{transform:rotate(-135deg) translateY(1px)}
+
+.ddmenu{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:40;
+  background:var(--card);border:1px solid var(--edge);border-radius:13px;padding:6px;
+  box-shadow:0 20px 46px rgba(0,0,0,.55);display:flex;flex-direction:column;gap:2px}
+.ddmenu[hidden]{display:none}
+.ddopt{display:flex;align-items:center;gap:13px;width:100%;text-align:left;
+  background:none;border:0;border-radius:9px;padding:11px 12px;cursor:pointer;font:inherit;
+  transition:background 150ms var(--ease)}
+.ddopt:hover:not(:disabled){background:var(--nest)}
+.ddopt:disabled{opacity:.4;cursor:default}
+.ddopt .nm{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
+.ddopt .nm b{font-family:var(--mono);font-size:9px;font-weight:500;color:var(--s1);
+  letter-spacing:.09em;text-transform:uppercase}
+.ddopt .cnt{font-size:12.5px;color:var(--mute)}
+.ddopt .fmt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--faint)}
+.ddopt[aria-selected="true"]{background:var(--nest)}
 .sets .set{display:flex;flex-direction:column;gap:5px;text-align:left;
   background:var(--card);border:1px solid var(--hair);border-radius:12px;
   padding:14px 16px;cursor:pointer;font:inherit;
@@ -585,8 +614,17 @@ tr.out td{color:var(--faint)}
          threshold it is judged against and the questions worth asking all
          change with it, so it cannot be an afterthought in a corner. -->
     <div class="pickset" id="pickset">
-      <span class="setlab">Pick a set of documents</span>
-      <div class="sets" id="setgrid"></div>
+      <span class="setlab">Document set</span>
+      <div class="dd" id="dd">
+        <button class="ddbtn" id="ddBtn" type="button"
+                aria-haspopup="listbox" aria-expanded="false">
+          <span class="ico" id="ddIco"></span>
+          <span class="txt"><span class="nm" id="ddName">loading</span>
+            <span class="cnt" id="ddCnt"></span></span>
+          <span class="caret" aria-hidden="true"></span>
+        </button>
+        <div class="ddmenu" id="setgrid" role="listbox" hidden></div>
+      </div>
     </div>
 
     <form class="field" id="form">
@@ -876,6 +914,59 @@ let OPTS = { rerank: true, fusion: "rrf", max_per_source: 2, expansion: "window"
    Language Models" is the thing you would look for on a shelf. Falls back to a
    tidied filename when a document has no extractable title. */
 let TITLES = {};
+/* A mark for each document set, drawn with the same isometric projection the
+   pipeline diagram uses, so the two belong to one drawing system rather than
+   the icons being borrowed from somewhere else.
+
+   The elevation here is higher than the diagram's. At the diagram's near
+   eye-level RISE a 30px stack collapses to a line; these are small enough that
+   they need to be looked down on to read as objects at all. */
+const ICON_SPREAD = 0.97, ICON_RISE = 0.44;
+const ipt = (u, v, z) => [((u - v) * ICON_SPREAD), ((u + v) * ICON_RISE - z)];
+
+/* One flat sheet, as a closed path in icon space. */
+function isoSheet(cx, cy, w, d, z) {
+  const pts = [[-w, -d], [w, -d], [w, d], [-w, d]]
+    .map(([u, v]) => ipt(cx + u, cy + v, z));
+  return "M" + pts.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join("L") + "Z";
+}
+
+/* Marks say something true about the set they stand for:
+     llm    even stack of identical sheets -- one format, many papers
+     birds  sheets of visibly different sizes -- four file formats
+     quant  upright bars on a baseline -- the only set that is about series */
+function setIcon(name) {
+  const A = { llm: [], birds: [], quant: [] };
+  let paths = [];
+  if (name === "birds") {
+    paths = [
+      { d: isoSheet(0, 0, 7.5, 5.5, -3), o: 0.35 },
+      { d: isoSheet(0.5, -0.5, 5.5, 6.5, 1), o: 0.55 },
+      { d: isoSheet(-0.5, 0.5, 6.5, 4, 5), o: 1, lit: true },
+    ];
+  } else if (name === "quant") {
+    paths = [
+      { d: isoSheet(-4, 0, 1.6, 1.6, -4), o: 0.4 },
+      { d: isoSheet(-4, 0, 1.6, 1.6, 0), o: 0.4 },
+      { d: isoSheet(0, 0, 1.6, 1.6, -4), o: 0.55 },
+      { d: isoSheet(0, 0, 1.6, 1.6, 2), o: 0.55 },
+      { d: isoSheet(4, 0, 1.6, 1.6, -4), o: 1, lit: true },
+      { d: isoSheet(4, 0, 1.6, 1.6, 5), o: 1, lit: true },
+    ];
+  } else {
+    paths = [
+      { d: isoSheet(0, 0, 7, 5, -4), o: 0.3 },
+      { d: isoSheet(0, 0, 7, 5, -1), o: 0.45 },
+      { d: isoSheet(0, 0, 7, 5, 2), o: 0.65 },
+      { d: isoSheet(0, 0, 7, 5, 5), o: 1, lit: true },
+    ];
+  }
+  const body = paths.map(p =>
+    `<path d="${p.d}" fill="none" stroke="${p.lit ? "var(--s1)" : "currentColor"}"
+       stroke-width="1.1" stroke-linejoin="round" opacity="${p.o}"/>`).join("");
+  return `<svg viewBox="-16 -13 32 26" width="34" height="28" aria-hidden="true">${body}</svg>`;
+}
+
 /* Titles are not unique -- the bird set carries bird_vocalization as .docx,
    .pdf and .pptx, all titled the same. Where a title is shared, the file type
    is what tells them apart, so it goes on the end. */
@@ -1023,16 +1114,30 @@ async function loadPicker() {
   // a number about the machinery, not about the reading material, and it does
   // not help anyone choose between ornithology and finance.
   $("#setgrid").innerHTML = data.corpora.map(c => `
-    <button type="button" class="set" data-name="${esc(c.name)}"
+    <button type="button" role="option" class="ddopt" data-name="${esc(c.name)}"
             ${c.indexed ? "" : "disabled"}
-            aria-pressed="${c.name === data.active}">
-      <span class="nm">${esc(c.label)}${
-        c.name === data.active ? `<b>in use</b>` : ""}</span>
-      ${c.indexed ? `
-        <span class="cnt">${nf(c.documents)} documents · ${nf(c.chunks)} passages</span>
-        <span class="fmt">${Object.keys(c.formats || {}).join(" · ").toUpperCase()}</span>`
-      : `<span class="cnt warn2">no index built</span>`}
+            aria-selected="${c.name === data.active}">
+      <span class="ico">${setIcon(c.name)}</span>
+      <span class="txt">
+        <span class="nm">${esc(c.label)}${
+          c.name === data.active ? `<b>in use</b>` : ""}</span>
+        <span class="cnt">${c.indexed
+          ? `${nf(c.documents)} documents · ${nf(c.chunks)} passages`
+          : "no index built"}</span>
+        <span class="fmt">${Object.keys(c.formats || {}).join(" · ").toUpperCase()}</span>
+      </span>
     </button>`).join("");
+
+  // The closed control mirrors the selection, so the page states which
+  // documents it is about without the menu being open.
+  const act = data.corpora.find(c => c.name === data.active);
+  if (act) {
+    $("#ddIco").innerHTML = setIcon(act.name);
+    $("#ddName").textContent = act.label;
+    $("#ddCnt").textContent =
+      `${nf(act.documents)} documents · ${nf(act.chunks)} passages · ` +
+      Object.keys(act.formats || {}).join(" · ").toUpperCase();
+  }
   $("#traysets").innerHTML = `
     <div class="top2"><h5>Documents</h5></div>
     <p class="sdesc">Which set the search runs over. Changing it clears the
@@ -1041,17 +1146,31 @@ async function loadPicker() {
       <button type="button" class="trayset" data-name="${esc(c.name)}"
               ${c.indexed ? "" : "disabled"}
               aria-pressed="${c.name === data.active}">
+        <span class="ico">${setIcon(c.name)}</span>
         <span class="nm">${esc(c.label)}</span>
         <span class="cnt">${c.indexed ? `${nf(c.documents)} docs` : "no index"}</span>
       </button>`).join("")}`;
 
   $("#setgrid").querySelectorAll("button[data-name]").forEach(b => {
-    b.onclick = () => selectCorpus(b.dataset.name);
+    b.onclick = e => { e.stopPropagation(); closeDd(); selectCorpus(b.dataset.name); };
   });
   $("#traysets").querySelectorAll("button[data-name]").forEach(b => {
     b.onclick = e => { e.stopPropagation(); selectCorpus(b.dataset.name); };
   });
 }
+
+const closeDd = () => {
+  $("#setgrid").hidden = true;
+  $("#ddBtn").setAttribute("aria-expanded", "false");
+};
+$("#ddBtn").onclick = e => {
+  e.stopPropagation();
+  const open = $("#setgrid").hidden;
+  $("#setgrid").hidden = !open;
+  $("#ddBtn").setAttribute("aria-expanded", String(open));
+};
+addEventListener("click", closeDd);
+addEventListener("keydown", e => { if (e.key === "Escape") closeDd(); });
 
 async function selectCorpus(name) {
   if (BUSY || (ACTIVE && name === ACTIVE.name)) return;
