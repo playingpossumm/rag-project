@@ -32,8 +32,13 @@
 
 export const shortDoc = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
 
-const KX = Math.cos(Math.PI / 6);
-const KY = Math.sin(Math.PI / 6);
+/* A true isometric is 30 degrees, which turns an upright panel a long way off
+   face-on and shows more of its side than of the matrix printed on it. This is
+   shallower: the panels read almost front-on, the ground plane flattens, and
+   the drawing stops looking like it is being viewed from a corner. */
+const ISO = (17 * Math.PI) / 180;
+const KX = Math.cos(ISO);
+const KY = Math.sin(ISO);
 const project = (u, v, z) => ({ x: (u - v) * KX, y: (u + v) * KY - z });
 
 const FLOW = 21;
@@ -48,19 +53,19 @@ const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
    present but dark. The index keeps its own treatment because 5,459 passages
    is a field, not a matrix. */
 const SPEC = [
-  { id: "corpus",   n: "01", step: 0, lift: 0,   w: 13,  cells: null,   lead: 1,
+  { id: "corpus", layers: 5,   n: "01", step: 0, lift: 0,   w: 13,  cells: null,   lead: 1,
     label: "Index",              term: c => `${c.total.toLocaleString()} passages · ${c.docs} documents` },
-  { id: "dense",    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1,
+  { id: "dense", layers: 4,    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1,
     label: "Dense retrieval",    term: () => "embedding similarity" },
-  { id: "sparse",   n: "03", step: 1, lift: -15, w: 6.5, cells: [5, 4], lead: -1,
+  { id: "sparse", layers: 4,   n: "03", step: 1, lift: -15, w: 6.5, cells: [5, 4], lead: -1,
     label: "BM25",               term: () => "lexical match" },
-  { id: "fused",    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1,
+  { id: "fused", layers: 4,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1,
     label: "Rank fusion",        term: () => "both rankings combined" },
-  { id: "reranked", n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1,
+  { id: "reranked", layers: 4, n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1,
     label: "Cross-encoder",      term: () => "query and passage scored together" },
-  { id: "selected", n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1,
+  { id: "selected", layers: 3, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1,
     label: "Diversity cap",      term: () => "max 2 per document" },
-  { id: "answer",   n: "07", step: 5, lift: 0,   w: 5,   cells: [1, 5], lead: -1,
+  { id: "answer", layers: 3,   n: "07", step: 5, lift: 0,   w: 5,   cells: [1, 5], lead: -1,
     label: "Answer",             term: () => "cited passages" },
 ];
 
@@ -80,9 +85,14 @@ const SPEC = [
  * plate with equal half-extents reads as a square in either orientation.
  */
 const BASIS = {
-  flat:    { a: { u: 1, v: 0, z: 0 }, b: { u: 0, v: 1, z: 0 } },
-  upright: { a: { u: 0, v: -1, z: 0 }, b: { u: 0, v: 0, z: 1 } },
+  flat:    { a: { u: 1, v: 0, z: 0 }, b: { u: 0, v: 1, z: 0 },
+             n: { u: 0, v: 0, z: 1 } },
+  upright: { a: { u: 0, v: -1, z: 0 }, b: { u: 0, v: 0, z: 1 },
+             n: { u: 1, v: 0, z: 0 } },
 };
+
+// How far apart the panels within one stage sit, along the plate's normal.
+const LAYER_GAP = 2.4;
 
 const LAYOUT = {};
 
@@ -96,6 +106,10 @@ function platesFor(variant = "flat") {
     u: d.step * FLOW,
     v: -d.step * FLOW,
     z: d.lift,
+    // A stage is a block of panels, not one panel. The stack is centred on the
+    // plate position so the flow line still runs through the middle of it, and
+    // `front` is the face nearest the viewer -- the one the matrix is drawn on.
+    front: ((d.layers - 1) / 2) * LAYER_GAP,
   }));
   return LAYOUT[variant];
 }
@@ -104,17 +118,20 @@ function platesFor(variant = "flat") {
    and `t` along its second, both measured from the centre. Everything that
    draws on a plate goes through here, so rotating the plate rotates the
    matrix, the cells and the corners together. */
-function ptAt(plate, s, t) {
+function ptAt(plate, s, t, k = plate.front) {
   const B = plate.basis;
   return {
-    u: plate.u + s * B.a.u + t * B.b.u,
-    v: plate.v + s * B.a.v + t * B.b.v,
-    z: plate.z + s * B.a.z + t * B.b.z,
+    u: plate.u + s * B.a.u + t * B.b.u + k * B.n.u,
+    v: plate.v + s * B.a.v + t * B.b.v + k * B.n.v,
+    z: plate.z + s * B.a.z + t * B.b.z + k * B.n.z,
   };
 }
 
-const plateCorners = plate => [[-1, -1], [1, -1], [1, 1], [-1, 1]]
-  .map(([i, j]) => ptAt(plate, i * plate.w, j * plate.h));
+/* The offset of layer `i`, counted from the back of the stack. */
+const layerAt = (plate, i) => plate.front - i * LAYER_GAP;
+
+const plateCorners = (plate, k = plate.front) => [[-1, -1], [1, -1], [1, 1], [-1, 1]]
+  .map(([i, j]) => ptAt(plate, i * plate.w, j * plate.h, k));
 
 /* Where a plate's leader line ends. The fit and the label drawing both read
    this, so they cannot disagree about how much room an annotation needs --
@@ -310,6 +327,30 @@ const corners = w => [{ u: -w, v: -w }, { u: w, v: -w }, { u: w, v: w }, { u: -w
 function plane(ctx, T, plate, ink, a, dim, f = 1) {
   const pts = plateCorners(plate).map(c => T(c.u, c.v, c.z));
   ctx.save();
+
+  // The panels behind the front face. A stage is a block of them rather than a
+  // single sheet -- which is what a layer of a network looks like, and it also
+  // gives the drawing depth that a lone quad at a shallow angle does not have.
+  // They are frames only: the matrix belongs to the face you are looking at,
+  // and repeating it on every panel would read as five stages, not one.
+  const layers = plate.layers || 1;
+  if (layers > 1) {
+    const back = clamp01((f - 0.25) / 0.5);
+    for (let i = layers - 1; i >= 1; i--) {
+      const q = plateCorners(plate, layerAt(plate, i)).map(c => T(c.u, c.v, c.z));
+      // Deeper panels are fainter, so the block reads as receding rather than
+      // as several plates that happen to overlap.
+      const depth = 1 - (i / layers) * 0.55;
+      ctx.globalAlpha = a * back * depth * (dim ? 0.16 : 0.34);
+      ctx.strokeStyle = ink.other;
+      ctx.lineWidth = 0.7;
+      ctx.beginPath();
+      ctx.moveTo(q[0].x, q[0].y);
+      for (let e = 1; e < 4; e++) ctx.lineTo(q[e].x, q[e].y);
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
 
   // The empty matrix. Every slot the stage can hold is drawn, so a stage that
   // filled four of twenty looks different from one that filled twenty -- with a
