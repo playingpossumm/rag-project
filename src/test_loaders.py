@@ -110,6 +110,49 @@ def main() -> int:
         if sect:
             check("xlsx / header-first sheet unaffected",
                   "Section:" in " ".join(u["text"] for u in sect))
+        # ---- titles split by the PDF converter ---------------------------
+        # A cover-page title comes apart two ways: it wraps and only the first
+        # line keeps its heading marker, or each line is promoted to its own
+        # heading. Both left the index holding half a title. The joining is
+        # guarded, and the guards are what these check -- gluing a title to the
+        # section heading below it would be worse than the truncation.
+        from loaders import _rejoin_wrapped
+
+        JOIN = [
+            ("wrapped onto a plain line",
+             "OenoBench: A Wine-Domain Benchmark for",
+             [" Knowledge-Grounded Evaluation of Large Language Models", ""],
+             "Knowledge-Grounded"),
+            ("split across two headings, title ends on a dangling word",
+             "A GENERIC NONPARAMETRIC VALUE-AT-RISK ESTIMATOR FOR",
+             ["", "### HIGH DIMENSIONS", "", "A PREPRINT"],
+             "HIGH DIMENSIONS"),
+            ("wrapped, then split across a second heading",
+             "Multi-Agent Orchestration with the Common-Sense",
+             [" Reasoning Capabilities of LLMs for Autonomous", "", "", "## Driving"],
+             "Driving"),
+        ]
+        for name, head, rest, want in JOIN:
+            check(f"title / {name}", want in _rejoin_wrapped(head, rest, 2))
+
+        KEEP = [
+            ("the section heading below a finished title",
+             "Attention Is All You Need", ["", "### Abstract", ""]),
+            # Without requiring evidence of an earlier wrap this one joins into
+            # "Some Paper Title Model Architecture".
+            ("a same-depth section heading with no prior wrap",
+             "Some Paper Title", ["", "## Model Architecture", ""]),
+            ("an author block",
+             "Some Paper Title", ["**Ada Lovelace**", "Institute"]),
+            ("an email line",
+             "Some Paper Title", ["ada@example.org"]),
+            ("anything at all, after a full stop",
+             "A Complete Title.", ["", "## Anything", ""]),
+        ]
+        for name, head, rest in KEEP:
+            check(f"title / does not absorb {name}",
+                  _rejoin_wrapped(head, rest, 2) == head)
+
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

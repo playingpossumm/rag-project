@@ -18,6 +18,7 @@ Every loader returns the same shape:
 
     [{"locator": {"kind": ..., "value": ...}, "text": ...}, ...]
 """
+import re
 from pathlib import Path
 
 # Excel sheets are split into row blocks so a citation points at a region of a
@@ -40,25 +41,89 @@ BOILERPLATE_MARKERS = (
 )
 
 
-# A continuation line is plain prose directly under the heading: no marker of
-# its own, not an author block, not a code fence, and not the start of the body.
-# Anything with structure is a new element, not the rest of the title.
+# A continuation is plain prose directly under the heading: no marker of its
+# own, not an author block, not a code fence. Anything with structure is a new
+# element, not the rest of the title.
 _TITLE_STOP = ("#", "*", "`", "|", ">", "-", "[", "!")
 
+# Section names, so a title is never glued to the heading that follows it.
+_SECTIONS = {
+    "abstract", "introduction", "background", "related work", "prior work",
+    "method", "methods", "methodology", "approach", "experiments", "experiment",
+    "results", "evaluation", "discussion", "conclusion", "conclusions",
+    "references", "bibliography", "appendix", "appendices", "keywords",
+    "acknowledgements", "acknowledgments", "contents", "summary", "overview",
+    "preprint", "a preprint", "notation", "preliminaries", "limitations",
+}
 
-def _rejoin_wrapped(text: str, following: list[str]) -> str:
-    """Reattach title lines that lost their heading marker to a line wrap."""
-    if text.endswith((".", "?", "!", ":")):
-        return text                      # a finished line does not continue
-    for nxt in following:
-        cand = nxt.strip()
+# Words a title cannot end on. If a heading stops here it was cut, not finished.
+_DANGLING = {
+    "for", "of", "in", "on", "with", "and", "or", "the", "a", "an", "to",
+    "from", "by", "via", "using", "under", "over", "at", "as", "into",
+    "through", "across", "between", "toward", "towards", "per", "against",
+    "without", "within", "beyond", "during",
+}
+
+
+def _looks_cut(text: str) -> bool:
+    last = re.sub(r"[^A-Za-z-]", "", text.split()[-1] if text.split() else "")
+    return last.lower() in _DANGLING
+
+
+def _rejoin_wrapped(text: str, following: list[str], depth: int = 0) -> str:
+    """Reattach title lines that were split from their heading.
+
+    Two ways a cover-page title comes apart. It wraps, and only the first line
+    keeps its marker -- the rest is a plain line directly beneath. Or the
+    converter promotes each line to its own heading, and the halves end up as
+    separate headings with blank lines between them.
+
+    The second case is the dangerous one, because the thing directly after a
+    title is usually a section heading, which must NOT be joined. Two
+    independent conditions guard it, and one of them has to hold:
+
+      the title ends on a word a title cannot end on -- "...ESTIMATOR FOR";
+
+      or the title was ALREADY seen wrapping onto a plain line, and the next
+      heading sits at the same depth with only blanks between. The earlier wrap
+      is the evidence: it shows this converter is breaking the title up, which
+      a document with a normal title and a normal first section never does.
+
+    Without that second clause requiring a prior wrap, "Some Paper Title"
+    followed by "## Model Architecture" joins into nonsense.
+    """
+    if text.endswith((".", "?", "!")):
+        return text
+
+    seen_blank = False
+    joined_plain = False
+    for raw in following:
+        cand = raw.strip()
         if not cand:
-            break                        # a blank line ends the title
+            seen_blank = True
+            continue
+
+        if cand.startswith("#"):
+            d = len(cand) - len(cand.lstrip("#"))
+            head = cand.lstrip("#").strip()
+            if (not head
+                    or len(head.split()) > 5
+                    or head.lower() in _SECTIONS
+                    or head[0].isdigit()
+                    or len(text) + len(head) > 200):
+                break
+            if not (_looks_cut(text) or (d == depth and seen_blank and joined_plain)):
+                break
+            return f"{text} {head}".strip()
+
+        if seen_blank:
+            break                        # prose after a blank is the body
         if cand.startswith(_TITLE_STOP) or cand[0].isdigit():
             break
         if "@" in cand or len(cand) > 120:
-            break                        # an author or email block, or body text
+            break
         text = f"{text} {cand}".strip()
+        joined_plain = True
         if text.endswith((".", "?", "!")):
             break
     return text
@@ -93,7 +158,7 @@ def extract_title(units: list[dict], path: Path) -> str:
             # Three lines of lookahead: a long paper title routinely wraps to
             # three on a cover page. The join stops at the first blank or
             # structured line regardless, so a larger window costs nothing.
-            text = _rejoin_wrapped(text, lines[i + 1:i + 4])
+            text = _rejoin_wrapped(text, lines[i + 1:i + 7], depth)
 
             if not (8 <= len(text) <= 200) or text[0].isdigit():
                 continue
