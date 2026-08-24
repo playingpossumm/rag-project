@@ -65,6 +65,42 @@ _DANGLING = {
 }
 
 
+def _looks_like_names(head: str) -> bool:
+    """Is this heading an author line rather than the rest of a title?
+
+    Converters promote an author line to a heading exactly as readily as they
+    promote half a title, so "## Priya Ramanathan, Devesh Iyer" arrives looking like a
+    continuation. A comma-separated run of title-case pairs is people; a title
+    fragment at that length almost always carries a lowercase word or is set in
+    caps.
+    """
+    parts = [q.strip() for q in re.split(r",| and ", head) if q.strip()]
+    if len(parts) < 2:
+        return False
+    for part in parts:
+        toks = part.split()
+        if not (1 <= len(toks) <= 4):
+            return False
+        for t in toks:
+            w = t.strip(".")
+            if not w or not w[0].isupper() or w.isupper():
+                return False      # lowercase connective, or set in caps
+    return True
+
+
+def _followed_by_email(following: list[str], start: int, span: int = 3) -> bool:
+    """An email within a line or two below marks the heading as an author block.
+
+    Affiliation words are no good for this -- "Department of Computer Science"
+    sits below the SECOND HALF OF A TITLE in one of these papers, so keying on
+    it would reject a real continuation. An address is more specific.
+    """
+    for raw in following[start + 1:start + 1 + span]:
+        if "@" in raw:
+            return True
+    return False
+
+
 def _looks_cut(text: str) -> bool:
     last = re.sub(r"[^A-Za-z-]", "", text.split()[-1] if text.split() else "")
     return last.lower() in _DANGLING
@@ -97,7 +133,7 @@ def _rejoin_wrapped(text: str, following: list[str], depth: int = 0) -> str:
 
     seen_blank = False
     joined_plain = False
-    for raw in following:
+    for idx, raw in enumerate(following):
         cand = raw.strip()
         if not cand:
             seen_blank = True
@@ -110,7 +146,9 @@ def _rejoin_wrapped(text: str, following: list[str], depth: int = 0) -> str:
                     or len(head.split()) > 5
                     or head.lower() in _SECTIONS
                     or head[0].isdigit()
-                    or len(text) + len(head) > 200):
+                    or len(text) + len(head) > 200
+                    or _looks_like_names(head)
+                    or _followed_by_email(following, idx)):
                 break
             if not (_looks_cut(text) or (d == depth and seen_blank and joined_plain)):
                 break

@@ -153,6 +153,31 @@ def main() -> int:
             check(f"title / does not absorb {name}",
                   _rejoin_wrapped(head, rest, 2) == head)
 
+        # An author line is promoted to a heading as readily as half a title,
+        # so it arrives looking exactly like a continuation. This one shipped
+        # past the earlier guards -- a plain wrap came first, and the authors
+        # sat at the same depth -- and was caught only by dry-running before
+        # writing. Two signals stop it: a comma-separated run of title-case
+        # pairs, and an email directly below.
+        AUTHORS = [" Generative Models Must Preserve", "", "",
+                   "## Priya Ramanathan, Devesh Iyer", "", "```",
+                   "   p.ramanathan@example.edu, d.iyer@example.edu"]
+        got = _rejoin_wrapped(
+            "Simulating Stress Laws under Extremal Dependence: Characterizing What",
+            AUTHORS, 2)
+        check("title / still joins the wrapped half", "Must Preserve" in got)
+        check("title / does not absorb an author heading", "Mantu" not in got)
+
+        # ...while a real second half that happens to have an affiliation below
+        # it is still joined. Keying the rejection on affiliation words rather
+        # than an address would have broken this one.
+        got = _rejoin_wrapped(
+            "Multi-Agent Orchestration with the Common-Sense",
+            [" Reasoning Capabilities of LLMs for Autonomous", "", "", "## Driving",
+             "", "", "**Mehdi Azarafza**", "Department of Computer Science"], 2)
+        check("title / joins a half whose affiliation sits below it",
+              got.endswith("Autonomous Driving"))
+
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
