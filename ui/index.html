@@ -47,6 +47,10 @@
   --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
   --ease:cubic-bezier(.23,1,.32,1);
+  /* One height for every pipeline drawing on the page. Tracks viewport height
+     as well as width: five things stack up in the hero and the question field,
+     the only one you can act on, has to stay above the fold on a short screen. */
+  --map-h:clamp(230px,min(27vw,30vh),380px);
   --r:14px;
   --max:1120px;
   --pad:clamp(1rem,4vw,2rem);
@@ -197,8 +201,10 @@ button,input,textarea{font:inherit;color:inherit}
 /* Height tracks the viewport's height as well as its width: tall enough to
    look good on a desktop pushed the composer -- the only thing on this page
    you can act on -- below the fold on a short laptop screen. */
-.heroviz canvas{display:block;width:100%;
-  height:clamp(190px,min(26vw,27vh),340px)}
+/* The same height rule as the answer's canvas below. The two were on
+   different clamps, so the identical drawing came out at two different sizes
+   and the front page stopped matching the thing it explains. */
+.heroviz canvas{display:block;width:100%;height:var(--map-h)}
 
 /* ------------------------------------------------------------- the field */
 .field{width:100%;max-width:660px;display:flex;align-items:flex-end;gap:8px;
@@ -213,7 +219,10 @@ button,input,textarea{font:inherit;color:inherit}
   padding:11px 20px;font-family:var(--mono);font-size:11px;font-weight:500;
   letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;
   transition:transform 180ms var(--ease),opacity 180ms var(--ease)}
-.go:hover{transform:translateY(-1px)}
+/* Touch fires a hover on tap and never clears it, so a moving hover state
+   sticks. Colour-only hovers are left ungated -- an invisible false hover
+   costs nothing; a stuck transform does. */
+@media (hover:hover) and (pointer:fine){.go:hover{transform:translateY(-1px)}}
 .go:active{transform:scale(.97)}
 .go:disabled{opacity:.35;cursor:default;transform:none}
 
@@ -302,25 +311,17 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .chips .grp + .chip{border-top:0}
 
 .genrow{display:flex;align-items:center;gap:11px;justify-content:center}
-.toggle{display:flex;align-items:center;gap:9px;cursor:pointer;background:none;
-  border:0;padding:0;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--faint);transition:color 180ms var(--ease)}
-.toggle:hover{color:var(--dim)}
-.toggle .sw{width:30px;height:17px;border-radius:999px;background:var(--nest);
-  border:1px solid var(--edge);position:relative;flex:none;transition:all 200ms var(--ease)}
-.toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:11px;height:11px;
-  border-radius:50%;background:var(--faint);transition:all 200ms var(--ease)}
-.toggle[aria-pressed="true"]{color:var(--ink)}
-.toggle[aria-pressed="true"] .sw{background:rgba(57,135,229,.22);border-color:var(--s1)}
-.toggle[aria-pressed="true"] .sw::after{transform:translateX(13px);background:var(--s1)}
 
 /* ------------------------------------------------------------ the thread */
 /* Clearance for the fixed composer, or the last thing on the page always
    sits underneath it. */
 #thread{padding-bottom:132px}
-.turn{margin-top:26px;animation:rise 420ms var(--ease) both;scroll-margin-top:74px}
+.turn{margin-top:26px;animation:rise 260ms var(--ease) both;scroll-margin-top:74px}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.turn{animation:none}}
+@keyframes appear{from{opacity:0}to{opacity:1}}
+/* Keep the cue, drop the travel -- an answer arriving with no transition at all
+   is a page that changed while you were looking away. */
+@media (prefers-reduced-motion:reduce){.turn{animation:appear 200ms var(--ease) both}}
 
 .q{display:flex;gap:14px;align-items:baseline;padding:0 4px 14px}
 .q .t{font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.35;max-width:44ch}
@@ -363,7 +364,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .cell{height:16px;border-radius:3px;background:var(--nest);position:relative;
   transition:transform 120ms var(--ease)}
 .cell.has{cursor:default}
-.cell.has:hover{transform:scaleY(1.35);z-index:2}
+@media (hover:hover) and (pointer:fine){.cell.has:hover{transform:scaleY(1.35);z-index:2}}
 .cell.gone{background:transparent;border:1px dashed var(--hair)}
 .grid .sep{grid-column:1/-1;height:1px;background:var(--hair);margin:9px 0}
 .grid .cn{font-family:var(--mono);font-size:8px;color:var(--faint);text-align:center;
@@ -473,9 +474,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
   font-size:10px;color:var(--faint)}
 .legend i{width:7px;height:7px;border-radius:2px}
 .legend i.w{background:var(--wire)}
-/* The drawing wants roughly 3:1 once its labels are counted honestly, so the
-   height tracks the width instead of sitting at a constant. */
-canvas.city{display:block;width:100%;height:clamp(300px,29vw,430px)}
+canvas.city{display:block;width:100%;height:var(--map-h)}
 .vizfoot{display:flex;align-items:center;gap:14px;
   padding:10px clamp(22px,3.4vw,34px) 18px;flex-wrap:wrap}
 .vizfoot .cap{color:var(--mute);font-size:13px;flex:1;min-width:220px;line-height:1.5}
@@ -594,10 +593,24 @@ tr.out td{color:var(--faint)}
   color:var(--faint)}
 .thinking .bar{width:84px;height:2px;background:var(--hair);overflow:hidden;border-radius:2px}
 .thinking .bar::after{content:"";display:block;width:36%;height:100%;background:var(--s1);
-  animation:slide 1.15s var(--ease) infinite}
+  /* linear: constant motion. An ease-out curve on a loop makes the bar lurch
+     and stall every cycle instead of reading as steady progress. */
+  animation:slide 1.15s linear infinite}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
 .err{color:var(--bad)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* Reduced motion means gentler, not off.
+   This was `*{transition:none!important;animation:none!important}`, which is
+   not a stricter version of the scoped blocks above -- it OVERRODE them. The
+   tray's fade at :148 and the dock's at :584 were written to survive reduced
+   motion and never did, so a state change that should have been cued simply
+   teleported. Colour and opacity transitions stay: they carry state and cost
+   nothing. Only movement is dropped. */
+@media (prefers-reduced-motion:reduce){
+  .go:hover,.go:active,.cell.has:hover,.dock.away{transform:none}
+  .ddbtn .caret,.more > summary::after,.detail > summary::after,
+  .trayPanel,.dock{transition-property:opacity,color,background,border-color}
+  .thinking .bar::after{animation:none;width:100%;opacity:.45}
+}
 </style>
 </head>
 <body>

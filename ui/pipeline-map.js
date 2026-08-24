@@ -57,11 +57,14 @@ const KX = SPREAD;
 const KY = RISE;
 const project = (u, v, z) => ({ x: (u - v) * KX, y: (u + v) * KY - z });
 
-/* Step spacing in world units. It has to be read together with ISO: the
-   on-screen gap between stages is 2 * FLOW * cos(ISO), so raising the angle
-   narrows the drawing unless this rises with it. At 60 degrees cos is 0.5, so
-   this is roughly double what a 30-degree layout needed. */
-const FLOW = 49;
+/* Step spacing in world units, and it is NOT held constant on screen.
+   The gap between stages is 2 * FLOW * SPREAD, so narrowing the plates narrows
+   the gap by the same factor and the composition stays proportional. Pinning
+   the on-screen gap instead -- which is what I did when SPREAD dropped to 0.68
+   -- shrinks the plates while leaving them just as far apart, so the drawing
+   turns into small plates adrift in a wide frame and the fit can only scale it
+   to the width it does not need. */
+const FLOW = 34;
 const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
 
 /* label side: 1 above, -1 below. Leader lines run vertically out of the plate
