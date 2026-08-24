@@ -606,6 +606,12 @@ tr.out td{color:var(--faint)}
   <span class="brand">retrieval visualized<span>/</span></span>
   <nav>
     <a href="/quality">Analytics</a>
+    <!-- The front page as it stood before the rebuild, served from this same
+         server against the same live API. It is a sub-page like Analytics, so
+         it belongs here -- it was reachable only from inside the settings tray,
+         which is a collapsed tab on the right edge and not a place anyone
+         looks for a second version of the site. -->
+    <a href="/archive">Previous version</a>
   </nav>
 </div></header>
 
@@ -666,11 +672,7 @@ tr.out td{color:var(--faint)}
       <div class="traysets" id="traysets"></div>
       <div class="sets" id="setBody"></div>
       <div class="cmp" id="setCmp"></div>
-      <!-- The front page as it stood before this pass, served from the same
-           server against the same live API, so the two can be compared in a
-           browser rather than in a diff. -->
-      <a class="oldlink" href="/archive">Previous version of this page
-        <span>23 Aug 2026</span></a>
+
     </div>
   </aside>
   <div class="dock hide" id="dock"></div>
