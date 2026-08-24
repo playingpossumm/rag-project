@@ -38,7 +38,10 @@ export const shortDoc = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
  * together, which is why turning it up to get more depth also tipped the whole
  * scene over and looked down on it from above. They are separate here:
  *
- *   SPREAD -- how much the two ground axes fan out horizontally.
+ *   SPREAD -- how much the two ground axes fan out horizontally. Lower is
+ *             narrower: it compresses the plates sideways without touching
+ *             their height, which is the only knob that makes the panels
+ *             thinner rather than differently angled.
  *   RISE   -- how far above the ground plane the camera sits. This is the one
  *             that reads as "viewing angle". Near zero is eye level; a true
  *             isometric is 0.5; the old 60-degree setting was 0.87, which is
@@ -48,7 +51,7 @@ export const shortDoc = s => String(s).replace(/\.(pdf|docx|pptx|xlsx)$/i, "");
  * ground plane without collapsing the vertical separation between dense
  * retrieval and BM25.
  */
-const SPREAD = 0.97;
+const SPREAD = 0.68;
 const RISE = 0.15;
 const KX = SPREAD;
 const KY = RISE;
@@ -58,7 +61,7 @@ const project = (u, v, z) => ({ x: (u - v) * KX, y: (u + v) * KY - z });
    on-screen gap between stages is 2 * FLOW * cos(ISO), so raising the angle
    narrows the drawing unless this rises with it. At 60 degrees cos is 0.5, so
    this is roughly double what a 30-degree layout needed. */
-const FLOW = 34;
+const FLOW = 49;
 const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
 
 /* label side: 1 above, -1 below. Leader lines run vertically out of the plate
