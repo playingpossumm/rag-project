@@ -661,7 +661,13 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
   // ends of the drawing by roughly half their own width. Eighteen pixels was
   // enough when the fit still reserved world space for labels; it is not now,
   // and "5,459 PASSAGES · 36 DOCUMENTS" was losing its first word.
-  const padX = 122;
+  // 18, not the 122 this carried for months. That reservation was for the
+  // column layout, where labels ran off the sides of the plates; the row layout
+  // stacks them above and below and needs almost nothing here. Left behind when
+  // the column was reverted, it was quietly throwing away a quarter of the
+  // canvas width -- and width is what this drawing is limited by, so it was
+  // scaling the whole thing down by a quarter.
+  const padX = 18;
   const padY = LABEL_PX;              // the text stack only -- see above
   const s = Math.min((W - padX * 2) / (maxX - minX),
                      (H - padY * 2) / (maxY - minY));
