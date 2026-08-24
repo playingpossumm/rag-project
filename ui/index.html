@@ -50,7 +50,10 @@
   /* One height for every pipeline drawing on the page. Tracks viewport height
      as well as width: five things stack up in the hero and the question field,
      the only one you can act on, has to stay above the fold on a short screen. */
-  --map-h:clamp(230px,min(27vw,30vh),380px);
+  /* The drawing is limited by width, not height -- raising this alone only
+     adds empty canvas and pushes the question field down the page. It is here
+     so the hero and the answer draw at one size. */
+  --map-h:clamp(200px,min(34vw,36vh),480px);
   --r:14px;
   --max:1120px;
   --pad:clamp(1rem,4vw,2rem);
@@ -194,8 +197,25 @@ button,input,textarea{font:inherit;color:inherit}
   letter-spacing:-.042em;margin:0;max-width:19ch;text-wrap:balance}
 .hero h1 em{font-style:normal;color:var(--mute)}
 .hero p{color:var(--dim);font-size:clamp(14px,1.7vh,16px);max-width:58ch;margin:0}
+
+/* On a short screen the hero's fixed parts -- headline, blurb, the set picker,
+   the question field and four gaps -- do not leave room for a diagram worth
+   drawing, and the field is the only thing on this page you can act on. So the
+   text gives way rather than the drawing: the headline drops a size, the blurb
+   is hidden (it explains what RAG is, which is not what someone on a 720px
+   screen needs before they can type), and the padding tightens. */
+@media (max-height:900px){
+  .hero{padding:18px 0 34px;gap:clamp(10px,1.6vh,16px)}
+  .hero h1{font-size:clamp(26px,min(4.2vw,5.4vh),42px)}
+}
+@media (max-height:745px){
+  .hero > p{display:none}
+}
 .hero.gone{display:none}
-.heroviz{width:100%;max-width:900px;margin:-6px 0 -14px}
+/* Full column width. The 900px cap was set when the hero diagram was a
+   vertical column and wanted height rather than width; the row layout it went
+   back to wants every pixel across. */
+.heroviz{width:100%;margin:-6px 0 -14px}
 /* A column wants height, not width. Capped so the stack and its side labels
    sit as one block instead of stranding a narrow diagram in a very wide box. */
 /* Height tracks the viewport's height as well as its width: tall enough to
