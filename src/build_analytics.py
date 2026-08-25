@@ -60,11 +60,11 @@ def sweep(ans: list[float], adv: list[float], lo=-8.0, hi=4.0, step=0.5):
 # the labeller's concern. A reader picking a question wants to know what kind of
 # retrieval it will exercise.
 KIND_LABEL = {
-    "fact": "a specific figure",
-    "multi": "spread across documents",
-    "cross-doc": "several documents look right",
+    "fact": "one figure in one place",
+    "multi": "spread over several documents",
+    "cross-doc": "decoys that look right",
 }
-ADVERSARIAL = "not in the corpus"
+ADVERSARIAL = "not in these documents"
 
 # Roughly how many of each to offer, in the order they should be shown. Weighted
 # towards the two kinds that show the system doing something a plain keyword

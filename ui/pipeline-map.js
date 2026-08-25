@@ -534,7 +534,7 @@ const LABEL_PX = 52;
 
 /* A leader line out of the plate to its label -- the reference's annotation
    device, and the reason labels never collide with the next plate. */
-function annotate(ctx, T, plate, city, run, ink, a, dim) {
+function annotate(ctx, T, plate, city, run, ink, a, dim, room) {
   const up = plate.lead === 1;
   const tip = leaderTip(plate);
   const from = T(plate.u, plate.v, plate.z + plate.lead * plate.w);
@@ -560,11 +560,43 @@ function annotate(ctx, T, plate, city, run, ink, a, dim) {
     { text: String(dim ? "not run" : (run ? runSub(plate.id, run) : plate.term(city))).toUpperCase(),
       font: "500 9px 'DM Mono', ui-monospace, monospace", fill: ink.muted },
   ];
+  // A label is text at a fixed pixel size on a drawing that scales, so below
+  // some canvas width the labels of neighbouring stages run into each other --
+  // "Index" landing on top of "EMBEDDING SIMILARITY". `room` is the on-screen
+  // gap between stages, so each label is measured against the space it actually
+  // has and gives way rather than overlapping its neighbour.
+  const shown = [];
+  for (const r of rows) {
+    ctx.font = r.font;
+    if (ctx.measureText(r.text).width <= room) { shown.push(r); continue; }
+
+    if (r === rows[1]) {
+      // The name is the one row worth shrinking to keep: a stage with no name
+      // is not a stage. Two steps down, then it is truncated rather than
+      // allowed to collide.
+      let size = 12;
+      while (size > 9) {
+        size -= 1;
+        ctx.font = `600 ${size}px Inter, system-ui, sans-serif`;
+        if (ctx.measureText(r.text).width <= room) break;
+      }
+      let text = r.text;
+      while (text.length > 4 && ctx.measureText(text + "…").width > room) {
+        text = text.slice(0, -1);
+      }
+      shown.push({ ...r, font: ctx.font,
+                   text: text === r.text ? text : text.trimEnd() + "…" });
+    }
+    // The number and the detail line are dropped. The detail is the first to
+    // go because it is the longest and the least load-bearing -- the drawing
+    // still says which stage this is without it.
+  }
+
   const LH = 14;
   // Above: the last row sits nearest the plate, so the stack grows away from
   // it and still reads number, name, detail from the top down.
-  const first = up ? to.y - (rows.length - 1) * LH - 4 : to.y + 6;
-  rows.forEach((r, i) => {
+  const first = up ? to.y - (shown.length - 1) * LH - 4 : to.y + 6;
+  shown.forEach((r, i) => {
     ctx.fillStyle = r.fill; ctx.font = r.font;
     ctx.fillText(r.text, to.x, first + i * LH);
   });
@@ -743,7 +775,10 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
       }
     }
 
-    annotate(ctx, T, plate, city, run, ink, f, dim);
+    // The horizontal room a stage's label has is the gap to the next stage.
+    // Dense and BM25 share a step and are separated vertically, so they each
+    // get the full gap rather than half of it.
+    annotate(ctx, T, plate, city, run, ink, f, dim, 2 * FLOW * SPREAD * s * 0.98);
   });
 }
 

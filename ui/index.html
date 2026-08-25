@@ -53,7 +53,7 @@
   /* The drawing is limited by width, not height -- raising this alone only
      adds empty canvas and pushes the question field down the page. It is here
      so the hero and the answer draw at one size. */
-  --map-h:clamp(200px,min(34vw,36vh),480px);
+  --map-h:clamp(190px,min(32vw,29vh),460px);
   --r:14px;
   --max:1120px;
   --pad:clamp(1rem,4vw,2rem);
@@ -212,10 +212,19 @@ button,input,textarea{font:inherit;color:inherit}
   .hero > p{display:none}
 }
 .hero.gone{display:none}
+
+/* A tall window has room the short ones do not, and the drawing is the thing
+   worth spending it on. Kept as a separate step rather than a larger vh term,
+   because the same term that fits 1080px pushes the question field off a 768px
+   screen. */
+@media (min-height:1000px){ :root{ --map-h:clamp(300px,min(34vw,34vh),520px) } }
 /* Full column width. The 900px cap was set when the hero diagram was a
    vertical column and wanted height rather than width; the row layout it went
    back to wants every pixel across. */
-.heroviz{width:100%;margin:-6px 0 -14px}
+/* Positive room on both sides. These were -6px and -14px, pulling the drawing
+   into the blurb above and the document set below it -- left over from when the
+   canvas had a lot of empty space of its own to absorb. It does not any more. */
+.heroviz{width:100%;margin:clamp(8px,1.8vh,22px) 0 clamp(10px,2.2vh,28px)}
 /* A column wants height, not width. Capped so the stack and its side labels
    sit as one block instead of stranding a narrow diagram in a very wide box. */
 /* Height tracks the viewport's height as well as its width: tall enough to
@@ -235,8 +244,15 @@ button,input,textarea{font:inherit;color:inherit}
   padding:12px 0;font-size:16px;line-height:1.5;max-height:160px}
 .field textarea:focus{outline:0}
 .field textarea::placeholder{color:var(--faint)}
+/* min-height matches the textarea's single-line box exactly (12px padding +
+   24px line + 12px padding), so at rest the button and the text align top and
+   bottom. The row stays flex-end because the textarea grows downward and the
+   button should stay with the last line, not drift to the middle of a
+   paragraph -- but at one line, flex-end alone left it 17px from the top and
+   9px from the bottom. */
 .go{border:0;background:var(--ink);color:var(--ground);border-radius:10px;
-  padding:11px 20px;font-family:var(--mono);font-size:11px;font-weight:500;
+  min-height:48px;display:inline-flex;align-items:center;justify-content:center;
+  padding:0 20px;font-family:var(--mono);font-size:11px;font-weight:500;
   letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;
   transition:transform 180ms var(--ease),opacity 180ms var(--ease)}
 /* Touch fires a hover on tap and never clears it, so a moving hover state
@@ -260,20 +276,34 @@ button,input,textarea{font:inherit;color:inherit}
 .setlab{font-family:var(--mono);font-size:10px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--faint)}
 .dd{position:relative;width:min(100%,440px)}
-.ddbtn{display:flex;align-items:center;gap:13px;width:100%;text-align:left;
-  background:var(--card);border:1px solid var(--hair);border-radius:12px;
-  padding:12px 15px;cursor:pointer;font:inherit;color:var(--ink);
-  transition:border-color 160ms var(--ease)}
-.ddbtn:hover,.ddbtn[aria-expanded="true"]{border-color:var(--edge)}
-.ddbtn .ico,.ddopt .ico,.trayset .ico{flex:none;display:flex;color:var(--wire)}
+/* At rest this is the only control on an otherwise empty page, so it has to
+   look pressable without shouting. The mark sits in its own bounded tile so
+   the text starts at one x whatever the mark is, and the caret gets a target
+   of its own rather than floating against the edge. */
+.ddbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+  background:var(--card);border:1px solid var(--hair);border-radius:13px;
+  padding:9px 10px 9px 9px;cursor:pointer;font:inherit;color:var(--ink);
+  transition:border-color 160ms var(--ease),background 160ms var(--ease)}
+.ddbtn:hover{border-color:var(--edge);background:var(--nest)}
+.ddbtn[aria-expanded="true"]{border-color:var(--s1);background:var(--nest)}
+.ddbtn .ico{flex:none;display:flex;align-items:center;justify-content:center;
+  width:46px;height:46px;border-radius:10px;background:var(--nest);
+  border:1px solid var(--hair);color:var(--wire)}
+.ddbtn:hover .ico{border-color:var(--edge)}
+.ddopt .ico,.trayset .ico{flex:none;display:flex;color:var(--wire)}
 .ddbtn .txt,.ddopt .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
-.ddbtn .nm{font-size:14.5px}
-.ddbtn .cnt{font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+.ddbtn .txt{gap:3px}
+.ddbtn .nm{font-size:15px;letter-spacing:-.012em}
+.ddbtn .cnt{font-family:var(--mono);font-size:10px;letter-spacing:.07em;
   color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ddbtn .caret{margin-left:auto;flex:none;width:6px;height:6px;
+.ddbtn .caret{margin-left:auto;flex:none;display:grid;place-items:center;
+  width:28px;height:28px;border-radius:8px;
+  transition:background 160ms var(--ease)}
+.ddbtn .caret::before{content:"";width:6px;height:6px;
   border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);
   transform:rotate(45deg) translateY(-2px);transition:transform 200ms var(--ease)}
-.ddbtn[aria-expanded="true"] .caret{transform:rotate(-135deg) translateY(1px)}
+.ddbtn:hover .caret{background:var(--card)}
+.ddbtn[aria-expanded="true"] .caret::before{transform:rotate(-135deg) translateY(1px)}
 
 .ddmenu{position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:40;
   background:var(--card);border:1px solid var(--edge);border-radius:13px;padding:6px;
@@ -1274,7 +1304,6 @@ async function loadCorpus() {
   $("#chips").innerHTML = groups.map(g => `
     <div class="grp${g.adversarial ? " adv" : ""}">
       <span class="k">${esc(g.label)}</span>
-      ${g.adversarial ? `<span class="e">not in these documents</span>` : ""}
     </div>
     ${g.items.map(x => `<button class="chip" type="button"
         data-q="${esc(x.q)}">${esc(x.q)}</button>`).join("")}`).join("");
