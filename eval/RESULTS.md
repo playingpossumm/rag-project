@@ -1,39 +1,68 @@
 # Retrieval evaluation results
 
-> **Figures copied from [`results.json`](results.json), written by
-> `src/evaluate.py`.** If this file disagrees with that one, this file is stale.
-> It was stale: it claimed 20 papers and 2,768 chunks long after the corpus
-> reached 36 and 5,459, because `results.json` declared a
-> `corpus` key and never filled it. It fills it now.
+> **The tables below are generated from [`results.json`](results.json)** by
+> `src/build_results_doc.py`. The prose is not: analysis is judgement and cannot
+> be derived from a JSON file.
+>
+> It used to say figures were copied from results.json while nothing copied
+> them. They were typed, and they went stale the way typed numbers do -- this
+> file claimed 20 papers and 2,768 chunks long after the corpus reached 36 and
+> 5,459. `python src/build_results_doc.py --check` now fails when it drifts.
 
-**Corpus:** 36 arXiv ML/NLP papers -> 5,459 chunks (210 tokens, 40 overlap).
-**Golden set:** 66 answerable (30 multi-source) + 18 adversarial, labels *derived*
-from answer strings against the current corpus rather than hand-written.
+<!-- generated:corpus -->
+**Corpus:** 36 documents -> 5,459 chunks (210 tokens, 40 overlap).
+**Golden set:** 67 answerable + 17 adversarial, labels *derived* from answer strings against the current corpus rather than hand-written.
+**Retrieved:** k=5 from 20 candidates.
 **Reproduce:** `python src/evaluate.py`
+<!-- /generated:corpus -->
 
 ## Headline
 
+<!-- generated:end-to-end -->
 | pipeline | any-hit@5 | MRR | NDCG | src recall |
 |---|---|---|---|---|
-| dense only, no rerank *(naive RAG)* | 0.788 | 0.601 | 0.645 | 0.704 |
-| + cross-encoder rerank | 0.788 | 0.710 | 0.715 | 0.711 |
-| + RRF hybrid fusion | 0.864 | 0.757 | 0.766 | 0.742 |
-| **+ diversity cap 2/src** *(shipped)* | 0.848 | 0.754 | 0.769 | 0.773 |
-| + diversity cap 1/src | 0.818 | 0.742 | 0.753 | 0.817 |
+| dense, no rerank | 0.791 | 0.581 | 0.629 | 0.664 |
+| dense + rerank | 0.791 | 0.688 | 0.698 | 0.700 |
+| weighted + rerank | 0.866 | 0.737 | 0.753 | 0.724 |
+| rrf + rerank | 0.866 | 0.741 | 0.754 | 0.724 |
+| + diversity 2/src | 0.851 | 0.738 | 0.754 | 0.760 |
+| + diversity 1/src | 0.776 | 0.708 | 0.719 | 0.805 |
+<!-- /generated:end-to-end -->
 
-Against naive RAG the shipped pipeline improves any-hit by **+6.0 points** and
-MRR by **+15.3**.
+Each row adds one stage to the row above it. `+ diversity cap 2/src` is what
+ships.
+
+## The candidate pool, before any reranking
+
+What the first stage hands the cross-encoder. The reranker can only reorder what
+it is given, so a pool that never contains the answer is a ceiling nothing
+downstream can lift.
+
+<!-- generated:candidate-pool -->
+| first stage | any-hit@5 | MRR | src recall |
+|---|---|---|---|
+| dense | 0.866 | 0.588 | 0.834 |
+| rrf | 0.925 | 0.696 | 0.812 |
+| weighted a=0.3 | 0.940 | 0.717 | 0.813 |
+| weighted a=0.5 | 0.940 | 0.710 | 0.810 |
+| weighted a=0.7 | 0.940 | 0.656 | 0.820 |
+<!-- /generated:candidate-pool -->
+
+Fusion is what is judged here. Sparse-only is a reference point, not a candidate
+configuration.
 
 ## The diversity cap is a trade, not a free win
 
 An earlier 23-case golden set showed the cap costing nothing. With 66 cases it
 plainly does:
 
-| cap | any-hit | src recall | trade |
+<!-- generated:diversity-cap -->
+| cap | any-hit | src recall | trade vs no cap |
 |---|---|---|---|
-| none | 0.864 | 0.742 | — |
-| 2/src | 0.848 | 0.773 | +3.1 src recall for −1.6 any-hit |
-| 1/src | 0.818 | 0.817 | +7.5 src recall for −4.6 any-hit |
+| none | 0.866 | 0.724 | — |
+| 2/src | 0.851 | 0.760 | +3.6 src recall for -1.5 any-hit |
+| 1/src | 0.776 | 0.805 | +8.1 src recall for -9.0 any-hit |
+<!-- /generated:diversity-cap -->
 
 When a question is answered by only one document, capping that document pushes a
 relevant passage out for an irrelevant one. 2/src ships: most of the breadth for
@@ -356,6 +385,14 @@ now.
 
 ## Context expansion
 
+<!-- generated:expansion -->
+| expansion | context recall | tokens/query | blocks/query |
+|---|---|---|---|
+| none (chunks) | 0.746 | 998 | 5.000 |
+| window +/-1 | 0.806 | 2,355 | 5.000 |
+| page | 0.851 | 4,752 | 4.500 |
+<!-- /generated:expansion -->
+
 | mode | context recall | tokens/query | recall per 1k tokens |
 |---|---|---|---|
 | none (chunks) | 0.742 | 997 | 0.744 |
@@ -368,6 +405,24 @@ the 106 points page gains, for less than half the context. Window is now the
 default; page remains right where a citation must point at a complete unit.
 
 ## Abstention
+
+<!-- generated:abstention -->
+| threshold | adversarial caught | answerable wrongly refused |
+|---|---|---|
+| -10 | 0 / 17 | 0 / 67 |
+| -8 | 1 / 17 | 0 / 67 |
+| -6 | 1 / 17 | 0 / 67 |
+| -5 | 1 / 17 | 0 / 67 |
+| -4 | 5 / 17 | 0 / 67 |
+| -3 | 5 / 17 | 1 / 67 |
+| -2 | 5 / 17 | 1 / 67 |
+| -1 | 7 / 17 | 1 / 67 |
+| +0 | 9 / 17 | 1 / 67 |
+| +1 | 12 / 17 | 4 / 67 |
+| +2 | 13 / 17 | 5 / 67 |
+
+Shipped threshold: **+0.0**. Answerable questions score a median of +4.93.
+<!-- /generated:abstention -->
 
 | population | n | min | median | max |
 |---|---|---|---|---|

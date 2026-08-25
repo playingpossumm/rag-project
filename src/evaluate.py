@@ -179,9 +179,22 @@ def main():
     ap.add_argument("--golden", type=Path, default=GOLDEN_SET,
                     help="golden set to score against")
     ap.add_argument("--per-case", action="store_true")
-    ap.add_argument("--emit", type=Path, default=Path(__file__).parent.parent / "eval" / "results.json",
-                    help="write machine-readable results here (default: eval/results.json)")
+    ap.add_argument("--emit", type=Path, default=None,
+                    help="write machine-readable results here "
+                         "(default: derived from --golden, so each corpus keeps "
+                         "its own file)")
     args = ap.parse_args()
+
+    # Every corpus used to write eval/results.json, so whichever ran last owned
+    # it. Running the bird evaluation left results.json describing 45 Wikipedia
+    # documents while eval/RESULTS.md, which says its figures are copied from
+    # that file, described 36 arXiv papers. Nothing errored; the two just
+    # silently disagreed about which corpus they were about.
+    if args.emit is None:
+        stem = args.golden.stem                      # golden_set / golden-birds
+        suffix = "" if stem in ("golden_set", "golden") else stem.split("-", 1)[-1]
+        name = "results.json" if not suffix else f"results-{suffix}.json"
+        args.emit = Path(__file__).parent.parent / "eval" / name
 
     # Every reported figure is collected here and written out at the end.
     # Documentation quoting these numbers has drifted before -- the README once

@@ -56,6 +56,12 @@ CASES = [
      "where pos is the position", "fact"),
     ("pos-enc-why", "Why does a model with no recurrence and no convolution need positional encodings?",
      "no recurrence and no convolution", "fact"),
+    # Was adversarial, on the grounds that no mixture-of-experts paper was in
+    # the corpus. One arrived when the corpus grew from 20 documents to 36, and
+    # it discusses exactly this. Verified by reading the retrieved passage, not
+    # by trusting the score: it scores +6.85 and it genuinely answers.
+    ("moe-routing", "What load balancing loss is used for expert routing?",
+     "auxiliary-loss-free load balancing", "fact"),
     ("path-length", "How does the maximum path length between positions compare for self-attention and recurrent layers?",
      "Maximum Path Length", "fact"),
     ("bleu-ende", "Which model achieved 28.4 BLEU on WMT 2014 English-to-German?",
@@ -138,12 +144,19 @@ CASES = [
     ("ln-stats", "How are normalization statistics computed across features rather than examples?", "layer normalization", "cross-doc"),
     # ---- LoRA ----
     ("lora-latency", "Does the adaptation method add inference latency?", "no additional inference latency", "fact"),
-    ("lora-frozen", "Are the pretrained weights updated during adaptation?", "frozen", "multi"),
+    # "frozen" alone matched 37 locations across 8 documents -- every paper
+    # that freezes anything. The gold set was inflated to the point where the
+    # question could be "hit" by retrieving almost any adaptation paper.
+    ("lora-frozen", "Are the pretrained weights updated during adaptation?",
+     "keeping the pre-trained weights frozen", "multi"),
     # ---- RAG ----
     ("rag-parametric", "How are parametric and non-parametric memory combined?", "non-parametric", "cross-doc"),
     ("rag-marginalize", "How are retrieved documents marginalized during generation?", "marginaliz", "cross-doc"),
     # ---- ResNet ----
-    ("resnet-degradation", "What happens to accuracy when plain networks get deeper?", "degradation", "fact"),
+    # "degradation" matched 26 locations across 12 documents, most of them
+    # using the word in an unrelated sense.
+    ("resnet-degradation", "What happens to accuracy when plain networks get deeper?",
+     "accuracy gets saturated", "fact"),
     ("resnet-shortcut", "What connections allow gradients to flow through very deep networks?", "shortcut connections", "fact"),
     ("resnet-152", "How deep is the deepest network evaluated on ImageNet?", "152", "fact"),
     # ---- RoBERTa ----
@@ -200,8 +213,6 @@ ADVERSARIAL = [
     # produce a threshold that collapses on the first realistic hard question.
     ("adv-flash", "How does flash attention reduce memory reads and writes?",
      "absent", "FlashAttention postdates every paper here"),
-    ("adv-moe-routing", "What load balancing loss is used for expert routing?",
-     "absent", "no mixture-of-experts paper in the corpus"),
     ("adv-quantize-4bit", "How is the model quantized to 4-bit precision?",
      "absent", "quantization to 4 bits is never discussed"),
     ("adv-inference-cost", "What is the cost per thousand inference requests?",

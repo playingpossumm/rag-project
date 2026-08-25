@@ -168,6 +168,20 @@ def main() -> int:
         check("title / still joins the wrapped half", "Must Preserve" in got)
         check("title / does not absorb an author heading", "Mantu" not in got)
 
+        # A title ending on a dangling word earns a longer continuation than
+        # one whose only evidence is position. Seven words was being refused by
+        # a flat cap of five, which left the last truncated title in the index.
+        got = _rejoin_wrapped(
+            "Communicating Credit Risk with Large Language Models: Evaluation of",
+            ["", "", "## Explanations from Standard and Alternative Data-Based Models",
+             "", "Sahab Zandi[a], Noah Kostesku[b]"], 2)
+        check("title / a dangling word earns a longer continuation",
+              got.endswith("Data-Based Models"))
+        check("title / the weak path keeps the tight cap",
+              _rejoin_wrapped("Some Paper Title",
+                              ["", "## Model Architecture Design Choices Here", ""], 2)
+              == "Some Paper Title")
+
         # ...while a real second half that happens to have an affiliation below
         # it is still joined. Keying the rejection on affiliation words rather
         # than an address would have broken this one.
