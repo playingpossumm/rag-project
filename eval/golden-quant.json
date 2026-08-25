@@ -4,91 +4,6 @@
   "note": "Gold locations are DERIVED from answer strings against the current corpus, not hand-labelled, so labels cannot drift out of step with the documents. Multi-source falls out naturally: every location containing the answer is gold, matching the requirement to compile all relevant sources rather than pick one. Regenerate after any corpus change by re-running the generator.",
   "cases": [
     {
-      "id": "qf-realized-vol",
-      "question": "How is volatility estimated from high-frequency intraday price data?",
-      "kind": "multi",
-      "answer_contains": "realized volatility",
-      "gold": [
-        {
-          "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
-          "kind": "page",
-          "pages": [
-            7
-          ]
-        },
-        {
-          "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
-          "kind": "page",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
-          "kind": "page",
-          "pages": [
-            2
-          ]
-        },
-        {
-          "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-          "kind": "page",
-          "pages": [
-            6
-          ]
-        },
-        {
-          "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
-          "kind": "page",
-          "pages": [
-            2,
-            4
-          ]
-        },
-        {
-          "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-          "kind": "page",
-          "pages": [
-            5,
-            6,
-            9,
-            12,
-            13,
-            15,
-            31
-          ]
-        },
-        {
-          "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
-          "kind": "page",
-          "pages": [
-            44
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-vol-clustering",
-      "question": "What describes the tendency of large price moves to be followed by more large moves?",
-      "kind": "fact",
-      "answer_contains": "volatility clustering",
-      "gold": [
-        {
-          "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            3,
-            7,
-            9,
-            12
-          ]
-        }
-      ],
-      "multi_source": false
-    },
-    {
       "id": "qf-garch",
       "question": "Which model family captures time-varying conditional variance in returns?",
       "kind": "multi",
@@ -153,119 +68,20 @@
       "multi_source": true
     },
     {
-      "id": "qf-stochastic-vol",
-      "question": "Which class of models treats variance itself as a random process?",
-      "kind": "cross-doc",
-      "answer_contains": "stochastic volatility",
-      "gold": [
-        {
-          "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
-          "kind": "page",
-          "pages": [
-            2,
-            39,
-            42
-          ]
-        },
-        {
-          "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-          "kind": "page",
-          "pages": [
-            31
-          ]
-        },
-        {
-          "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
-          "kind": "page",
-          "pages": [
-            8
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
       "id": "qf-var",
       "question": "Which risk measure reports the loss threshold exceeded with a given probability?",
       "kind": "multi",
-      "answer_contains": "value at risk",
+      "answer_contains": "smallest loss threshold",
       "gold": [
-        {
-          "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
-          "kind": "page",
-          "pages": [
-            1
-          ]
-        },
-        {
-          "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
-          "kind": "page",
-          "pages": [
-            5
-          ]
-        },
         {
           "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
           "kind": "page",
           "pages": [
-            36
-          ]
-        },
-        {
-          "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
-          "kind": "page",
-          "pages": [
-            34
-          ]
-        },
-        {
-          "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
-          "kind": "page",
-          "pages": [
-            4
+            3
           ]
         }
       ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-expected-shortfall",
-      "question": "Which coherent risk measure averages the losses beyond a quantile?",
-      "kind": "cross-doc",
-      "answer_contains": "expected shortfall",
-      "gold": [
-        {
-          "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            13
-          ]
-        },
-        {
-          "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            34
-          ]
-        },
-        {
-          "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
-          "kind": "page",
-          "pages": [
-            2
-          ]
-        },
-        {
-          "source": "simulating_stress_laws_under_extremal_dependence_character.pdf",
-          "kind": "page",
-          "pages": [
-            24
-          ]
-        }
-      ],
-      "multi_source": true
+      "multi_source": false
     },
     {
       "id": "qf-max-drawdown",
@@ -359,22 +175,6 @@
       "multi_source": true
     },
     {
-      "id": "qf-information-ratio",
-      "question": "Which ratio measures active return per unit of tracking error?",
-      "kind": "fact",
-      "answer_contains": "information ratio",
-      "gold": [
-        {
-          "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
-          "kind": "page",
-          "pages": [
-            4
-          ]
-        }
-      ],
-      "multi_source": false
-    },
-    {
       "id": "qf-mean-variance",
       "question": "Which framework trades expected return against portfolio variance?",
       "kind": "cross-doc",
@@ -405,30 +205,6 @@
             2,
             7,
             9
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-efficient-frontier",
-      "question": "What is the set of portfolios with the best return for each level of risk called?",
-      "kind": "fact",
-      "answer_contains": "efficient frontier",
-      "gold": [
-        {
-          "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-          "kind": "page",
-          "pages": [
-            18,
-            19
-          ]
-        },
-        {
-          "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
-          "kind": "page",
-          "pages": [
-            43
           ]
         }
       ],
@@ -516,138 +292,6 @@
       "multi_source": true
     },
     {
-      "id": "qf-capm",
-      "question": "Which model prices an asset by its sensitivity to the market portfolio?",
-      "kind": "fact",
-      "answer_contains": "CAPM",
-      "gold": [
-        {
-          "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
-          "kind": "page",
-          "pages": [
-            44
-          ]
-        }
-      ],
-      "multi_source": false
-    },
-    {
-      "id": "qf-factor-model",
-      "question": "Which approach explains returns through exposure to common drivers?",
-      "kind": "cross-doc",
-      "answer_contains": "factor model",
-      "gold": [
-        {
-          "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
-          "kind": "page",
-          "pages": [
-            3
-          ]
-        },
-        {
-          "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            2
-          ]
-        },
-        {
-          "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
-          "kind": "page",
-          "pages": [
-            25
-          ]
-        },
-        {
-          "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
-          "kind": "page",
-          "pages": [
-            46
-          ]
-        },
-        {
-          "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-          "kind": "page",
-          "pages": [
-            28
-          ]
-        },
-        {
-          "source": "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
-          "kind": "page",
-          "pages": [
-            56
-          ]
-        },
-        {
-          "source": "simulating_stress_laws_under_extremal_dependence_character.pdf",
-          "kind": "page",
-          "pages": [
-            9
-          ]
-        },
-        {
-          "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-          "kind": "page",
-          "pages": [
-            1
-          ]
-        },
-        {
-          "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
-          "kind": "page",
-          "pages": [
-            6
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-risk-premium",
-      "question": "What is the excess return investors demand for bearing risk called?",
-      "kind": "multi",
-      "answer_contains": "risk premium",
-      "gold": [
-        {
-          "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
-          "kind": "page",
-          "pages": [
-            3
-          ]
-        },
-        {
-          "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
-          "kind": "page",
-          "pages": [
-            2
-          ]
-        },
-        {
-          "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
-          "kind": "page",
-          "pages": [
-            10
-          ]
-        },
-        {
-          "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            2,
-            3,
-            5,
-            25,
-            26,
-            31
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
       "id": "qf-lob",
       "question": "Which data structure records outstanding buy and sell orders at each price?",
       "kind": "multi",
@@ -683,72 +327,6 @@
             22,
             24,
             29
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-bid-ask",
-      "question": "What is the gap between the best buy and best sell quote called?",
-      "kind": "fact",
-      "answer_contains": "bid-ask spread",
-      "gold": [
-        {
-          "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
-          "kind": "page",
-          "pages": [
-            16
-          ]
-        },
-        {
-          "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-          "kind": "page",
-          "pages": [
-            1
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-market-impact",
-      "question": "What is the adverse price movement caused by executing a large order called?",
-      "kind": "multi",
-      "answer_contains": "market impact",
-      "gold": [
-        {
-          "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
-          "kind": "page",
-          "pages": [
-            5,
-            7
-          ]
-        },
-        {
-          "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
-          "kind": "page",
-          "pages": [
-            35
-          ]
-        },
-        {
-          "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-          "kind": "page",
-          "pages": [
-            22
-          ]
-        },
-        {
-          "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            2,
-            4,
-            26,
-            47,
-            48
           ]
         }
       ],
@@ -941,271 +519,35 @@
     },
     {
       "id": "qf-transaction-costs",
-      "question": "What erodes a strategy's paper returns once it is actually executed?",
+      "question": "What does the fixed rebalancing cost represent in the liquidity-provision model?",
       "kind": "multi",
-      "answer_contains": "transaction costs",
+      "answer_contains": "gas cost paid for interacting with the blockchain",
       "gold": [
-        {
-          "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
-          "kind": "page",
-          "pages": [
-            7
-          ]
-        },
         {
           "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
           "kind": "page",
           "pages": [
             2
           ]
-        },
-        {
-          "source": "conservation_of_short_term_flows_signed_optimal_transport.pdf",
-          "kind": "page",
-          "pages": [
-            9
-          ]
-        },
-        {
-          "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
-          "kind": "page",
-          "pages": [
-            34,
-            35
-          ]
-        },
-        {
-          "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
-          "kind": "page",
-          "pages": [
-            18,
-            19,
-            22,
-            23,
-            24
-          ]
-        },
-        {
-          "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            2,
-            6,
-            7,
-            14,
-            17
-          ]
-        },
-        {
-          "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-          "kind": "page",
-          "pages": [
-            29
-          ]
-        },
-        {
-          "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-          "kind": "page",
-          "pages": [
-            5,
-            6,
-            11
-          ]
-        },
-        {
-          "source": "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
-          "kind": "page",
-          "pages": [
-            2,
-            29,
-            30
-          ]
-        },
-        {
-          "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
-          "kind": "page",
-          "pages": [
-            48
-          ]
-        },
-        {
-          "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
-          "kind": "page",
-          "pages": [
-            12,
-            38
-          ]
-        },
-        {
-          "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-          "kind": "page",
-          "pages": [
-            22,
-            29
-          ]
         }
       ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-slippage",
-      "question": "What is the difference between an expected fill price and the achieved one called?",
-      "kind": "fact",
-      "answer_contains": "slippage",
-      "gold": [
-        {
-          "source": "a_generic_nonparametric_value_at_risk_estimator_for_high_d.pdf",
-          "kind": "page",
-          "pages": [
-            7
-          ]
-        },
-        {
-          "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
-          "kind": "page",
-          "pages": [
-            5,
-            17
-          ]
-        }
-      ],
-      "multi_source": true
+      "multi_source": false
     },
     {
       "id": "qf-backtest",
-      "question": "What is the simulation of a strategy over historical data called?",
+      "question": "Why does the controller act only occasionally rather than continuously?",
       "kind": "multi",
-      "answer_contains": "backtest",
+      "answer_contains": "takes actions occasionally (interventions) because of the transaction costs",
       "gold": [
         {
-          "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
-          "kind": "page",
-          "pages": [
-            7,
-            30,
-            32,
-            58,
-            59
-          ]
-        },
-        {
-          "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
-          "kind": "page",
-          "pages": [
-            8
-          ]
-        },
-        {
-          "source": "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
-          "kind": "page",
-          "pages": [
-            20
-          ]
-        },
-        {
-          "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
-          "kind": "page",
-          "pages": [
-            3,
-            18,
-            19,
-            21,
-            24
-          ]
-        },
-        {
-          "source": "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
-          "kind": "page",
-          "pages": [
-            1
-          ]
-        },
-        {
-          "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
-          "kind": "page",
-          "pages": [
-            4,
-            5,
-            7,
-            8,
-            10,
-            11,
-            16,
-            17
-          ]
-        },
-        {
-          "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+          "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
           "kind": "page",
           "pages": [
             2
           ]
-        },
-        {
-          "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-          "kind": "page",
-          "pages": [
-            25
-          ]
-        },
-        {
-          "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-          "kind": "page",
-          "pages": [
-            20,
-            22
-          ]
-        },
-        {
-          "source": "the_triadic_stress_index_in_financial_markets.pdf",
-          "kind": "page",
-          "pages": [
-            20
-          ]
         }
       ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-overfitting",
-      "question": "What failure occurs when a strategy is tuned until it fits historical noise?",
-      "kind": "cross-doc",
-      "answer_contains": "overfitting",
-      "gold": [
-        {
-          "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
-          "kind": "page",
-          "pages": [
-            2,
-            11,
-            16,
-            32
-          ]
-        },
-        {
-          "source": "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
-          "kind": "page",
-          "pages": [
-            1
-          ]
-        },
-        {
-          "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-          "kind": "page",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
-          "kind": "page",
-          "pages": [
-            23
-          ]
-        }
-      ],
-      "multi_source": true
+      "multi_source": false
     },
     {
       "id": "qf-heavy-tails",
@@ -1300,53 +642,6 @@
             24,
             25,
             26
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-tail-dependence",
-      "question": "What measures the tendency of assets to crash together?",
-      "kind": "fact",
-      "answer_contains": "tail dependence",
-      "gold": [
-        {
-          "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
-          "kind": "page",
-          "pages": [
-            17
-          ]
-        },
-        {
-          "source": "simulating_stress_laws_under_extremal_dependence_character.pdf",
-          "kind": "page",
-          "pages": [
-            30
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "qf-regime-switching",
-      "question": "Which models let parameters change between distinct market states?",
-      "kind": "fact",
-      "answer_contains": "regime switching",
-      "gold": [
-        {
-          "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
-          "kind": "page",
-          "pages": [
-            42,
-            43
-          ]
-        },
-        {
-          "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
-          "kind": "page",
-          "pages": [
-            8
           ]
         }
       ],
@@ -1540,6 +835,249 @@
         }
       ],
       "multi_source": true
+    },
+    {
+      "id": "qf-quant-4bit",
+      "question": "At what precision does activation calibration become the main determinant of performance?",
+      "kind": "fact",
+      "answer_contains": "primary determinant of predictive performance at 4 bits",
+      "gold": [
+        {
+          "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
+          "kind": "page",
+          "pages": [
+            1
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-sparse-params",
+      "question": "By how much does the dependence-informed architecture cut parameter count at matched width?",
+      "kind": "fact",
+      "answer_contains": "parameter count by a factor of 80",
+      "gold": [
+        {
+          "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+          "kind": "page",
+          "pages": [
+            2
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-structural-calibration",
+      "question": "How does the structural model compare with the market on calibration slope?",
+      "kind": "fact",
+      "answer_contains": "calibration slope 0.995 versus 1.103",
+      "gold": [
+        {
+          "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+          "kind": "page",
+          "pages": [
+            1
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-aml-fusion",
+      "question": "What did fusing data sources do to alert volume and recall in the money-laundering study?",
+      "kind": "fact",
+      "answer_contains": "reduces alert volume without adding recall",
+      "gold": [
+        {
+          "source": "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
+          "kind": "page",
+          "pages": [
+            3
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-news-taxonomy",
+      "question": "How many news tags does the news-pricing taxonomy define?",
+      "kind": "fact",
+      "answer_contains": "taxonomy of 17 news tags",
+      "gold": [
+        {
+          "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
+          "kind": "page",
+          "pages": [
+            1
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-whale-attack",
+      "question": "What happens to whale rewards once a detectability threshold is introduced?",
+      "kind": "fact",
+      "answer_contains": "strictly less reward for whales",
+      "gold": [
+        {
+          "source": "a_contribution_to_the_critique_of_blockchain_censorship.pdf",
+          "kind": "page",
+          "pages": [
+            1
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-degeneracy",
+      "question": "What is the failure called where calibration activates mappings without improving results?",
+      "kind": "fact",
+      "answer_contains": "calibration-induced degeneracy",
+      "gold": [
+        {
+          "source": "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
+          "kind": "page",
+          "pages": [
+            1,
+            5
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-credit-stakeholders",
+      "question": "Do professional and non-professional stakeholders judge credit explanations the same way?",
+      "kind": "fact",
+      "answer_contains": "apply different acceptance criteria",
+      "gold": [
+        {
+          "source": "communicating_credit_risk_with_large_language_models_evalu.pdf",
+          "kind": "page",
+          "pages": [
+            3
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-liquidity-policy",
+      "question": "What does the learned liquidity-provision policy allocate according to?",
+      "kind": "multi",
+      "answer_contains": "allocating liquidity according to mispricing",
+      "gold": [
+        {
+          "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+          "kind": "page",
+          "pages": [
+            1
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-cvar-interval",
+      "question": "Can the CVaR threshold be restricted to a bounded range?",
+      "kind": "fact",
+      "answer_contains": "restricted to a common compact interval",
+      "gold": [
+        {
+          "source": "dynamic_portfolio_optimization_under_cvar_constraints.pdf",
+          "kind": "page",
+          "pages": [
+            2
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-verifiability-gap",
+      "question": "What is the shortfall between demanded verification and retained explainability called?",
+      "kind": "fact",
+      "answer_contains": "positive shortfall between the verification demanded",
+      "gold": [
+        {
+          "source": "governing_agentic_ai_in_fintech.pdf",
+          "kind": "page",
+          "pages": [
+            1,
+            43
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-social-disclosure",
+      "question": "What happens to firm risk on a first-time social disclosure through SEC filings?",
+      "kind": "fact",
+      "answer_contains": "increased idiosyncratic firm risk",
+      "gold": [
+        {
+          "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
+          "kind": "page",
+          "pages": [
+            2
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-market-making-rl",
+      "question": "What does the reinforcement-learning market-making algorithm try to maximise?",
+      "kind": "fact",
+      "answer_contains": "maximize trading revenue by dynamically submitting",
+      "gold": [
+        {
+          "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+          "kind": "page",
+          "pages": [
+            1
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-photonic-sharpe",
+      "question": "What peak Sharpe ratio does the photonic approach report?",
+      "kind": "fact",
+      "answer_contains": "peak Sharpe ratio of 0.76",
+      "gold": [
+        {
+          "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+          "kind": "page",
+          "pages": [
+            1,
+            25
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "qf-bvar-probabilistic",
+      "question": "What does combining BVAR with machine learning make possible?",
+      "kind": "fact",
+      "answer_contains": "probabilistic forecasts instead of singlepoint",
+      "gold": [
+        {
+          "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+          "kind": "page",
+          "pages": [
+            2
+          ]
+        }
+      ],
+      "multi_source": false
     },
     {
       "id": "adv-qf-syrinx",
