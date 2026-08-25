@@ -14,18 +14,18 @@
  },
  "totals": {
   "answerable": {
-   "n": 66,
-   "hit_rate": 0.8485,
-   "mrr": 0.7492,
-   "ndcg": 0.7608,
-   "src_recall": 0.7381,
+   "n": 67,
+   "hit_rate": 0.8507,
+   "mrr": 0.7381,
+   "ndcg": 0.7539,
+   "src_recall": 0.76,
    "refused_wrongly": 1,
    "missed": 10
   },
   "adversarial": {
-   "n": 18,
+   "n": 17,
    "refused": 9,
-   "answered_anyway": 9
+   "answered_anyway": 8
   }
  },
  "cases": [
@@ -296,6 +296,60 @@
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 0.8503,
+   "src_recall": 1.0,
+   "context_recall": 1.0
+  },
+  {
+   "id": "moe-routing",
+   "kind": "fact",
+   "question": "What load balancing loss is used for expert routing?",
+   "unanswerable": false,
+   "gold_sources": [
+    "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf"
+   ],
+   "confidence": 6.851,
+   "abstained": false,
+   "outcome": "found",
+   "results": [
+    {
+     "rank": 1,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 17",
+     "score": 6.8515,
+     "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 17",
+     "score": 3.7066,
+     "relevant": true
+    },
+    {
+     "rank": 3,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 18",
+     "score": 2.2783,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 8",
+     "score": -8.3559,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "batch_normalization.pdf",
+     "locator": "page 1",
+     "score": -10.767,
+     "relevant": false
+    }
+   ],
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -2594,14 +2648,7 @@
    "question": "Are the pretrained weights updated during adaptation?",
    "unanswerable": false,
    "gold_sources": [
-    "batch_normalization.pdf",
-    "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
-    "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
-    "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
-    "lora.pdf",
-    "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
-    "rag.pdf",
-    "vision_transformer.pdf"
+    "lora.pdf"
    ],
    "confidence": 5.455,
    "abstained": false,
@@ -2612,7 +2659,7 @@
      "source": "lora.pdf",
      "locator": "page 5",
      "score": 5.4555,
-     "relevant": true
+     "relevant": false
     },
     {
      "rank": 2,
@@ -2644,9 +2691,9 @@
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 1.0,
-   "ndcg": 1.0,
-   "src_recall": 0.4,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
    "context_recall": 0.0
   },
   {
@@ -2763,18 +2810,7 @@
    "question": "What happens to accuracy when plain networks get deeper?",
    "unanswerable": false,
    "gold_sources": [
-    "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
-    "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
-    "dense_passage_retrieval.pdf",
-    "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
-    "healmed_multilingual_evaluation_of_large_language_models_i.pdf",
-    "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
-    "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
-    "resnet.pdf",
-    "roberta.pdf",
-    "seq2seq.pdf",
-    "t5.pdf",
-    "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf"
+    "resnet.pdf"
    ],
    "confidence": 3.755,
    "abstained": false,
@@ -2785,7 +2821,7 @@
      "source": "resnet.pdf",
      "locator": "page 5",
      "score": 3.7546,
-     "relevant": true
+     "relevant": false
     },
     {
      "rank": 2,
@@ -2806,7 +2842,7 @@
      "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
      "locator": "page 3",
      "score": -8.943,
-     "relevant": true
+     "relevant": false
     },
     {
      "rank": 5,
@@ -2817,9 +2853,9 @@
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 1.0,
-   "ndcg": 0.9675,
-   "src_recall": 0.4,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
+   "src_recall": 1.0,
    "context_recall": 0.0
   },
   {
@@ -4216,53 +4252,6 @@
      "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
      "locator": "page 4",
      "score": -7.8575,
-     "relevant": false
-    }
-   ]
-  },
-  {
-   "id": "adv-moe-routing",
-   "kind": "absent",
-   "question": "What load balancing loss is used for expert routing?",
-   "unanswerable": true,
-   "gold_sources": [],
-   "confidence": 6.851,
-   "abstained": false,
-   "outcome": "answered_anyway",
-   "results": [
-    {
-     "rank": 1,
-     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
-     "locator": "page 17",
-     "score": 6.8515,
-     "relevant": false
-    },
-    {
-     "rank": 2,
-     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
-     "locator": "page 17",
-     "score": 3.7066,
-     "relevant": false
-    },
-    {
-     "rank": 3,
-     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
-     "locator": "page 18",
-     "score": 2.2783,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "gpt3.pdf",
-     "locator": "page 8",
-     "score": -8.3559,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "batch_normalization.pdf",
-     "locator": "page 1",
-     "score": -10.767,
      "relevant": false
     }
    ]

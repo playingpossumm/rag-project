@@ -11,80 +11,80 @@
    },
    "threshold": 0.0,
    "calibrated": true,
-   "n_answerable": 66,
-   "n_adversarial": 18,
+   "n_answerable": 67,
+   "n_adversarial": 17,
    "ladder": [
     {
      "config": "dense, no rerank",
-     "hit_rate": 0.803,
-     "mrr": 0.589,
-     "ndcg": 0.64,
-     "src_recall": 0.641
+     "hit_rate": 0.791,
+     "mrr": 0.581,
+     "ndcg": 0.629,
+     "src_recall": 0.664
     },
     {
      "config": "dense + rerank",
-     "hit_rate": 0.803,
-     "mrr": 0.706,
-     "ndcg": 0.713,
-     "src_recall": 0.671
+     "hit_rate": 0.791,
+     "mrr": 0.688,
+     "ndcg": 0.698,
+     "src_recall": 0.7
     },
     {
      "config": "rrf + rerank",
-     "hit_rate": 0.864,
-     "mrr": 0.752,
-     "ndcg": 0.761,
-     "src_recall": 0.695
+     "hit_rate": 0.866,
+     "mrr": 0.741,
+     "ndcg": 0.754,
+     "src_recall": 0.724
     },
     {
      "config": "+ diversity 2/src",
-     "hit_rate": 0.848,
-     "mrr": 0.749,
-     "ndcg": 0.761,
-     "src_recall": 0.738
+     "hit_rate": 0.851,
+     "mrr": 0.738,
+     "ndcg": 0.754,
+     "src_recall": 0.76
     },
     {
      "config": "+ diversity 1/src",
-     "hit_rate": 0.803,
-     "mrr": 0.734,
-     "ndcg": 0.743,
-     "src_recall": 0.787
+     "hit_rate": 0.776,
+     "mrr": 0.708,
+     "ndcg": 0.719,
+     "src_recall": 0.805
     }
    ],
    "pool": [
     {
      "config": "dense",
-     "hit_rate": 0.879,
-     "mrr": 0.597,
-     "ndcg": 0.652,
-     "src_recall": 0.812
+     "hit_rate": 0.866,
+     "mrr": 0.588,
+     "ndcg": 0.64,
+     "src_recall": 0.834
     },
     {
      "config": "rrf",
-     "hit_rate": 0.924,
-     "mrr": 0.715,
-     "ndcg": 0.727,
-     "src_recall": 0.792
+     "hit_rate": 0.925,
+     "mrr": 0.696,
+     "ndcg": 0.717,
+     "src_recall": 0.812
     },
     {
      "config": "weighted a=0.3",
-     "hit_rate": 0.939,
-     "mrr": 0.725,
-     "ndcg": 0.738,
-     "src_recall": 0.792
+     "hit_rate": 0.94,
+     "mrr": 0.717,
+     "ndcg": 0.733,
+     "src_recall": 0.813
     },
     {
      "config": "weighted a=0.5",
-     "hit_rate": 0.939,
-     "mrr": 0.718,
-     "ndcg": 0.727,
-     "src_recall": 0.79
+     "hit_rate": 0.94,
+     "mrr": 0.71,
+     "ndcg": 0.722,
+     "src_recall": 0.81
     },
     {
      "config": "weighted a=0.7",
-     "hit_rate": 0.939,
-     "mrr": 0.666,
-     "ndcg": 0.699,
-     "src_recall": 0.799
+     "hit_rate": 0.94,
+     "mrr": 0.656,
+     "ndcg": 0.692,
+     "src_recall": 0.82
     }
    ],
    "dist": {
@@ -143,6 +143,7 @@
      6.395,
      6.539,
      6.642,
+     6.851,
      7.002,
      7.074,
      7.128,
@@ -173,12 +174,11 @@
      2.264,
      2.904,
      4.216,
-     4.264,
-     6.851
+     4.264
     ]
    },
-   "median_answerable": 4.829,
-   "median_adversarial": -0.042,
+   "median_answerable": 4.934,
+   "median_adversarial": -0.177,
    "sweep": [
     {
      "t": -8.0,
@@ -314,8 +314,8 @@
     "refused": 1,
     "caught": 9
    },
-   "gold_mean": 2.67,
-   "gold_divisor": 2.3,
+   "gold_mean": 2.37,
+   "gold_divisor": 2.16,
    "examples": [
     {
      "q": "Does the adaptation method add inference latency?",
@@ -330,7 +330,7 @@
      "expect": "should be answered"
     },
     {
-     "q": "What label smoothing value was used during training?",
+     "q": "What load balancing loss is used for expert routing?",
      "label": "one figure in one place",
      "adversarial": false,
      "expect": "should be answered"
@@ -723,114 +723,114 @@
    "ladder": [
     {
      "config": "dense, no rerank",
-     "hit_rate": 0.486,
-     "mrr": 0.295,
-     "ndcg": 0.334,
-     "src_recall": 0.34
+     "hit_rate": 0.657,
+     "mrr": 0.407,
+     "ndcg": 0.464,
+     "src_recall": 0.702
     },
     {
      "config": "dense + rerank",
-     "hit_rate": 0.514,
-     "mrr": 0.39,
-     "ndcg": 0.405,
-     "src_recall": 0.31
+     "hit_rate": 0.857,
+     "mrr": 0.68,
+     "ndcg": 0.692,
+     "src_recall": 0.744
     },
     {
      "config": "rrf + rerank",
-     "hit_rate": 0.543,
-     "mrr": 0.408,
-     "ndcg": 0.427,
-     "src_recall": 0.322
+     "hit_rate": 0.886,
+     "mrr": 0.714,
+     "ndcg": 0.731,
+     "src_recall": 0.726
     },
     {
      "config": "+ diversity 2/src",
-     "hit_rate": 0.543,
-     "mrr": 0.41,
-     "ndcg": 0.437,
-     "src_recall": 0.361
+     "hit_rate": 0.886,
+     "mrr": 0.714,
+     "ndcg": 0.749,
+     "src_recall": 0.741
     },
     {
      "config": "+ diversity 1/src",
-     "hit_rate": 0.543,
-     "mrr": 0.401,
-     "ndcg": 0.435,
-     "src_recall": 0.415
+     "hit_rate": 0.886,
+     "mrr": 0.699,
+     "ndcg": 0.74,
+     "src_recall": 0.782
     }
    ],
    "pool": [
     {
      "config": "dense",
-     "hit_rate": 0.686,
-     "mrr": 0.312,
-     "ndcg": 0.378,
-     "src_recall": 0.491
+     "hit_rate": 0.914,
+     "mrr": 0.434,
+     "ndcg": 0.52,
+     "src_recall": 0.812
     },
     {
      "config": "rrf",
-     "hit_rate": 0.629,
-     "mrr": 0.314,
-     "ndcg": 0.38,
-     "src_recall": 0.51
+     "hit_rate": 0.943,
+     "mrr": 0.516,
+     "ndcg": 0.606,
+     "src_recall": 0.814
     },
     {
      "config": "weighted a=0.3",
-     "hit_rate": 0.6,
-     "mrr": 0.32,
-     "ndcg": 0.356,
-     "src_recall": 0.534
+     "hit_rate": 0.943,
+     "mrr": 0.583,
+     "ndcg": 0.634,
+     "src_recall": 0.83
     },
     {
      "config": "weighted a=0.5",
-     "hit_rate": 0.629,
-     "mrr": 0.292,
-     "ndcg": 0.362,
-     "src_recall": 0.526
+     "hit_rate": 0.943,
+     "mrr": 0.492,
+     "ndcg": 0.596,
+     "src_recall": 0.824
     },
     {
      "config": "weighted a=0.7",
-     "hit_rate": 0.657,
-     "mrr": 0.314,
-     "ndcg": 0.383,
-     "src_recall": 0.538
+     "hit_rate": 0.971,
+     "mrr": 0.475,
+     "ndcg": 0.584,
+     "src_recall": 0.835
     }
    ],
    "dist": {
     "answerable": [
      -8.61,
      -7.206,
-     -6.666,
      -6.41,
-     -5.581,
-     -4.124,
      -3.434,
      -2.304,
-     -1.655,
      -1.63,
-     -1.287,
      -1.229,
-     -1.15,
      -1.053,
-     -0.66,
      -0.619,
-     -0.479,
-     -0.381,
      -0.21,
+     -0.203,
      0.048,
-     0.078,
-     0.331,
-     0.365,
-     0.517,
-     1.033,
      1.045,
+     1.104,
      1.19,
      1.272,
      1.705,
-     1.881,
-     2.237,
+     2.344,
+     2.718,
+     2.814,
      2.914,
+     3.828,
+     4.013,
+     4.028,
+     4.258,
+     4.312,
      4.536,
+     4.556,
+     4.83,
+     4.845,
      4.886,
-     6.26
+     5.692,
+     6.113,
+     6.941,
+     7.247
     ],
     "adversarial": [
      -11.146,
@@ -841,7 +841,7 @@
      -6.101
     ]
    },
-   "median_answerable": -0.381,
+   "median_answerable": 2.344,
    "median_adversarial": -6.792,
    "sweep": [
     {
@@ -861,140 +861,140 @@
     },
     {
      "t": -6.5,
-     "refused": 3,
+     "refused": 2,
      "caught": 5
     },
     {
      "t": -6.0,
-     "refused": 4,
+     "refused": 3,
      "caught": 6
     },
     {
      "t": -5.5,
-     "refused": 5,
+     "refused": 3,
      "caught": 6
     },
     {
      "t": -5.0,
-     "refused": 5,
+     "refused": 3,
      "caught": 6
     },
     {
      "t": -4.5,
-     "refused": 5,
+     "refused": 3,
      "caught": 6
     },
     {
      "t": -4.0,
-     "refused": 6,
+     "refused": 3,
      "caught": 6
     },
     {
      "t": -3.5,
-     "refused": 6,
+     "refused": 3,
      "caught": 6
     },
     {
      "t": -3.0,
-     "refused": 7,
+     "refused": 4,
      "caught": 6
     },
     {
      "t": -2.5,
-     "refused": 7,
+     "refused": 4,
      "caught": 6
     },
     {
      "t": -2.0,
-     "refused": 8,
+     "refused": 5,
      "caught": 6
     },
     {
      "t": -1.5,
-     "refused": 10,
+     "refused": 6,
      "caught": 6
     },
     {
      "t": -1.0,
-     "refused": 14,
+     "refused": 8,
      "caught": 6
     },
     {
      "t": -0.5,
-     "refused": 16,
+     "refused": 9,
      "caught": 6
     },
     {
      "t": 0.0,
-     "refused": 19,
+     "refused": 11,
      "caught": 6
     },
     {
      "t": 0.5,
-     "refused": 23,
+     "refused": 12,
      "caught": 6
     },
     {
      "t": 1.0,
-     "refused": 24,
+     "refused": 12,
      "caught": 6
     },
     {
      "t": 1.5,
-     "refused": 28,
+     "refused": 16,
      "caught": 6
     },
     {
      "t": 2.0,
-     "refused": 30,
+     "refused": 17,
      "caught": 6
     },
     {
      "t": 2.5,
-     "refused": 31,
+     "refused": 18,
      "caught": 6
     },
     {
      "t": 3.0,
-     "refused": 32,
+     "refused": 21,
      "caught": 6
     },
     {
      "t": 3.5,
-     "refused": 32,
+     "refused": 21,
      "caught": 6
     },
     {
      "t": 4.0,
-     "refused": 32,
+     "refused": 22,
      "caught": 6
     }
    ],
    "at_zero": {
-    "refused": 19,
+    "refused": 11,
     "caught": 6
    },
    "at_calibrated": {
-    "refused": 6,
+    "refused": 3,
     "caught": 6
    },
-   "gold_mean": 4.14,
-   "gold_divisor": 3.26,
+   "gold_mean": 2.51,
+   "gold_divisor": 2.14,
    "examples": [
     {
-     "q": "What measures the tendency of assets to crash together?",
+     "q": "Can the CVaR threshold be restricted to a bounded range?",
      "label": "one figure in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
-     "q": "Which performance ratio penalises only downside deviation?",
+     "q": "How many news tags does the news-pricing taxonomy define?",
      "label": "one figure in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
-     "q": "Which ratio measures active return per unit of tracking error?",
+     "q": "What peak Sharpe ratio does the photonic approach report?",
      "label": "one figure in one place",
      "adversarial": false,
      "expect": "should be answered"
@@ -1012,19 +1012,13 @@
      "expect": "should be answered"
     },
     {
-     "q": "What is the simulation of a strategy over historical data called?",
+     "q": "Whose portfolio selection theory underpins modern allocation methods?",
      "label": "spread over several documents",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
-     "q": "Which class of models treats variance itself as a random process?",
-     "label": "decoys that look right",
-     "adversarial": false,
-     "expect": "should be answered"
-    },
-    {
-     "q": "Which coherent risk measure averages the losses beyond a quantile?",
+     "q": "Which framework trades expected return against portfolio variance?",
      "label": "decoys that look right",
      "adversarial": false,
      "expect": "should be answered"
