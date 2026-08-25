@@ -75,9 +75,33 @@ button,input,textarea{font:inherit;color:inherit}
   backdrop-filter:blur(12px);border-bottom:1px solid var(--hair)}
 .top-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:56px;
   display:flex;align-items:center;gap:18px}
-.brand{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:-.01em}
+.brand{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:-.01em;white-space:nowrap}
 .brand span{color:var(--faint)}
 .top nav{margin-left:auto;display:flex;gap:20px;align-items:center}
+.top nav a{white-space:nowrap}
+/* Declared BEFORE the narrow-screen block below: at equal specificity the last
+   rule wins, and having this after it meant the short label never appeared and
+   the archive link vanished from a phone header entirely. */
+.top nav a.archive .short{display:none}
+
+/* A phone header. The name and two links do not fit at 13px on a 375px
+   screen: the brand broke after "retrieval" and the archive link wrapped to
+   "PREVIOUS / VERSION", taking the header to two rows. Both step down, and
+   the archive link uses its short name. */
+@media (max-width:560px){
+  /* The blurb is four lines of explanation on a phone and pushes the question
+     field a screen and a half down. The headline already says what this is. */
+  .hero > p{display:none}
+  :root{--map-h:300px}
+  /* A 667px phone is 7px short of fitting the field; the diagram pays. */
+  @media (max-height:700px){ :root{--map-h:265px} }
+  .top-in{padding:0 14px}
+  .brand{font-size:11.5px}
+  .top nav{gap:14px}
+  .top nav a{font-size:9.5px;letter-spacing:.09em}
+  .top nav a.archive .long{display:none}
+  .top nav a.archive .short{display:inline}
+}
 .top a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.13em;
   text-transform:uppercase;color:var(--faint);text-decoration:none;
   transition:color 180ms var(--ease)}
@@ -155,7 +179,25 @@ button,input,textarea{font:inherit;color:inherit}
     transition:opacity 150ms linear,visibility 0s linear 150ms}
   .tray[data-open="true"] .trayPanel{transition-delay:0s}
 }
-@media (max-width:720px){ .tray{top:auto;bottom:0;transform:none} }
+/* Under the header, not over the composer. Pinned to the bottom on a narrow
+   screen it landed on the question field, which is the one control that has
+   to stay reachable. */
+/* A fixed tab covers something wherever it sits on a narrow screen, so it goes
+   where the least is: above the composer, below the answer. At the bottom it
+   landed on the question field; at the top it landed on the question itself.
+
+   The panel becomes a sheet from the bottom edge. Anchored to the tab as it is
+   on a desktop, it opened at top:-621 -- entirely off screen -- because the tab
+   sits low and the panel is taller than the room above it. */
+@media (max-width:720px){
+  .tray{top:auto;bottom:104px;transform:none}
+  .trayTab{padding:11px 9px}
+  .trayPanel{position:fixed;left:0;right:0;bottom:0;top:auto;
+    width:100vw;max-height:76vh;overflow-y:auto;
+    border-radius:16px 16px 0 0;border-left:0;border-right:0;
+    transform:translateY(14px)}
+  .tray[data-open="true"] .trayPanel{transform:translateY(0)}
+}
 
 .menu{position:absolute;right:0;top:calc(100% + 8px);min-width:334px;z-index:40;
   background:var(--card);border:1px solid var(--edge);border-radius:12px;
@@ -224,7 +266,38 @@ button,input,textarea{font:inherit;color:inherit}
 /* Positive room on both sides. These were -6px and -14px, pulling the drawing
    into the blurb above and the document set below it -- left over from when the
    canvas had a lot of empty space of its own to absorb. It does not any more. */
+/* Positive room on both sides. These were -6px and -14px, pulling the drawing
+   into the blurb above and the document set below it. */
 .heroviz{width:100%;margin:clamp(8px,1.8vh,22px) 0 clamp(10px,2.2vh,28px)}
+
+/* The drawing is about four and a half times wider than it is tall, so on a
+   phone it either scales to nothing or it scrolls. Squeezed into 327px the
+   stage names truncated to "Dense retri..." and the diagram stopped saying
+   anything; a min-width plus a scroll container keeps it legible and lets it
+   be swiped. The fade on the right edge is the only cue that there is more.
+   scroll-snap is deliberately not used: this is one continuous drawing, not
+   a carousel of separate things. */
+@media (max-width:720px){
+  .heroviz,.viz .wrapviz{overflow-x:auto;overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch}
+  /* Width and height together, because they are not independent here. The
+     drawing is fitted to the HEIGHT on a narrow screen, and the scale that
+     comes out of that decides both how big the plates are and how much room
+     each label has. A tall-enough canvas is what makes the names fit; the
+     width then has to be whatever that scale needs -- roughly 4.6 times the
+     drawing's height plus its padding -- or the drawing sits centred in slack
+     and you swipe through empty canvas to reach it. */
+  .heroviz canvas,canvas.city{min-width:940px}
+  .heroviz,.viz{position:relative}
+  /* The only cue that the drawing continues past the right edge. Sits above
+     the canvas, ignores pointer events so it cannot block the swipe, and is
+     hidden once scrolled to the end. */
+  .heroviz::after,.viz::after{content:"";position:absolute;top:0;bottom:0;right:0;
+    width:44px;pointer-events:none;
+    background:linear-gradient(to left,var(--ground),transparent)}
+  .heroviz.ended::after,.viz.ended::after{opacity:0}
+  .heroviz::after,.viz::after{transition:opacity 200ms var(--ease)}
+}
 /* A column wants height, not width. Capped so the stack and its side labels
    sit as one block instead of stranding a narrow diagram in a very wide box. */
 /* Height tracks the viewport's height as well as its width: tall enough to
@@ -680,7 +753,7 @@ tr.out td{color:var(--faint)}
          it belongs here -- it was reachable only from inside the settings tray,
          which is a collapsed tab on the right edge and not a place anyone
          looks for a second version of the site. -->
-    <a href="/archive">Previous version</a>
+    <a class="archive" href="/archive"><span class="long">Previous version</span><span class="short">Archive</span></a>
   </nav>
 </div></header>
 
@@ -712,6 +785,7 @@ tr.out td{color:var(--faint)}
 
     <form class="field" id="form">
       <textarea id="q" rows="1" placeholder="Ask a question, or pick one from the list"
+                data-short="Ask a question"
                 aria-label="Your question"></textarea>
       <button class="go" id="goBtn" type="submit">Ask</button>
       <!-- Inside the field, so it follows it down to the dock after the first
@@ -1495,6 +1569,32 @@ addEventListener("scroll", () => {
   if (!dockRaf) dockRaf = requestAnimationFrame(syncDock);
 }, { passive: true });
 addEventListener("resize", syncDock);
+
+/* The placeholder is a sentence on a wide screen and two words on a phone,
+   where the long one wrapped inside a one-row field and was clipped. Swapped
+   on the same breakpoint the header uses. */
+/* Hide the edge fade once the drawing is scrolled to its end, so it does not
+   sit there implying there is more. */
+function markScrollEnd(el) {
+  if (!el) return;
+  const check = () => {
+    const done = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2;
+    el.classList.toggle("ended", done || el.scrollWidth <= el.clientWidth);
+  };
+  el.addEventListener("scroll", check, { passive: true });
+  addEventListener("resize", check);
+  check();
+}
+markScrollEnd(document.querySelector(".heroviz"));
+
+const shortQ = matchMedia("(max-width: 560px)");
+function syncPlaceholder() {
+  const ta = $("#q");
+  const long = "Ask a question, or pick one from the list";
+  ta.placeholder = shortQ.matches ? (ta.dataset.short || long) : long;
+}
+syncPlaceholder();
+shortQ.addEventListener("change", syncPlaceholder);
 addEventListener("focusin", syncDock);
 addEventListener("focusout", () => setTimeout(syncDock, 0));
 
