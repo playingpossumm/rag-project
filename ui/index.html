@@ -50,10 +50,11 @@
   /* One height for every pipeline drawing on the page. Tracks viewport height
      as well as width: five things stack up in the hero and the question field,
      the only one you can act on, has to stay above the fold on a short screen. */
-  /* The drawing is limited by width, not height -- raising this alone only
-     adds empty canvas and pushes the question field down the page. It is here
-     so the hero and the answer draw at one size. */
-  --map-h:clamp(190px,min(32vw,29vh),460px);
+  /* One height for every pipeline drawing on the page, so the hero and the
+     answer are the same drawing at the same size. Width-driven: the vh term it
+     used to carry was there to keep the question field above the fold, and
+     that is no longer a constraint the layout is trying to satisfy. */
+  --map-h:clamp(240px,26vw,420px);
   --r:14px;
   --max:1120px;
   --pad:clamp(1rem,4vw,2rem);
@@ -89,12 +90,7 @@ button,input,textarea{font:inherit;color:inherit}
    "PREVIOUS / VERSION", taking the header to two rows. Both step down, and
    the archive link uses its short name. */
 @media (max-width:560px){
-  /* The blurb is four lines of explanation on a phone and pushes the question
-     field a screen and a half down. The headline already says what this is. */
-  .hero > p{display:none}
   :root{--map-h:300px}
-  /* A 667px phone is 7px short of fitting the field; the diagram pays. */
-  @media (max-height:700px){ :root{--map-h:265px} }
   .top-in{padding:0 14px}
   .brand{font-size:11.5px}
   .top nav{gap:14px}
@@ -228,9 +224,12 @@ button,input,textarea{font:inherit;color:inherit}
    One thing to do, in the middle of the screen. The field lives here until a
    thread exists, then moves to the bottom -- so the page never shows an empty
    conversation with the input parked somewhere else entirely. */
-.hero{min-height:calc(100vh - 56px);display:flex;flex-direction:column;
+/* Tall enough to fill a roomy window, never taller than its content needs.
+   min-height was a hard 100vh, which forced five elements into one screen at
+   any size and made every one of them fight the others for space. */
+.hero{min-height:min(calc(100vh - 56px), 760px);display:flex;flex-direction:column;
   align-items:center;justify-content:center;text-align:center;
-  padding:32px 0 64px;gap:clamp(14px,2.2vh,24px)}
+  padding:clamp(26px,4vh,44px) 0 clamp(40px,6vh,72px);gap:clamp(16px,2.2vh,26px)}
 /* The hero holds five things now -- headline, blurb, diagram, the document
    sets and the question field -- and the field is the only one you can act on,
    so the type and the gaps are sized off viewport HEIGHT as well as width to
@@ -246,20 +245,15 @@ button,input,textarea{font:inherit;color:inherit}
    text gives way rather than the drawing: the headline drops a size, the blurb
    is hidden (it explains what RAG is, which is not what someone on a 720px
    screen needs before they can type), and the padding tightens. */
-@media (max-height:900px){
-  .hero{padding:18px 0 34px;gap:clamp(10px,1.6vh,16px)}
-  .hero h1{font-size:clamp(26px,min(4.2vw,5.4vh),42px)}
-}
-@media (max-height:745px){
-  .hero > p{display:none}
-}
+/* Nothing is hidden or shrunk because the window is short. There was a rule
+   here that removed the blurb under 745px tall and stepped the headline down
+   under 900px -- a laptop at 1366x768 has about 660px of viewport, so both fired
+   on an ordinary desktop and the page lost its own explanation. That was in
+   service of keeping the question field above the fold, which is a rule I
+   invented and which is not worth the words. The page scrolls. */
 .hero.gone{display:none}
 
-/* A tall window has room the short ones do not, and the drawing is the thing
-   worth spending it on. Kept as a separate step rather than a larger vh term,
-   because the same term that fits 1080px pushes the question field off a 768px
-   screen. */
-@media (min-height:1000px){ :root{ --map-h:clamp(300px,min(34vw,34vh),520px) } }
+
 /* Full column width. The 900px cap was set when the hero diagram was a
    vertical column and wanted height rather than width; the row layout it went
    back to wants every pixel across. */
