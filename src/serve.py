@@ -231,13 +231,13 @@ INDEX_RUN = IndexRun()
 # with no eval run yet has to offer, and it is about the ML papers because that
 # is the corpus a fresh clone ships with.
 EXAMPLES = [
-    {"label": "a specific figure",
+    {"label": "one figure in one place",
      "q": "What BLEU score did the Transformer achieve on WMT 2014 English-to-German?"},
-    {"label": "a constraint that must be honoured",
+    {"label": "one figure in one place",
      "q": "How are normalization statistics computed across features rather than examples?"},
-    {"label": "spread across documents",
+    {"label": "spread over several documents",
      "q": "What learning rate schedule and optimizer settings were used for training?"},
-    {"label": "not in the corpus",
+    {"label": "not in these documents",
      "q": "What is the airspeed velocity of an unladen swallow?"},
 ]
 
