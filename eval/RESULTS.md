@@ -323,6 +323,48 @@ above the threshold, either the label is stale or the gate is broken, and both
 need a human. On the current corpus that check flags nine cases and reports that
 **eight were invisible to the term list**.
 
+## The quant corpus scored badly because of its questions, not its retrieval
+
+The q-fin set returned a hit rate of **0.543** against 0.848 on the ML papers,
+and I wrote that down as a retrieval weakness with a note that it was "likely a
+golden-set quality issue". It was entirely a golden-set issue, and the cost of
+not checking was a wrong conclusion sitting in the results for days.
+
+Sixteen of thirty-five questions were textbook definitions — *"what describes
+the tendency of large price moves to be followed by more large moves?"* — asked
+of research papers that use the term once, in passing, and never define it.
+`volatility clustering` appears inside a list of stylized facts. `tail
+dependence` appears in a citation. The answer string existed in the corpus, so
+`build_golden_set.py` derived a gold location and the label looked valid; the
+question was simply unanswerable from these documents.
+
+That is a hole in the deriving-labels-from-strings idea, and worth stating
+plainly: **deriving a label from a string proves the string is present, not that
+the passage answers the question.** The derivation protects against labels
+drifting out of date. It does not protect against a question the corpus cannot
+answer.
+
+Replaced with questions grounded in what these papers actually report — the
+precision at which activation calibration starts to dominate, the factor by
+which a sparse architecture cuts parameters, the calibration slope of a
+structural model against the market:
+
+| | before | after |
+|---|---|---|
+| any-hit@5 | 0.543 | **0.886** |
+| MRR | 0.410 | **0.714** |
+| source recall | 0.361 | **0.741** |
+| answerable median confidence | −0.38 | **+2.34** |
+
+Retrieval was not touched. The pipeline had been able to answer these documents
+all along.
+
+Two further consequences. The candidate pool now shows fusion *helping* on this
+corpus — dense 0.914, RRF 0.943, weighted a=0.7 0.971 — the opposite of the bird
+corpus, where dense alone leads. And the shipped abstention threshold of −4
+survives recalibration: −6, −5 and −4 all catch every adversarial case and lose
+the same three answerable ones, so there is no reason to move it.
+
 ## A second corpus: what transfers and what does not
 
 A corpus of 45 Wikipedia ornithology documents was built to test whether any of

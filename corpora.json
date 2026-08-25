@@ -21,6 +21,6 @@
     "store": "store-quant",
     "golden": "eval/golden-quant.json",
     "threshold": -4.0,
-    "note": "35 arXiv q-fin papers. Calibrated 2026-08-21: at 0.0 this corpus wrongly refuses 19 of 35 answerable questions (54.3%). At -4 it still catches all six adversarial cases and recovers thirteen answerable ones for nothing. The widest gap of the three, and the clearest evidence that one global threshold cannot serve several corpora."
+    "note": "35 arXiv q-fin papers. Recalibrated 2026-08-26 after the golden set was rewritten: -6, -5 and -4 all catch every one of the six adversarial cases and wrongly refuse the same three of thirty-five, so the shipped -4 stands. At 0.0 it would refuse eleven. The earlier note claimed 0.0 refused nineteen of thirty-five; that was measured against a golden set asking textbook definitional questions this corpus never answers, and those questions scored low because they were unanswerable, not because the threshold was wrong. Answerable questions now score a median of +2.34, against -0.38 before."
   }
 }

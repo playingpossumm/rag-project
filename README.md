@@ -12,15 +12,17 @@ been written up as results turned out to be wrong.**
 
 ```
                        any-hit@5    MRR    NDCG   source recall
-  naive RAG                0.803  0.589   0.640           0.641
-  + cross-encoder rerank   0.803  0.706   0.713           0.671
-  + hybrid BM25 fusion     0.864  0.752   0.761           0.695
-  + diversity cap (2/src)  0.848  0.749   0.761           0.738
+  naive RAG                0.791  0.581   0.629           0.664
+  + cross-encoder rerank   0.791  0.688   0.698           0.700
+  + hybrid BM25 fusion     0.866  0.741   0.754           0.724
+  + diversity cap (2/src)  0.851  0.738   0.754           0.760
 ```
 
-36 arXiv ML/NLP papers, 5,459 passages, 84 labelled evaluation cases. Reproduce
-with `python src/evaluate.py`; every figure above is written to
-[`eval/results.json`](eval/results.json) by that command and copied here from it.
+36 arXiv ML/NLP papers, 5,459 passages, 84 labelled cases — 67 answerable and
+17 adversarial. Reproduce with `python src/evaluate.py`, which writes
+[`eval/results.json`](eval/results.json); `python src/build_results_doc.py`
+regenerates the tables in [`eval/RESULTS.md`](eval/RESULTS.md) from it, and
+`--check` fails when they have drifted.
 
 Note the last row: the diversity cap **trades** hit rate for source recall rather
 than adding one for free. An earlier, smaller golden set said it was free. It was
@@ -136,10 +138,10 @@ retrieval harder onto one document — the opposite of the goal. Reverted.
 ### 6. Three "settled" conclusions were noise from too small a test set
 
 The golden set began at 23 answerable cases, mostly drawn from one paper. Growing
-it to **66 cases covering all 20 documents** — a strictly harder test — reversed
+it to **67 cases covering all 36 documents** — a strictly harder test — reversed
 three findings that had already been written up as results:
 
-| claim, on 23 cases | on 66 cases |
+| claim, on 23 cases | on the full set |
 |---|---|
 | The diversity cap is **free** — no loss to ranking | It **trades**: +3.1 source recall for −1.6 any-hit |
 | Window expansion is **strictly dominated** by page expansion | Window reaches 0.833 context recall for **half the tokens** (2,371 vs 4,828) |
