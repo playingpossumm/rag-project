@@ -1,5 +1,13 @@
 {
-  "corpus": {},
+  "corpus": {
+    "chunks": 900,
+    "documents": 45,
+    "answerable_cases": 26,
+    "adversarial_cases": 6,
+    "k": 5,
+    "candidate_k": 20,
+    "golden": "eval\\golden-birds.json"
+  },
   "candidate_pool": {
     "dense": {
       "hit_rate": 0.962,
@@ -87,6 +95,69 @@
       "blocks_per_query": 4.3
     }
   },
-  "abstention": {},
+  "abstention": {
+    "sweep": [
+      {
+        "threshold": -10,
+        "caught": 2,
+        "false_abstain": 1
+      },
+      {
+        "threshold": -8,
+        "caught": 4,
+        "false_abstain": 2
+      },
+      {
+        "threshold": -6,
+        "caught": 5,
+        "false_abstain": 3
+      },
+      {
+        "threshold": -5,
+        "caught": 5,
+        "false_abstain": 3
+      },
+      {
+        "threshold": -4,
+        "caught": 5,
+        "false_abstain": 4
+      },
+      {
+        "threshold": -3,
+        "caught": 5,
+        "false_abstain": 4
+      },
+      {
+        "threshold": -2,
+        "caught": 5,
+        "false_abstain": 6
+      },
+      {
+        "threshold": -1,
+        "caught": 5,
+        "false_abstain": 6
+      },
+      {
+        "threshold": 0,
+        "caught": 5,
+        "false_abstain": 10
+      },
+      {
+        "threshold": 1,
+        "caught": 5,
+        "false_abstain": 11
+      },
+      {
+        "threshold": 2,
+        "caught": 6,
+        "false_abstain": 16
+      }
+    ],
+    "shipped_threshold": 0.0,
+    "best_net_threshold": -6,
+    "n_answerable": 26,
+    "n_adversarial": 6,
+    "answerable_median": 1.8191803693771362
+  },
   "generated_by": "src/evaluate.py"
 }

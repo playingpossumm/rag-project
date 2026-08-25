@@ -68,8 +68,19 @@ def main() -> int:
                     choices=["none", "rrf", "weighted"])
     ap.add_argument("--max-per-source", type=int, default=2,
                     help="0 disables the diversity cap")
-    ap.add_argument("--emit", type=Path, default=OUT)
+    ap.add_argument("--emit", type=Path, default=None,
+                    help="default: derived from --golden, so each corpus keeps "
+                         "its own file rather than the last run owning one")
     args = ap.parse_args()
+
+    # Same trap results.json had: one hardcoded path meant whichever corpus ran
+    # last owned it, and eval/analytics.json -- which is what the interface
+    # offers as example questions -- is built from these files.
+    if args.emit is None:
+        stem = args.golden.stem
+        suffix = "" if stem in ("golden_set", "golden") else stem.split("-", 1)[-1]
+        args.emit = OUT.parent / ("per_case.json" if not suffix
+                                  else f"per_case-{suffix}.json")
 
     opts = dict(use_reranker=not args.no_rerank, fusion=args.fusion,
                 max_per_source=args.max_per_source or None)
