@@ -57,7 +57,9 @@
   --map-h:clamp(240px,26vw,420px);
   --r:14px;
   --max:1120px;
-  --pad:clamp(1rem,4vw,2rem);
+  /* The floor was 1rem, so on a window a little narrower than --max the
+     content sat 16px off the edge and read as pushed against the wall. */
+  --pad:clamp(1.5rem,4vw,2.75rem);
 }
 
 *{box-sizing:border-box}
@@ -76,7 +78,11 @@ button,input,textarea{font:inherit;color:inherit}
   backdrop-filter:blur(12px);border-bottom:1px solid var(--hair)}
 .top-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:56px;
   display:flex;align-items:center;gap:18px}
-.brand{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:-.01em;white-space:nowrap}
+.brand{font-family:var(--mono);font-size:13px;font-weight:500;
+  letter-spacing:-.01em;white-space:nowrap;background:none;border:0;padding:0;
+  color:var(--ink);cursor:pointer;transition:opacity 160ms var(--ease)}
+.brand:hover{opacity:.72}
+.brand span{color:var(--faint)}
 .brand span{color:var(--faint)}
 .top nav{margin-left:auto;display:flex;gap:20px;align-items:center}
 .top nav a{white-space:nowrap}
@@ -765,7 +771,10 @@ tr.out td{color:var(--faint)}
 <body>
 
 <header class="top"><div class="top-in">
-  <span class="brand">retrieval visualized<span>/</span></span>
+  <!-- The only way back to the starting state was to switch document sets,
+       which also changes what you are asking about. The name goes home. -->
+  <button class="brand" id="home" type="button" title="Back to the start">
+    retrieval visualized<span>/</span></button>
   <nav>
     <a href="/quality">Analytics</a>
     <!-- The front page as it stood before the rebuild, served from this same
@@ -1568,6 +1577,22 @@ async function loadPicker() {
     b.onclick = e => { e.stopPropagation(); selectCorpus(b.dataset.name); };
   });
 }
+
+/* Back to the starting state: no thread, the hero and its composer returned,
+   the document set left alone. Switching sets also resets, but that changes
+   which documents you are asking about, so it was never the way home. */
+$("#home").onclick = () => {
+  if (BUSY) return;
+  $("#thread").innerHTML = "";
+  N = 0; BASELINE = null; LAST = null;
+  $("#hero").classList.remove("gone");
+  $("#dock").classList.add("hide");
+  $("#hero").appendChild($("#form"));
+  hideChips();
+  $("#q").value = ""; grow();
+  scrollTo({ top: 0, behavior: STILL ? "auto" : "smooth" });
+  drawIdle();
+};
 
 const closeDd = () => {
   $("#setgrid").hidden = true;
