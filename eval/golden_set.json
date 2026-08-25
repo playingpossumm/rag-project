@@ -11,6 +11,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             5
           ]
@@ -26,6 +27,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             4
           ]
@@ -41,6 +43,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
@@ -56,6 +59,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             6
           ]
@@ -71,8 +75,26 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             6
+          ]
+        }
+      ],
+      "multi_source": false
+    },
+    {
+      "id": "moe-routing",
+      "question": "What load balancing loss is used for expert routing?",
+      "kind": "fact",
+      "answer_contains": "auxiliary-loss-free load balancing",
+      "gold": [
+        {
+          "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+          "kind": "page",
+          "pages": [
+            14,
+            17
           ]
         }
       ],
@@ -86,6 +108,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             6,
             7
@@ -102,6 +125,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             1,
             8
@@ -109,12 +133,14 @@
         },
         {
           "source": "bahdanau_attention.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
         },
         {
           "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+          "kind": "page",
           "pages": [
             6,
             32
@@ -122,24 +148,28 @@
         },
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             63
           ]
         },
         {
           "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+          "kind": "page",
           "pages": [
             19
           ]
         },
         {
           "source": "seq2seq.pdf",
+          "kind": "page",
           "pages": [
             6
           ]
@@ -155,6 +185,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             5
           ]
@@ -170,6 +201,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             8
           ]
@@ -185,6 +217,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
@@ -200,24 +233,28 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             43
           ]
         },
         {
           "source": "roberta.pdf",
+          "kind": "page",
           "pages": [
             2
           ]
         },
         {
           "source": "vision_transformer.pdf",
+          "kind": "page",
           "pages": [
             5
           ]
@@ -233,18 +270,21 @@
       "gold": [
         {
           "source": "adam_optimizer.pdf",
+          "kind": "page",
           "pages": [
             6
           ]
         },
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             5
           ]
         },
         {
           "source": "batch_normalization.pdf",
+          "kind": "page",
           "pages": [
             2,
             5,
@@ -254,18 +294,21 @@
         },
         {
           "source": "bert.pdf",
+          "kind": "page",
           "pages": [
             13
           ]
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             38
           ]
         },
         {
           "source": "layer_normalization.pdf",
+          "kind": "page",
           "pages": [
             2,
             3
@@ -273,6 +316,7 @@
         },
         {
           "source": "resnet.pdf",
+          "kind": "page",
           "pages": [
             2,
             3,
@@ -282,6 +326,7 @@
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             11,
             29
@@ -298,12 +343,14 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             8
           ]
         },
         {
           "source": "dense_passage_retrieval.pdf",
+          "kind": "page",
           "pages": [
             5
           ]
@@ -319,18 +366,21 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             3
           ]
         },
         {
           "source": "lora.pdf",
+          "kind": "page",
           "pages": [
             6
           ]
         },
         {
           "source": "vision_transformer.pdf",
+          "kind": "page",
           "pages": [
             3
           ]
@@ -346,6 +396,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
@@ -361,6 +412,7 @@
       "gold": [
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -373,6 +425,7 @@
         },
         {
           "source": "dense_passage_retrieval.pdf",
+          "kind": "page",
           "pages": [
             10
           ]
@@ -388,6 +441,7 @@
       "gold": [
         {
           "source": "dense_passage_retrieval.pdf",
+          "kind": "page",
           "pages": [
             4
           ]
@@ -403,12 +457,14 @@
       "gold": [
         {
           "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+          "kind": "page",
           "pages": [
             4
           ]
         },
         {
           "source": "lora.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -425,12 +481,14 @@
         },
         {
           "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
         },
         {
           "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+          "kind": "page",
           "pages": [
             13
           ]
@@ -446,6 +504,7 @@
       "gold": [
         {
           "source": "bert.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -454,12 +513,14 @@
         },
         {
           "source": "rag.pdf",
+          "kind": "page",
           "pages": [
             1
           ]
         },
         {
           "source": "roberta.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -471,6 +532,7 @@
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             10,
             13,
@@ -479,6 +541,7 @@
         },
         {
           "source": "vision_transformer.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
@@ -494,6 +557,7 @@
       "gold": [
         {
           "source": "chain_of_thought.pdf",
+          "kind": "page",
           "pages": [
             1
           ]
@@ -509,18 +573,21 @@
       "gold": [
         {
           "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+          "kind": "page",
           "pages": [
             12
           ]
         },
         {
           "source": "dense_passage_retrieval.pdf",
+          "kind": "page",
           "pages": [
             10
           ]
         },
         {
           "source": "sentence_bert.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -541,18 +608,21 @@
       "gold": [
         {
           "source": "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
+          "kind": "page",
           "pages": [
             16
           ]
         },
         {
           "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
         },
         {
           "source": "vision_transformer.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -575,12 +645,14 @@
       "gold": [
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             6
           ]
         },
         {
           "source": "faiss_billion_scale.pdf",
+          "kind": "page",
           "pages": [
             1,
             6,
@@ -590,6 +662,7 @@
         },
         {
           "source": "resnet.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
@@ -605,6 +678,7 @@
       "gold": [
         {
           "source": "adam_optimizer.pdf",
+          "kind": "page",
           "pages": [
             5,
             8,
@@ -622,6 +696,7 @@
       "gold": [
         {
           "source": "adam_optimizer.pdf",
+          "kind": "page",
           "pages": [
             1,
             8,
@@ -640,6 +715,7 @@
       "gold": [
         {
           "source": "bahdanau_attention.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -658,12 +734,14 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             10
           ]
         },
         {
           "source": "bahdanau_attention.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -672,12 +750,14 @@
         },
         {
           "source": "seq2seq.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             58
           ]
@@ -693,6 +773,7 @@
       "gold": [
         {
           "source": "batch_normalization.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -705,18 +786,21 @@
         },
         {
           "source": "layer_normalization.pdf",
+          "kind": "page",
           "pages": [
             11
           ]
         },
         {
           "source": "resnet.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
         },
         {
           "source": "vision_transformer.pdf",
+          "kind": "page",
           "pages": [
             11
           ]
@@ -732,6 +816,7 @@
       "gold": [
         {
           "source": "batch_normalization.pdf",
+          "kind": "page",
           "pages": [
             1,
             3,
@@ -743,12 +828,14 @@
         },
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             5
           ]
         },
         {
           "source": "dense_passage_retrieval.pdf",
+          "kind": "page",
           "pages": [
             3,
             4,
@@ -757,6 +844,7 @@
         },
         {
           "source": "layer_normalization.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -766,6 +854,7 @@
         },
         {
           "source": "resnet.pdf",
+          "kind": "page",
           "pages": [
             4,
             10,
@@ -774,6 +863,7 @@
         },
         {
           "source": "roberta.pdf",
+          "kind": "page",
           "pages": [
             5,
             6
@@ -781,12 +871,14 @@
         },
         {
           "source": "sentence_bert.pdf",
+          "kind": "page",
           "pages": [
             8
           ]
         },
         {
           "source": "word2vec.pdf",
+          "kind": "page",
           "pages": [
             4,
             8
@@ -803,6 +895,7 @@
       "gold": [
         {
           "source": "bert.pdf",
+          "kind": "page",
           "pages": [
             2,
             4,
@@ -812,6 +905,7 @@
         },
         {
           "source": "roberta.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -830,12 +924,14 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
         },
         {
           "source": "bert.pdf",
+          "kind": "page",
           "pages": [
             4,
             9,
@@ -844,6 +940,7 @@
         },
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             4,
             5
@@ -851,6 +948,7 @@
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             12,
             13
@@ -867,6 +965,7 @@
       "gold": [
         {
           "source": "bert.pdf",
+          "kind": "page",
           "pages": [
             2,
             14
@@ -874,6 +973,7 @@
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             10,
             17,
@@ -882,6 +982,7 @@
         },
         {
           "source": "lora.pdf",
+          "kind": "page",
           "pages": [
             6,
             7,
@@ -893,12 +994,14 @@
         },
         {
           "source": "rag.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             8,
             15,
@@ -918,6 +1021,7 @@
       "gold": [
         {
           "source": "chain_of_thought.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -937,6 +1041,7 @@
         },
         {
           "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+          "kind": "page",
           "pages": [
             9,
             16,
@@ -954,6 +1059,7 @@
       "gold": [
         {
           "source": "chain_of_thought.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -984,6 +1090,7 @@
       "gold": [
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             2,
             3,
@@ -1003,6 +1110,7 @@
       "gold": [
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1016,6 +1124,7 @@
         },
         {
           "source": "rag.pdf",
+          "kind": "page",
           "pages": [
             10,
             13
@@ -1032,6 +1141,7 @@
       "gold": [
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1043,6 +1153,7 @@
         },
         {
           "source": "dense_passage_retrieval.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1060,6 +1171,7 @@
         },
         {
           "source": "rag.pdf",
+          "kind": "page",
           "pages": [
             7,
             8,
@@ -1077,6 +1189,7 @@
       "gold": [
         {
           "source": "dense_passage_retrieval.pdf",
+          "kind": "page",
           "pages": [
             2,
             4,
@@ -1090,6 +1203,7 @@
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             4,
             13,
@@ -1100,6 +1214,7 @@
         },
         {
           "source": "rag.pdf",
+          "kind": "page",
           "pages": [
             2,
             3,
@@ -1121,6 +1236,7 @@
       "gold": [
         {
           "source": "faiss_billion_scale.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1146,12 +1262,14 @@
       "gold": [
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             6
           ]
         },
         {
           "source": "faiss_billion_scale.pdf",
+          "kind": "page",
           "pages": [
             2
           ]
@@ -1167,6 +1285,7 @@
       "gold": [
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             1,
             5,
@@ -1180,6 +1299,7 @@
         },
         {
           "source": "lora.pdf",
+          "kind": "page",
           "pages": [
             1,
             3,
@@ -1197,12 +1317,14 @@
       "gold": [
         {
           "source": "an_agentic_approach_for_active_data_collection_travel_beha.pdf",
+          "kind": "page",
           "pages": [
             14
           ]
         },
         {
           "source": "chain_of_thought.pdf",
+          "kind": "page",
           "pages": [
             12,
             14
@@ -1210,6 +1332,7 @@
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             3,
             4,
@@ -1239,6 +1362,7 @@
       "gold": [
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             7,
             17,
@@ -1256,12 +1380,14 @@
       "gold": [
         {
           "source": "adam_optimizer.pdf",
+          "kind": "page",
           "pages": [
             10
           ]
         },
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             2,
             11
@@ -1269,6 +1395,7 @@
         },
         {
           "source": "bahdanau_attention.pdf",
+          "kind": "page",
           "pages": [
             2,
             5,
@@ -1279,6 +1406,7 @@
         },
         {
           "source": "batch_normalization.pdf",
+          "kind": "page",
           "pages": [
             8,
             9
@@ -1286,12 +1414,14 @@
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             69
           ]
         },
         {
           "source": "layer_normalization.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1304,12 +1434,14 @@
         },
         {
           "source": "seq2seq.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             4,
             60,
@@ -1318,6 +1450,7 @@
         },
         {
           "source": "word2vec.pdf",
+          "kind": "page",
           "pages": [
             9
           ]
@@ -1333,6 +1466,7 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             3,
             10
@@ -1340,6 +1474,7 @@
         },
         {
           "source": "layer_normalization.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1356,12 +1491,14 @@
         },
         {
           "source": "lora.pdf",
+          "kind": "page",
           "pages": [
             13
           ]
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             4,
             5,
@@ -1380,6 +1517,7 @@
       "gold": [
         {
           "source": "lora.pdf",
+          "kind": "page",
           "pages": [
             4
           ]
@@ -1391,87 +1529,17 @@
       "id": "lora-frozen",
       "question": "Are the pretrained weights updated during adaptation?",
       "kind": "multi",
-      "answer_contains": "frozen",
+      "answer_contains": "keeping the pre-trained weights frozen",
       "gold": [
         {
-          "source": "batch_normalization.pdf",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
-          "pages": [
-            32
-          ]
-        },
-        {
-          "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
-          "pages": [
-            10
-          ]
-        },
-        {
-          "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
-          "pages": [
-            18
-          ]
-        },
-        {
           "source": "lora.pdf",
+          "kind": "page",
           "pages": [
-            2,
-            4,
-            5,
-            9,
-            18
-          ]
-        },
-        {
-          "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
-          "pages": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            25,
-            26,
-            27,
-            29,
-            30,
-            31,
-            32,
-            33,
-            34,
-            35,
-            36,
-            37,
-            38,
-            41,
-            42,
-            43,
-            45
-          ]
-        },
-        {
-          "source": "rag.pdf",
-          "pages": [
-            8
-          ]
-        },
-        {
-          "source": "vision_transformer.pdf",
-          "pages": [
-            5
+            2
           ]
         }
       ],
-      "multi_source": true
+      "multi_source": false
     },
     {
       "id": "rag-parametric",
@@ -1481,6 +1549,7 @@
       "gold": [
         {
           "source": "rag.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1504,6 +1573,7 @@
       "gold": [
         {
           "source": "rag.pdf",
+          "kind": "page",
           "pages": [
             2,
             3,
@@ -1518,96 +1588,17 @@
       "id": "resnet-degradation",
       "question": "What happens to accuracy when plain networks get deeper?",
       "kind": "fact",
-      "answer_contains": "degradation",
+      "answer_contains": "accuracy gets saturated",
       "gold": [
         {
-          "source": "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
-          "pages": [
-            13
-          ]
-        },
-        {
-          "source": "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
-          "pages": [
-            8
-          ]
-        },
-        {
-          "source": "dense_passage_retrieval.pdf",
-          "pages": [
-            1,
-            6,
-            12
-          ]
-        },
-        {
-          "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
-          "pages": [
-            6
-          ]
-        },
-        {
-          "source": "healmed_multilingual_evaluation_of_large_language_models_i.pdf",
-          "pages": [
-            5
-          ]
-        },
-        {
-          "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
-          "pages": [
-            4,
-            5
-          ]
-        },
-        {
-          "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
-          "pages": [
-            3,
-            18,
-            29,
-            36,
-            39
-          ]
-        },
-        {
           "source": "resnet.pdf",
+          "kind": "page",
           "pages": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7
-          ]
-        },
-        {
-          "source": "roberta.pdf",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "seq2seq.pdf",
-          "pages": [
-            7
-          ]
-        },
-        {
-          "source": "t5.pdf",
-          "pages": [
-            23,
-            30
-          ]
-        },
-        {
-          "source": "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf",
-          "pages": [
-            8
+            1
           ]
         }
       ],
-      "multi_source": true
+      "multi_source": false
     },
     {
       "id": "resnet-shortcut",
@@ -1617,6 +1608,7 @@
       "gold": [
         {
           "source": "resnet.pdf",
+          "kind": "page",
           "pages": [
             2,
             3,
@@ -1635,12 +1627,14 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             12
           ]
         },
         {
           "source": "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
+          "kind": "page",
           "pages": [
             12,
             14,
@@ -1649,6 +1643,7 @@
         },
         {
           "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+          "kind": "page",
           "pages": [
             2,
             7
@@ -1656,18 +1651,21 @@
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             45
           ]
         },
         {
           "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+          "kind": "page",
           "pages": [
             41
           ]
         },
         {
           "source": "resnet.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1678,6 +1676,7 @@
         },
         {
           "source": "vision_transformer.pdf",
+          "kind": "page",
           "pages": [
             6,
             7,
@@ -1699,6 +1698,7 @@
       "gold": [
         {
           "source": "roberta.pdf",
+          "kind": "page",
           "pages": [
             4,
             6
@@ -1715,6 +1715,7 @@
       "gold": [
         {
           "source": "roberta.pdf",
+          "kind": "page",
           "pages": [
             4,
             5,
@@ -1732,6 +1733,7 @@
       "gold": [
         {
           "source": "sentence_bert.pdf",
+          "kind": "page",
           "pages": [
             1,
             3,
@@ -1752,6 +1754,7 @@
       "gold": [
         {
           "source": "sentence_bert.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1769,12 +1772,14 @@
       "gold": [
         {
           "source": "faiss_billion_scale.pdf",
+          "kind": "page",
           "pages": [
             4
           ]
         },
         {
           "source": "seq2seq.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1794,6 +1799,7 @@
       "gold": [
         {
           "source": "seq2seq.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1814,12 +1820,14 @@
       "gold": [
         {
           "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+          "kind": "page",
           "pages": [
             10
           ]
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             1,
             3,
@@ -1838,30 +1846,35 @@
       "gold": [
         {
           "source": "colbert.pdf",
+          "kind": "page",
           "pages": [
             10
           ]
         },
         {
           "source": "dense_passage_retrieval.pdf",
+          "kind": "page",
           "pages": [
             11
           ]
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             73
           ]
         },
         {
           "source": "rag.pdf",
+          "kind": "page",
           "pages": [
             14
           ]
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             31,
             44
@@ -1878,6 +1891,7 @@
       "gold": [
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             22,
             23,
@@ -1896,6 +1910,7 @@
       "gold": [
         {
           "source": "vision_transformer.pdf",
+          "kind": "page",
           "pages": [
             2,
             4,
@@ -1921,6 +1936,7 @@
       "gold": [
         {
           "source": "vision_transformer.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -1941,6 +1957,7 @@
       "gold": [
         {
           "source": "word2vec.pdf",
+          "kind": "page",
           "pages": [
             4,
             11
@@ -1957,12 +1974,14 @@
       "gold": [
         {
           "source": "layer_normalization.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
         },
         {
           "source": "word2vec.pdf",
+          "kind": "page",
           "pages": [
             4,
             5,
@@ -1984,30 +2003,35 @@
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
+          "kind": "page",
           "pages": [
             7
           ]
         },
         {
           "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
+          "kind": "page",
           "pages": [
             6
           ]
         },
         {
           "source": "gpt3.pdf",
+          "kind": "page",
           "pages": [
             72
           ]
         },
         {
           "source": "t5.pdf",
+          "kind": "page",
           "pages": [
             23
           ]
         },
         {
           "source": "word2vec.pdf",
+          "kind": "page",
           "pages": [
             1,
             2,
@@ -2107,14 +2131,6 @@
       "unanswerable": true,
       "adversarial_kind": "absent",
       "why": "FlashAttention postdates every paper here",
-      "gold": []
-    },
-    {
-      "id": "adv-moe-routing",
-      "question": "What load balancing loss is used for expert routing?",
-      "unanswerable": true,
-      "adversarial_kind": "absent",
-      "why": "no mixture-of-experts paper in the corpus",
       "gold": []
     },
     {

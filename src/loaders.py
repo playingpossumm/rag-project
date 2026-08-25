@@ -142,8 +142,16 @@ def _rejoin_wrapped(text: str, following: list[str], depth: int = 0) -> str:
         if cand.startswith("#"):
             d = len(cand) - len(cand.lstrip("#"))
             head = cand.lstrip("#").strip()
+            # A title that ends on a word a title cannot end on is strong
+            # evidence, so it earns a longer continuation. The weaker
+            # same-depth-after-a-wrap path keeps the tight cap, because there
+            # the only thing saying "this is a title" is its position.
+            # "...Evaluation of" + "Explanations from Standard and Alternative
+            # Data-Based Models" is seven words and was being refused by a cap
+            # of five.
+            cap = 10 if _looks_cut(text) else 5
             if (not head
-                    or len(head.split()) > 5
+                    or len(head.split()) > cap
                     or head.lower() in _SECTIONS
                     or head[0].isdigit()
                     or len(text) + len(head) > 200
