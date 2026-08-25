@@ -623,6 +623,32 @@ canvas.city{display:block;width:100%;height:var(--map-h)}
 .more[open] > summary::after{transform:rotate(-135deg) translateY(1px)}
 .more .inner{padding:0 clamp(22px,3.4vw,34px) 26px}
 
+/* Alternates. Quiet by default -- the top passage is still the answer, and
+   this is the reader's recourse when it looks wrong. */
+.also{margin-top:14px;border-top:1px solid var(--hair);padding-top:4px}
+.also > summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;
+  gap:10px;padding:8px 0;transition:opacity 160ms var(--ease)}
+.also > summary::-webkit-details-marker{display:none}
+.also > summary:hover{opacity:.78}
+.also > summary .lab{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faint)}
+.also > summary .hint{font-size:12.5px;color:var(--mute)}
+.also > summary::after{content:"";width:6px;height:6px;margin-left:auto;flex:none;
+  align-self:center;border-right:1.5px solid var(--faint);
+  border-bottom:1.5px solid var(--faint);
+  transform:rotate(45deg) translateY(-2px);transition:transform 200ms var(--ease)}
+.also[open] > summary::after{transform:rotate(-135deg) translateY(1px)}
+.alt{padding:10px 0 14px;border-top:1px solid var(--hair)}
+.alt .ahead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.alt .ahead i{width:7px;height:7px;border-radius:2px;flex:none}
+.alt .an{font-family:var(--mono);font-size:11px;color:var(--dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alt .as{margin-left:auto;font-family:var(--mono);font-size:11px;
+  font-weight:500;color:var(--faint);flex:none}
+.alt .atext{margin:0;font-size:14.5px;line-height:1.55;color:var(--mute);
+  max-width:64em}
+.alt .atext mark{background:none;color:var(--ink);font-weight:600}
+
 /* ---- the detail panel --------------------------------------------------
    Candidates, matched words and the stage history are three views of one run,
    so they are one object with three tabs rather than three blocks competing
@@ -1036,6 +1062,7 @@ function answerSpan(sentence, want, quantitative) {
   toks.forEach((t, i) => { if (t.trim()) words.push({ i, t, low: t.toLowerCase() }); });
   if (words.length <= 12) return [0, sentence.length];
 
+
   const hits = [];
   words.forEach((w, k) => { if (want.some(x => w.low.includes(x))) hits.push(k); });
 
@@ -1063,6 +1090,19 @@ function answerSpan(sentence, want, quantitative) {
     hi = Math.min(words.length - 1, Math.max(hits[hits.length - 1], hits[0] + 6));
   }
   if (hi - lo > 11) hi = lo + 11;
+
+  // A span has to carry something. Asked what a bird's fused collarbone is
+  // called, the marked words were "this fused structure" -- one query word and
+  // a pronoun standing in for the noun the question was about. Marking that
+  // points at nothing. Two distinct query words, or one and a figure.
+  const span = words.slice(lo, hi + 1);
+  const carried = new Set();
+  let figure = false;
+  for (const w of span) {
+    for (const x of want) if (w.low.includes(x)) carried.add(x);
+    if (/\d/.test(w.t)) figure = true;
+  }
+  if (carried.size < 2 && !(carried.size === 1 && figure)) return null;
 
   const startTok = words[lo].i;
   const endTok = words[hi].i;
@@ -1098,12 +1138,56 @@ function markAnswer(text, question) {
   // Then the answering WORDS inside that sentence. A whole sentence set bold
   // is most of the passage shouting; the reader still has to find the figure
   // inside it, which is the job the highlight was meant to do.
-  const [a, b] = answerSpan(parts[best], want, QUANT.test(question));
+  const span = answerSpan(parts[best], want, QUANT.test(question));
+  if (!span) return esc(text);            // nothing worth pointing at
+  const [a, b] = span;
   return parts.map((seg, i) => {
     if (i !== best) return esc(seg);
     return esc(seg.slice(0, a)) + "<mark>" + esc(seg.slice(a, b)) + "</mark>"
          + esc(seg.slice(b));
   }).join("");
+}
+
+/* The passages the answer did NOT come from, when they come from other
+   documents.
+
+   The top passage is the reranker's pick and the reranker is sometimes wrong in
+   a specific way: it rewards a passage that matches the question's words over
+   one that answers it. Asked what a bird's fused collarbone is called, it put a
+   passage about the pygostyle first -- fused, a bone, the right animal, the
+   wrong bone -- and ranked the passage saying "clavicles (collar bones) fused
+   to form a bone called the furcula" second, in a different document. Showing
+   only the top passage hid the right answer behind a wrong one.
+
+   So the next passages from OTHER documents are offered underneath. Same
+   documents are skipped: a second passage from the same file is usually the
+   paragraph next door and adds nothing a reader could not have guessed. */
+function alsoFound(sel, top, question, colour) {
+  const seen = new Set([top.source]);
+  const others = [];
+  for (const it of sel) {
+    if (seen.has(it.source)) continue;
+    seen.add(it.source);
+    others.push(it);
+    if (others.length === 2) break;
+  }
+  if (!others.length) return "";
+
+  return `<details class="also" open><summary>
+      <span class="lab">Also found</span>
+      <span class="hint">${others.length} other document${
+        others.length > 1 ? "s" : ""} carried a passage for this</span>
+    </summary>
+    ${others.map(it => `<div class="alt">
+      <div class="ahead">
+        <i style="background:${colour(it.source)}"></i>
+        <span class="an">${esc(docName(it.source))}${
+          where(it) ? ` · ${esc(where(it))}` : ""}</span>
+        <b class="as">${typeof it.score === "number"
+          ? (it.score > 0 ? "+" : "") + it.score.toFixed(2) : ""}</b>
+      </div>
+      <p class="atext">${markAnswer(fragment(completed(it)), question)}</p>
+    </div>`).join("")}</details>`;
 }
 
 /* Which cell of a table answers, scored the same way as which sentence. */
@@ -1744,9 +1828,14 @@ function renderTurn(turn, question, data, opts) {
           // Same idea as the prose highlight: the answering CELL is marked,
           // not every cell in the row-dump.
           const best = bestCell(cells, question);
+          // The winning cell goes through the same span narrowing as prose. It
+          // used to be wrapped whole, and a cell in one of these row-dumps can
+          // be a couple of sentences long -- 223 characters of bold, which is
+          // the problem the prose highlight was narrowed to solve.
           return cells.map(([k, val], i) =>
             `<tr${i === best ? ' class="hit"' : ""}><th>${esc(k)}</th>
-               <td>${i === best ? `<mark>${esc(val)}</mark>` : esc(val)}</td></tr>`).join("");
+               <td>${i === best ? markAnswer(String(val), question) : esc(val)}</td>
+             </tr>`).join("");
         })()}</tbody></table>`
       : `<p class="answer">${markAnswer(fragment(completed(top)), question)}</p>`;
 
@@ -1760,6 +1849,7 @@ function renderTurn(turn, question, data, opts) {
         <i style="background:${colour(top.source)}"></i>
         <span>${esc(docName(top.source))}${
           where(top) ? ` · ${esc(where(top))}` : ""}</span></div>` : ""}
+      ${top && v.confident !== false ? alsoFound(sel, top, question, colour) : ""}
       ${gen.state === "unavailable" ? `<div class="warnbox">
         <span class="k">could not write it out</span>
         It could not write this one out, so you are getting the passage itself.
