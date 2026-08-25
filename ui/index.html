@@ -730,6 +730,10 @@ const clean = s => String(s)
   .replace(/#{2,6}\s+/g, "")
   .replace(/\*\*(.+?)\*\*/g, "$1")
   .replace(/(^|\s)[*_]{1,2}(?=\S)|(?<=\S)[*_]{1,2}(?=\s|$)/g, "$1")
+  // Numeric reference markers -- [36], [9, 12], [4-7] -- are apparatus for a
+  // reader following a bibliography, and this reader has no bibliography. They
+  // survive into the middle of a quoted sentence and read as debris.
+  .replace(/\s*\[\s*\d+(?:\s*[,;–-]\s*\d+)*\s*\]/g, "")
   .replace(/\s+/g, " ").trim();
 
 /* Chunks are cut on a token boundary, so a passage routinely stops
@@ -891,35 +895,111 @@ function completed(item) {
 const STOP = new Set(("a an and are as at be by do does for from has have how in is it its of on or "
   + "that the this to was were what when where which who why with your you").split(" "));
 
+/* Questions that turn on a figure. For these the highlight is anchored on the
+   number, because that is the thing being asked for -- everything else in the
+   sentence is scaffolding around it. */
+// The quantity word can sit anywhere in the question, not right after "what".
+// Requiring "what value" missed "what label smoothing VALUE was used", which is
+// the exact shape these questions take, and the highlight then spanned the
+// sentence instead of landing on 0.1.
+const QUANT = new RegExp(
+  "\\b(how many|how much|how large|how long|how deep|how wide|"
+  + "value|rate|size|number|probability|dimension|percentage|fraction|"
+  + "count|length|depth|width|score)\\b",
+  "i");
+
+/* Sentence boundaries. A terminator has to be followed by whitespace, or the
+   decimal point in "0.1" ends the sentence. A section number also starts a new
+   sentence -- "...applied in the model. 3.1.2 Training As described in..." was
+   coming through as ONE sentence, because 3 is not a capital letter, and the
+   highlight then ran across the boundary into the next section. */
+function splitSentences(text) {
+  return text
+    .split(/(?<=[.!?])(?=\s+(?:[A-Z"“(]|\d+(?:\.\d+)*\s+[A-Z]))/)
+    .filter(x => x.trim());
+}
+
+/* The tightest run of words in a sentence that actually answers.
+
+   For a question about a figure this anchors on the number nearest a query
+   term and takes the few words in front of it, so "we employed label smoothing
+   of value 0.1" is marked rather than the whole sentence it sits in. For
+   everything else it spans the query terms themselves. Capped at twelve words:
+   past that it stops being a highlight and becomes a second paragraph. */
+function answerSpan(sentence, want, quantitative) {
+  const toks = sentence.split(/(\s+)/);
+  const words = [];
+  toks.forEach((t, i) => { if (t.trim()) words.push({ i, t, low: t.toLowerCase() }); });
+  if (words.length <= 12) return [0, sentence.length];
+
+  const hits = [];
+  words.forEach((w, k) => { if (want.some(x => w.low.includes(x))) hits.push(k); });
+
+  let lo = -1, hi = -1;
+  if (quantitative) {
+    const figs = [];
+    words.forEach((w, k) => { if (/\d/.test(w.t)) figs.push(k); });
+    if (figs.length) {
+      const near = f => (hits.length ? Math.min(...hits.map(h => Math.abs(h - f))) : 0);
+      const anchor = figs.reduce((bestF, f) => (near(f) < near(bestF) ? f : bestF), figs[0]);
+      lo = Math.max(0, anchor - 7);
+      // Run on a little past the figure to the end of its phrase, so a span
+      // reads as a clause rather than stopping mid-thought: "h = 8 parallel
+      // attention layers, or heads" instead of "h = 8 parallel".
+      hi = anchor;
+      for (let k = anchor + 1; k <= Math.min(words.length - 1, anchor + 4); k++) {
+        hi = k;
+        if (/[.,;:)]$/.test(words[k].t)) break;
+      }
+    }
+  }
+  if (lo < 0) {
+    if (!hits.length) return [0, sentence.length];
+    lo = Math.max(0, hits[0] - 1);
+    hi = Math.min(words.length - 1, Math.max(hits[hits.length - 1], hits[0] + 6));
+  }
+  if (hi - lo > 11) hi = lo + 11;
+
+  const startTok = words[lo].i;
+  const endTok = words[hi].i;
+  const start = toks.slice(0, startTok).join("").length;
+  const end = start + toks.slice(startTok, endTok + 1).join("").length;
+  return [start, end];
+}
+
 function markAnswer(text, question) {
   const qWords = String(question).toLowerCase().match(/[a-z0-9]{3,}/g) || [];
   const want = [...new Set(qWords)].filter(w => !STOP.has(w));
   if (!want.length) return esc(text);
 
-  // Sentence boundaries, keeping the terminator with its sentence. The
-  // lookahead stops "0.1" and "i.e." from splitting one in half.
-  const parts = text.split(/(?<=[.!?])(?=\s+[A-Z"“(])/);
-  if (parts.length < 2) return esc(text);
+  const parts = splitSentences(text);
+  if (!parts.length) return esc(text);
 
-  // Rarer words are worth more: a term appearing in one sentence out of six
-  // says more about which sentence answers than one appearing in all of them.
+  // Rarer words are worth more: a term in one sentence out of six says more
+  // about which sentence answers than one that appears in all of them.
   const spread = {};
   for (const w of want) {
     spread[w] = parts.filter(seg => seg.toLowerCase().includes(w)).length || parts.length;
   }
-  let best = -1, bestScore = 0;
+  let best = -1, top = 0;
   parts.forEach((seg, i) => {
     const low = seg.toLowerCase();
     let sc = 0;
     for (const w of want) if (low.includes(w)) sc += 1 / spread[w];
-    // Long sentences hit more words by chance; normalise, gently.
     sc /= Math.sqrt(Math.max(seg.trim().length, 40));
-    if (sc > bestScore) { bestScore = sc; best = i; }
+    if (sc > top) { top = sc; best = i; }
   });
   if (best < 0) return esc(text);
 
-  return parts.map((seg, i) =>
-    i === best ? `<mark>${esc(seg)}</mark>` : esc(seg)).join("");
+  // Then the answering WORDS inside that sentence. A whole sentence set bold
+  // is most of the passage shouting; the reader still has to find the figure
+  // inside it, which is the job the highlight was meant to do.
+  const [a, b] = answerSpan(parts[best], want, QUANT.test(question));
+  return parts.map((seg, i) => {
+    if (i !== best) return esc(seg);
+    return esc(seg.slice(0, a)) + "<mark>" + esc(seg.slice(a, b)) + "</mark>"
+         + esc(seg.slice(b));
+  }).join("");
 }
 
 /* Which cell of a table answers, scored the same way as which sentence. */
