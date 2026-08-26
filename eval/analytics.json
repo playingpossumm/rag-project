@@ -436,14 +436,14 @@
      "config": "dense",
      "hit_rate": 0.962,
      "mrr": 0.6,
-     "ndcg": 0.637,
+     "ndcg": 0.639,
      "src_recall": 0.859
     },
     {
      "config": "rrf",
      "hit_rate": 0.885,
-     "mrr": 0.574,
-     "ndcg": 0.612,
+     "mrr": 0.576,
+     "ndcg": 0.616,
      "src_recall": 0.841
     },
     {
@@ -457,14 +457,14 @@
      "config": "weighted a=0.5",
      "hit_rate": 0.923,
      "mrr": 0.563,
-     "ndcg": 0.62,
+     "ndcg": 0.621,
      "src_recall": 0.854
     },
     {
      "config": "weighted a=0.7",
      "hit_rate": 0.962,
      "mrr": 0.539,
-     "ndcg": 0.633,
+     "ndcg": 0.635,
      "src_recall": 0.883
     }
    ],
@@ -1052,21 +1052,21 @@
     },
     "results": {
      "path": "eval/results.json",
-     "digest": "sha256:822fe17f90411434"
+     "digest": "sha256:b4706e1957270bfe"
     }
    },
    "birds": {
     "golden": {
      "path": "eval/golden-birds.json",
-     "digest": "sha256:90d5e90eef92d1d0"
+     "digest": "sha256:6da452b97d041254"
     },
     "per_case": {
      "path": "eval/per_case-birds.json",
-     "digest": "sha256:2f4449ac7e011c23"
+     "digest": "sha256:2f362aafde1d9311"
     },
     "results": {
      "path": "eval/results-birds.json",
-     "digest": "sha256:a3f647d3c3e3eda3"
+     "digest": "sha256:f66381477a4d0dce"
     }
    },
    "quant": {
@@ -1080,7 +1080,7 @@
     },
     "results": {
      "path": "eval/results-quant.json",
-     "digest": "sha256:832a02bfc79a59b6"
+     "digest": "sha256:69ee4baa8b7f0cf3"
     }
    }
   }

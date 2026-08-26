@@ -80,9 +80,33 @@ ML pipeline ladder, each row adding one stage:
 Context expansion (ML): none 0.746 recall @ 998 tok · **window±1 0.806 @ 2,355
 (default)** · page 0.851 @ 4,752. Page buys 4.5 points for twice the tokens.
 
-Fusion is corpus-dependent too. On the candidate pool: RRF beats dense-only on
-ML and quant, and **loses** on birds (dense 0.962 vs RRF 0.885), where the more
-dense-weighted the better. Not acted on — 26 cases is too few to move a default.
+Fusion is corpus-dependent too, and the obvious reading of that was wrong.
+On the **candidate pool**, RRF beats dense-only on ML and quant and loses on
+birds — dense 0.962 against RRF 0.885 — which said the bird corpus wanted more
+dense weighting. Measured **end to end at the served configuration**
+(`src/sweep_fusion.py`, 2026-08-27) it reverses:
+
+| birds | pool any-hit | shipped-pipeline any-hit |
+|---|---|---|
+| dense only | **0.962** | **0.808** |
+| RRF *(shipped)* | 0.885 | **0.846** |
+| weighted a=0.5 | 0.923 | 0.885 |
+
+The first stage that finds the answer most often produces the worst final
+answer. A pool is not just a set of passages, it is an *ordering* handed to the
+cross-encoder, and dense hands over one the reranker cannot exploit — the same
+weakness the rerank blend exists to hedge against. **Quote the end-to-end row,
+never the pool row, when arguing about fusion.**
+
+`weighted a=0.5` does win a question on birds (`bird-dialects`, 0.846 → 0.885)
+and costs MRR (0.614 → 0.587) and NDCG. That is the same trade the rerank blend
+was judged on, and this corpus's own note already settles how to read it: on 26
+cases an any-hit gain of one question is thinner evidence than MRR, so **not
+shipped**. On quant, `weighted a=0.7` is weakly dominant — MRR 0.714 → 0.727,
+NDCG +0.006, source recall +0.006, any-hit unchanged — but no case changes
+hands, so it buys a fraction of a rank position at the cost of recalibrating
+that corpus's threshold. Also **not shipped**, and recorded rather than
+forgotten.
 
 Indexing: full cold build **432 s** · re-index nothing changed **0.76 s** ·
 add 1 document to 20 **18.8 s**. Re-ingest reuses embeddings by content hash, so
@@ -637,9 +661,18 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **195 checks** — 22 metrics, 28 loaders, 80
-trace, 8 OCR, 30 freshness, 7 reranker cache, plus 20 answer-highlight checks
-under `node ui/test-answer-mark.mjs`.
+Test counts, as of 2026-08-27: **212 checks** — 22 metrics, 28 loaders, 80
+trace, 8 OCR, 32 freshness, 7 reranker cache, 15 golden-set audit, plus 20
+answer-highlight checks under `node ui/test-answer-mark.mjs`.
+
+Three checks now guard the things that have gone wrong silently before, and
+all three exit non-zero rather than printing a warning nobody reads:
+
+```
+python src/check_freshness.py   # golden set -> per_case -> analytics -> front page
+python src/check_golden.py      # does each golden set still describe its corpus?
+python src/check_docs.py        # do HANDOFF §2 and the README match the measurements?
+```
 
 ---
 
@@ -704,6 +737,9 @@ disclaim current work.
 | `src/test_trace.py` | asserts the trace and the serving path agree under every option |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
+| `src/check_golden.py` | does each golden set still describe the corpus it scores? |
+| `src/check_docs.py` | do the numbers written in HANDOFF §2 and the README match the measurements? |
+| `src/sweep_fusion.py` | every fusion, every corpus, at the configuration served |
 | `src/compare_rerankers.py` | ranking **and** gate separation for a candidate reranker, on every corpus |
 | `ui/answer-mark.js` | which words of a passage are set bold, and the bounds on that |
 | `src/test_freshness.py` | stages each known way that chain has gone stale and asserts it is caught |

@@ -97,9 +97,15 @@ def unreachable(pos: list[float], neg: list[float]) -> int:
     """Answerable questions no threshold can save without losing a catch.
 
     An answerable case scoring below the k-th adversarial cannot be recovered
-    without letting k adversarial cases through. Counting those at k=3 -- half
-    the bird corpus's adversarial set -- gives a number that says how much of
-    the gate's failure is the model's rather than the cut point's.
+    without letting k adversarial cases through. Counting those at k=3 gives a
+    number that says how much of the gate's failure belongs to the model rather
+    than to the cut point.
+
+    Read it DOWN a column, never across one. The bar is the third-highest
+    adversarial score, so a corpus with seventeen adversarial cases sets a
+    higher bar than one with six, and the ML papers' 9 is not worse than the
+    bird corpus's 2 -- the two numbers are answering different questions. Within
+    one corpus, where the bar is fixed, it compares models exactly.
     """
     if len(neg) < 3:
         return sum(1 for p in pos if p < max(neg)) if neg else 0

@@ -118,7 +118,10 @@ def scenario(gold=None, pc=None, res=None, an=None, after=None):
         results = {"corpus": {"chunks": 6, "documents": 2,
                               "answerable_cases": n_ans, "adversarial_cases": n_adv,
                               "k": 5, "candidate_k": 20,
-                              "golden": str(cfg["golden"])}}
+                              "golden": str(cfg["golden"])},
+                   "abstention": {"shipped_threshold": -3.0},
+                   "inputs": {"golden": cf.stamp(cfg["golden"], cases=len(g["cases"])),
+                              "index": cf.stamp(store / "metadata.json", chunks=6)}}
         if res:
             res(results)
         write(cfg["golden"].parent / "results-t.json", results)
@@ -188,7 +191,13 @@ def reword_after(tmp, cfg):
 
 rep = scenario(after=reword_after)
 check("provenance / golden set edited after per_case was written",
-      "golden set has changed" in problems(rep), True)
+      "golden set has changed since eval/per_case-t.json" in problems(rep), True)
+# The same edit must also invalidate the harness run. results.json carried no
+# provenance until 2026-08-27, so a corrected label that changed no case count,
+# no corpus size and no metric left it reported as current -- which is exactly
+# the edit the digest half exists for.
+check("provenance / and the harness run it invalidates too",
+      "golden set has changed since eval/results-t.json" in problems(rep), True)
 check("provenance / and the reworded question is named",
       "reworded" in problems(rep), True)
 
@@ -218,8 +227,11 @@ def reingest(tmp, cfg):
            for i, s in enumerate(["a.pdf", "a.pdf", "a.pdf", "b.pdf", "b.pdf", "b.pdf"])])
 
 
+rep = scenario(after=reingest)
 check("provenance / the index was rebuilt after scoring",
-      "index has been rebuilt" in problems(scenario(after=reingest)), True)
+      "index has been rebuilt since eval/per_case-t.json" in problems(rep), True)
+check("provenance / and after the harness measured it",
+      "index has been rebuilt since eval/results-t.json" in problems(rep), True)
 
 # ---- semantics: these work on files written before provenance existed -------
 check("semantics / a file with no provenance block is still checked",

@@ -162,5 +162,17 @@
     "answerable_median": 2.3441600799560547,
     "adversarial_median": -6.79162073135376
   },
-  "generated_by": "src/evaluate.py"
+  "generated_by": "src/evaluate.py",
+  "inputs": {
+    "golden": {
+      "path": "eval\\golden-quant.json",
+      "digest": "sha256:461e4c8ee2bc06ef",
+      "cases": 41
+    },
+    "index": {
+      "path": "store-quant/metadata.json",
+      "digest": "sha256:6862ae4455af1dfc",
+      "chunks": 6184
+    }
+  }
 }

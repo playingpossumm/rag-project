@@ -14,13 +14,13 @@
     "dense": {
       "hit_rate": 0.962,
       "mrr": 0.6,
-      "ndcg": 0.637,
+      "ndcg": 0.639,
       "src_recall": 0.859
     },
     "rrf": {
       "hit_rate": 0.885,
-      "mrr": 0.574,
-      "ndcg": 0.612,
+      "mrr": 0.576,
+      "ndcg": 0.616,
       "src_recall": 0.841
     },
     "weighted a=0.3": {
@@ -32,13 +32,13 @@
     "weighted a=0.5": {
       "hit_rate": 0.923,
       "mrr": 0.563,
-      "ndcg": 0.62,
+      "ndcg": 0.621,
       "src_recall": 0.854
     },
     "weighted a=0.7": {
       "hit_rate": 0.962,
       "mrr": 0.539,
-      "ndcg": 0.633,
+      "ndcg": 0.635,
       "src_recall": 0.883
     }
   },
@@ -162,5 +162,17 @@
     "answerable_median": 1.1513817310333252,
     "adversarial_median": -8.978403091430664
   },
-  "generated_by": "src/evaluate.py"
+  "generated_by": "src/evaluate.py",
+  "inputs": {
+    "golden": {
+      "path": "eval\\golden-birds.json",
+      "digest": "sha256:6da452b97d041254",
+      "cases": 32
+    },
+    "index": {
+      "path": "store-birds/metadata.json",
+      "digest": "sha256:f128a4e4e4ed4040",
+      "chunks": 864
+    }
+  }
 }
