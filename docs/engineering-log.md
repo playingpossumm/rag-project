@@ -405,6 +405,83 @@ read.
 
 ---
 
+## 2026-08-27 — Optimising: measure first, and the measurement is unambiguous
+
+**The rule this project already learned.** "Re-indexing is slow because the
+index is rebuilt" was a well-formed plan until rebuilding the FAISS index
+measured at 0.01 s — 0% of runtime — and the task had to be redefined. So
+`src/profile_query.py` times each stage separately before anything is touched,
+warm, on real questions from each corpus's own golden set.
+
+| stage | ML papers | Ornithology | Quant |
+|---|---|---|---|
+| embed | 24.7 ms | 25.2 | 24.0 |
+| faiss | 21.3 | 19.5 | 20.4 |
+| bm25 | 36.5 | 5.5 | 36.0 |
+| fuse | 0.1 | 0.1 | 0.1 |
+| **rerank** | **1017.0** | **966.5** | **988.2** |
+| diversify | 0.0 | 0.0 | 0.0 |
+| expand | 8.9 | 2.3 | 9.7 |
+| total | 1108.5 | 1019.1 | 1078.4 |
+
+**Reranking is 92–95% of a query.** Everything else together is about 80 ms.
+There is exactly one stage worth optimising, and the interface's single
+"search, scoring and reranking — 1164 ms" had been hiding which one.
+
+**Two ways to make it cheaper, both measured.**
+
+*Faster execution, same work.* Threads are already at the machine's best — torch
+defaults to 10 of 12 cores, and 4, 2 and 1 are all slower. Padding waste inside
+the batch is 3% on ML and 17% on birds, so length bucketing could buy at most a
+sixth of one stage on one corpus in exchange for reordering logic in the hot
+path. A faster *model* was already ruled out: the quicker candidates are worse
+and the one that separates best is ten times slower. **Nothing to take here.**
+
+*Less work.* `CANDIDATE_K` is 20 and cost is linear in it. Its value was chosen
+for recall headroom with no latency term, because nothing had measured the
+latency. `src/sweep_candidates.py` measures quality and milliseconds together.
+
+**The result, against the shipped 20:**
+
+| candidates | ML any-hit / MRR | birds | quant | rerank time |
+|---|---|---|---|---|
+| 12 | −3.0 / −1.1 | −3.8 / −3.2 | −2.9 / +0.2 | −36 to −42% |
+| **16** | **+0.0 / +0.1** | **+0.0 / −2.6** | **+0.0 / +2.9** | **−21 to −25%** |
+| 20 *(shipped)* | — | — | — | — |
+| 28 | −1.5 / −1.4 | +0.0 / −2.4 | +0.0 / −0.6 | +42 to +49% |
+
+**28 candidates is worse than 20 on all three corpora, while the pool ceiling
+rises on all three** — 0.925 → 0.955 on ML, 0.885 → 0.962 on birds,
+0.943 → 0.971 on quant. More candidates means the answer is available more
+often and returned less often. **The reranker's precision degrades faster than
+the first stage's recall improves**, which is the third time today the same
+shape has appeared: handing this cross-encoder a better pool makes the pipeline
+worse. It is the sharpest statement of "the reranker is the weakest stage" the
+project has, and it came from a latency experiment.
+
+**16 is a real option and is not shipped unilaterally.** Any-hit is *identical*
+on all three corpora, MRR nets +0.4 points across them (+0.1, −2.6, +2.9), and
+it removes roughly 220 ms from a 1,100 ms query. But the −2.6 on birds is a
+regression on a corpus that was not the problem, and this project's rule is that
+such a change is not shippable as a default. It is a trade for the owner to
+make, with the numbers on the table, rather than a decision to slip in under a
+latency heading.
+
+**One thing was fixed rather than measured.** `rerank._score_cache` grows for
+the life of the process and nothing outside a test had ever called
+`clear_cache()`. That was free for its original caller — an evaluation run
+scores a few hundred questions and exits — but `serve.py` imports the same
+module and does not exit, adding `candidate_k` entries per distinct question
+forever, each keyed on a tuple holding the whole chunk text. Bounded at 20,000
+entries with insertion-ordered eviction, trimmed *before* the current query is
+scored rather than after: the scores are written to the cache and then read back
+out of it to build the result, so trimming afterwards would have turned a memory
+bound into a KeyError on the serving path. Three checks in `src/test_rerank.py`
+cover it, including that a query with more candidates than the whole limit still
+returns all of them.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

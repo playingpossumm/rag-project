@@ -108,6 +108,20 @@ hands, so it buys a fraction of a rank position at the cost of recalibrating
 that corpus's threshold. Also **not shipped**, and recorded rather than
 forgotten.
 
+Query latency, measured per stage by `src/profile_query.py` (warm, median):
+**reranking is 92–95% of a query** — about 1,000 ms of 1,100. Embedding, FAISS,
+BM25, fusion, the diversity cap and context expansion together are ~80 ms. Two
+consequences worth carrying: any latency work that is not about the
+cross-encoder is rounding error, and the interface's single "search, scoring and
+reranking" number was hiding which of the three it was.
+
+`src/sweep_candidates.py` measures quality against milliseconds. **28 candidates
+scores worse than 20 on all three corpora while the pool ceiling rises on all
+three** — the reranker's precision degrades faster than the first stage's recall
+improves. 16 candidates gives *identical* any-hit on all three for ~22% less
+time, at −2.6 MRR on birds; a real option, not shipped, because it regresses a
+corpus that was not the problem.
+
 Indexing: full cold build **432 s** · re-index nothing changed **0.76 s** ·
 add 1 document to 20 **18.8 s**. Re-ingest reuses embeddings by content hash, so
 a change that does not alter chunk text costs a re-index and no compute.
@@ -661,8 +675,8 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **212 checks** — 22 metrics, 28 loaders, 80
-trace, 8 OCR, 32 freshness, 7 reranker cache, 15 golden-set audit, plus 20
+Test counts, as of 2026-08-27: **215 checks** — 22 metrics, 28 loaders, 80
+trace, 8 OCR, 32 freshness, 10 reranker cache, 15 golden-set audit, plus 20
 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 Three checks now guard the things that have gone wrong silently before, and
@@ -740,6 +754,8 @@ disclaim current work.
 | `src/check_golden.py` | does each golden set still describe the corpus it scores? |
 | `src/check_docs.py` | do the numbers written in HANDOFF §2 and the README match the measurements? |
 | `src/sweep_fusion.py` | every fusion, every corpus, at the configuration served |
+| `src/profile_query.py` | where the time in one query goes, stage by stage |
+| `src/sweep_candidates.py` | what reranking fewer candidates costs, in quality and in ms |
 | `src/compare_rerankers.py` | ranking **and** gate separation for a candidate reranker, on every corpus |
 | `ui/answer-mark.js` | which words of a passage are set bold, and the bounds on that |
 | `src/test_freshness.py` | stages each known way that chain has gone stale and asserts it is caught |
