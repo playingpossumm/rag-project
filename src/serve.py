@@ -789,6 +789,24 @@ def main():
     print(f"  map        http://{host}:{port}/~/architecture")
     print(f"  api        POST /ask, POST /api/trace")
     print(f"  corpus     {stats['chunks']} chunks from {stats['documents']} documents")
+
+    # The questions this page offers come from eval/analytics.json, which is
+    # generated. It has been stale before -- the front page spent four days
+    # suggesting questions that had already been deleted from the golden set for
+    # being unanswerable, which is the system inviting you to ask it something it
+    # had itself concluded it could not answer. Nothing errored then and nothing
+    # errors now; the server just says so on the way up.
+    try:
+        import check_freshness
+        rep = check_freshness.run()
+        if rep.problems:
+            print(f"  WARNING: {len(rep.problems)} stale eval artefact(s) -- "
+                  f"the questions offered on the front page may not match "
+                  f"the golden set.")
+            print(r"           Run: .venv\Scripts\python.exe src\check_freshness.py")
+    except Exception as e:                      # never block serving on a check
+        print(f"  (freshness check did not run: {e})")
+
     if host not in ("127.0.0.1", "localhost"):
         print("  WARNING: bound to a non-loopback address -- this exposes your "
               "document contents to the network.")
