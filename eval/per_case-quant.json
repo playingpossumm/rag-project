@@ -3,14 +3,28 @@
  "options": {
   "k": 5,
   "candidate_k": 20,
+  "rerank_blend": 0.0,
   "use_reranker": true,
   "fusion": "rrf",
   "max_per_source": 2
  },
- "threshold": 0.0,
+ "threshold": -4.0,
  "corpus": {
+  "name": "quant",
   "chunks": 6184,
   "documents": 35
+ },
+ "inputs": {
+  "golden": {
+   "path": "eval\\golden-quant.json",
+   "digest": "sha256:461e4c8ee2bc06ef",
+   "cases": 41
+  },
+  "index": {
+   "path": "store-quant/metadata.json",
+   "digest": "sha256:6862ae4455af1dfc",
+   "chunks": 6184
+  }
  },
  "totals": {
   "answerable": {
@@ -19,8 +33,8 @@
    "mrr": 0.7143,
    "ndcg": 0.749,
    "src_recall": 0.741,
-   "refused_wrongly": 11,
-   "missed": 1
+   "refused_wrongly": 3,
+   "missed": 2
   },
   "adversarial": {
    "n": 6,
@@ -43,8 +57,8 @@
     "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
    ],
    "confidence": -1.229,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -154,8 +168,8 @@
     "zlend_a_dual_scope_cash_flow_reconstruction_framework_for.pdf"
    ],
    "confidence": -1.053,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -323,8 +337,8 @@
     "the_market_s_conditioning_representation_equilibrium_crowd.pdf"
    ],
    "confidence": -0.21,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -379,8 +393,8 @@
     "large_language_model_driven_small_capitalization_trading_i.pdf"
    ],
    "confidence": -2.304,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -548,8 +562,8 @@
     "multi_level_market_making_with_reinforcement_learning.pdf"
    ],
    "confidence": -3.434,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -776,8 +790,8 @@
     "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
    ],
    "confidence": -1.63,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -887,8 +901,8 @@
     "simulating_stress_laws_under_extremal_dependence_character.pdf"
    ],
    "confidence": -0.619,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -1225,8 +1239,8 @@
     "dependence_informed_sparse_neural_architecture_for_stock_r.pdf"
    ],
    "confidence": -0.203,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "missed",
    "results": [
     {
      "rank": 1,

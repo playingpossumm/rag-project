@@ -3,24 +3,38 @@
  "options": {
   "k": 5,
   "candidate_k": 20,
+  "rerank_blend": 0.2,
   "use_reranker": true,
   "fusion": "rrf",
   "max_per_source": 2
  },
- "threshold": 0.0,
+ "threshold": -3.0,
  "corpus": {
+  "name": "birds",
   "chunks": 864,
   "documents": 45
+ },
+ "inputs": {
+  "golden": {
+   "path": "eval\\golden-birds.json",
+   "digest": "sha256:90d5e90eef92d1d0",
+   "cases": 32
+  },
+  "index": {
+   "path": "store-birds/metadata.json",
+   "digest": "sha256:f128a4e4e4ed4040",
+   "chunks": 864
+  }
  },
  "totals": {
   "answerable": {
    "n": 26,
-   "hit_rate": 0.8077,
-   "mrr": 0.5699,
-   "ndcg": 0.6348,
+   "hit_rate": 0.8462,
+   "mrr": 0.6135,
+   "ndcg": 0.6709,
    "src_recall": 0.7615,
-   "refused_wrongly": 10,
-   "missed": 2
+   "refused_wrongly": 4,
+   "missed": 3
   },
   "adversarial": {
    "n": 6,
@@ -61,22 +75,22 @@
     {
      "rank": 3,
      "source": "bird_vocalization.docx",
-     "locator": "section Anatomy and physiology",
-     "score": 4.258,
-     "relevant": true
-    },
-    {
-     "rank": 4,
-     "source": "bird_vocalization.docx",
      "locator": "section Definition",
      "score": 3.8472,
      "relevant": true
     },
     {
+     "rank": 4,
+     "source": "bird_vocalization.docx",
+     "locator": "section Anatomy and physiology",
+     "score": 4.258,
+     "relevant": true
+    },
+    {
      "rank": 5,
-     "source": "bird_vocalization.pdf",
-     "locator": "page 1",
-     "score": 3.5221,
+     "source": "parrot.xlsx",
+     "locator": "sheet Sections",
+     "score": 3.0413,
      "relevant": true
     }
    ],
@@ -149,23 +163,23 @@
     "feather.pdf",
     "feather.xlsx"
    ],
-   "confidence": -0.953,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "confidence": -1.083,
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
-     "source": "archaeopteryx.docx",
-     "locator": "section Plumage",
-     "score": -0.9526,
-     "relevant": false
-    },
-    {
-     "rank": 2,
      "source": "feather.pdf",
      "locator": "page 2",
      "score": -1.0826,
      "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "archaeopteryx.docx",
+     "locator": "section Plumage",
+     "score": -0.9526,
+     "relevant": false
     },
     {
      "rank": 3,
@@ -178,20 +192,20 @@
      "rank": 4,
      "source": "feather.xlsx",
      "locator": "sheet Sections",
-     "score": -4.3473,
+     "score": -4.5466,
      "relevant": false
     },
     {
      "rank": 5,
      "source": "feather.xlsx",
      "locator": "sheet Sections",
-     "score": -4.5466,
+     "score": -4.3473,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.5,
-   "ndcg": 0.6934,
+   "mrr": 1.0,
+   "ndcg": 0.9197,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -220,15 +234,15 @@
     {
      "rank": 2,
      "source": "feather.xlsx",
-     "locator": "sheet Sections",
-     "score": 1.6612,
+     "locator": "sheet Notes",
+     "score": 1.2233,
      "relevant": true
     },
     {
      "rank": 3,
      "source": "feather.xlsx",
-     "locator": "sheet Notes",
-     "score": 1.2233,
+     "locator": "sheet Sections",
+     "score": 1.6612,
      "relevant": true
     },
     {
@@ -263,8 +277,8 @@
     "feather.pdf"
    ],
    "confidence": -2.974,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -275,17 +289,17 @@
     },
     {
      "rank": 2,
-     "source": "bird_anatomy.docx",
-     "locator": "section Skeletal system",
-     "score": -3.3807,
-     "relevant": true
-    },
-    {
-     "rank": 3,
      "source": "peregrine_falcon.pdf",
      "locator": "page 5",
      "score": -4.2258,
      "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "bird_anatomy.docx",
+     "locator": "section Skeletal system",
+     "score": -3.3807,
+     "relevant": true
     },
     {
      "rank": 4,
@@ -303,8 +317,8 @@
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.5,
-   "ndcg": 0.6309,
+   "mrr": 0.3333,
+   "ndcg": 0.5,
    "src_recall": 0.6667,
    "context_recall": 1.0
   },
@@ -387,16 +401,16 @@
     },
     {
      "rank": 2,
-     "source": "peregrine_falcon.pdf",
-     "locator": "page 8",
-     "score": -0.4135,
+     "source": "budgerigar.pdf",
+     "locator": "page 5",
+     "score": -1.8022,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "budgerigar.pdf",
-     "locator": "page 5",
-     "score": -1.8022,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 8",
+     "score": -0.4135,
      "relevant": false
     },
     {
@@ -445,21 +459,21 @@
      "rank": 2,
      "source": "peregrine_falcon.pdf",
      "locator": "page 8",
-     "score": -0.2996,
+     "score": -1.7187,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "budgerigar.pdf",
-     "locator": "page 5",
-     "score": -1.3587,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 8",
+     "score": -0.2996,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "peregrine_falcon.pdf",
-     "locator": "page 8",
-     "score": -1.7187,
+     "source": "budgerigar.pdf",
+     "locator": "page 5",
+     "score": -1.3587,
      "relevant": false
     },
     {
@@ -484,23 +498,23 @@
    "gold_sources": [
     "origin_of_birds.pptx"
    ],
-   "confidence": 1.869,
+   "confidence": 0.325,
    "abstained": false,
    "outcome": "found",
    "results": [
     {
      "rank": 1,
-     "source": "bird_anatomy.docx",
-     "locator": "section Pygostyle",
-     "score": 1.8687,
-     "relevant": false
-    },
-    {
-     "rank": 2,
      "source": "origin_of_birds.pptx",
      "locator": "slide 4",
      "score": 0.3248,
      "relevant": true
+    },
+    {
+     "rank": 2,
+     "source": "bird_anatomy.docx",
+     "locator": "section Pygostyle",
+     "score": 1.8687,
+     "relevant": false
     },
     {
      "rank": 3,
@@ -525,8 +539,8 @@
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.5,
-   "ndcg": 0.6309,
+   "mrr": 1.0,
+   "ndcg": 1.0,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -649,7 +663,7 @@
     "bird_migration.pdf",
     "bird_migration.xlsx"
    ],
-   "confidence": 1.233,
+   "confidence": 1.097,
    "abstained": false,
    "outcome": "found",
    "results": [
@@ -657,14 +671,14 @@
      "rank": 1,
      "source": "bird_migration.pdf",
      "locator": "page 4",
-     "score": 1.233,
+     "score": 1.0972,
      "relevant": false
     },
     {
      "rank": 2,
      "source": "bird_migration.pdf",
-     "locator": "page 4",
-     "score": 1.0972,
+     "locator": "page 3",
+     "score": -4.0718,
      "relevant": false
     },
     {
@@ -678,14 +692,14 @@
      "rank": 4,
      "source": "bird_migration.xlsx",
      "locator": "sheet Notes",
-     "score": -5.0369,
+     "score": -5.2023,
      "relevant": true
     },
     {
      "rank": 5,
-     "source": "common_raven.pdf",
-     "locator": "page 2",
-     "score": -10.8435,
+     "source": "penguin.docx",
+     "locator": "section Taxonomy",
+     "score": -10.9608,
      "relevant": false
     }
    ],
@@ -693,7 +707,7 @@
    "mrr": 0.25,
    "ndcg": 0.4307,
    "src_recall": 1.0,
-   "context_recall": 1.0
+   "context_recall": 0.0
   },
   {
    "id": "bird-alula",
@@ -731,9 +745,9 @@
     },
     {
      "rank": 4,
-     "source": "bird_flight.xlsx",
-     "locator": "sheet Notes",
-     "score": -7.9938,
+     "source": "feather.pdf",
+     "locator": "page 1",
+     "score": -8.2873,
      "relevant": false
     },
     {
@@ -759,8 +773,8 @@
     "bird_flight.xlsx"
    ],
    "confidence": -0.992,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -793,8 +807,8 @@
     {
      "rank": 5,
      "source": "bird_flight.xlsx",
-     "locator": "sheet Notes",
-     "score": -5.1247,
+     "locator": "sheet Sections",
+     "score": -5.2353,
      "relevant": true
     }
    ],
@@ -814,8 +828,8 @@
     "bird_flight.xlsx"
    ],
    "confidence": -2.306,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -840,22 +854,22 @@
     },
     {
      "rank": 4,
-     "source": "peregrine_falcon.pdf",
-     "locator": "page 2",
-     "score": -5.7813,
-     "relevant": false
-    },
-    {
-     "rank": 5,
      "source": "bird_flight.xlsx",
      "locator": "sheet Notes",
      "score": -6.6737,
      "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "peregrine_falcon.pdf",
+     "locator": "page 2",
+     "score": -5.7813,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.2,
-   "ndcg": 0.3869,
+   "mrr": 0.25,
+   "ndcg": 0.4307,
    "src_recall": 0.5,
    "context_recall": 1.0
   },
@@ -890,24 +904,24 @@
     },
     {
      "rank": 3,
-     "source": "archaeopteryx.docx",
-     "locator": "section Colouration",
-     "score": 2.4207,
-     "relevant": true
-    },
-    {
-     "rank": 4,
      "source": "feather.pdf",
      "locator": "page 4",
      "score": 2.3337,
      "relevant": true
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "archaeopteryx.docx",
      "locator": "section Colouration",
-     "score": 1.6058,
+     "score": 2.4207,
      "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "mute_swan.docx",
+     "locator": "section Description",
+     "score": 0.6027,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
@@ -962,7 +976,7 @@
      "rank": 5,
      "source": "archaeopteryx.docx",
      "locator": "section Colouration",
-     "score": -4.4515,
+     "score": -4.5417,
      "relevant": false
     }
    ],
@@ -1008,16 +1022,16 @@
     },
     {
      "rank": 4,
-     "source": "feather.xlsx",
-     "locator": "sheet Notes",
-     "score": -0.1205,
+     "source": "archaeopteryx.docx",
+     "locator": "section Colouration",
+     "score": -0.8297,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "archaeopteryx.docx",
-     "locator": "section Colouration",
-     "score": -0.8297,
+     "source": "feather.xlsx",
+     "locator": "sheet Notes",
+     "score": -0.1205,
      "relevant": false
     }
    ],
@@ -1037,8 +1051,8 @@
     "new_caledonian_crow.pptx"
    ],
    "confidence": -0.535,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -1064,15 +1078,15 @@
     {
      "rank": 4,
      "source": "new_caledonian_crow.pptx",
-     "locator": "slide 7",
-     "score": -8.1821,
+     "locator": "slide 6",
+     "score": -9.1684,
      "relevant": true
     },
     {
      "rank": 5,
      "source": "new_caledonian_crow.pptx",
-     "locator": "slide 6",
-     "score": -9.1684,
+     "locator": "slide 7",
+     "score": -8.1821,
      "relevant": true
     }
    ],
@@ -1148,8 +1162,8 @@
     "woodpecker.pptx"
    ],
    "confidence": -0.509,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "missed",
    "results": [
     {
      "rank": 1,
@@ -1167,16 +1181,16 @@
     },
     {
      "rank": 3,
-     "source": "bird_vocalization.docx",
-     "locator": "section Definition",
-     "score": -5.0152,
+     "source": "bird_vocalization.pdf",
+     "locator": "page 2",
+     "score": -5.6279,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "bird_vocalization.pdf",
-     "locator": "page 2",
-     "score": -5.6279,
+     "source": "bird_vocalization.docx",
+     "locator": "section Definition",
+     "score": -5.0152,
      "relevant": false
     },
     {
@@ -1230,23 +1244,23 @@
     {
      "rank": 4,
      "source": "bird_vocalization.docx",
-     "locator": "section Definition",
-     "score": -11.05,
-     "relevant": false
+     "locator": "section Social",
+     "score": -11.1396,
+     "relevant": true
     },
     {
      "rank": 5,
-     "source": "mute_swan.docx",
-     "locator": "section Description",
-     "score": -11.1499,
+     "source": "feather.pdf",
+     "locator": "page 4",
+     "score": -11.1688,
      "relevant": false
     }
    ],
-   "hit_rate": 0.0,
-   "mrr": 0.0,
-   "ndcg": 0.0,
+   "hit_rate": 1.0,
+   "mrr": 0.25,
+   "ndcg": 0.4307,
    "src_recall": 1.0,
-   "context_recall": 0.0
+   "context_recall": 1.0
   },
   {
    "id": "bird-mimicry",
@@ -1325,22 +1339,22 @@
     {
      "rank": 2,
      "source": "mallard.pdf",
-     "locator": "page 8",
-     "score": -8.3222,
-     "relevant": false
+     "locator": "page 6",
+     "score": -8.5615,
+     "relevant": true
     },
     {
      "rank": 3,
-     "source": "archaeopteryx.docx",
-     "locator": "section Description",
-     "score": -10.2714,
+     "source": "anatidae.xlsx",
+     "locator": "sheet Notes",
+     "score": -10.3309,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "anatidae.xlsx",
-     "locator": "sheet Notes",
-     "score": -10.3309,
+     "source": "archaeopteryx.docx",
+     "locator": "section Description",
+     "score": -10.2714,
      "relevant": false
     },
     {
@@ -1396,16 +1410,16 @@
     },
     {
      "rank": 4,
-     "source": "budgerigar.pdf",
-     "locator": "page 4",
-     "score": -6.4128,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Breeding",
+     "score": -6.5263,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "eurasian_magpie.docx",
-     "locator": "section Breeding",
-     "score": -6.5263,
+     "source": "bird_egg.pptx",
+     "locator": "slide 2",
+     "score": -7.3586,
      "relevant": false
     }
    ],
@@ -1442,30 +1456,30 @@
     },
     {
      "rank": 2,
-     "source": "eurasian_magpie.docx",
-     "locator": "section Description",
-     "score": -0.14,
-     "relevant": false
-    },
-    {
-     "rank": 3,
      "source": "hummingbird.pdf",
      "locator": "page 2",
      "score": -0.777,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 3,
      "source": "bird_nest.docx",
      "locator": "section Overview",
      "score": -1.4924,
      "relevant": false
     },
     {
+     "rank": 4,
+     "source": "eurasian_magpie.docx",
+     "locator": "section Description",
+     "score": -0.14,
+     "relevant": false
+    },
+    {
      "rank": 5,
-     "source": "golden_eagle.docx",
-     "locator": "section Colour",
-     "score": -1.5861,
+     "source": "bird_nest.pptx",
+     "locator": "slide 2",
+     "score": -2.1741,
      "relevant": false
     }
    ],
@@ -1495,15 +1509,15 @@
     {
      "rank": 2,
      "source": "owl.pptx",
-     "locator": "slide 6",
-     "score": -10.8694,
+     "locator": "slide 7",
+     "score": -10.9796,
      "relevant": false
     },
     {
      "rank": 3,
      "source": "owl.pptx",
-     "locator": "slide 7",
-     "score": -10.9796,
+     "locator": "slide 6",
+     "score": -10.8694,
      "relevant": false
     },
     {
@@ -1541,23 +1555,23 @@
     },
     {
      "rank": 2,
-     "source": "emperor_penguin.pptx",
-     "locator": "slide 6",
-     "score": -10.7114,
-     "relevant": false
-    },
-    {
-     "rank": 3,
      "source": "owl.pptx",
      "locator": "slide 3",
      "score": -10.9288,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 3,
      "source": "ruby_throated_hummingbird.docx",
      "locator": "section Behavior and ecology",
      "score": -10.9874,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 6",
+     "score": -10.7114,
      "relevant": false
     },
     {
@@ -1595,23 +1609,23 @@
     },
     {
      "rank": 3,
-     "source": "origin_of_birds.pptx",
-     "locator": "slide 2",
-     "score": -11.0677,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "emperor_penguin.pptx",
      "locator": "slide 6",
      "score": -11.1374,
      "relevant": false
     },
     {
+     "rank": 4,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 2",
+     "score": -11.0677,
+     "relevant": false
+    },
+    {
      "rank": 5,
-     "source": "bird.docx",
-     "locator": "section Dinosaurs and the origin of birds",
-     "score": -11.187,
+     "source": "bird_vocalization.docx",
+     "locator": "section Social",
+     "score": -11.2029,
      "relevant": false
     }
    ]
@@ -1636,8 +1650,8 @@
     {
      "rank": 2,
      "source": "peregrine_falcon.pdf",
-     "locator": "page 2",
-     "score": -8.3246,
+     "locator": "page 8",
+     "score": -9.1763,
      "relevant": false
     },
     {
@@ -1689,16 +1703,16 @@
     },
     {
      "rank": 3,
-     "source": "origin_of_birds.pptx",
-     "locator": "slide 4",
-     "score": -7.5544,
+     "source": "bird_migration.pdf",
+     "locator": "page 1",
+     "score": -8.5822,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "bird_migration.pdf",
-     "locator": "page 1",
-     "score": -8.5822,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 4",
+     "score": -7.5544,
      "relevant": false
     },
     {
@@ -1743,9 +1757,9 @@
     },
     {
      "rank": 4,
-     "source": "arctic_tern.xlsx",
+     "source": "corvidae.xlsx",
      "locator": "sheet Notes",
-     "score": -7.7455,
+     "score": -10.7202,
      "relevant": false
     },
     {

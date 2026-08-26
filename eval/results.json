@@ -6,7 +6,9 @@
     "adversarial_cases": 17,
     "k": 5,
     "candidate_k": 20,
-    "golden": "C:\\Users\\owner\\Desktop\\rag-project\\eval\\golden_set.json"
+    "golden": "eval\\golden_set.json",
+    "name": "llm",
+    "rerank_blend": 0.0
   },
   "candidate_pool": {
     "dense": {
@@ -157,7 +159,8 @@
     "best_net_threshold": 2,
     "n_answerable": 67,
     "n_adversarial": 17,
-    "answerable_median": 4.934403419494629
+    "answerable_median": 4.934403419494629,
+    "adversarial_median": -0.17716829478740692
   },
   "generated_by": "src/evaluate.py"
 }
