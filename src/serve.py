@@ -545,10 +545,14 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, ARCH_FILE.read_bytes(), "text/html; charset=utf-8")
 
-        elif route == "/pipeline-map.js":
-            f = UI_FILE.parent / "pipeline-map.js"
+        elif route in ("/pipeline-map.js", "/answer-mark.js"):
+            # answer-mark.js holds the logic that decides which words of a
+            # passage are set bold. It lived inline in index.html, where nothing
+            # could run it without a browser; it is a separate module so
+            # ui/test-answer-mark.mjs can.
+            f = UI_FILE.parent / route.lstrip("/")
             if not f.exists():
-                self._send(404, {"error": "ui/pipeline-map.js is missing"})
+                self._send(404, {"error": f"ui{route} is missing"})
                 return
             self._raw(200, f.read_bytes(), "text/javascript; charset=utf-8")
 
