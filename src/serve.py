@@ -110,6 +110,10 @@ class Resources:
         """The active corpus's calibrated cut point, or 0.0 if nobody set one."""
         return (self.corpus or {}).get("threshold") or 0.0
 
+    def rerank_blend(self) -> float:
+        """How much first-stage ordering this corpus keeps through reranking."""
+        return (self.corpus or {}).get("rerank_blend") or 0.0
+
     def reload(self):
         """Re-read the index after a rebuild, so serving matches what is on disk."""
         with self.lock:
@@ -437,6 +441,7 @@ def chat(question: str, payload: dict) -> dict:
         trace = attach_locators(trace_pipeline(
             question, RES.index, RES.metadata, RES.model, bm25=RES.bm25,
             k=int(payload.get("k", 5)), threshold=RES.threshold(),
+                                            rerank_blend=RES.rerank_blend(),
             **trace_options(payload)))
 
     trace["attribution"] = attribution_for(question, trace)
@@ -743,7 +748,8 @@ class Handler(BaseHTTPRequestHandler):
                     result = attach_locators(trace_pipeline(
                         question, RES.index, RES.metadata, RES.model,
                         bm25=RES.bm25, k=int(payload.get("k", 5)),
-                        threshold=RES.threshold(), **trace_options(payload)))
+                        threshold=RES.threshold(),
+                                            rerank_blend=RES.rerank_blend(), **trace_options(payload)))
                 result["attribution"] = attribution_for(question, result)
                 self._send(200, result)
             else:

@@ -46,13 +46,40 @@ def clear_cache() -> None:
     _score_cache.clear()
 
 
-def rerank(query: str, candidates: list[dict], k: int, model=None) -> list[dict]:
+# How much the first stage still counts once the cross-encoder has spoken.
+#
+# At 0.0 the cross-encoder's ordering replaces the first stage's outright, which
+# is what this did for its whole life. That discards real evidence. Retrieval
+# and reranking disagree in a specific way: the bi-encoder scores topical
+# aboutness and the cross-encoder scores whether a passage answers, and when the
+# question describes a term rather than naming it -- "the burst of collective
+# singing at first light" -- the cross-encoder has little to work with and its
+# ordering is close to arbitrary. Asked that, fusion ranked the right passage
+# FIRST and reranking moved it to seventh.
+#
+# Blending is on RANKS, not scores. Cross-encoder outputs are raw logits and
+# fusion outputs are RRF values; neither is calibrated and they are not on a
+# common scale, so combining the numbers would be meaningless. Combining the
+# orderings is the same reciprocal-rank trick already used to fuse dense and
+# BM25, applied one stage later.
+# 0.0 by default: the cross-encoder decides alone, which is what every corpus
+# but one measured best with. Set per corpus in corpora.json, the same way the
+# abstention threshold is, and for the same reason -- it does not transfer.
+RERANK_BLEND = 0.0
+RRF_K = 60
+
+
+def rerank(query: str, candidates: list[dict], k: int, model=None,
+           blend: float | None = None) -> list[dict]:
     """Re-score candidates against the query jointly, returning the best k.
 
     Each candidate keeps its original bi-encoder `score` under `retrieval_score`
     so the two stages can be compared, and gains a `rerank_score`. Cross-encoder
     scores are raw logits -- ordering is meaningful, absolute values are not, and
     they are not comparable to cosine similarities.
+
+    `blend` is how much weight the first stage's ordering keeps; 0.0 reproduces
+    the old behaviour of letting the cross-encoder decide alone.
     """
     if not candidates:
         return []
@@ -67,10 +94,26 @@ def rerank(query: str, candidates: list[dict], k: int, model=None) -> list[dict]
         for (_i, c), score in zip(todo, fresh):
             _score_cache[(query, c["text"])] = float(score)
 
+    w = RERANK_BLEND if blend is None else blend
     ranked = [
         {**c, "retrieval_score": c.get("score"),
-         "rerank_score": _score_cache[(query, c["text"])]}
-        for c in candidates
+         "rerank_score": _score_cache[(query, c["text"])],
+         "first_stage_rank": i + 1}
+        for i, c in enumerate(candidates)
     ]
-    ranked.sort(key=lambda c: c["rerank_score"], reverse=True)
+
+    if w <= 0:
+        ranked.sort(key=lambda c: c["rerank_score"], reverse=True)
+        return ranked[:k]
+
+    # Rank by the cross-encoder, then fuse that ordering with the one the
+    # candidates arrived in.
+    by_ce = sorted(ranked, key=lambda c: c["rerank_score"], reverse=True)
+    ce_rank = {id(c): i + 1 for i, c in enumerate(by_ce)}
+    for c in ranked:
+        c["blended_score"] = (
+            (1 - w) / (RRF_K + ce_rank[id(c)])
+            + w / (RRF_K + c["first_stage_rank"])
+        )
+    ranked.sort(key=lambda c: c["blended_score"], reverse=True)
     return ranked[:k]

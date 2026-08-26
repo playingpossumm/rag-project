@@ -62,6 +62,11 @@ def registry() -> dict[str, dict]:
             # nothing better was available" is the whole point of this module.
             "threshold": cfg.get("threshold"),
             "calibrated": cfg.get("threshold") is not None,
+            # How much of the first stage's ordering survives reranking. Like
+            # the threshold, it was measured per corpus and does not transfer:
+            # 0.2 is worth a question and four points of MRR on the bird set
+            # and costs a question on each of the other two.
+            "rerank_blend": float(cfg.get("rerank_blend") or 0.0),
             "indexed": bool(store and (store / "metadata.json").exists()),
         }
     return out
