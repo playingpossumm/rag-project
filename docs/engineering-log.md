@@ -1,0 +1,292 @@
+# Engineering log
+
+Every attempt, including the ones that were wrong. Started 2026-08-26.
+
+`HANDOFF.md` records where the project **is**; this records how it got there,
+and specifically what was tried and refuted. The project's own §4 argues that a
+measurement overturning a plan is worth more than a feature that ships — this is
+where those measurements live in full, rather than compressed to one row of a
+table.
+
+Rules for entries: state the hypothesis before the result, give the number, and
+say what was done about it. An entry whose outcome is "no change" is worth as
+much as one that ships something, and is more likely to be forgotten.
+
+---
+
+## 2026-08-26 — A freshness check for the chain the front page reads
+
+**Why.** Generated files had gone stale silently three times. The worst was
+`per_case.json` sitting four days out of date, which meant the front page was
+offering questions that had already been deleted from the golden set as
+unanswerable — the system inviting people to ask it things it had itself
+concluded it could not answer. Only `RESULTS.md` had a `--check`.
+
+**Built.** `src/check_freshness.py`, covering
+`golden set → per_case → analytics → the front page`, two ways:
+
+| kind | what it catches | what it misses |
+|---|---|---|
+| provenance — a digest of every input recorded in the output | an edit that changes no count, e.g. rewording one question in place | anything about a file written before provenance existed |
+| semantics — case ids, question strings, corpus sizes, threshold, blend | the front page offering a deleted question; a corpus that grew | an edit that leaves all of those identical |
+
+Neither alone is enough, which is why both are there. Exit code is the contract;
+`serve.py` warns on startup without blocking; `src/test_freshness.py` stages each
+known failure on a synthetic corpus and asserts it is reported (30 checks).
+
+**What it found on its first run against the real repo.** The trap the project
+names first, in the two scripts that produce every published number.
+`per_case.py` imported `ABSTAIN_THRESHOLD` — the ML papers' `0.0` — and scored
+every corpus against it, and never set a rerank blend at all. `evaluate.py` did
+the same with the threshold.
+
+| | claimed | actually served |
+|---|---|---|
+| birds, answerable wrongly refused | 10 of 26 | **4 of 26** |
+| quant, answerable wrongly refused | 11 of 35 | **3 of 35** |
+| birds, per-case any-hit | 0.808 | **0.846** |
+| birds, per-case MRR | 0.570 | **0.614** |
+
+Both scripts now resolve threshold, blend *and index* from `corpora.json` via the
+golden set. Re-running left every retrieval figure in `results*.json` identical
+to three decimals — the evidence that the change measured nothing new, only
+corrected which pipeline was being described.
+
+**Smaller things found on the way.**
+
+- `answerable_median` in `evaluate.py` was `sorted(scores)[len(scores) // 2]` —
+  the upper middle value, not the median. On the 26 even-sized bird cases it
+  reported +1.21 where `analytics.json`, using `statistics.median`, said +1.15.
+  One quantity, two documents, two values.
+- `build_analytics.py` mapped corpora to eval files with a hardcoded table. A
+  corpus added to `corpora.json` and not to that table was skipped in silence,
+  and the front page then offered it the ML papers' fallback questions.
+- README said the bird corpus holds 900 passages. It holds 864.
+
+---
+
+## 2026-08-26 — The bird gate was calibrated against a pipeline nobody runs
+
+**Hypothesis.** With the confidences re-measured on the served pipeline, the
+bird threshold `-3.0` might no longer be right — it was derived at rerank blend
+0.00 on a corpus that ships 0.20.
+
+**Measured.** It was dominated. Every threshold in `(-6.48, -4.55]` catches the
+same five of six adversarial cases and wrongly refuses **three** of twenty-six
+rather than four.
+
+| cut | answerable lost | adversarial caught |
+|---|---|---|
+| −3.0 *(was)* | 4 | 5 |
+| **−5.5 *(now)*** | **3** | 5 |
+| −7.0 | 3 | 4 |
+
+**Shipped −5.5**, the middle of the interval — 0.95 of margin before it refuses
+an answerable question, 0.98 before it stops catching an adversarial one. An
+edge would fit the threshold to a single case. Retrieval untouched: any-hit
+0.846, MRR 0.614.
+
+**Checked on all three corpora before shipping**, because the trap is tuning to
+the one that prompted the question. ML's `0.0` and quant's `-4.0` are already on
+the frontier — every lowering costs catches. Only birds was dominated.
+
+**Tooling flaw this exposed.** `calibrate_threshold.py` had its grid hardcoded to
+`[-4 .. +4]`, which is where the ML papers' scores live and nowhere near the bird
+corpus's — every question deciding that corpus's threshold sits below −4. The
+tool used to calibrate a corpus could not display the region being calibrated.
+The grid is derived from the observed scores now, and it reports the *interval* a
+threshold sits in rather than a grid point, because nothing changes until a cut
+point crosses an actual score.
+
+---
+
+## 2026-08-27 — The score cache claimed to be keyed on the model and was not
+
+**Found while preparing to compare rerankers.** `rerank._score_cache` was keyed
+on `(query, chunk text)`. The comment directly above it had always read "scores
+are a pure function of (query, chunk text, model)".
+
+Nothing had ever swapped cross-encoders inside one process, so nothing caught
+it. The first thing that would have is a reranker comparison — and it would have
+reported every candidate model as scoring **exactly** like whichever loaded
+first. That is not an error anyone questions; it looks like a null result.
+
+Fixed by keying on the model name and taking the name as the argument rather
+than an already-constructed model object, whose identity a cache cannot read.
+`src/test_rerank.py` proves it with two stub encoders differing only by name —
+7 checks, and verified to fail 2 when the old two-part key is put back, with the
+telling failure `got 1.0, want -1.0`: the second model served the first's score
+and was never even asked.
+
+---
+
+## 2026-08-27 — A better cross-encoder: what the measurement actually said
+
+**Hypothesis.** `ms-marco-MiniLM-L-6-v2` is weak on questions that *describe* a
+term rather than naming it — "the burst of collective singing at first light" —
+and the bird corpus has the headroom to show it: the candidate pool holds the
+answer 96.2% of the time and the pipeline returns it 84.6%.
+
+**First, the harness had to be rebuilt.** `compare_rerankers.py` was ML-only: it
+hardcoded a list of failing ML case ids, called `load_index()` with no store, set
+no rerank blend, and measured a single number (top-1 from an answering
+document). It could not run on the corpus with the headroom.
+
+Rewritten to measure **two failures, not one**, because reranking fails in two
+ways and only one of them shows up in any-hit:
+
+- **ordering** — any-hit, MRR, NDCG, source recall
+- **scoring** — the gate reads the cross-encoder's score of the top passage, and
+  on the bird corpus three of the seven failures are questions whose answer the
+  pipeline *found* and then refused to show
+
+Scores from two models are on different scales, so holding a threshold fixed
+across models measures the scale, not the separation. The gate half is therefore
+reported threshold-free as **AUC** — P(a random answerable outscores a random
+adversarial) — plus `unreachable`, the count of answerable questions scoring
+below the third-highest adversarial, which no threshold can save.
+
+**Result on the bird corpus (26 answerable + 6 adversarial):**
+
+| model | any-hit | MRR | AUC | unreachable |
+|---|---|---|---|---|
+| MiniLM-L6 *(shipped)* | **0.846** | **0.614** | 0.859 | 2 |
+| MiniLM-L12 | 0.808 | 0.594 | 0.878 | 1 |
+| BGE-reranker-base (278M) | 0.769 | 0.596 | **0.968** | **0** |
+
+**The bigger models rank worse and separate better.** That was not the expected
+shape at all, and it is the finding: the two halves of the reranker's job move in
+opposite directions as the model grows. A straight swap is not available —
+BGE would trade two ranking failures for a perfect gate.
+
+**A latency number that was wrong, and how it was caught.** The first run
+reported BGE at 1,576,300 ms/query — 1700× the shipped model, against the
+project's own earlier measurement of 10 s/query on the ML papers. A 150×
+disagreement with a prior measurement is a reason to distrust the new one. Timed
+again with nothing else running: **244 ms/pair against 25 ms/pair, 9.8×**. The
+first figure measured a contended machine — several evaluation runs, a server
+and a browser were competing — not a model. Quality metrics were unaffected,
+being deterministic.
+
+**Hypothesis that followed, and was refuted.** Ranking needs a score for twenty
+candidates; the gate needs one. So let the expensive model do only the half it
+wins at — rank with L6, gate with BGE, at a twentieth of BGE's cost.
+
+| configuration | any-hit | AUC | unreachable |
+|---|---|---|---|
+| L6 *(shipped)* | 0.846 | 0.859 | 2 |
+| L6 rank + **BGE** gate | 0.846 | **0.827** | 3 |
+| L6 rank + **L12** gate | 0.846 | **0.878** | 1 |
+
+**BGE as a gate alone is worse than the shipped model**, despite scoring 0.968
+when it also did the ranking. Its separation was partly self-consistency: a model
+scores its own pick confidently, and handed someone else's pick it separates
+worse than MiniLM does. The AUC of a model ranking-and-gating is not the AUC of
+that model gating. Assuming those are the same quantity is the mistake the split
+row was written to test, and it was a real one.
+
+**The verdict, on all three corpora.** Nothing here is shippable, and the
+reason is the finding.
+
+| against the shipped MiniLM-L6 | ML papers | Ornithology | Quant |
+|---|---|---|---|
+| **L12 as gate only** — AUC | −0.020 | **+0.019** | −0.009 |
+| — unreachable | 9 → 18 | **2 → 1** | 2 → 3 |
+| **L12 as full reranker** — any-hit | **+0.015** | −0.038 | +0.000 |
+| — MRR | +0.004 | −0.020 | **+0.025** |
+| — AUC | −0.023 | **+0.019** | **+0.010** |
+
+The gate swap helps one corpus and hurts two. The full swap trades one ML case
+won for one bird case lost, improves quant's MRR, and costs 2× the latency. Both
+**rejected**, and they join the two refutations already in HANDOFF §4.
+
+**What the measurement actually established**, which is worth more than the swap
+would have been:
+
+1. **Ranking quality and gate separation are not the same axis, and across
+   models they move in opposite directions.** L12 ranks better than L6 on the ML
+   papers and worse on birds; it separates worse on ML and better on birds.
+   There is no ordering of these models by "better".
+2. **A model's separation while it ranks is not its separation while it gates.**
+   BGE scored AUC 0.968 choosing and scoring its own top passage, and 0.827
+   scoring MiniLM's. Part of that 0.968 was self-consistency — a model is
+   confident about its own pick. Anyone comparing rerankers on AUC alone would
+   have read 0.968 as a reason to swap.
+3. **The "it does not transfer" law now covers the model too**, alongside the
+   abstention threshold and the rerank blend. That is three independent
+   settings, measured separately, all corpus-specific. It is the strongest form
+   of the project's own thesis and it was not assumed — each one was found by
+   shipping the opposite first.
+
+**So the next move on this stage is not a bigger cross-encoder.** The failure is
+specific — questions that describe a term rather than naming it — and a
+cross-encoder of any size reads the same words. The fix that addresses the
+mechanism is query decomposition, which needs an LLM, which needs credit. That
+is now measured rather than asserted.
+
+---
+
+## 2026-08-27 — The answer highlight: moved, bounded, and measured
+
+**Why.** The interface sets the answering words bold inside a passage shown at
+normal weight. That logic lived inline in a two-thousand-line HTML file, so
+nothing could run it without a browser, and nothing ever had. Every claim about
+it — "only the answering words", "at most a sentence" — described code no test
+had executed.
+
+**Moved** to `ui/answer-mark.js` (with `clean` and `fragment`, the page's own
+text tidying, so a test sees exactly the string the page marks), served at
+`/answer-mark.js`, and given a contract in `ui/test-answer-mark.mjs`:
+
+- at most one sentence is ever marked, and never the whole passage
+- the mark is a contiguous run of at most `MAX_MARK_WORDS` (12)
+- a mark carries two distinct question words, or one and a figure, or there is
+  no mark
+- the passage survives marking character for character
+
+**Two real defects, both found by measuring rather than reading.**
+
+*An unbounded path.* When the chosen sentence contained no question word,
+`answerSpan` marked the **entire sentence** — the one case with the least
+justification for marking anything. Now it marks nothing.
+
+*A word bound is not a length bound.* Swept over the real top passage for every
+question in all three golden sets — 450 passages, 157 questions — one mark
+covered **82.7%** of its passage while satisfying "at most twelve words". The
+passage was a bibliography entry and the mark was a markdown link: four words,
+359 characters. Added `MAX_MARK_CHARS` (180) and applied it to the
+short-sentence early return, which had been bypassing every bound below it.
+
+| across 450 real passages | before | after |
+|---|---|---|
+| median share of passage set bold | 3.6% | 3.6% |
+| 90th percentile | 6.2% | 6.2% |
+| **maximum** | **82.3%** | **38.8%** |
+| marks over the bound | 1 | 0 |
+| marks spanning two sentences | 0 | 0 |
+
+The median did not move, which is the point: the fix touched the tail and left
+the ordinary case alone.
+
+**One more, found while writing the test.** `splitSentences` treated
+"Vaswani et al. (2017) introduced…" as two sentences — terminator, whitespace,
+capital. A false boundary is the mirror image of a missed one and much harder to
+notice: it does not run the mark into the next sentence, it cuts the answer in
+half. It went unseen on a corpus of academic papers, which is exactly where
+those abbreviations live.
+
+---
+
+## 2026-08-27 — Smaller things
+
+- `compare_rerankers.py` crashed **after** writing its results, on
+  `Path.relative_to` with a relative `--emit`. A finished measurement looked
+  like a failed run. Guarded.
+- A Playwright screenshot script died on `UnicodeEncodeError` printing a marked
+  run containing `ϵ`. The console is cp1252; `sys.stdout.reconfigure` is
+  required in anything that prints corpus text, and the handoff says so.
+- The first bird-corpus screenshot of this session asked a bird question against
+  the ML corpus. It refused, at −10.86, and said so plainly. Not a defect — the
+  gate doing its job, caught on camera.
+
+---

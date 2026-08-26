@@ -139,6 +139,8 @@ as a success.
 | The reranker misses constraint words because it's too small | an 8× model (BGE 278M) fixed the *same* 2/10 cases at 10 s/query | upgrade **rejected** |
 | Tables retrieve badly, need special handling | tables measured **easier** than prose (0.952 vs 0.800 any-hit), 91% keep headers | **no code written** |
 | Re-indexing is slow because the index is rebuilt | rebuilding the FAISS index is **0.01 s = 0%** of runtime | task **redefined** — caching + lazy loading instead |
+| A stronger cross-encoder will fix the descriptive questions | ranking and gate separation move in **opposite** directions across models; L12 ranks better on ML, worse on birds | swap **rejected**, all three corpora measured |
+| Let the strong model do only the gate, at 1/20 the cost | BGE scored AUC 0.968 ranking *and* gating, 0.827 gating MiniLM's pick — the gain was self-consistency | idea **refuted by its own harness** |
 
 **Corollary that keeps biting: render it and look at it.** Screenshotting the UI
 with Playwright caught four defects invisible in source, three of them in code
@@ -626,8 +628,18 @@ Ranked by value: **(1) is worth more than everything else combined**, and only
 the owner can unblock it — and the folder intake in (7) is now the mechanism for
 doing so, so it no longer needs files copied into `data/`. (8) is done.
 
-Test counts, as of 2026-08-26: **168 checks** — 22 metrics, 28 loaders, 80
-trace, 8 OCR, 30 freshness.
+**The cross-encoder question is now answered, and the answer is no.** Measured
+on all three corpora 2026-08-27: MiniLM-L12 and BGE-reranker-base both trade a
+gain on one corpus for a loss on another, and the two halves of the reranker's
+job — ordering and scoring — move in opposite directions as the model grows.
+Neither is shippable. The mechanism behind the remaining failures is questions
+that *describe* a term rather than naming it, and a cross-encoder of any size
+reads the same words; the fix that addresses it is query decomposition, which
+needs credit. Full numbers in `docs/engineering-log.md`.
+
+Test counts, as of 2026-08-27: **195 checks** — 22 metrics, 28 loaders, 80
+trace, 8 OCR, 30 freshness, 7 reranker cache, plus 20 answer-highlight checks
+under `node ui/test-answer-mark.mjs`.
 
 ---
 
@@ -690,7 +702,10 @@ disclaim current work.
 | `docs/ui-brief.md` | the UI design interview and direction (superseded in part) |
 | `eval/per_case.json` | every golden-set case's outcome, written by `src/per_case.py` |
 | `src/test_trace.py` | asserts the trace and the serving path agree under every option |
+| `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
+| `src/compare_rerankers.py` | ranking **and** gate separation for a candidate reranker, on every corpus |
+| `ui/answer-mark.js` | which words of a passage are set bold, and the bounds on that |
 | `src/test_freshness.py` | stages each known way that chain has gone stale and asserts it is caught |
 | `docs/phase-1-field-notes.html` | mechanism-level explanation, Phases 1–3 (published artifact) |
 | `git log` | why each decision was made, including the reversals |
