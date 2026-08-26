@@ -15,6 +15,17 @@ per-case number here and an aggregate number there cannot disagree -- the
 aggregates in this file's `totals` are the mean of its own rows, which is a
 check on both.
 
+The corpus's own settings come from corpora.json, resolved from the golden set,
+because for most of this script's life they did not. It imported the module
+constant ABSTAIN_THRESHOLD -- the ML papers' 0.0 -- and scored every corpus
+against it, and never set a rerank blend at all. On the bird corpus, which ships
+-3.0 and 0.20, that produced a file claiming ten answerable questions were
+wrongly refused where the served configuration refuses four, and confidences
+from a reranker weighted differently from the one behind the answer on screen.
+Nothing errored: a threshold is a number and every number was present. This is
+the same trap `results.json` fell into by sharing one path across corpora, and
+`src/check_freshness.py` now fails when the file and corpora.json disagree.
+
     .venv\\Scripts\\python.exe src\\per_case.py             # serving defaults
     .venv\\Scripts\\python.exe src\\per_case.py --no-rerank
 """
@@ -25,7 +36,10 @@ from pathlib import Path
 
 from sentence_transformers import SentenceTransformer
 
+import corpora
+import rerank as _rerank
 from abstain import ABSTAIN_THRESHOLD
+from check_freshness import artefact_suffix, stamp
 from evaluate import (GOLDEN_SET, context_recall, gold_keys, gold_sources, hit_rate,
                       is_relevant, load_cases, ndcg, reciprocal_rank,
                       source_recall)
@@ -37,6 +51,20 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 OUT = Path(__file__).parent.parent / "eval" / "per_case.json"
+
+
+def corpus_for(golden: Path) -> dict | None:
+    """The corpus this golden set belongs to, by filename.
+
+    A corpus and its questions travel together, and so do its index, its
+    threshold and its rerank blend. Matching on the filename is the same rule
+    evaluate.py uses; matching on the full path would fail the moment either
+    side is passed a relative path.
+    """
+    for cfg in corpora.registry().values():
+        if cfg["golden"] and Path(cfg["golden"]).name == golden.name:
+            return cfg
+    return None
 
 
 def outcome(case: dict, results: list[dict], gold: set, confident: bool) -> str:
@@ -77,16 +105,34 @@ def main() -> int:
     # last owned it, and eval/analytics.json -- which is what the interface
     # offers as example questions -- is built from these files.
     if args.emit is None:
-        stem = args.golden.stem
-        suffix = "" if stem in ("golden_set", "golden") else stem.split("-", 1)[-1]
-        args.emit = OUT.parent / ("per_case.json" if not suffix
-                                  else f"per_case-{suffix}.json")
+        args.emit = OUT.parent / f"per_case{artefact_suffix(args.golden)}.json"
+
+    # Everything that does not transfer between corpora, read from the one file
+    # that records it per corpus. Falling back to the module constants is only
+    # for a golden set corpora.json does not know about, and it says so.
+    cfg = corpus_for(args.golden)
+    threshold = ABSTAIN_THRESHOLD
+    blend = _rerank.RERANK_BLEND
+    store = None
+    if cfg:
+        threshold = cfg["threshold"] if cfg["calibrated"] else 0.0
+        blend = cfg["rerank_blend"]
+        store = cfg["store"]
+        _rerank.RERANK_BLEND = blend
+        print(f"corpus {cfg['name']} ({cfg['label']}): threshold {threshold:+.1f}, "
+              f"rerank blend {blend:.2f}, index {store.name}")
+    else:
+        print(f"{args.golden.name} is not in corpora.json -- using the module "
+              f"defaults: threshold {threshold:+.1f}, rerank blend {blend:.2f}")
 
     opts = dict(use_reranker=not args.no_rerank, fusion=args.fusion,
                 max_per_source=args.max_per_source or None)
 
     answerable, adversarial = load_cases(args.golden)
-    index, metadata = load_index()
+    # The store comes from the corpus, not from RAG_STORE_DIR, so a golden set
+    # can no longer be scored against another corpus's index by forgetting an
+    # environment variable.
+    index, metadata = load_index(store)
     model = SentenceTransformer(EMBEDDING_MODEL)
     bm25 = build_bm25(metadata)
 
@@ -106,7 +152,7 @@ def main() -> int:
         # off -- there is no calibrated score on that path, and 0 would compare
         # as "at the threshold" in anything that read this file.
         top = results[0].get("rerank_score") if results and not args.no_rerank else None
-        confident = (top >= ABSTAIN_THRESHOLD) if top is not None else True
+        confident = (top >= threshold) if top is not None else True
 
         row = {
             "id": case["id"],
@@ -147,12 +193,21 @@ def main() -> int:
     adv_rows = [r for r in rows if r["unanswerable"]]
     mean = lambda key, src: round(sum(r[key] for r in src) / len(src), 4) if src else None
 
+    # What this file was built from, so a later change to either input is
+    # detectable rather than silent. src/check_freshness.py reads this.
+    inputs = {"golden": stamp(args.golden, cases=len(answerable) + len(adversarial))}
+    if store:
+        inputs["index"] = stamp(store / "metadata.json", chunks=len(metadata))
+
     payload = {
         "generated_by": "src/per_case.py",
-        "options": {"k": args.k, "candidate_k": args.candidate_k, **opts},
-        "threshold": ABSTAIN_THRESHOLD,
-        "corpus": {"chunks": len(metadata),
+        "options": {"k": args.k, "candidate_k": args.candidate_k,
+                    "rerank_blend": blend, **opts},
+        "threshold": threshold,
+        "corpus": {"name": cfg["name"] if cfg else None,
+                   "chunks": len(metadata),
                    "documents": len({c["source"] for c in metadata})},
+        "inputs": inputs,
         "totals": {
             "answerable": {
                 "n": len(ans_rows),

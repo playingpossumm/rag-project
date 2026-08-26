@@ -6,7 +6,9 @@
     "adversarial_cases": 6,
     "k": 5,
     "candidate_k": 20,
-    "golden": "eval\\golden-quant.json"
+    "golden": "eval\\golden-quant.json",
+    "name": "quant",
+    "rerank_blend": 0.0
   },
   "candidate_pool": {
     "dense": {
@@ -153,11 +155,12 @@
         "false_abstain": 17
       }
     ],
-    "shipped_threshold": 0.0,
+    "shipped_threshold": -4.0,
     "best_net_threshold": -6,
     "n_answerable": 35,
     "n_adversarial": 6,
-    "answerable_median": 2.3441600799560547
+    "answerable_median": 2.3441600799560547,
+    "adversarial_median": -6.79162073135376
   },
   "generated_by": "src/evaluate.py"
 }

@@ -14,13 +14,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 import corpora  # noqa: E402
+from check_freshness import artefact, stamp  # noqa: E402
 
 ROOT = Path(__file__).parent.parent
 OUT = ROOT / "eval" / "analytics.json"
-
-# Which eval artefacts belong to which corpus. The ML corpus was the first and
-# its files are unsuffixed, which is why this is a table rather than a pattern.
-SUFFIX = {"llm": "", "birds": "-birds", "quant": "-quant"}
 
 # The order the harness reports configurations in is the order they were added,
 # which is not the order they compose in. This is the ladder: each row adds one
@@ -31,8 +28,16 @@ METRICS = [("hit_rate", "Hit rate @5"), ("mrr", "MRR"),
            ("ndcg", "NDCG"), ("src_recall", "Source recall")]
 
 
-def load(name: str, stem: str):
-    p = ROOT / "eval" / f"{stem}{SUFFIX[name]}.json"
+def load(cfg: dict, kind: str):
+    """One eval artefact for one corpus, or None if it has not been run.
+
+    Which file belongs to which corpus used to be a hardcoded table here, and a
+    corpus added to corpora.json but not to the table was skipped in silence --
+    the front page then offered it the fallback questions, which are about the
+    ML papers. The name is derived from the golden set now, by the same rule
+    evaluate.py and per_case.py use to write it.
+    """
+    p = artefact(kind, cfg["golden"])
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
 
 
@@ -104,17 +109,28 @@ def examples(cases: list[dict]) -> list[dict]:
 
 
 def build():
-    data = {"generated_by": "src/build_analytics.py", "corpora": []}
+    data = {"generated_by": "src/build_analytics.py", "corpora": [],
+            # Which files each entry was built from. This is what makes a
+            # rebuilt per_case.json that nobody followed with a rebuild here
+            # detectable: every count still agrees and every number is old.
+            # src/check_freshness.py compares these against what is on disk.
+            "inputs": {"corpora_json": stamp(corpora.CONFIG)["digest"],
+                       "per_corpus": {}}}
     reg = corpora.registry()
 
     for name, cfg in reg.items():
-        if name not in SUFFIX or not cfg["indexed"]:
+        if not cfg["indexed"] or not cfg["golden"]:
             continue
-        res = load(name, "results")
-        per = load(name, "per_case")
+        res = load(cfg, "results")
+        per = load(cfg, "per_case")
         if not res or not per:
             print(f"  {name}: no eval artefacts, skipped")
             continue
+        data["inputs"]["per_corpus"][name] = {
+            "golden": stamp(cfg["golden"]),
+            "per_case": stamp(artefact("per_case", cfg["golden"])),
+            "results": stamp(artefact("results", cfg["golden"])),
+        }
 
         cases = per["cases"]
         ans = [c["confidence"] for c in cases if not c["unanswerable"]]

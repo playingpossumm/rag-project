@@ -25,6 +25,7 @@ import json
 import math
 import re
 import sys
+import statistics as st
 from pathlib import Path
 
 from sentence_transformers import SentenceTransformer
@@ -198,18 +199,33 @@ def main():
     # harness ignored it the two would disagree about the same pipeline: birds
     # ships at 0.20 and would be measured at 0.00. Match on the golden set.
     import rerank as _rr
+    corpus_cfg = None
+    try:
+        import corpora as _c
+        for _c_cfg in _c.registry().values():
+            if _c_cfg["golden"] and Path(_c_cfg["golden"]).name == args.golden.name:
+                corpus_cfg = _c_cfg
+                break
+    except Exception:
+        pass
     if args.rerank_blend is not None:
         _rr.RERANK_BLEND = args.rerank_blend
+    elif corpus_cfg:
+        _rr.RERANK_BLEND = corpus_cfg["rerank_blend"]
+
+    # The threshold is the other setting that does not transfer, and it was
+    # still being read from the module constant here -- so a bird run recorded
+    # `shipped_threshold: 0.0` while corpora.json ships -3.0 for that corpus,
+    # and the paragraph printed under it reasoned about a gate nobody serves.
+    shipped = (corpus_cfg["threshold"] if corpus_cfg and corpus_cfg["calibrated"]
+               else ABSTAIN_THRESHOLD)
+    if corpus_cfg:
+        print(f"corpus {corpus_cfg['name']} ({corpus_cfg['label']}): threshold "
+              f"{shipped:+.1f}, rerank blend {_rr.RERANK_BLEND}, "
+              f"index {corpus_cfg['store'].name}")
     else:
-        try:
-            import corpora as _c
-            for _cfg in _c.registry().values():
-                if _cfg["golden"] and Path(_cfg["golden"]).name == args.golden.name:
-                    _rr.RERANK_BLEND = _cfg["rerank_blend"]
-                    break
-        except Exception:
-            pass
-    print(f"rerank blend: {_rr.RERANK_BLEND}")
+        print(f"{args.golden.name} is not in corpora.json -- module defaults: "
+              f"threshold {shipped:+.1f}, rerank blend {_rr.RERANK_BLEND}")
 
     if args.emit is None:
         stem = args.golden.stem                      # golden_set / golden-birds
@@ -226,7 +242,11 @@ def main():
                      "expansion": {}, "abstention": {}}
 
     answerable, adversarial = load_cases(args.golden)
-    index, metadata = load_index()
+    # From the corpus rather than from RAG_STORE_DIR, so a golden set cannot be
+    # scored against another corpus's index by forgetting an environment
+    # variable. The env var still decides when the golden set is not one of
+    # the configured corpora.
+    index, metadata = load_index(corpus_cfg["store"] if corpus_cfg else None)
     model = SentenceTransformer(EMBEDDING_MODEL)
     bm25 = build_bm25(metadata)
 
@@ -358,11 +378,17 @@ def main():
     ans_scores = [top1(c) for c in answerable]
     adv_scores = [top1(c) for c in adversarial]
 
+    # `sorted(x)[len(x) // 2]` is the upper middle value, not the median, and on
+    # an even-sized set the two differ: 26 bird cases reported +1.21 here and
+    # +1.15 in eval/analytics.json, which uses statistics.median. One number,
+    # two documents, two values -- the same kind of silent disagreement the
+    # generated files exist to prevent, and only visible because both were
+    # written down.
     print("\nABSTENTION CALIBRATION")
     print(f"  answerable   n={len(ans_scores):<3} min {min(ans_scores):+.2f}  "
-          f"median {sorted(ans_scores)[len(ans_scores) // 2]:+.2f}  max {max(ans_scores):+.2f}")
+          f"median {st.median(ans_scores):+.2f}  max {max(ans_scores):+.2f}")
     print(f"  unanswerable n={len(adv_scores):<3} min {min(adv_scores):+.2f}  "
-          f"median {sorted(adv_scores)[len(adv_scores) // 2]:+.2f}  max {max(adv_scores):+.2f}")
+          f"median {st.median(adv_scores):+.2f}  max {max(adv_scores):+.2f}")
 
     by_kind = {}
     for case, score in zip(adversarial, adv_scores):
@@ -398,7 +424,6 @@ def main():
     # readings can be compared, because they disagree: the rate says +2 is a
     # clear win, and in cases it is break-even.
     ratio = len(ans_scores) / len(adv_scores)
-    shipped = ABSTAIN_THRESHOLD
     print(f"\n  best net separation at threshold {best[0]} (net {best[1]:.3f})"
           f"  -- but read the caveat")
     print(f"  CAVEAT: `net` subtracts rates over {len(adv_scores)} adversarial and "
@@ -417,7 +442,11 @@ def main():
     emitted["abstention"]["best_net_threshold"] = best[0]
     emitted["abstention"]["n_answerable"] = len(ans_scores)
     emitted["abstention"]["n_adversarial"] = len(adv_scores)
-    emitted["abstention"]["answerable_median"] = sorted(ans_scores)[len(ans_scores) // 2]
+    emitted["abstention"]["answerable_median"] = st.median(ans_scores)
+    emitted["abstention"]["adversarial_median"] = st.median(adv_scores)
+    if corpus_cfg:
+        emitted["corpus"]["name"] = corpus_cfg["name"]
+        emitted["corpus"]["rerank_blend"] = _rr.RERANK_BLEND
 
 
     if args.emit:

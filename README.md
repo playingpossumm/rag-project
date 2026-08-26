@@ -265,9 +265,12 @@ python src/calibrate_threshold.py --golden eval/golden-birds.json
 ```bash
 python src/evaluate.py         # reproduce every number in this README
 python src/per_case.py         # per-case outcomes -> eval/per_case.json
+python src/build_analytics.py  # what the pages plot -> eval/analytics.json
+python src/check_freshness.py  # is any of the above stale? exit 1 if so
 python src/hard_cases.py       # only the cases nothing gets right, in ~20s
 python src/test_metrics.py     # the scoring functions, hand-computed (ms)
 python src/test_trace.py       # the trace and the serving path still agree
+python src/test_freshness.py   # the staleness check catches each known failure
 python src/serve.py            # local HTTP API and UI on :8000
 python src/test_loaders.py     # .docx/.pptx/.xlsx/.pdf round-trips
 ```

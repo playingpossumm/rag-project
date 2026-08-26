@@ -47,7 +47,7 @@ single most reused finding in this project, see §4.
 | source recall | 0.760 | 0.762 | 0.741 |
 | abstention threshold | 0.0 | −3.0 | −4.0 |
 | rerank blend | 0.0 | 0.20 | 0.0 |
-| answerable median | +4.93 | +1.21 | +2.34 |
+| answerable median | +4.93 | +1.15 | +2.34 |
 
 Shipped config throughout: RRF fusion, cross-encoder rerank, diversity cap
 2/source, window±1 context expansion.
@@ -60,6 +60,12 @@ measures what the server serves.
 `eval/RESULTS.md` tables are **generated** from `eval/results.json` by
 `src/build_results_doc.py`; `--check` fails when they have drifted. The prose
 around them is not generated.
+
+The other generated chain — golden set -> `per_case*.json` -> `analytics.json`
+-> the questions the front page offers — is checked by
+`python src/check_freshness.py`, which exits 1 when any link is stale and prints
+the commands that rebuild it in order. `src/serve.py` runs it on startup and
+warns rather than blocking. See §7.
 
 ML pipeline ladder, each row adding one stage:
 
@@ -415,14 +421,55 @@ and the question was unanswerable. Fixing the questions moved that corpus from
 0.543 to 0.886 any-hit with retrieval untouched. **When a corpus scores badly,
 read the failing questions before concluding anything about retrieval.**
 
-**Generated files go stale silently, and it has happened three times.**
+**Generated files went stale silently three times, and that is now checked.**
+`python src/check_freshness.py` covers the chain `golden set -> per_case ->
+analytics -> the front page`, the one that had no test. It works two ways,
+because they fail differently: each generated file records a digest of the files
+it was built from (exact -- it catches rewording one question in place, which
+changes no count), and case ids, question strings, corpus sizes and the
+per-corpus threshold and blend are compared directly (weaker, but it works on
+files written before provenance existed and names the question rather than a
+hash). `src/test_freshness.py` stages each known failure on a synthetic corpus
+and asserts the check reports it -- 30 checks, hermetic, milliseconds.
+
+**And it found a live instance of the trap it was written for.** `per_case.py`
+imported `ABSTAIN_THRESHOLD` -- the ML papers' 0.0 -- and scored every corpus
+against it, and never set a rerank blend at all. `evaluate.py` did the same with
+the threshold. So:
+
+| | claimed | serves |
+|---|---|---|
+| birds, answerable wrongly refused | 10 of 26 | **4 of 26** |
+| quant, answerable wrongly refused | 11 of 35 | **3 of 35** |
+| birds, per-case any-hit | 0.808 | **0.846** |
+| birds, per-case MRR | 0.570 | **0.614** |
+| birds/quant `shipped_threshold` in results | +0.0 | **-3.0 / -4.0** |
+
+The bird rows moved because the blend moved: the file was measuring a reranker
+weighted differently from the one behind the answer on screen. Both scripts now
+resolve threshold, blend *and index* from `corpora.json` via the golden set, so
+a corpus can no longer be scored against another's index by forgetting
+`RAG_STORE_DIR`. Re-running everything left every retrieval figure in
+`results*.json` **identical** to three decimals, which is the evidence the
+resolution change measured nothing new -- only the abstention block moved.
+
+`per_case.py` and `evaluate.py` now agree to three decimals on all three
+corpora from separate code paths; before the fix birds read 0.808 against 0.846.
+
+One more thing fell out: `answerable_median` in `evaluate.py` was
+`sorted(scores)[len(scores) // 2]`, the upper middle value rather than the
+median. On the 26 even-sized bird cases that reported **+1.21** where
+`analytics.json`, which uses `statistics.median`, said **+1.15** -- one quantity,
+two documents, two values. Now `statistics.median` in both. §2 updated.
+
+The original entry, kept because the history is the argument:
 `results.json` was shared by every corpus so the last run owned it;
 `RESULTS.md` claimed to be copied from it and was typed by hand; `per_case.json`
 had the same shared-path bug and had not been regenerated for four days, so the
 interface was offering questions I had just deleted as unanswerable. Only
-`RESULTS.md` has a `--check`. **The chain `per_case -> analytics -> the
-interface` still has no freshness test.** That is the most valuable small thing
-left.
+`RESULTS.md` had a `--check`, and the chain `per_case -> analytics -> the
+interface` had no freshness test at all -- which is what made it the most
+valuable small thing left, and what the entry above closes.
 
 **Blocked, not forgotten:** the API key has no credit, so generated prose and
 query decomposition have never run. Everything the interface shows is the
@@ -547,6 +594,9 @@ Ranked by value: **(1) is worth more than everything else combined**, and only
 the owner can unblock it — and the folder intake in (7) is now the mechanism for
 doing so, so it no longer needs files copied into `data/`. (8) is done.
 
+Test counts, as of 2026-08-26: **168 checks** — 22 metrics, 28 loaders, 80
+trace, 8 OCR, 30 freshness.
+
 ---
 
 ## 8. Published artifacts — update, never re-publish
@@ -608,5 +658,7 @@ disclaim current work.
 | `docs/ui-brief.md` | the UI design interview and direction (superseded in part) |
 | `eval/per_case.json` | every golden-set case's outcome, written by `src/per_case.py` |
 | `src/test_trace.py` | asserts the trace and the serving path agree under every option |
+| `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
+| `src/test_freshness.py` | stages each known way that chain has gone stale and asserts it is caught |
 | `docs/phase-1-field-notes.html` | mechanism-level explanation, Phases 1–3 (published artifact) |
 | `git log` | why each decision was made, including the reversals |

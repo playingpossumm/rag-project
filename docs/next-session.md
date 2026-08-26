@@ -15,7 +15,7 @@ STATE: three corpora, all measured, all green.
   ML papers    36 docs  5,459 passages   any-hit 0.851
   Ornithology  45 docs    864 passages   any-hit 0.846
   Quant        35 docs  6,184 passages   any-hit 0.886
-  138 checks passing: 22 metrics, 28 loaders, 80 trace, 8 OCR.
+  168 checks passing: 22 metrics, 28 loaders, 80 trace, 8 OCR, 30 freshness.
   Working tree clean, everything pushed.
 
 RUN IT:  python src/serve.py      then http://127.0.0.1:8000/
@@ -24,13 +24,21 @@ TEST IT: python src/test_metrics.py test_loaders.py test_trace.py test_ocr.py
 
 ## The three things worth doing next
 
-**1. A freshness check for the eval chain.** The highest-value small job. A
-generated file has gone stale silently three times now: `results.json` shared
-between corpora so the last run owned it, `RESULTS.md` claiming to be copied
-from it while being typed by hand, and `per_case.json` four days out of date —
-which meant the front page was offering questions I had just deleted as
-unanswerable. Only `RESULTS.md` has `--check`. The chain
-`per_case → analytics → the interface` has none.
+**1. ~~A freshness check for the eval chain.~~ Done 2026-08-26.**
+`src/check_freshness.py` checks the whole chain — golden set → `per_case` →
+`analytics` → the questions the front page offers — two ways: a digest of every
+input recorded in each generated file, and a direct comparison of case ids,
+question strings, corpus sizes and the per-corpus threshold and blend. Exit code
+is the contract, `src/serve.py` warns on the way up, and `src/test_freshness.py`
+reproduces each known failure to prove the check catches it.
+
+It found a live one on its first run and that finding is worth more than the
+check: `per_case.py` and `evaluate.py` both read the threshold from the module
+constant, so every corpus was scored at the ML papers' 0.0 and the birds at
+rerank blend 0.00 rather than the 0.20 they ship. `per_case-birds.json` claimed
+ten answerable questions were wrongly refused where the served configuration
+refuses four, and its retrieval numbers were a pipeline nobody runs. Both now
+resolve the corpus from `corpora.json`. See HANDOFF §7.
 
 **2. A better cross-encoder.** The bird candidate pool contains the answer 96.2%
 of the time; the pipeline returns it 84.6%. Blending 20% of the first stage back

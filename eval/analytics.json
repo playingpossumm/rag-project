@@ -405,30 +405,30 @@
     {
      "config": "dense + rerank",
      "hit_rate": 0.846,
-     "mrr": 0.603,
-     "ndcg": 0.663,
-     "src_recall": 0.736
+     "mrr": 0.601,
+     "ndcg": 0.655,
+     "src_recall": 0.717
     },
     {
      "config": "rrf + rerank",
-     "hit_rate": 0.808,
-     "mrr": 0.568,
-     "ndcg": 0.632,
-     "src_recall": 0.723
+     "hit_rate": 0.846,
+     "mrr": 0.612,
+     "ndcg": 0.667,
+     "src_recall": 0.742
     },
     {
      "config": "+ diversity 2/src",
-     "hit_rate": 0.808,
-     "mrr": 0.57,
-     "ndcg": 0.635,
+     "hit_rate": 0.846,
+     "mrr": 0.613,
+     "ndcg": 0.671,
      "src_recall": 0.762
     },
     {
      "config": "+ diversity 1/src",
      "hit_rate": 0.731,
-     "mrr": 0.551,
-     "ndcg": 0.595,
-     "src_recall": 0.782
+     "mrr": 0.59,
+     "ndcg": 0.623,
+     "src_recall": 0.774
     }
    ],
    "pool": [
@@ -476,15 +476,15 @@
      -4.55,
      -2.974,
      -2.306,
+     -1.083,
      -0.992,
-     -0.953,
      -0.535,
      -0.509,
+     0.325,
      0.397,
+     1.097,
      1.206,
-     1.233,
      1.819,
-     1.869,
      1.974,
      2.586,
      3.273,
@@ -506,7 +506,7 @@
      1.921
     ]
    },
-   "median_answerable": 1.526,
+   "median_answerable": 1.151,
    "median_adversarial": -8.979,
    "sweep": [
     {
@@ -581,7 +581,7 @@
     },
     {
      "t": -1.0,
-     "refused": 6,
+     "refused": 7,
      "caught": 5
     },
     {
@@ -596,17 +596,17 @@
     },
     {
      "t": 0.5,
-     "refused": 11,
+     "refused": 12,
      "caught": 5
     },
     {
      "t": 1.0,
-     "refused": 11,
+     "refused": 12,
      "caught": 5
     },
     {
      "t": 1.5,
-     "refused": 13,
+     "refused": 14,
      "caught": 5
     },
     {
@@ -1037,5 +1037,52 @@
     }
    ]
   }
- ]
+ ],
+ "inputs": {
+  "corpora_json": "sha256:a041af2e9dc34fcd",
+  "per_corpus": {
+   "llm": {
+    "golden": {
+     "path": "eval/golden_set.json",
+     "digest": "sha256:774df32543b9232f"
+    },
+    "per_case": {
+     "path": "eval/per_case.json",
+     "digest": "sha256:5144d08619a50ebe"
+    },
+    "results": {
+     "path": "eval/results.json",
+     "digest": "sha256:822fe17f90411434"
+    }
+   },
+   "birds": {
+    "golden": {
+     "path": "eval/golden-birds.json",
+     "digest": "sha256:90d5e90eef92d1d0"
+    },
+    "per_case": {
+     "path": "eval/per_case-birds.json",
+     "digest": "sha256:977c6566e6e8b3d4"
+    },
+    "results": {
+     "path": "eval/results-birds.json",
+     "digest": "sha256:a5b3914b5dc84cd5"
+    }
+   },
+   "quant": {
+    "golden": {
+     "path": "eval/golden-quant.json",
+     "digest": "sha256:461e4c8ee2bc06ef"
+    },
+    "per_case": {
+     "path": "eval/per_case-quant.json",
+     "digest": "sha256:43e82e0eb2d618b7"
+    },
+    "results": {
+     "path": "eval/results-quant.json",
+     "digest": "sha256:832a02bfc79a59b6"
+    }
+   }
+  }
+ }
 }
