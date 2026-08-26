@@ -199,8 +199,24 @@ def build_chunks(path: Path, tokenizer, cache: ParseCache | None = None) -> tupl
     status, reason = verdict(report)
     title = extract_title(units, path)
 
+    # A unit that is only its own heading carries no answer. The DOCX loader
+    # emits one per section, and a document whose first section is just the
+    # article title produces a passage of seventeen characters -- literally
+    # "Bird vocalization". Thirty-six of those were indexed for the bird corpus
+    # (4% of it, against 2 in 5,459 for the ML papers, which are PDFs), and
+    # they can be retrieved: one ranked FIRST for "what is the burst of
+    # collective singing at first light called". A citation pointing at a
+    # heading tells the reader nothing they can check.
+    #
+    # Forty characters, because that is comfortably below any real sentence and
+    # comfortably above a heading. Counted on the cleaned text so whitespace and
+    # markdown do not disguise an empty unit as a full one.
+    MIN_UNIT_CHARS = 40
+
     chunks = []
     for unit in units:
+        if len(" ".join(unit["text"].split())) < MIN_UNIT_CHARS:
+            continue
         pieces = chunk_text(unit["text"], tokenizer, CHUNK_SIZE_TOKENS, CHUNK_OVERLAP_TOKENS)
         for piece in pieces:
             chunks.append({
