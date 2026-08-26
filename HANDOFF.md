@@ -45,7 +45,7 @@ single most reused finding in this project, see §4.
 | any-hit@5 | **0.851** | **0.846** | **0.886** |
 | MRR | 0.738 | 0.613 | 0.714 |
 | source recall | 0.760 | 0.762 | 0.741 |
-| abstention threshold | 0.0 | −3.0 | −4.0 |
+| abstention threshold | 0.0 | −5.5 | −4.0 |
 | rerank blend | 0.0 | 0.20 | 0.0 |
 | answerable median | +4.93 | +1.15 | +2.34 |
 
@@ -443,7 +443,7 @@ the threshold. So:
 | quant, answerable wrongly refused | 11 of 35 | **3 of 35** |
 | birds, per-case any-hit | 0.808 | **0.846** |
 | birds, per-case MRR | 0.570 | **0.614** |
-| birds/quant `shipped_threshold` in results | +0.0 | **-3.0 / -4.0** |
+| birds/quant `shipped_threshold` in results | +0.0 | **-3.0 / -4.0** *(birds since recalibrated, below)* |
 
 The bird rows moved because the blend moved: the file was measuring a reranker
 weighted differently from the one behind the answer on screen. Both scripts now
@@ -461,6 +461,38 @@ One more thing fell out: `answerable_median` in `evaluate.py` was
 median. On the 26 even-sized bird cases that reported **+1.21** where
 `analytics.json`, which uses `statistics.median`, said **+1.15** -- one quantity,
 two documents, two values. Now `statistics.median` in both. §2 updated.
+
+**Then the bird threshold, which the correction above made worth re-deriving.**
+`-3.0` was calibrated against confidences measured at rerank blend 0.00 on a
+corpus that ships 0.20 -- a gate tuned to a pipeline the server does not run. On
+the re-measured scores `-3.0` is **dominated**: every threshold in
+`(-6.48, -4.55]` catches the same five of six adversarial cases and wrongly
+refuses **three** of twenty-six rather than four. Shipped **-5.5**, the middle of
+that interval -- 0.95 of margin before it refuses an answerable question, 0.98
+before it stops catching an adversarial one. An edge of the interval would fit
+the threshold to a single case.
+
+Retrieval is untouched: any-hit stays 0.846, MRR 0.614. Only the gate moved, and
+it recovered `bird-incubation`, whose answer the pipeline had already retrieved
+into the top five.
+
+Checked on all three corpora before shipping, because the trap is tuning to one:
+the ML papers' 0.0 and quant's -4.0 are both already on the frontier -- every
+lowering costs catches. Only birds was dominated.
+
+`src/calibrate_threshold.py` could not have found this. Its grid was hardcoded
+to `[-4 .. +4]`, which is where the ML papers' scores live and nowhere near the
+bird corpus's, so the tool used to calibrate that corpus could not display the
+region being calibrated. The grid is derived from the scores now, and it reports
+the interval a threshold sits in rather than only a grid point, because -4.6 and
+-5.9 do the same thing today and only one of them survives the corpus growing.
+
+**What this does not fix, and it is the honest half:** `bird-dawn-chorus`
+(-10.68) and `bird-imprinting` (-8.28) are questions whose answer the pipeline
+retrieved into the top five and whose passage the cross-encoder then scored
+below three of the six adversarial cases. No threshold recovers those without
+losing catches. That is the reranker's calibration, not the gate's, and it is
+the next item.
 
 The original entry, kept because the history is the argument:
 `results.json` was shared by every corpus so the last run owned it;

@@ -390,7 +390,7 @@
     "xlsx": 11,
     "pdf": 10
    },
-   "threshold": -3.0,
+   "threshold": -5.5,
    "calibrated": true,
    "n_answerable": 26,
    "n_adversarial": 6,
@@ -640,7 +640,7 @@
     "caught": 5
    },
    "at_calibrated": {
-    "refused": 4,
+    "refused": 3,
     "caught": 5
    },
    "gold_mean": 2.62,
@@ -1039,7 +1039,7 @@
   }
  ],
  "inputs": {
-  "corpora_json": "sha256:a041af2e9dc34fcd",
+  "corpora_json": "sha256:26c5ad8c1fbe9010",
   "per_corpus": {
    "llm": {
     "golden": {
@@ -1062,11 +1062,11 @@
     },
     "per_case": {
      "path": "eval/per_case-birds.json",
-     "digest": "sha256:977c6566e6e8b3d4"
+     "digest": "sha256:2f4449ac7e011c23"
     },
     "results": {
      "path": "eval/results-birds.json",
-     "digest": "sha256:a5b3914b5dc84cd5"
+     "digest": "sha256:a3f647d3c3e3eda3"
     }
    },
    "quant": {

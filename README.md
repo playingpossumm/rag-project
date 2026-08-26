@@ -35,7 +35,7 @@ The system ships with three corpora, deliberately unlike each other:
 | set | documents | passages | formats | refuses below |
 |---|---|---|---|---|
 | ML & NLP papers | 36 | 5,459 | PDF | 0.0 |
-| Ornithology | 45 | 900 | DOCX, PPTX, XLSX, PDF | −3.0 |
+| Ornithology | 45 | 864 | DOCX, PPTX, XLSX, PDF | −5.5 |
 | Quantitative finance | 35 | 6,184 | PDF | −4.0 |
 
 The abstention threshold — the score below which the system declines to answer
