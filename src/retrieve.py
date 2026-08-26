@@ -148,6 +148,10 @@ def retrieve(
     max_per_source: int | None = DEFAULT_MAX_PER_SOURCE,
     allowed_ids: list[int] | None = None,
     query_expansion: str = "none",
+    # How much of the first stage's ordering survives reranking. None takes
+    # the module default in rerank.py, which is 0.0 -- the cross-encoder
+    # deciding alone. Set per corpus, because it does not transfer.
+    rerank_blend: float | None = None,
 ) -> list[dict]:
     """Full retrieval pipeline: shortlist, rerank, then expand context.
 
@@ -165,7 +169,8 @@ def retrieve(
                                query_expansion=query_expansion)
         # Rerank the whole pool, then select k. Selecting first would give the
         # diversity step nothing to choose between.
-        ranked = rerank(query, candidates, k=len(candidates))
+        ranked = rerank(query, candidates, k=len(candidates),
+                         blend=rerank_blend)
         results = (diversify(ranked, k=k, max_per_source=max_per_source)
                    if max_per_source else ranked[:k])
     else:

@@ -71,6 +71,8 @@ def trace_pipeline(
     alpha: float = 0.5,
     expansion: str = "none",
     threshold: float | None = None,
+    # How much of the first stage's ordering survives reranking, per corpus.
+    rerank_blend: float | None = None,
 ) -> dict:
     """Run retrieval, recording every intermediate ranking.
 
@@ -216,7 +218,8 @@ def trace_pipeline(
     # ---- stage 4: reranking ------------------------------------------------
     fused_rank = {c["chunk_id"]: i for i, c in enumerate(fused_list, 1)}
     if use_reranker:
-        ranked = rerank(query, fused_list, k=len(fused_list))
+        ranked = rerank(query, fused_list, k=len(fused_list),
+                        blend=rerank_blend)
         moves = [{**_identity(c), "rank": i,
                   "score": round(float(c["rerank_score"]), 3),
                   "was": fused_rank[c["chunk_id"]],

@@ -5,7 +5,8 @@
     "store": "vector_store",
     "golden": "eval/golden_set.json",
     "threshold": 0.0,
-    "note": "36 arXiv papers. Calibrated: at 0.0 the gate wrongly refuses 1 of 66 answerable questions (1.5%) and catches 9 of 18 adversarial. Lowering costs more catching than it recovers here, which is why this corpus kept the value the whole project was built on."
+    "note": "36 arXiv papers. Calibrated: at 0.0 the gate wrongly refuses 1 of 66 answerable questions (1.5%) and catches 9 of 18 adversarial. Lowering costs more catching than it recovers here, which is why this corpus kept the value the whole project was built on.",
+    "rerank_blend": 0.0
   },
   "birds": {
     "label": "Ornithology",
@@ -13,7 +14,8 @@
     "store": "store-birds",
     "golden": "eval/golden-birds.json",
     "threshold": -3.0,
-    "note": "45 Wikipedia documents, mixed .docx/.pptx/.xlsx/.pdf. Calibrated 2026-08-21: at the ML value of 0.0 this corpus wrongly refuses 10 of 26 answerable questions (38.5%). At -3 it catches exactly as many adversarial cases and recovers six of them for nothing."
+    "note": "45 Wikipedia documents, mixed .docx/.pptx/.xlsx/.pdf. Calibrated 2026-08-21: at the ML value of 0.0 this corpus wrongly refuses 10 of 26 answerable questions (38.5%). At -3 it catches exactly as many adversarial cases and recovers six of them for nothing. Reranking keeps 20% of the first stage's ordering here (rerank_blend), which the other two corpora measured worse with: any-hit 0.808 -> 0.846 and MRR 0.570 -> 0.613, against -1.5 and -2.9 any-hit on the ML and quant sets at the same weight. On 26 cases the any-hit gain is one question, so MRR is the more trustworthy half of that.",
+    "rerank_blend": 0.2
   },
   "quant": {
     "label": "Quantitative finance",
@@ -21,6 +23,7 @@
     "store": "store-quant",
     "golden": "eval/golden-quant.json",
     "threshold": -4.0,
-    "note": "35 arXiv q-fin papers. Recalibrated 2026-08-26 after the golden set was rewritten: -6, -5 and -4 all catch every one of the six adversarial cases and wrongly refuse the same three of thirty-five, so the shipped -4 stands. At 0.0 it would refuse eleven. The earlier note claimed 0.0 refused nineteen of thirty-five; that was measured against a golden set asking textbook definitional questions this corpus never answers, and those questions scored low because they were unanswerable, not because the threshold was wrong. Answerable questions now score a median of +2.34, against -0.38 before."
+    "note": "35 arXiv q-fin papers. Recalibrated 2026-08-26 after the golden set was rewritten: -6, -5 and -4 all catch every one of the six adversarial cases and wrongly refuse the same three of thirty-five, so the shipped -4 stands. At 0.0 it would refuse eleven. The earlier note claimed 0.0 refused nineteen of thirty-five; that was measured against a golden set asking textbook definitional questions this corpus never answers, and those questions scored low because they were unanswerable, not because the threshold was wrong. Answerable questions now score a median of +2.34, against -0.38 before.",
+    "rerank_blend": 0.0
   }
 }
