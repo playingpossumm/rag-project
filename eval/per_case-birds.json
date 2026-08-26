@@ -8,7 +8,7 @@
   "fusion": "rrf",
   "max_per_source": 2
  },
- "threshold": -3.0,
+ "threshold": -5.5,
  "corpus": {
   "name": "birds",
   "chunks": 864,
@@ -33,7 +33,7 @@
    "mrr": 0.6135,
    "ndcg": 0.6709,
    "src_recall": 0.7615,
-   "refused_wrongly": 4,
+   "refused_wrongly": 3,
    "missed": 3
   },
   "adversarial": {
@@ -1384,8 +1384,8 @@
     "peregrine_falcon.pdf"
    ],
    "confidence": -4.55,
-   "abstained": true,
-   "outcome": "refused_wrongly",
+   "abstained": false,
+   "outcome": "found",
    "results": [
     {
      "rank": 1,

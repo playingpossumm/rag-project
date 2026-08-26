@@ -155,7 +155,7 @@
         "false_abstain": 16
       }
     ],
-    "shipped_threshold": -3.0,
+    "shipped_threshold": -5.5,
     "best_net_threshold": -6,
     "n_answerable": 26,
     "n_adversarial": 6,
