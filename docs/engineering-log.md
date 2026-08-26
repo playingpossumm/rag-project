@@ -535,6 +535,43 @@ case answerable is a guess; running the retriever is a measurement.
 
 ---
 
+## 2026-08-27 — The documented defaults are now checked against the code
+
+HANDOFF §3 lists eleven constants under "Defaults, all justified by measurement
+in eval/RESULTS.md". That opening makes each of them a claim about the code, and
+nothing checked it — change `TOP_K` in `retrieve.py` and the document goes on
+describing a system that no longer exists, in a place nobody thinks to look
+because it reads as prose rather than as a number.
+
+`check_docs.py` now imports the module that owns each constant and compares.
+Twenty-six quantities in total across §2, §3 and the README. Verified to have
+teeth by setting `TOP_K = 7` and confirming it was caught.
+
+It also found something the list itself hides: **`RRF_K` is defined twice**, in
+`hybrid.py` and `rerank.py`. They agree at 60 today and nothing makes them —
+fusion damping and the rerank blend's damping are the same constant by intention
+and a copy in practice. The checker asserts the two agree and reports what would
+break if they stopped: "fusion and the rerank blend would damp differently".
+
+Four constants are environment-overridable. When the variable is set the check
+says so and skips, rather than reading an overridden value and calling the
+document wrong — which would be the checker lying.
+
+**And the ambiguity question, asked of all three corpora.** With
+`audit_golden_set.py`'s version corrected, the check needs no per-case knowledge,
+so it moved into `check_golden.py` where every corpus gets it — as a *note*, not
+a failure, since a second document carrying the answer string is a judgement
+rather than a structural error. Mixing the two would make the exit code mean
+"something to read" instead of "something is wrong".
+
+Across all 157 cases in three corpora: **no ambiguity at all**. Every answer
+string appears only in the documents its label names. Two tests assert the note
+fires on a deliberately ambiguous synthetic case, because a check reporting zero
+on real data is exactly where you have to demonstrate it can report anything
+else.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
