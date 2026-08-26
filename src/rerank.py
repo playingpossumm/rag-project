@@ -16,13 +16,22 @@ from sentence_transformers import CrossEncoder
 RERANK_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 _model = None
+_model_name = None
 
 
 def load_reranker(model_name: str = RERANK_MODEL) -> CrossEncoder:
-    """Load and cache the cross-encoder (it is reused across queries)."""
-    global _model
-    if _model is None:
+    """Load and cache the cross-encoder (it is reused across queries).
+
+    Asking for a different model than the one held swaps it rather than
+    returning the one already loaded. `src/compare_rerankers.py` is the caller
+    that needs that, and a comparison harness handed the wrong model would
+    report every candidate as scoring exactly like the first one loaded --
+    the most convincing wrong answer available.
+    """
+    global _model, _model_name
+    if _model is None or model_name != _model_name:
         _model = CrossEncoder(model_name)
+        _model_name = model_name
     return _model
 
 
@@ -32,10 +41,16 @@ def load_reranker(model_name: str = RERANK_MODEL) -> CrossEncoder:
 # hand the reranker largely the SAME candidates. Without caching, each one pays
 # for scoring pairs an earlier configuration already scored.
 #
+# The model belongs in that key and did not used to be in it, though the first
+# line of this comment has always claimed the score depends on it. Nothing had
+# ever swapped models mid-process, so nothing caught it. The first thing that
+# tried would have been a reranker comparison, and it would have reported every
+# candidate model as scoring identically to whichever one loaded first.
+#
 # Process-local rather than on disk: within an eval run the reuse is high, while
 # across runs the queries usually change, so persisting it would mostly store
 # entries that are never read again.
-_score_cache: dict[tuple[str, str], float] = {}
+_score_cache: dict[tuple[str, str, str], float] = {}
 
 
 def cache_stats() -> dict:
@@ -69,7 +84,8 @@ RERANK_BLEND = 0.0
 RRF_K = 60
 
 
-def rerank(query: str, candidates: list[dict], k: int, model=None,
+def rerank(query: str, candidates: list[dict], k: int,
+           model_name: str | None = None,
            blend: float | None = None) -> list[dict]:
     """Re-score candidates against the query jointly, returning the best k.
 
@@ -80,24 +96,29 @@ def rerank(query: str, candidates: list[dict], k: int, model=None,
 
     `blend` is how much weight the first stage's ordering keeps; 0.0 reproduces
     the old behaviour of letting the cross-encoder decide alone.
+
+    `model_name` names the cross-encoder rather than handing one over, because
+    the score cache is keyed on it and a model object carries no name the cache
+    could read.
     """
     if not candidates:
         return []
 
-    model = model or load_reranker()
+    name = model_name or RERANK_MODEL
+    model = load_reranker(name)
 
     # Score only the pairs not already known, then reassemble in input order.
     todo = [(i, c) for i, c in enumerate(candidates)
-            if (query, c["text"]) not in _score_cache]
+            if (query, c["text"], name) not in _score_cache]
     if todo:
         fresh = model.predict([(query, c["text"]) for _i, c in todo])
         for (_i, c), score in zip(todo, fresh):
-            _score_cache[(query, c["text"])] = float(score)
+            _score_cache[(query, c["text"], name)] = float(score)
 
     w = RERANK_BLEND if blend is None else blend
     ranked = [
         {**c, "retrieval_score": c.get("score"),
-         "rerank_score": _score_cache[(query, c["text"])],
+         "rerank_score": _score_cache[(query, c["text"], name)],
          "first_stage_rank": i + 1}
         for i, c in enumerate(candidates)
     ]
