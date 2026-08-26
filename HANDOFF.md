@@ -453,6 +453,15 @@ blend — it runs every corpus, because the trap is tuning to one.** I fell into
 exactly that trap: shipped 0.35 globally, then measured it worse than doing
 nothing on all three.
 
+**The adversarial half was read, 2026-08-27, and the labels held.** The ML gate
+lets 8 of 17 adversarial cases through, and the plausible story was that the
+corpus had grown into them. It has not: every top passage is topically adjacent
+and answers nothing — a driving paper's "reward signal" for the RLHF question, a
+training-details appendix with no seed in it for the seed question. They are
+genuine gate failures. Relatedly, `audit_golden_set.py` reported 67 of 67
+answerable cases as ambiguous because it subtracted `case["source"]`, a key no
+case has; corrected, the figure is **0 of 67**.
+
 **Deriving labels from answer strings has a hole.** It proves the string is
 present, not that the passage answers the question. Sixteen quant cases asked
 textbook definitions of research papers that use the term once in passing —

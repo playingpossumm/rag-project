@@ -482,6 +482,59 @@ returns all of them.
 
 ---
 
+## 2026-08-27 — Stress-testing the adversarial half, which nobody had read
+
+**Why.** Every discussion of the abstention gate quotes "catches 9 of 17" on the
+ML corpus. Nobody had read the eight it does not catch. The obvious hypothesis
+is that the corpus has grown into them — it holds papers that did not exist when
+those questions were written — in which case the labels are wrong and the
+threshold is being blamed for a golden-set problem. That is exactly what
+happened to the quant corpus, which went from 0.543 to 0.886 on a rewritten
+golden set with retrieval untouched.
+
+**Read the passages.** Four highest-scoring, all of them:
+
+| case | score | what the top passage actually is |
+|---|---|---|
+| `adv-rlhf` "how is the reward model trained for RLHF" | +4.22 | a driving orchestrator whose "reward signal penalises lane deviation" |
+| `adv-seed` "what random seed was used" | +4.26 | a training-details appendix listing DeepSpeed and LoRA settings, no seed |
+| `adv-context-window` "maximum context length" | +2.90 | a candidate grid and BF16 weights |
+| `adv-quantize-4bit` "how is the model quantized to 4-bit" | +2.26 | memory footprint and thread scaling |
+
+**All four are correctly labelled.** Every passage is topically adjacent and
+answers nothing — "reward", "training details", "context", "memory" are doing
+the work. So the eight are **genuine gate failures, not mislabelled cases**, and
+the hypothesis that motivated the check is refuted. Worth recording precisely
+because the plausible story was the wrong one and only reading the passages
+settled it.
+
+**A check that fired on everything, and therefore on nothing.**
+`audit_golden_set.py` reported **67 of 67** answerable cases as "now ambiguous".
+The cause:
+
+```python
+others = found_in - {case.get("source")}      # cases have gold[].source
+```
+
+A case carries `gold: [{"source": ...}]` and no top-level `source`, so this
+subtracted `{None}`, removed nothing, and matched every case against its own
+gold document — which is the definition of a *correct* label. Fixed to subtract
+the gold sources, the real figure is **0 of 67**: every answer string appears
+only in the documents its label names.
+
+That number had been sitting in the output as a wall of false positives for as
+long as the check existed, hiding a clean result. It is the same trap
+`HANDOFF.md` already records once — "a measurement returning zero deserves as
+much suspicion as a surprise" — with the sign flipped. 100% deserves it too.
+
+**And the term list does not predict the gate.** Seven of the eight cases
+retrieval answers anyway were not flagged by the hand-written subject-term
+table, which the script's own output already says: "...and what retrieval says,
+which is the check that matters." A hand-maintained list of what *would* make a
+case answerable is a guess; running the retriever is a measurement.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

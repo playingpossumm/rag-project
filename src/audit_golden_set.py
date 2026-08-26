@@ -153,7 +153,15 @@ def main():
             continue
         needle = norm(answer)
         found_in = {src for src, text in by_source.items() if needle in text}
-        others = found_in - {case.get("source")}
+        # The gold documents, which are exactly where the answer is SUPPOSED to
+        # be. This subtracted `case.get("source")` -- a key no case has, since a
+        # case carries `gold: [{"source": ...}]` -- so it evaluated to
+        # {None} and removed nothing. Every case then matched its own gold
+        # document and the audit reported 67 of 67 answerable cases as
+        # ambiguous, which is the same information as reporting none of them.
+        # A measurement that comes back at 100% deserves the same suspicion as
+        # one that comes back at zero.
+        others = found_in - {e["source"] for e in case.get("gold", [])}
         if others:
             ambiguous.append((case["id"], sorted(others)))
             shown = ", ".join(s.replace(".pdf", "") for s in sorted(others)[:3])
