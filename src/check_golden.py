@@ -87,6 +87,11 @@ def check_corpus(name: str, cfg: dict) -> list[str]:
         by_place.setdefault((chunk["source"], *locator_key(chunk["locator"])),
                             []).append(chunk["text"])
 
+    # Whole-document text, for the ambiguity note below.
+    by_source: dict[str, list[str]] = {}
+    for chunk in meta:
+        by_source.setdefault(chunk["source"], []).append(chunk["text"])
+
     ids = Counter(c.get("id") for c in cases)
     questions = Counter(normalize(c.get("question", "")) for c in cases)
     for cid, n in ids.items():
@@ -166,6 +171,28 @@ def check_corpus(name: str, cfg: dict) -> list[str]:
                 f"{cid}: answer_contains {wanted[:40]!r} appears at none of the "
                 f"{len(gold)} place(s) the gold points at")
 
+    # Ambiguity, reported as a note rather than a problem: a second document
+    # carrying the answer string is a judgement about whether the question
+    # still identifies one source, not a structural error. audit_golden_set.py
+    # asked this for the ML corpus only, and asked it wrongly -- it subtracted
+    # case["source"], a key no case has, so every case matched its own gold
+    # document and it reported 67 of 67. Corrected and generalised here.
+    for case in cases:
+        wanted = case.get("answer_contains")
+        if case.get("unanswerable") or not wanted:
+            continue
+        needle = normalize(wanted)
+        gold_sources = {e["source"] for e in case.get("gold") or []}
+        elsewhere = sorted(
+            src for src, texts in by_source.items()
+            if src not in gold_sources and any(needle in normalize(t) for t in texts))
+        if elsewhere:
+            problems.append(
+                f"NOTE {case['id']}: {wanted[:30]!r} also appears in "
+                f"{len(elsewhere)} document(s) the label does not name "
+                f"({', '.join(elsewhere[:3])}) -- the question may no longer "
+                f"identify one source")
+
     return problems
 
 
@@ -189,7 +216,11 @@ def main() -> int:
             print(f"\n{name}: no index or no golden set, skipped")
             continue
 
-        problems = check_corpus(name, cfg)
+        found = check_corpus(name, cfg)
+        # A note is information, not a failure. Mixing them would make the exit
+        # code mean "something to read" instead of "something is wrong".
+        problems = [p for p in found if not p.startswith("NOTE ")]
+        notes = [p[5:] for p in found if p.startswith("NOTE ")]
         checked += 1
         total += len(problems)
         n = len(json.loads(cfg["golden"].read_text(encoding="utf-8"))["cases"])
@@ -201,6 +232,8 @@ def main() -> int:
                   "it is")
         for p in problems:
             print(f"  PROBLEM  {p}")
+        for n in notes:
+            print(f"  note     {n}")
 
     print()
     if total:
