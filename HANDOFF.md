@@ -583,10 +583,18 @@ retrieved passage verbatim.
    needs credit.
 
    Sharpened 2026-08-21 by `src/failure_overlap.py` across six configurations
-   (see `eval/RESULTS.md`). 18 of 66 answerable cases fail under *some*
-   configuration, but only **7 fail under all of them**. Those seven are a
-   fixture — reproducible, unreachable by any fusion/rerank/cap change, and the
-   right thing to score query decomposition against. The other eleven move with
+   (see `eval/RESULTS.md`). **Re-measured 2026-08-27** across the same six
+   configurations: **21 of 67** answerable cases fail under *some*
+   configuration, and **7 fail under all of them** — and they are the **same
+   seven ids** as on 2026-08-21, unchanged through a threshold recalibration, a
+   rerank-blend change, a corrected label and a corpus a case larger. The
+   earlier "18 of 66" was measured before the golden set grew.
+
+   `adam-bias`, `dropout-rate`, `gpt3-fewshot`, `gpt3-params`,
+   `roberta-nsp-drop`, `t5-text2text`, `wmt14`. Reproducible, unreachable by any
+   fusion/rerank/cap change, and the right thing to score query decomposition
+   against. Regenerate with `src/failure_overlap.py --emit-fixture
+   eval/hard_cases.json` over six `src/per_case.py` runs. The other eleven move with
    ranking and should not be counted as the same problem.
 
    A tempting explanation was tested and refuted: three of the seven return the
