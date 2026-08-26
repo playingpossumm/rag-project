@@ -852,28 +852,12 @@ tr.out td{color:var(--faint)}
 
 <script type="module">
 import { buildCity, buildRun, drawScene, captions, shortDoc } from "/pipeline-map.js";
+import { clean, esc, fragment, markAnswer, STOP } from "/answer-mark.js";
 
 const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"]/g, c =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
 const nf = n => Number(n).toLocaleString();
 
-/* The parser emits Markdown, so a passage carries the extractor's own marks:
-   <br> where it found a line break, ### where it inferred a heading, ** around
-   what looked bold. None of that is in the document -- it is how the text was
-   recovered -- so stripping it removes the extractor's marks, never the
-   document's words. */
-const clean = s => String(s)
-  .replace(/<br\s*\/?>/gi, " ")
-  .replace(/^#{1,6}\s+/gm, "")
-  .replace(/#{2,6}\s+/g, "")
-  .replace(/\*\*(.+?)\*\*/g, "$1")
-  .replace(/(^|\s)[*_]{1,2}(?=\S)|(?<=\S)[*_]{1,2}(?=\s|$)/g, "$1")
-  // Numeric reference markers -- [36], [9, 12], [4-7] -- are apparatus for a
-  // reader following a bibliography, and this reader has no bibliography. They
-  // survive into the middle of a quoted sentence and read as debris.
-  .replace(/\s*\[\s*\d+(?:\s*[,;–-]\s*\d+)*\s*\]/g, "")
-  .replace(/\s+/g, " ").trim();
 
 /* Chunks are cut on a token boundary, so a passage routinely stops
    mid-sentence -- and when the answer is the number right after "we use a rate
@@ -1023,139 +1007,6 @@ function completed(item) {
   return trimDebris((full.slice(from, to) + grown).trim());
 }
 
-/* The passage is context; one sentence in it is usually the answer. Setting
-   the whole block bold made all of it shout and none of it stand out, which is
-   the opposite of pointing at the answer.
-
-   The sentence is chosen the way the retrieval chose the passage: overlap with
-   the words of the question, rare words counting for more than common ones.
-   It is a highlight, not a claim -- the surrounding sentences stay readable at
-   normal weight, so a wrong pick costs nothing but a misplaced emphasis. */
-const STOP = new Set(("a an and are as at be by do does for from has have how in is it its of on or "
-  + "that the this to was were what when where which who why with your you").split(" "));
-
-/* Questions that turn on a figure. For these the highlight is anchored on the
-   number, because that is the thing being asked for -- everything else in the
-   sentence is scaffolding around it. */
-// The quantity word can sit anywhere in the question, not right after "what".
-// Requiring "what value" missed "what label smoothing VALUE was used", which is
-// the exact shape these questions take, and the highlight then spanned the
-// sentence instead of landing on 0.1.
-const QUANT = new RegExp(
-  "\\b(how many|how much|how large|how long|how deep|how wide|"
-  + "value|rate|size|number|probability|dimension|percentage|fraction|"
-  + "count|length|depth|width|score)\\b",
-  "i");
-
-/* Sentence boundaries. A terminator has to be followed by whitespace, or the
-   decimal point in "0.1" ends the sentence. A section number also starts a new
-   sentence -- "...applied in the model. 3.1.2 Training As described in..." was
-   coming through as ONE sentence, because 3 is not a capital letter, and the
-   highlight then ran across the boundary into the next section. */
-function splitSentences(text) {
-  return text
-    .split(/(?<=[.!?])(?=\s+(?:[A-Z"“(]|\d+(?:\.\d+)*\s+[A-Z]))/)
-    .filter(x => x.trim());
-}
-
-/* The tightest run of words in a sentence that actually answers.
-
-   For a question about a figure this anchors on the number nearest a query
-   term and takes the few words in front of it, so "we employed label smoothing
-   of value 0.1" is marked rather than the whole sentence it sits in. For
-   everything else it spans the query terms themselves. Capped at twelve words:
-   past that it stops being a highlight and becomes a second paragraph. */
-function answerSpan(sentence, want, quantitative) {
-  const toks = sentence.split(/(\s+)/);
-  const words = [];
-  toks.forEach((t, i) => { if (t.trim()) words.push({ i, t, low: t.toLowerCase() }); });
-  if (words.length <= 12) return [0, sentence.length];
-
-
-  const hits = [];
-  words.forEach((w, k) => { if (want.some(x => w.low.includes(x))) hits.push(k); });
-
-  let lo = -1, hi = -1;
-  if (quantitative) {
-    const figs = [];
-    words.forEach((w, k) => { if (/\d/.test(w.t)) figs.push(k); });
-    if (figs.length) {
-      const near = f => (hits.length ? Math.min(...hits.map(h => Math.abs(h - f))) : 0);
-      const anchor = figs.reduce((bestF, f) => (near(f) < near(bestF) ? f : bestF), figs[0]);
-      lo = Math.max(0, anchor - 7);
-      // Run on a little past the figure to the end of its phrase, so a span
-      // reads as a clause rather than stopping mid-thought: "h = 8 parallel
-      // attention layers, or heads" instead of "h = 8 parallel".
-      hi = anchor;
-      for (let k = anchor + 1; k <= Math.min(words.length - 1, anchor + 4); k++) {
-        hi = k;
-        if (/[.,;:)]$/.test(words[k].t)) break;
-      }
-    }
-  }
-  if (lo < 0) {
-    if (!hits.length) return [0, sentence.length];
-    lo = Math.max(0, hits[0] - 1);
-    hi = Math.min(words.length - 1, Math.max(hits[hits.length - 1], hits[0] + 6));
-  }
-  if (hi - lo > 11) hi = lo + 11;
-
-  // A span has to carry something. Asked what a bird's fused collarbone is
-  // called, the marked words were "this fused structure" -- one query word and
-  // a pronoun standing in for the noun the question was about. Marking that
-  // points at nothing. Two distinct query words, or one and a figure.
-  const span = words.slice(lo, hi + 1);
-  const carried = new Set();
-  let figure = false;
-  for (const w of span) {
-    for (const x of want) if (w.low.includes(x)) carried.add(x);
-    if (/\d/.test(w.t)) figure = true;
-  }
-  if (carried.size < 2 && !(carried.size === 1 && figure)) return null;
-
-  const startTok = words[lo].i;
-  const endTok = words[hi].i;
-  const start = toks.slice(0, startTok).join("").length;
-  const end = start + toks.slice(startTok, endTok + 1).join("").length;
-  return [start, end];
-}
-
-function markAnswer(text, question) {
-  const qWords = String(question).toLowerCase().match(/[a-z0-9]{3,}/g) || [];
-  const want = [...new Set(qWords)].filter(w => !STOP.has(w));
-  if (!want.length) return esc(text);
-
-  const parts = splitSentences(text);
-  if (!parts.length) return esc(text);
-
-  // Rarer words are worth more: a term in one sentence out of six says more
-  // about which sentence answers than one that appears in all of them.
-  const spread = {};
-  for (const w of want) {
-    spread[w] = parts.filter(seg => seg.toLowerCase().includes(w)).length || parts.length;
-  }
-  let best = -1, top = 0;
-  parts.forEach((seg, i) => {
-    const low = seg.toLowerCase();
-    let sc = 0;
-    for (const w of want) if (low.includes(w)) sc += 1 / spread[w];
-    sc /= Math.sqrt(Math.max(seg.trim().length, 40));
-    if (sc > top) { top = sc; best = i; }
-  });
-  if (best < 0) return esc(text);
-
-  // Then the answering WORDS inside that sentence. A whole sentence set bold
-  // is most of the passage shouting; the reader still has to find the figure
-  // inside it, which is the job the highlight was meant to do.
-  const span = answerSpan(parts[best], want, QUANT.test(question));
-  if (!span) return esc(text);            // nothing worth pointing at
-  const [a, b] = span;
-  return parts.map((seg, i) => {
-    if (i !== best) return esc(seg);
-    return esc(seg.slice(0, a)) + "<mark>" + esc(seg.slice(a, b)) + "</mark>"
-         + esc(seg.slice(b));
-  }).join("");
-}
 
 /* The passages the answer did NOT come from, when they come from other
    documents.
@@ -1290,11 +1141,6 @@ function reading(score, threshold) {
 }
 
 /* Marking both ends says "a fragment of something longer". */
-const fragment = s => {
-  const t = clean(s);
-  if (!t) return t;
-  return (/^[A-Z0-9"“(\[]/.test(t) ? "" : "… ") + t + (/[.!?"”)\]]$/.test(t) ? "" : " …");
-};
 
 /* `other` is --wire, not a mid grey: everything that did NOT reach the answer
    is drawn as near-invisible wireframe, so hue in the picture means exactly

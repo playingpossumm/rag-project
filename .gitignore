@@ -14,3 +14,9 @@ node_modules/
 # Topic corpora, rebuildable with src/fetch_topic.py -- not worth 100MB in git
 data-quant/
 data-birds/
+
+# Passage text dumped for the answer-highlight sweep. Regenerable with
+# src/dump_top_passages.py, and it is 900KB of verbatim text from the two
+# corpora above -- keeping it here would put in git exactly what those lines
+# keep out. ui/test-answer-mark.mjs skips its sweep when this is absent.
+eval/top-passages.json
