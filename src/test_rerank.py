@@ -77,6 +77,22 @@ check("the first model was asked once for its two pairs, not twice",
 check("the second model was asked for its own two pairs",
       STUBS["model-b"].calls, 2)
 
+# The cache is bounded, because serve.py imports this module and does not exit.
+# Eviction must never drop a pair the CURRENT call is about to read back: the
+# scores are written to the cache and then read out of it to build the result,
+# so trimming after the write would be a KeyError on the serving path.
+install_stubs()
+real_limit = rr.CACHE_LIMIT
+rr.CACHE_LIMIT = 2
+for i in range(6):
+    rr.rerank(f"query {i}", candidates(), k=2, model_name="model-a")
+check("the cache stays under its limit", len(rr._score_cache) <= 2 + 2, True)
+check("and a query with more candidates than the limit still returns them all",
+      len(rr.rerank("a late query", candidates(), k=2, model_name="model-a")), 2)
+check("cache_stats reports the limit it is enforcing",
+      rr.cache_stats()["limit"], 2)
+rr.CACHE_LIMIT = real_limit
+
 # Swapping back must swap the loaded model too, not just the key.
 check("load_reranker returns the model that was asked for",
       (rr.load_reranker("model-b") is STUBS["model-b"],

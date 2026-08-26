@@ -52,9 +52,37 @@ def load_reranker(model_name: str = RERANK_MODEL) -> CrossEncoder:
 # entries that are never read again.
 _score_cache: dict[tuple[str, str, str], float] = {}
 
+# Bounded, because this module is imported by a server that does not exit.
+# Unbounded was free for its original caller -- an evaluation run scores a few
+# hundred questions and stops -- but serve.py adds candidate_k entries per
+# distinct question forever, each keyed on a tuple holding the whole chunk text.
+#
+# 20,000 is a thousand questions at the shipped candidate_k of 20, far past the
+# reuse this cache exists for: within one query every configuration sees the
+# same candidates, and across queries almost nothing repeats. Eviction is
+# insertion-ordered and costs correctness nothing -- an evicted pair is scored
+# again and the cross-encoder is deterministic, so the only thing lost is the
+# time saved by having cached it.
+CACHE_LIMIT = 20_000
+
 
 def cache_stats() -> dict:
-    return {"entries": len(_score_cache)}
+    return {"entries": len(_score_cache), "limit": CACHE_LIMIT}
+
+
+def _trim() -> None:
+    """Drop the oldest entries until the cache is under its limit.
+
+    Called BEFORE the current query is scored, never after. Trimming afterwards
+    could evict a pair this call is about to read back -- the scores are written
+    to the cache and then read out of it to build the result -- which would turn
+    a memory bound into a KeyError on the serving path.
+    """
+    excess = len(_score_cache) - CACHE_LIMIT
+    if excess <= 0:
+        return
+    for key in list(_score_cache)[:excess]:
+        del _score_cache[key]
 
 
 def clear_cache() -> None:
@@ -106,6 +134,7 @@ def rerank(query: str, candidates: list[dict], k: int,
 
     name = model_name or RERANK_MODEL
     model = load_reranker(name)
+    _trim()
 
     # Score only the pairs not already known, then reassemble in input order.
     todo = [(i, c) for i, c in enumerate(candidates)

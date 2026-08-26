@@ -1,0 +1,131 @@
+{
+ "llm": {
+  "label": "ML & NLP papers",
+  "n": 15,
+  "chunks": 5459,
+  "stages": {
+   "embed": {
+    "median": 24.7,
+    "mean": 24.9,
+    "max": 31.0
+   },
+   "faiss": {
+    "median": 21.3,
+    "mean": 20.4,
+    "max": 26.3
+   },
+   "bm25": {
+    "median": 36.5,
+    "mean": 37.1,
+    "max": 50.4
+   },
+   "fuse": {
+    "median": 0.1,
+    "mean": 0.1,
+    "max": 0.1
+   },
+   "rerank": {
+    "median": 1017.0,
+    "mean": 1011.8,
+    "max": 1136.5
+   },
+   "diversify": {
+    "median": 0.0,
+    "mean": 0.0,
+    "max": 0.0
+   },
+   "expand": {
+    "median": 8.9,
+    "mean": 8.3,
+    "max": 10.0
+   }
+  },
+  "total_median_ms": 1108.5
+ },
+ "birds": {
+  "label": "Ornithology",
+  "n": 15,
+  "chunks": 864,
+  "stages": {
+   "embed": {
+    "median": 25.2,
+    "mean": 25.3,
+    "max": 31.6
+   },
+   "faiss": {
+    "median": 19.5,
+    "mean": 19.5,
+    "max": 24.7
+   },
+   "bm25": {
+    "median": 5.5,
+    "mean": 5.6,
+    "max": 8.9
+   },
+   "fuse": {
+    "median": 0.1,
+    "mean": 0.1,
+    "max": 0.1
+   },
+   "rerank": {
+    "median": 966.5,
+    "mean": 980.4,
+    "max": 1077.4
+   },
+   "diversify": {
+    "median": 0.0,
+    "mean": 0.0,
+    "max": 0.0
+   },
+   "expand": {
+    "median": 2.3,
+    "mean": 2.3,
+    "max": 3.3
+   }
+  },
+  "total_median_ms": 1019.1
+ },
+ "quant": {
+  "label": "Quantitative finance",
+  "n": 15,
+  "chunks": 6184,
+  "stages": {
+   "embed": {
+    "median": 24.0,
+    "mean": 23.9,
+    "max": 28.3
+   },
+   "faiss": {
+    "median": 20.4,
+    "mean": 19.7,
+    "max": 22.4
+   },
+   "bm25": {
+    "median": 36.0,
+    "mean": 37.0,
+    "max": 52.5
+   },
+   "fuse": {
+    "median": 0.1,
+    "mean": 0.1,
+    "max": 0.1
+   },
+   "rerank": {
+    "median": 988.2,
+    "mean": 990.6,
+    "max": 1038.9
+   },
+   "diversify": {
+    "median": 0.0,
+    "mean": 0.0,
+    "max": 0.1
+   },
+   "expand": {
+    "median": 9.7,
+    "mean": 9.6,
+    "max": 12.8
+   }
+  },
+  "total_median_ms": 1078.4
+ }
+}
