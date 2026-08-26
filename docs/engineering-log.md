@@ -572,6 +572,52 @@ else.
 
 ---
 
+## 2026-08-27 — The seven-case fixture is still the same seven
+
+**Why re-measure.** HANDOFF §7 claims "18 of 66 answerable cases fail under some
+configuration, but only 7 fail under all of them", and calls those seven a
+fixture worth optimising against. Two reasons to distrust it today: the corpus
+has **67** answerable cases, not 66, so the figure predates the golden set it
+describes; and this session changed the abstention threshold, the rerank blend
+resolution and one label. A "structural" classification that moves when the
+config moves was never structural.
+
+**Six `per_case.py` configurations** — default, no-rerank, dense-only, weighted
+fusion, no cap, cap 1/src — fed to `src/failure_overlap.py`.
+
+| | 2026-08-21 | 2026-08-27 |
+|---|---|---|
+| answerable cases | 66 | **67** |
+| fail under *some* configuration | 18 | **21** |
+| fail under *all* | **7** | **7** |
+
+**And they are the same seven ids**: `adam-bias`, `dropout-rate`,
+`gpt3-fewshot`, `gpt3-params`, `roberta-nsp-drop`, `t5-text2text`, `wmt14`.
+Not seven again by coincidence — set-identical, with nothing entering or
+leaving. The classification survived everything this session changed, which is
+the strongest evidence yet that it is a property of the questions rather than of
+the settings, and that scoring query decomposition against it will mean
+something.
+
+**A second reading the run gives for free.** Of the eight adversarial cases the
+gate lets through on the ML corpus, **seven are answered under every gated
+configuration** and only `adv-diffusion` (+0.43, the weakest of them) moves.
+Those seven are the gate's own fixture, and they are exactly the cases whose
+passages were read earlier today and found to be correctly labelled. Two
+independent routes — reading the text, and varying the pipeline — agreeing that
+these are gate failures rather than label failures.
+
+`norerank` is excluded from that count and the tool says why: with no reranking
+there is no calibrated score, so the gate never runs and all 17 adversarial
+cases are answered by construction. An absent gate, not a failing one.
+
+**One incidental number.** `nocap` has the lowest failure rate of the six at
+14.9%, against the shipped 16.4% — the diversity cap costing a case, which is
+the trade §2 already documents as deliberate (it buys source recall). Consistent
+rather than new, and worth noting that it reproduced.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

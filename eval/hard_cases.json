@@ -4,8 +4,8 @@
   "cap1",
   "default",
   "dense",
-  "no-rerank",
   "nocap",
+  "norerank",
   "weighted"
  ],
  "note": "Answerable cases that fail under every configuration listed above, and adversarial cases answered under every gated one. Run with src/hard_cases.py.",
@@ -77,12 +77,7 @@
   {
    "id": "adv-context-window",
    "question": "What is the maximum context length in tokens?",
-   "confidence": 1.644
-  },
-  {
-   "id": "adv-diffusion",
-   "question": "What noise schedule does the denoising diffusion model use?",
-   "confidence": 0.433
+   "confidence": 2.904
   },
   {
    "id": "adv-latency-ms",
@@ -90,9 +85,29 @@
    "confidence": 1.114
   },
   {
+   "id": "adv-mamba",
+   "question": "How does the state space model handle long sequences without attention?",
+   "confidence": 0.703
+  },
+  {
+   "id": "adv-quantize-4bit",
+   "question": "How is the model quantized to 4-bit precision?",
+   "confidence": 2.264
+  },
+  {
+   "id": "adv-rlhf",
+   "question": "How is the reward model trained for RLHF?",
+   "confidence": 4.216
+  },
+  {
+   "id": "adv-salary",
+   "question": "What were the authors paid for this research?",
+   "confidence": 0.092
+  },
+  {
    "id": "adv-seed",
    "question": "What random seed was used for the reported runs?",
-   "confidence": 2.758
+   "confidence": 4.264
   }
  ]
 }
