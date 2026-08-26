@@ -87,9 +87,31 @@ def says(problems, fragment) -> bool:
     return any(fragment in p for p in problems)
 
 
+def faults(found) -> list[str]:
+    """Only the structural problems. A NOTE is information, not a failure.
+
+    The ambiguity note is a judgement -- a second document carrying the answer
+    string may mean the question no longer identifies one source, or may mean
+    the corpus repeats itself -- so it must not decide the exit code.
+    """
+    return [p for p in found if not p.startswith("NOTE ")]
+
+
 # A golden set that describes its corpus must be silent. Stated first, because
 # every assertion below is worthless if the audit complains about everything.
-check("a valid golden set reports nothing", scenario(), [])
+check("a valid golden set reports no structural problem", faults(scenario()), [])
+
+# Ambiguity, reported and not counted. "hollow bones" is in birds.pdf (which
+# q-hollow names) and in anatomy.docx (which it does not), so the note fires.
+# audit_golden_set.py asked this question for the ML corpus and asked it
+# wrongly, subtracting a key no case has, so it reported 67 of 67 answerable
+# cases as ambiguous -- the same information as reporting none of them.
+check("a second document carrying the answer string is noted",
+      says(scenario(), "also appears in 1 document(s)"), True)
+check("and a case whose label names both documents is not",
+      says(scenario(lambda g: g["cases"][0]["gold"].append(
+          {"source": "anatomy.docx", "kind": "section", "pages": ["Skeleton"]})),
+           "also appears"), False)
 
 # The real defect, reproduced: a table number filed under kind "section".
 check("a locator that no chunk has",
@@ -111,7 +133,7 @@ check("an answer string that is not where the label points",
       says(scenario(lambda g: g["cases"][0]["gold"][0].update(pages=[2])),
            "appears at none of the"), True)
 check("and a label pointing at a page that does carry it is accepted",
-      scenario(lambda g: g["cases"][0]["gold"][0].update(pages=[1])), [])
+      faults(scenario(lambda g: g["cases"][0]["gold"][0].update(pages=[1]))), [])
 
 # Structure.
 check("a duplicated id",
@@ -146,10 +168,10 @@ check("an adversarial kind that is not one of the three",
 # a parsed document still counts. A stricter comparison here would report
 # working labels as broken.
 check("an answer string split across a line break still matches",
-      scenario(lambda g: g.update(cases=[{
+      faults(scenario(lambda g: g.update(cases=[{
           "id": "q-wrap", "question": "What reduces weight?", "kind": "fact",
           "answer_contains": "hollow bones",
-          "gold": [{"source": "birds.pdf", "kind": "page", "pages": [1]}]}])),
+          "gold": [{"source": "birds.pdf", "kind": "page", "pages": [1]}]}]))),
       [])
 
 

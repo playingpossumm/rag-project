@@ -9,8 +9,12 @@ because nothing checked it.
 
 `build_results_doc.py --check` closed that for RESULTS.md by generating its
 tables. `check_freshness.py` closed the generated chain feeding the interface.
-Neither covers **HANDOFF.md §2 and the README**, which are prose with tables in
-them -- the two documents a new session and a visitor actually read first.
+Neither covers **HANDOFF.md §2 and §3 or the README**, which are prose with
+tables in them -- the two documents a new session and a visitor actually read
+first. §3's list of defaults is checked against the constants themselves, not
+just for internal consistency: "Defaults, all justified by measurement" is a
+claim about the code, and changing TOP_K in retrieve.py would otherwise leave
+the document quietly describing a system that no longer exists.
 
 Generating them is the wrong fix: the surrounding argument is judgement and
 cannot come from a JSON file, and a generated §2 would lose the reasons each
@@ -203,6 +207,113 @@ def check_handoff(measured: dict, problems: list[str], notes: list[str]) -> bool
     return True
 
 
+# Which module owns each default HANDOFF §3 quotes. A name here that the
+# document stops mentioning is reported, and so is one the document mentions
+# that no module defines -- both are ways the paragraph drifts from the code.
+DEFAULT_HOMES = {
+    "CHUNK_SIZE_TOKENS": "ingest",
+    "CHUNK_OVERLAP_TOKENS": "ingest",
+    "USE_TITLE_PREFIX": "ingest",
+    "TOP_K": "retrieve",
+    "CANDIDATE_K": "retrieve",
+    "DEFAULT_FUSION": "retrieve",
+    "RRF_K": "hybrid",
+    "DEFAULT_MAX_PER_SOURCE": "diversify",
+    "ABSTAIN_THRESHOLD": "abstain",
+    "DEFAULT_EXPANSION": "api",
+    "PARSER_VERSION": "parse_cache",
+}
+
+# Constants an environment variable can override. Reading one that has been
+# overridden and calling the document wrong would be this checker lying, so
+# they are skipped with a note when the variable is set.
+ENV_OVERRIDES = {
+    "CHUNK_SIZE_TOKENS": "RAG_CHUNK_SIZE",
+    "CHUNK_OVERLAP_TOKENS": "RAG_CHUNK_OVERLAP",
+    "USE_TITLE_PREFIX": "RAG_TITLE_PREFIX",
+    "ABSTAIN_THRESHOLD": "RAG_ABSTAIN_THRESHOLD",
+}
+
+
+def check_defaults(problems: list[str], notes: list[str]) -> bool:
+    """HANDOFF §3's list of defaults, against the modules that define them.
+
+    The paragraph opens "Defaults, all justified by measurement in
+    eval/RESULTS.md", which makes each of these a claim about the code. Nothing
+    checked them, so changing TOP_K in retrieve.py would have left the document
+    quietly describing a system that no longer exists -- the same failure as a
+    stale metric, in a place nobody thinks to look because it reads as prose.
+    """
+    import importlib
+    import os
+
+    doc = (ROOT / "HANDOFF.md").read_text(encoding="utf-8")
+    m = re.search(r"Defaults, all justified by measurement.*?\n\n", doc, re.S)
+    if not m:
+        problems.append("HANDOFF.md §3: the defaults paragraph is gone -- this "
+                        "checker looks for 'Defaults, all justified by measurement'")
+        return False
+
+    written = dict(re.findall(r"`([A-Z_]+)=(\"[a-z]+\"|[-\d.]+)`", m.group()))
+    if not written:
+        problems.append("HANDOFF.md §3: the defaults paragraph names no "
+                        "`NAME=VALUE` pairs")
+        return False
+
+    for name, home in DEFAULT_HOMES.items():
+        if name not in written:
+            problems.append(f"HANDOFF.md §3: no longer documents {name}, which "
+                            f"{home}.py still defines as a default")
+    for name in written:
+        if name not in DEFAULT_HOMES:
+            problems.append(f"HANDOFF.md §3 documents {name}, which this checker "
+                            f"does not know where to find -- add it to DEFAULT_HOMES")
+
+    for name, raw in written.items():
+        home = DEFAULT_HOMES.get(name)
+        if not home:
+            continue
+        env = ENV_OVERRIDES.get(name)
+        if env and os.environ.get(env) is not None:
+            notes.append(f"  §3 {name} (skipped: {env} is set)")
+            continue
+        try:
+            actual = getattr(importlib.import_module(home), name)
+        except (ImportError, AttributeError) as exc:
+            problems.append(f"HANDOFF.md §3 documents {name}={raw}, but "
+                            f"{home}.py does not define it ({exc})")
+            continue
+
+        want = raw.strip('"')
+        if isinstance(actual, bool):
+            # Written as 0/1 in the document, held as a bool in the code.
+            ok = bool(actual) == (want not in ("0", "false", "False"))
+        elif isinstance(actual, (int, float)):
+            ok = float(want) == float(actual)
+        else:
+            ok = want == str(actual)
+        if not ok:
+            problems.append(f"HANDOFF.md §3 says {name}={raw}, {home}.py has "
+                            f"{name}={actual!r}")
+        notes.append(f"  §3 {name}")
+
+    # RRF_K is defined in two modules. They agree today; nothing makes them.
+    # Fusion damping and the rerank blend's damping are the same constant by
+    # intention, and by copy in practice.
+    try:
+        import hybrid
+        import rerank
+        if hybrid.RRF_K != rerank.RRF_K:
+            problems.append(
+                f"RRF_K is defined twice and the copies disagree: "
+                f"hybrid.py has {hybrid.RRF_K}, rerank.py has {rerank.RRF_K}. "
+                f"Fusion and the rerank blend would damp differently.")
+        notes.append("  RRF_K agrees between hybrid.py and rerank.py")
+    except ImportError:
+        pass
+    return True
+
+
 def check_readme(measured: dict, problems: list[str], notes: list[str]) -> bool:
     doc = (ROOT / "README.md").read_text(encoding="utf-8")
     ml = measured.get("llm")
@@ -280,6 +391,7 @@ def main() -> int:
     notes: list[str] = []
     ok = check_handoff(measured, problems, notes)
     ok = check_readme(measured, problems, notes) and ok
+    ok = check_defaults(problems, notes) and ok
 
     if not args.quiet and notes:
         print("checked:")
@@ -297,7 +409,8 @@ def main() -> int:
               f"measurements.\nThe measurement is the truth; edit the document.")
         return 1
     print("every number quoted in HANDOFF.md §2 and README.md matches the "
-          "measurement it came from")
+          "measurement it came from,\nand every default §3 lists matches the "
+          "constant that defines it")
     return 0
 
 
