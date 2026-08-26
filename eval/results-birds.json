@@ -1,6 +1,6 @@
 {
   "corpus": {
-    "chunks": 900,
+    "chunks": 864,
     "documents": 45,
     "answerable_cases": 26,
     "adversarial_cases": 6,
@@ -11,58 +11,58 @@
   "candidate_pool": {
     "dense": {
       "hit_rate": 0.962,
-      "mrr": 0.569,
-      "ndcg": 0.622,
-      "src_recall": 0.854
+      "mrr": 0.6,
+      "ndcg": 0.637,
+      "src_recall": 0.859
     },
     "rrf": {
       "hit_rate": 0.885,
-      "mrr": 0.567,
-      "ndcg": 0.611,
+      "mrr": 0.574,
+      "ndcg": 0.612,
       "src_recall": 0.841
     },
     "weighted a=0.3": {
       "hit_rate": 0.885,
-      "mrr": 0.464,
-      "ndcg": 0.538,
+      "mrr": 0.447,
+      "ndcg": 0.541,
       "src_recall": 0.846
     },
     "weighted a=0.5": {
       "hit_rate": 0.923,
-      "mrr": 0.559,
-      "ndcg": 0.611,
+      "mrr": 0.563,
+      "ndcg": 0.62,
       "src_recall": 0.854
     },
     "weighted a=0.7": {
       "hit_rate": 0.962,
-      "mrr": 0.512,
-      "ndcg": 0.623,
-      "src_recall": 0.87
+      "mrr": 0.539,
+      "ndcg": 0.633,
+      "src_recall": 0.883
     }
   },
   "end_to_end": {
     "dense, no rerank": {
       "hit_rate": 0.769,
-      "mrr": 0.551,
-      "ndcg": 0.588,
-      "src_recall": 0.644
+      "mrr": 0.58,
+      "ndcg": 0.609,
+      "src_recall": 0.656
     },
     "dense + rerank": {
-      "hit_rate": 0.808,
-      "mrr": 0.58,
-      "ndcg": 0.634,
-      "src_recall": 0.671
+      "hit_rate": 0.846,
+      "mrr": 0.603,
+      "ndcg": 0.663,
+      "src_recall": 0.736
     },
     "weighted + rerank": {
-      "hit_rate": 0.769,
-      "mrr": 0.547,
-      "ndcg": 0.605,
-      "src_recall": 0.692
+      "hit_rate": 0.846,
+      "mrr": 0.574,
+      "ndcg": 0.647,
+      "src_recall": 0.731
     },
     "rrf + rerank": {
-      "hit_rate": 0.769,
-      "mrr": 0.56,
-      "ndcg": 0.615,
+      "hit_rate": 0.808,
+      "mrr": 0.568,
+      "ndcg": 0.632,
       "src_recall": 0.723
     },
     "+ diversity 2/src": {
@@ -81,12 +81,12 @@
   "expansion": {
     "none (chunks)": {
       "context_recall": 0.731,
-      "tokens_per_query": 947,
+      "tokens_per_query": 954,
       "blocks_per_query": 5.0
     },
     "window +/-1": {
       "context_recall": 0.769,
-      "tokens_per_query": 1894,
+      "tokens_per_query": 1908,
       "blocks_per_query": 4.7
     },
     "page": {
@@ -104,7 +104,7 @@
       },
       {
         "threshold": -8,
-        "caught": 4,
+        "caught": 3,
         "false_abstain": 2
       },
       {

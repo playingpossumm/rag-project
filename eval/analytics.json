@@ -383,7 +383,7 @@
    "name": "birds",
    "label": "Ornithology",
    "documents": 45,
-   "chunks": 900,
+   "chunks": 864,
    "formats": {
     "docx": 12,
     "pptx": 12,
@@ -398,22 +398,22 @@
     {
      "config": "dense, no rerank",
      "hit_rate": 0.769,
-     "mrr": 0.551,
-     "ndcg": 0.588,
-     "src_recall": 0.644
+     "mrr": 0.58,
+     "ndcg": 0.609,
+     "src_recall": 0.656
     },
     {
      "config": "dense + rerank",
-     "hit_rate": 0.808,
-     "mrr": 0.58,
-     "ndcg": 0.634,
-     "src_recall": 0.671
+     "hit_rate": 0.846,
+     "mrr": 0.603,
+     "ndcg": 0.663,
+     "src_recall": 0.736
     },
     {
      "config": "rrf + rerank",
-     "hit_rate": 0.769,
-     "mrr": 0.56,
-     "ndcg": 0.615,
+     "hit_rate": 0.808,
+     "mrr": 0.568,
+     "ndcg": 0.632,
      "src_recall": 0.723
     },
     {
@@ -435,42 +435,42 @@
     {
      "config": "dense",
      "hit_rate": 0.962,
-     "mrr": 0.569,
-     "ndcg": 0.622,
-     "src_recall": 0.854
+     "mrr": 0.6,
+     "ndcg": 0.637,
+     "src_recall": 0.859
     },
     {
      "config": "rrf",
      "hit_rate": 0.885,
-     "mrr": 0.567,
-     "ndcg": 0.611,
+     "mrr": 0.574,
+     "ndcg": 0.612,
      "src_recall": 0.841
     },
     {
      "config": "weighted a=0.3",
      "hit_rate": 0.885,
-     "mrr": 0.464,
-     "ndcg": 0.538,
+     "mrr": 0.447,
+     "ndcg": 0.541,
      "src_recall": 0.846
     },
     {
      "config": "weighted a=0.5",
      "hit_rate": 0.923,
-     "mrr": 0.559,
-     "ndcg": 0.611,
+     "mrr": 0.563,
+     "ndcg": 0.62,
      "src_recall": 0.854
     },
     {
      "config": "weighted a=0.7",
      "hit_rate": 0.962,
-     "mrr": 0.512,
-     "ndcg": 0.623,
-     "src_recall": 0.87
+     "mrr": 0.539,
+     "ndcg": 0.633,
+     "src_recall": 0.883
     }
    ],
    "dist": {
     "answerable": [
-     -10.619,
+     -10.681,
      -8.276,
      -7.281,
      -4.55,
@@ -501,33 +501,33 @@
      -10.722,
      -10.391,
      -9.978,
-     -8.852,
      -7.979,
+     -6.476,
      1.921
     ]
    },
    "median_answerable": 1.526,
-   "median_adversarial": -9.415,
+   "median_adversarial": -8.979,
    "sweep": [
     {
      "t": -8.0,
      "refused": 2,
-     "caught": 4
+     "caught": 3
     },
     {
      "t": -7.5,
      "refused": 2,
-     "caught": 5
+     "caught": 4
     },
     {
      "t": -7.0,
      "refused": 3,
-     "caught": 5
+     "caught": 4
     },
     {
      "t": -6.5,
      "refused": 3,
-     "caught": 5
+     "caught": 4
     },
     {
      "t": -6.0,

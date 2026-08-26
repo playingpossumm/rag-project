@@ -1,5 +1,5 @@
 {
-  "corpus": "45 Wikipedia ornithology documents",
+  "corpus": "45 Wikipedia ornithology",
   "generated_by": "src/build_golden_set.py",
   "note": "Gold locations are DERIVED from answer strings against the current corpus, not hand-labelled, so labels cannot drift out of step with the documents. Multi-source falls out naturally: every location containing the answer is gold, matching the requirement to compile all relevant sources rather than pick one. Regenerate after any corpus change by re-running the generator.",
   "cases": [

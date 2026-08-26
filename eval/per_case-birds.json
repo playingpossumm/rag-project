@@ -9,7 +9,7 @@
  },
  "threshold": 0.0,
  "corpus": {
-  "chunks": 900,
+  "chunks": 864,
   "documents": 45
  },
  "totals": {
@@ -1202,36 +1202,36 @@
     "bird_vocalization.docx",
     "bird_vocalization.pdf"
    ],
-   "confidence": -10.619,
+   "confidence": -10.681,
    "abstained": true,
    "outcome": "refused_wrongly",
    "results": [
     {
      "rank": 1,
-     "source": "bird_vocalization.docx",
-     "locator": "section (untitled)",
-     "score": -10.6192,
-     "relevant": false
-    },
-    {
-     "rank": 2,
      "source": "bird_vocalization.pdf",
      "locator": "page 4",
      "score": -10.6807,
      "relevant": false
     },
     {
-     "rank": 3,
+     "rank": 2,
      "source": "bird_vocalization.pdf",
      "locator": "page 1",
      "score": -10.9611,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 3,
      "source": "bird_vocalization.docx",
      "locator": "section Definition",
      "score": -10.9903,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "bird_vocalization.docx",
+     "locator": "section Definition",
+     "score": -11.05,
      "relevant": false
     },
     {
@@ -1669,43 +1669,43 @@
    "question": "Who wrote this article and when was it last revised?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -8.852,
+   "confidence": -6.476,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "woodpecker.pptx",
-     "locator": "slide 10",
-     "score": -8.852,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 4",
+     "score": -6.4759,
      "relevant": false
     },
     {
      "rank": 2,
-     "source": "passerine.pptx",
-     "locator": "slide 10",
-     "score": -8.852,
+     "source": "bird_migration.pdf",
+     "locator": "page 1",
+     "score": -6.5575,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "owl.pptx",
-     "locator": "slide 10",
-     "score": -8.852,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 4",
+     "score": -7.5544,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "origin_of_birds.pptx",
-     "locator": "slide 10",
-     "score": -8.852,
+     "source": "bird_migration.pdf",
+     "locator": "page 1",
+     "score": -8.5822,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "new_caledonian_crow.pptx",
-     "locator": "slide 9",
-     "score": -8.852,
+     "source": "bird_egg.xlsx",
+     "locator": "sheet Sections",
+     "score": -8.97,
      "relevant": false
     }
    ]
