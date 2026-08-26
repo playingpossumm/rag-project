@@ -452,6 +452,18 @@ def main():
     if args.emit:
         args.emit.parent.mkdir(exist_ok=True)
         emitted["generated_by"] = "src/evaluate.py"
+        # What this run was measured against, so a later edit to either input
+        # is detectable rather than silent. per_case.py has recorded this since
+        # 2026-08-26 and this file did not, which meant a corrected label that
+        # changed no count left these figures looking current.
+        from check_freshness import stamp as _stamp
+        emitted["inputs"] = {
+            "golden": _stamp(args.golden,
+                             cases=len(answerable) + len(adversarial)),
+        }
+        if corpus_cfg:
+            emitted["inputs"]["index"] = _stamp(
+                corpus_cfg["store"] / "metadata.json", chunks=int(index.ntotal))
         args.emit.write_text(json.dumps(emitted, indent=2) + "\n", encoding="utf-8")
         print(f"\nwrote {args.emit}")
 

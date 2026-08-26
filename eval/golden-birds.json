@@ -1,786 +1,792 @@
 {
-  "corpus": "45 Wikipedia ornithology",
-  "generated_by": "src/build_golden_set.py",
-  "note": "Gold locations are DERIVED from answer strings against the current corpus, not hand-labelled, so labels cannot drift out of step with the documents. Multi-source falls out naturally: every location containing the answer is gold, matching the requirement to compile all relevant sources rather than pick one. Regenerate after any corpus change by re-running the generator.",
-  "cases": [
+ "corpus": "45 Wikipedia ornithology",
+ "generated_by": "src/build_golden_set.py",
+ "note": "Gold locations are DERIVED from answer strings against the current corpus, not hand-labelled, so labels cannot drift out of step with the documents. Multi-source falls out naturally: every location containing the answer is gold, matching the requirement to compile all relevant sources rather than pick one. Regenerate after any corpus change by re-running the generator.",
+ "cases": [
+  {
+   "id": "bird-syrinx",
+   "question": "What organ do birds use to produce song?",
+   "kind": "fact",
+   "answer_contains": "syrinx",
+   "gold": [
     {
-      "id": "bird-syrinx",
-      "question": "What organ do birds use to produce song?",
-      "kind": "fact",
-      "answer_contains": "syrinx",
-      "gold": [
-        {
-          "source": "bird_vocalization.docx",
-          "kind": "section",
-          "pages": [
-            "Anatomy and physiology",
-            "Definition"
-          ]
-        },
-        {
-          "source": "bird_vocalization.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            2
-          ]
-        },
-        {
-          "source": "parrot.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes",
-            "Sections"
-          ]
-        },
-        {
-          "source": "passerine.pptx",
-          "kind": "slide",
-          "pages": [
-            4
-          ]
-        }
-      ],
-      "multi_source": true
+     "source": "bird_vocalization.docx",
+     "kind": "section",
+     "pages": [
+      "Anatomy and physiology",
+      "Definition"
+     ]
     },
     {
-      "id": "bird-keel",
-      "question": "Which breastbone feature anchors the muscles that power flight?",
-      "kind": "fact",
-      "answer_contains": "keeled sternum",
-      "gold": [
-        {
-          "source": "bird.docx",
-          "kind": "section",
-          "pages": [
-            "Early evolution"
-          ]
-        }
-      ],
-      "multi_source": false
+     "source": "bird_vocalization.pdf",
+     "kind": "page",
+     "pages": [
+      1,
+      2
+     ]
     },
     {
-      "id": "bird-barbules",
-      "question": "What interlocking structures hold the vane of a feather together?",
-      "kind": "fact",
-      "answer_contains": "barbules",
-      "gold": [
-        {
-          "source": "feather.pdf",
-          "kind": "page",
-          "pages": [
-            2,
-            3
-          ]
-        },
-        {
-          "source": "feather.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes"
-          ]
-        }
-      ],
-      "multi_source": true
+     "source": "parrot.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes",
+      "Sections"
+     ]
     },
     {
-      "id": "bird-down",
-      "question": "Which type of feather provides insulation rather than flight surface?",
-      "kind": "multi",
-      "answer_contains": "down feathers",
-      "gold": [
-        {
-          "source": "bird_nest.docx",
-          "kind": "section",
-          "pages": [
-            "Scrape"
-          ]
-        },
-        {
-          "source": "emperor_penguin.pptx",
-          "kind": "slide",
-          "pages": [
-            6
-          ]
-        },
-        {
-          "source": "feather.pdf",
-          "kind": "page",
-          "pages": [
-            2,
-            3
-          ]
-        },
-        {
-          "source": "feather.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes",
-            "Sections"
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-airsacs",
-      "question": "What structures make airflow through a bird's lungs one-directional?",
-      "kind": "fact",
-      "answer_contains": "air sacs",
-      "gold": [
-        {
-          "source": "bird_anatomy.docx",
-          "kind": "section",
-          "pages": [
-            "Skeletal system"
-          ]
-        },
-        {
-          "source": "bird_anatomy.pptx",
-          "kind": "slide",
-          "pages": [
-            3
-          ]
-        },
-        {
-          "source": "feather.pdf",
-          "kind": "page",
-          "pages": [
-            2
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-brood-parasite",
-      "question": "What is it called when a bird lays its eggs in another species' nest?",
-      "kind": "fact",
-      "answer_contains": "brood parasitism",
-      "gold": [
-        {
-          "source": "bird_egg.pptx",
-          "kind": "slide",
-          "pages": [
-            9
-          ]
-        },
-        {
-          "source": "bird_egg.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes"
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-altricial",
-      "question": "What term describes chicks that hatch helpless and wholly dependent on their parents?",
-      "kind": "cross-doc",
-      "answer_contains": "altricial",
-      "gold": [
-        {
-          "source": "beak.pdf",
-          "kind": "page",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "budgerigar.pdf",
-          "kind": "page",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "eurasian_magpie.docx",
-          "kind": "section",
-          "pages": [
-            "Breeding"
-          ]
-        },
-        {
-          "source": "passerine.pptx",
-          "kind": "slide",
-          "pages": [
-            6
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-precocial",
-      "question": "What term describes chicks able to move and feed themselves soon after hatching?",
-      "kind": "cross-doc",
-      "answer_contains": "precocial",
-      "gold": [
-        {
-          "source": "bird_nest.docx",
-          "kind": "section",
-          "pages": [
-            "Scrape"
-          ]
-        },
-        {
-          "source": "bird_nest.pptx",
-          "kind": "slide",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "mallard.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            6
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-furcula",
-      "question": "What is the fused collarbone of a bird called?",
-      "kind": "fact",
-      "answer_contains": "furcula",
-      "gold": [
-        {
-          "source": "origin_of_birds.pptx",
-          "kind": "slide",
-          "pages": [
-            4
-          ]
-        }
-      ],
-      "multi_source": false
-    },
-    {
-      "id": "bird-uropygial",
-      "question": "Which gland supplies the oil a bird spreads while preening?",
-      "kind": "fact",
-      "answer_contains": "uropygial gland",
-      "gold": [
-        {
-          "source": "feather.pdf",
-          "kind": "page",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "owl.pptx",
-          "kind": "slide",
-          "pages": [
-            6
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-hollow-bones",
-      "question": "Which skeletal adaptation reduces a bird's weight for flight?",
-      "kind": "fact",
-      "answer_contains": "hollow bones",
-      "gold": [
-        {
-          "source": "bird_anatomy.docx",
-          "kind": "section",
-          "pages": [
-            1,
-            "Skeletal system"
-          ]
-        },
-        {
-          "source": "bird_anatomy.pptx",
-          "kind": "slide",
-          "pages": [
-            3
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-flyway",
-      "question": "What is the established route a migrating population follows called?",
-      "kind": "fact",
-      "answer_contains": "flyway",
-      "gold": [
-        {
-          "source": "bird_migration.pdf",
-          "kind": "page",
-          "pages": [
-            2
-          ]
-        },
-        {
-          "source": "bird_migration.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes"
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-alula",
-      "question": "Which small group of feathers helps prevent a stall at low speed?",
-      "kind": "fact",
-      "answer_contains": "alula",
-      "gold": [
-        {
-          "source": "bird.docx",
-          "kind": "section",
-          "pages": [
-            "Early evolution"
-          ]
-        },
-        {
-          "source": "flightless_bird.pdf",
-          "kind": "page",
-          "pages": [
-            3
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-wing-loading",
-      "question": "Which ratio of body mass to wing area governs flight performance?",
-      "kind": "fact",
-      "answer_contains": "wing loading",
-      "gold": [
-        {
-          "source": "bird_flight.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes",
-            "Sections"
-          ]
-        }
-      ],
-      "multi_source": false
-    },
-    {
-      "id": "bird-aspect-ratio",
-      "question": "Which wing measurement compares span against width?",
-      "kind": "fact",
-      "answer_contains": "aspect ratio",
-      "gold": [
-        {
-          "source": "bird_flight.pptx",
-          "kind": "slide",
-          "pages": [
-            8
-          ]
-        },
-        {
-          "source": "bird_flight.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes",
-            "Sections"
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-melanin",
-      "question": "Which pigment gives feathers their black and brown colouring?",
-      "kind": "multi",
-      "answer_contains": "melanin",
-      "gold": [
-        {
-          "source": "archaeopteryx.docx",
-          "kind": "section",
-          "pages": [
-            "Colouration"
-          ]
-        },
-        {
-          "source": "common_raven.pdf",
-          "kind": "page",
-          "pages": [
-            3
-          ]
-        },
-        {
-          "source": "feather.pdf",
-          "kind": "page",
-          "pages": [
-            3,
-            4
-          ]
-        },
-        {
-          "source": "feather.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes"
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-carotenoid",
-      "question": "Which dietary pigments produce red and yellow feather colour?",
-      "kind": "multi",
-      "answer_contains": "carotenoid",
-      "gold": [
-        {
-          "source": "feather.pdf",
-          "kind": "page",
-          "pages": [
-            3,
-            4
-          ]
-        },
-        {
-          "source": "feather.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes"
-          ]
-        },
-        {
-          "source": "penguin.docx",
-          "kind": "section",
-          "pages": [
-            "Origin and systematics of modern penguins"
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-iridescence",
-      "question": "What optical effect produces structural rather than pigment colour in feathers?",
-      "kind": "fact",
-      "answer_contains": "iridescence",
-      "gold": [
-        {
-          "source": "feather.pdf",
-          "kind": "page",
-          "pages": [
-            4
-          ]
-        },
-        {
-          "source": "ruby_throated_hummingbird.docx",
-          "kind": "section",
-          "pages": [
-            "Description"
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-tool-use",
-      "question": "Which corvid behaviour involves shaping objects into implements?",
-      "kind": "cross-doc",
-      "answer_contains": "tool use",
-      "gold": [
-        {
-          "source": "corvidae.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Sections"
-          ]
-        },
-        {
-          "source": "new_caledonian_crow.pptx",
-          "kind": "slide",
-          "pages": [
-            2,
-            6,
-            7
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-mirror",
-      "question": "Which self-recognition experiment have magpies been shown to pass?",
-      "kind": "fact",
-      "answer_contains": "mirror test",
-      "gold": [
-        {
-          "source": "corvidae.xlsx",
-          "kind": "sheet",
-          "pages": [
-            "Notes",
-            "Sections"
-          ]
-        },
-        {
-          "source": "eurasian_magpie.docx",
-          "kind": "section",
-          "pages": [
-            "Overview"
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-dialects",
-      "question": "What regional variation appears in the songs of a single species?",
-      "kind": "multi",
-      "answer_contains": "dialects",
-      "gold": [
-        {
-          "source": "bird_vocalization.docx",
-          "kind": "section",
-          "pages": [
-            "Mimicry"
-          ]
-        },
-        {
-          "source": "bird_vocalization.pdf",
-          "kind": "page",
-          "pages": [
-            3
-          ]
-        },
-        {
-          "source": "woodpecker.pptx",
-          "kind": "slide",
-          "pages": [
-            7
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-dawn-chorus",
-      "question": "What is the burst of collective singing at first light called?",
-      "kind": "fact",
-      "answer_contains": "dawn chorus",
-      "gold": [
-        {
-          "source": "bird_vocalization.docx",
-          "kind": "section",
-          "pages": [
-            "Social"
-          ]
-        },
-        {
-          "source": "bird_vocalization.pdf",
-          "kind": "page",
-          "pages": [
-            3
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-mimicry",
-      "question": "What is it called when a bird reproduces the sounds of other species?",
-      "kind": "fact",
-      "answer_contains": "mimicry",
-      "gold": [
-        {
-          "source": "bird_vocalization.docx",
-          "kind": "section",
-          "pages": [
-            "Mimicry"
-          ]
-        },
-        {
-          "source": "bird_vocalization.pdf",
-          "kind": "page",
-          "pages": [
-            3
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-imprinting",
-      "question": "Which early-life attachment process was famously studied in ducklings?",
-      "kind": "fact",
-      "answer_contains": "imprinting",
-      "gold": [
-        {
-          "source": "mallard.pdf",
-          "kind": "page",
-          "pages": [
-            6
-          ]
-        }
-      ],
-      "multi_source": false
-    },
-    {
-      "id": "bird-incubation",
-      "question": "What is the period of sitting on eggs before hatching called?",
-      "kind": "multi",
-      "answer_contains": "incubation",
-      "gold": [
-        {
-          "source": "bird_nest.docx",
-          "kind": "section",
-          "pages": [
-            "Cup",
-            "Mound",
-            "Scrape"
-          ]
-        },
-        {
-          "source": "bird_nest.pptx",
-          "kind": "slide",
-          "pages": [
-            5,
-            8
-          ]
-        },
-        {
-          "source": "common_raven.pdf",
-          "kind": "page",
-          "pages": [
-            5
-          ]
-        },
-        {
-          "source": "mallard.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            6
-          ]
-        },
-        {
-          "source": "peregrine_falcon.pdf",
-          "kind": "page",
-          "pages": [
-            8
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "bird-fledging",
-      "question": "What is the stage at which a young bird develops flight feathers and leaves the nest?",
-      "kind": "multi",
-      "answer_contains": "fledging",
-      "gold": [
-        {
-          "source": "bird_migration.pdf",
-          "kind": "page",
-          "pages": [
-            5
-          ]
-        },
-        {
-          "source": "bird_nest.docx",
-          "kind": "section",
-          "pages": [
-            "Cavity"
-          ]
-        },
-        {
-          "source": "budgerigar.pdf",
-          "kind": "page",
-          "pages": [
-            4,
-            5
-          ]
-        },
-        {
-          "source": "common_raven.pdf",
-          "kind": "page",
-          "pages": [
-            5
-          ]
-        },
-        {
-          "source": "mallard.pdf",
-          "kind": "page",
-          "pages": [
-            1,
-            6
-          ]
-        },
-        {
-          "source": "mute_swan.docx",
-          "kind": "section",
-          "pages": [
-            "Breeding"
-          ]
-        },
-        {
-          "source": "woodpecker.pptx",
-          "kind": "slide",
-          "pages": [
-            4
-          ]
-        }
-      ],
-      "multi_source": true
-    },
-    {
-      "id": "adv-bird-transformer",
-      "question": "What attention mechanism does the transformer architecture use?",
-      "unanswerable": true,
-      "adversarial_kind": "absent",
-      "why": "machine learning; nothing in an ornithology corpus discusses it",
-      "gold": []
-    },
-    {
-      "id": "adv-bird-insulin",
-      "question": "How does insulin regulate blood glucose in humans?",
-      "unanswerable": true,
-      "adversarial_kind": "absent",
-      "why": "human endocrinology; adjacent biology but absent here",
-      "gold": []
-    },
-    {
-      "id": "adv-bird-consensus",
-      "question": "How does a proof of stake protocol reach consensus?",
-      "unanswerable": true,
-      "adversarial_kind": "absent",
-      "why": "distributed systems; wholly outside the corpus",
-      "gold": []
-    },
-    {
-      "id": "adv-bird-price",
-      "question": "How much does a trained falcon sell for at auction?",
-      "unanswerable": true,
-      "adversarial_kind": "near-miss",
-      "why": "falconry is discussed, commerce and prices are not",
-      "gold": []
-    },
-    {
-      "id": "adv-bird-author",
-      "question": "Who wrote this article and when was it last revised?",
-      "unanswerable": true,
-      "adversarial_kind": "metadata",
-      "why": "authorship metadata is not in the extracted text",
-      "gold": []
-    },
-    {
-      "id": "adv-bird-count-2024",
-      "question": "How many individuals were counted in the 2024 breeding survey?",
-      "unanswerable": true,
-      "adversarial_kind": "near-miss",
-      "why": "conservation status is discussed; no specific 2024 survey figures exist here",
-      "gold": []
+     "source": "passerine.pptx",
+     "kind": "slide",
+     "pages": [
+      4
+     ]
     }
-  ]
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-keel",
+   "question": "Which breastbone feature anchors the muscles that power flight?",
+   "kind": "fact",
+   "answer_contains": "keeled sternum",
+   "gold": [
+    {
+     "source": "bird.docx",
+     "kind": "section",
+     "pages": [
+      "Early evolution"
+     ]
+    }
+   ],
+   "multi_source": false
+  },
+  {
+   "id": "bird-barbules",
+   "question": "What interlocking structures hold the vane of a feather together?",
+   "kind": "fact",
+   "answer_contains": "barbules",
+   "gold": [
+    {
+     "source": "feather.pdf",
+     "kind": "page",
+     "pages": [
+      2,
+      3
+     ]
+    },
+    {
+     "source": "feather.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-down",
+   "question": "Which type of feather provides insulation rather than flight surface?",
+   "kind": "multi",
+   "answer_contains": "down feathers",
+   "gold": [
+    {
+     "source": "bird_nest.docx",
+     "kind": "section",
+     "pages": [
+      "Scrape"
+     ]
+    },
+    {
+     "source": "emperor_penguin.pptx",
+     "kind": "slide",
+     "pages": [
+      6
+     ]
+    },
+    {
+     "source": "feather.pdf",
+     "kind": "page",
+     "pages": [
+      2,
+      3
+     ]
+    },
+    {
+     "source": "feather.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes",
+      "Sections"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-airsacs",
+   "question": "What structures make airflow through a bird's lungs one-directional?",
+   "kind": "fact",
+   "answer_contains": "air sacs",
+   "gold": [
+    {
+     "source": "bird_anatomy.docx",
+     "kind": "section",
+     "pages": [
+      "Skeletal system"
+     ]
+    },
+    {
+     "source": "bird_anatomy.pptx",
+     "kind": "slide",
+     "pages": [
+      3
+     ]
+    },
+    {
+     "source": "feather.pdf",
+     "kind": "page",
+     "pages": [
+      2
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-brood-parasite",
+   "question": "What is it called when a bird lays its eggs in another species' nest?",
+   "kind": "fact",
+   "answer_contains": "brood parasitism",
+   "gold": [
+    {
+     "source": "bird_egg.pptx",
+     "kind": "slide",
+     "pages": [
+      9
+     ]
+    },
+    {
+     "source": "bird_egg.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-altricial",
+   "question": "What term describes chicks that hatch helpless and wholly dependent on their parents?",
+   "kind": "cross-doc",
+   "answer_contains": "altricial",
+   "gold": [
+    {
+     "source": "beak.pdf",
+     "kind": "page",
+     "pages": [
+      4
+     ]
+    },
+    {
+     "source": "budgerigar.pdf",
+     "kind": "page",
+     "pages": [
+      4
+     ]
+    },
+    {
+     "source": "eurasian_magpie.docx",
+     "kind": "section",
+     "pages": [
+      "Breeding"
+     ]
+    },
+    {
+     "source": "passerine.pptx",
+     "kind": "slide",
+     "pages": [
+      6
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-precocial",
+   "question": "What term describes chicks able to move and feed themselves soon after hatching?",
+   "kind": "cross-doc",
+   "answer_contains": "precocial",
+   "gold": [
+    {
+     "source": "bird_nest.docx",
+     "kind": "section",
+     "pages": [
+      "Scrape"
+     ]
+    },
+    {
+     "source": "bird_nest.pptx",
+     "kind": "slide",
+     "pages": [
+      4
+     ]
+    },
+    {
+     "source": "mallard.pdf",
+     "kind": "page",
+     "pages": [
+      1,
+      6
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-furcula",
+   "question": "What is the fused collarbone of a bird called?",
+   "kind": "fact",
+   "answer_contains": "furcula",
+   "gold": [
+    {
+     "source": "origin_of_birds.pptx",
+     "kind": "slide",
+     "pages": [
+      4
+     ]
+    }
+   ],
+   "multi_source": false
+  },
+  {
+   "id": "bird-uropygial",
+   "question": "Which gland supplies the oil a bird spreads while preening?",
+   "kind": "fact",
+   "answer_contains": "uropygial gland",
+   "gold": [
+    {
+     "source": "feather.pdf",
+     "kind": "page",
+     "pages": [
+      4
+     ]
+    },
+    {
+     "source": "owl.pptx",
+     "kind": "slide",
+     "pages": [
+      6
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-hollow-bones",
+   "question": "Which skeletal adaptation reduces a bird's weight for flight?",
+   "kind": "fact",
+   "answer_contains": "hollow bones",
+   "gold": [
+    {
+     "source": "bird_anatomy.docx",
+     "kind": "section",
+     "pages": [
+      "Skeletal system"
+     ]
+    },
+    {
+     "source": "bird_anatomy.docx",
+     "kind": "table",
+     "pages": [
+      1
+     ]
+    },
+    {
+     "source": "bird_anatomy.pptx",
+     "kind": "slide",
+     "pages": [
+      3
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-flyway",
+   "question": "What is the established route a migrating population follows called?",
+   "kind": "fact",
+   "answer_contains": "flyway",
+   "gold": [
+    {
+     "source": "bird_migration.pdf",
+     "kind": "page",
+     "pages": [
+      2
+     ]
+    },
+    {
+     "source": "bird_migration.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-alula",
+   "question": "Which small group of feathers helps prevent a stall at low speed?",
+   "kind": "fact",
+   "answer_contains": "alula",
+   "gold": [
+    {
+     "source": "bird.docx",
+     "kind": "section",
+     "pages": [
+      "Early evolution"
+     ]
+    },
+    {
+     "source": "flightless_bird.pdf",
+     "kind": "page",
+     "pages": [
+      3
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-wing-loading",
+   "question": "Which ratio of body mass to wing area governs flight performance?",
+   "kind": "fact",
+   "answer_contains": "wing loading",
+   "gold": [
+    {
+     "source": "bird_flight.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes",
+      "Sections"
+     ]
+    }
+   ],
+   "multi_source": false
+  },
+  {
+   "id": "bird-aspect-ratio",
+   "question": "Which wing measurement compares span against width?",
+   "kind": "fact",
+   "answer_contains": "aspect ratio",
+   "gold": [
+    {
+     "source": "bird_flight.pptx",
+     "kind": "slide",
+     "pages": [
+      8
+     ]
+    },
+    {
+     "source": "bird_flight.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes",
+      "Sections"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-melanin",
+   "question": "Which pigment gives feathers their black and brown colouring?",
+   "kind": "multi",
+   "answer_contains": "melanin",
+   "gold": [
+    {
+     "source": "archaeopteryx.docx",
+     "kind": "section",
+     "pages": [
+      "Colouration"
+     ]
+    },
+    {
+     "source": "common_raven.pdf",
+     "kind": "page",
+     "pages": [
+      3
+     ]
+    },
+    {
+     "source": "feather.pdf",
+     "kind": "page",
+     "pages": [
+      3,
+      4
+     ]
+    },
+    {
+     "source": "feather.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-carotenoid",
+   "question": "Which dietary pigments produce red and yellow feather colour?",
+   "kind": "multi",
+   "answer_contains": "carotenoid",
+   "gold": [
+    {
+     "source": "feather.pdf",
+     "kind": "page",
+     "pages": [
+      3,
+      4
+     ]
+    },
+    {
+     "source": "feather.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes"
+     ]
+    },
+    {
+     "source": "penguin.docx",
+     "kind": "section",
+     "pages": [
+      "Origin and systematics of modern penguins"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-iridescence",
+   "question": "What optical effect produces structural rather than pigment colour in feathers?",
+   "kind": "fact",
+   "answer_contains": "iridescence",
+   "gold": [
+    {
+     "source": "feather.pdf",
+     "kind": "page",
+     "pages": [
+      4
+     ]
+    },
+    {
+     "source": "ruby_throated_hummingbird.docx",
+     "kind": "section",
+     "pages": [
+      "Description"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-tool-use",
+   "question": "Which corvid behaviour involves shaping objects into implements?",
+   "kind": "cross-doc",
+   "answer_contains": "tool use",
+   "gold": [
+    {
+     "source": "corvidae.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Sections"
+     ]
+    },
+    {
+     "source": "new_caledonian_crow.pptx",
+     "kind": "slide",
+     "pages": [
+      2,
+      6,
+      7
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-mirror",
+   "question": "Which self-recognition experiment have magpies been shown to pass?",
+   "kind": "fact",
+   "answer_contains": "mirror test",
+   "gold": [
+    {
+     "source": "corvidae.xlsx",
+     "kind": "sheet",
+     "pages": [
+      "Notes",
+      "Sections"
+     ]
+    },
+    {
+     "source": "eurasian_magpie.docx",
+     "kind": "section",
+     "pages": [
+      "Overview"
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-dialects",
+   "question": "What regional variation appears in the songs of a single species?",
+   "kind": "multi",
+   "answer_contains": "dialects",
+   "gold": [
+    {
+     "source": "bird_vocalization.docx",
+     "kind": "section",
+     "pages": [
+      "Mimicry"
+     ]
+    },
+    {
+     "source": "bird_vocalization.pdf",
+     "kind": "page",
+     "pages": [
+      3
+     ]
+    },
+    {
+     "source": "woodpecker.pptx",
+     "kind": "slide",
+     "pages": [
+      7
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-dawn-chorus",
+   "question": "What is the burst of collective singing at first light called?",
+   "kind": "fact",
+   "answer_contains": "dawn chorus",
+   "gold": [
+    {
+     "source": "bird_vocalization.docx",
+     "kind": "section",
+     "pages": [
+      "Social"
+     ]
+    },
+    {
+     "source": "bird_vocalization.pdf",
+     "kind": "page",
+     "pages": [
+      3
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-mimicry",
+   "question": "What is it called when a bird reproduces the sounds of other species?",
+   "kind": "fact",
+   "answer_contains": "mimicry",
+   "gold": [
+    {
+     "source": "bird_vocalization.docx",
+     "kind": "section",
+     "pages": [
+      "Mimicry"
+     ]
+    },
+    {
+     "source": "bird_vocalization.pdf",
+     "kind": "page",
+     "pages": [
+      3
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-imprinting",
+   "question": "Which early-life attachment process was famously studied in ducklings?",
+   "kind": "fact",
+   "answer_contains": "imprinting",
+   "gold": [
+    {
+     "source": "mallard.pdf",
+     "kind": "page",
+     "pages": [
+      6
+     ]
+    }
+   ],
+   "multi_source": false
+  },
+  {
+   "id": "bird-incubation",
+   "question": "What is the period of sitting on eggs before hatching called?",
+   "kind": "multi",
+   "answer_contains": "incubation",
+   "gold": [
+    {
+     "source": "bird_nest.docx",
+     "kind": "section",
+     "pages": [
+      "Cup",
+      "Mound",
+      "Scrape"
+     ]
+    },
+    {
+     "source": "bird_nest.pptx",
+     "kind": "slide",
+     "pages": [
+      5,
+      8
+     ]
+    },
+    {
+     "source": "common_raven.pdf",
+     "kind": "page",
+     "pages": [
+      5
+     ]
+    },
+    {
+     "source": "mallard.pdf",
+     "kind": "page",
+     "pages": [
+      1,
+      6
+     ]
+    },
+    {
+     "source": "peregrine_falcon.pdf",
+     "kind": "page",
+     "pages": [
+      8
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "bird-fledging",
+   "question": "What is the stage at which a young bird develops flight feathers and leaves the nest?",
+   "kind": "multi",
+   "answer_contains": "fledging",
+   "gold": [
+    {
+     "source": "bird_migration.pdf",
+     "kind": "page",
+     "pages": [
+      5
+     ]
+    },
+    {
+     "source": "bird_nest.docx",
+     "kind": "section",
+     "pages": [
+      "Cavity"
+     ]
+    },
+    {
+     "source": "budgerigar.pdf",
+     "kind": "page",
+     "pages": [
+      4,
+      5
+     ]
+    },
+    {
+     "source": "common_raven.pdf",
+     "kind": "page",
+     "pages": [
+      5
+     ]
+    },
+    {
+     "source": "mallard.pdf",
+     "kind": "page",
+     "pages": [
+      1,
+      6
+     ]
+    },
+    {
+     "source": "mute_swan.docx",
+     "kind": "section",
+     "pages": [
+      "Breeding"
+     ]
+    },
+    {
+     "source": "woodpecker.pptx",
+     "kind": "slide",
+     "pages": [
+      4
+     ]
+    }
+   ],
+   "multi_source": true
+  },
+  {
+   "id": "adv-bird-transformer",
+   "question": "What attention mechanism does the transformer architecture use?",
+   "unanswerable": true,
+   "adversarial_kind": "absent",
+   "why": "machine learning; nothing in an ornithology corpus discusses it",
+   "gold": []
+  },
+  {
+   "id": "adv-bird-insulin",
+   "question": "How does insulin regulate blood glucose in humans?",
+   "unanswerable": true,
+   "adversarial_kind": "absent",
+   "why": "human endocrinology; adjacent biology but absent here",
+   "gold": []
+  },
+  {
+   "id": "adv-bird-consensus",
+   "question": "How does a proof of stake protocol reach consensus?",
+   "unanswerable": true,
+   "adversarial_kind": "absent",
+   "why": "distributed systems; wholly outside the corpus",
+   "gold": []
+  },
+  {
+   "id": "adv-bird-price",
+   "question": "How much does a trained falcon sell for at auction?",
+   "unanswerable": true,
+   "adversarial_kind": "near-miss",
+   "why": "falconry is discussed, commerce and prices are not",
+   "gold": []
+  },
+  {
+   "id": "adv-bird-author",
+   "question": "Who wrote this article and when was it last revised?",
+   "unanswerable": true,
+   "adversarial_kind": "metadata",
+   "why": "authorship metadata is not in the extracted text",
+   "gold": []
+  },
+  {
+   "id": "adv-bird-count-2024",
+   "question": "How many individuals were counted in the 2024 breeding survey?",
+   "unanswerable": true,
+   "adversarial_kind": "near-miss",
+   "why": "conservation status is discussed; no specific 2024 survey figures exist here",
+   "gold": []
+  }
+ ]
 }

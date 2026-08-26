@@ -17,6 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+import corpora  # noqa: E402
 import rerank as rr  # noqa: E402
 from evaluate import gold_keys, load_cases, ndcg, source_recall  # noqa: E402
 from hybrid import build_bm25  # noqa: E402
@@ -27,11 +28,15 @@ if hasattr(sys.stdout, "reconfigure"):
 
 ROOT = Path(__file__).parent.parent
 
-CORPORA = [
-    ("ML", "vector_store", "eval/golden_set.json"),
-    ("birds", "store-birds", "eval/golden-birds.json"),
-    ("quant", "store-quant", "eval/golden-quant.json"),
-]
+# Read from corpora.json rather than listed here. This was the fourth copy of
+# the corpus table in the repo, and the one build_analytics.py kept had already
+# demonstrated the failure: a corpus added to corpora.json and not to the copy
+# is skipped in silence, and a sweep that quietly measures two of three corpora
+# is exactly the trap this script exists to prevent.
+def configured():
+    return [(cfg["label"], cfg["store"], cfg["golden"])
+            for cfg in corpora.registry().values()
+            if cfg["indexed"] and cfg["golden"] and cfg["golden"].exists()]
 
 
 def score(cases, index, metadata, model, bm25, blend, k, cand):
@@ -67,14 +72,10 @@ def main() -> int:
     model = SentenceTransformer(EMBEDDING_MODEL)
 
     out = {}
-    for label, store, golden in CORPORA:
-        path = ROOT / store
-        if not (path / "metadata.json").exists():
-            print(f"  {label}: no index, skipped")
-            continue
-        index, metadata = load_index(path)
+    for label, store, golden in configured():
+        index, metadata = load_index(store)
         bm25 = build_bm25(metadata)
-        answerable, _ = load_cases(ROOT / golden)
+        answerable, _ = load_cases(golden)
         print(f"\n  {label}  ({len(answerable)} answerable)")
         print(f"    {'blend':>6}{'any-hit':>10}{'MRR':>9}{'NDCG':>9}{'src recall':>12}")
         rows = {}

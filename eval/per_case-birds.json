@@ -17,7 +17,7 @@
  "inputs": {
   "golden": {
    "path": "eval\\golden-birds.json",
-   "digest": "sha256:90d5e90eef92d1d0",
+   "digest": "sha256:6da452b97d041254",
    "cases": 32
   },
   "index": {

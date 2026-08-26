@@ -226,6 +226,61 @@ is now measured rather than asserted.
 
 ---
 
+## 2026-08-27 — Fusion per corpus: the pool says one thing, the pipeline another
+
+**Hypothesis.** The reranker turned out to be a dead end, but the stage before it
+looked promising. `HANDOFF.md` had said since the second corpus was built that
+fusion is probably per-corpus, on the strength of one number: the bird candidate
+pool holds the answer 96.2% of the time under dense retrieval and 88.5% under
+RRF, so fusing costs that corpus two questions before reranking starts. It was
+never acted on because 26 cases is too few to move a *global* default — sound
+about a global default, silent about a per-corpus one, which is what the
+threshold and the blend already are.
+
+**What was missing was the measurement at the served configuration.**
+`evaluate.py` compares fusions *before* the diversity cap and applies the cap
+only to RRF, so the table every document quotes has no row for "weighted,
+capped" at all. `src/sweep_fusion.py` runs every fusion on every corpus at
+k=5 from 20 candidates, with that corpus's own rerank blend and the 2-per-source
+cap — the pipeline `api.ask()` actually runs.
+
+**The result reverses the premise.**
+
+| birds | pool any-hit | shipped-pipeline any-hit |
+|---|---|---|
+| dense only | **0.962** | **0.808** |
+| RRF *(shipped)* | 0.885 | **0.846** |
+| weighted a=0.5 | 0.923 | **0.885** |
+
+Dense retrieval finds the answer most often and produces the *worst* final
+result. A candidate pool is not a set, it is an **ordering handed to the
+cross-encoder**, and dense hands over one the reranker cannot exploit — the same
+weakness the rerank blend exists to hedge. Reading pool recall as a proxy for
+pipeline quality is the error, and this project's own handoff had been making it
+for a week.
+
+**Nothing shipped, and both reasons are stated rather than assumed.**
+
+- birds, `weighted a=0.5`: wins one question (`bird-dialects`) and loses MRR
+  0.614 → 0.587 and NDCG 0.671 → 0.662. Identical in shape to the trade the
+  rerank blend was judged on, and this corpus's own note already settles how to
+  read it — on 26 cases, an any-hit gain of one question is thinner evidence
+  than MRR. **Rejected by the project's own stated principle**, which is the
+  best kind of rejection: the rule existed before the result.
+- quant, `weighted a=0.7`: weakly dominant — MRR 0.714 → 0.727, NDCG +0.006,
+  source recall +0.006, any-hit unchanged. But the missed set is *identical*, so
+  no question changes hands; it buys a fraction of a rank position. Shipping it
+  would also require recalibrating that corpus's threshold, because changing
+  fusion changes the top passage and therefore every confidence the gate reads.
+  Too much machinery for +0.013 MRR on 35 cases. **Rejected on cost.**
+- ML: RRF wins outright. No candidate.
+
+The value here is the corrected claim, not a config change. HANDOFF §2 now
+carries the end-to-end table and the instruction to quote it rather than the
+pool row.
+
+---
+
 ## 2026-08-27 — The answer highlight: moved, bounded, and measured
 
 **Why.** The interface sets the answering words bold inside a passage shown at
@@ -274,6 +329,79 @@ capital. A false boundary is the mirror image of a missed one and much harder to
 notice: it does not run the mark into the next sentence, it cuts the answer in
 half. It went unseen on a corpus of academic papers, which is exactly where
 those abbreviations live.
+
+---
+
+## 2026-08-27 — Stress-testing the golden sets
+
+**Why.** Every number in this repo rests on three golden sets, and nothing had
+ever checked that they still *describe* the corpora they score. `evaluate.py`
+will happily score a case whose gold document was renamed, whose locators moved
+when the parser changed, or whose `answer_contains` string is nowhere near the
+passage the label names. It produces a number either way, and that number is
+what the documents quote.
+
+`src/audit_golden_set.py` already asked the *semantic* question — has the corpus
+grown into an adversarial case's subject, has an answerable question become
+ambiguous — but it is ML-only, with a hand-written table of which words would
+make each adversarial case answerable. `src/check_golden.py` asks the
+*structural* one and needs no per-case knowledge, so it runs on every corpus
+including ones that do not exist yet.
+
+**It found a broken label on its first run.** `bird-hollow-bones` carried
+`{"kind": "section", "pages": [1, "Skeletal system"]}`. "Skeletal system" is a
+real section; the `1` was meant for `table 1`, a different locator kind in the
+same document. As written, `(bird_anatomy.docx, section, "1")` matched no chunk
+in the corpus and contributed nothing, while looking exactly like a label.
+
+**And it did not change the score, which is worth saying plainly.** The pipeline
+returns none of the three places carrying "hollow bones" — it returns slide 4,
+`section Axial skeleton`, `section Overview`, slide 2 — so the case misses
+either way. A broken label that happens to sit on a genuine miss. Fixing it left
+any-hit at 0.846 and MRR at 0.614, and the temptation to present the fix as a
+recovered question is exactly the kind of thing this log exists to prevent.
+
+`src/test_golden.py` stages each failure class on a synthetic two-document
+corpus and asserts the audit reports it — 15 checks, hermetic, milliseconds.
+
+**A gap in my own work, found by using it.** Fixing that one locator changed no
+case count, no corpus size and no metric — and `check_freshness` still reported
+`results-birds.json` as current. `per_case.json` had recorded a digest of its
+golden set since the day the check was written; `results.json` never had. The
+digest half exists precisely for the edit that moves no count, and it was
+missing from half the chain. Now stamped by `evaluate.py` and checked, with two
+more cases in `test_freshness.py` (30 → 32).
+
+---
+
+## 2026-08-27 — The documents are now checked against the measurements
+
+**The failure this closes** is this repo's most-repeated one. The README once
+claimed "84 evaluation cases" directly above figures measured on 23.
+`eval/RESULTS.md` said 20 papers and 2,768 chunks long after the corpus reached
+36 and 5,459 — under a header promising that if the two disagreed, the document
+was stale. It was true, and nobody noticed, because nothing checked it.
+
+`build_results_doc.py --check` closed that for RESULTS.md by *generating* its
+tables. `check_freshness.py` closed the generated chain feeding the interface.
+Neither covered **HANDOFF.md §2 and the README** — the two documents a new
+session and a visitor read first.
+
+Generating them would be the wrong fix: the argument around each number is
+judgement and cannot come from a JSON file. So `src/check_docs.py` leaves them
+hand-written and checks them — 14 quantities, each naming where its truth lives,
+and a table it cannot find is a *failure* rather than a skip, because a checker
+that quietly matches nothing reports success.
+
+**Verified to have teeth** by perturbing two numbers and confirming both were
+caught, one of them the exact `900 passages` error that was really in the README
+earlier the same day.
+
+One subtlety that would have made it useless: compare at the precision the
+document *writes*, not the precision the measurement carries. `+4.93` against
+`4.934403419494629` is a document rounding correctly, and reporting that as
+drift trains a reader to ignore the checker — which is how a check stops being
+read.
 
 ---
 

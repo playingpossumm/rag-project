@@ -246,6 +246,28 @@ def check_results(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Path
         rep.missing(name, "results", f"{path.name} is missing or unreadable", fix)
         return None
 
+    rel = path.relative_to(ROOT).as_posix()
+
+    # The digest half, the same as per_case gets. Every check below this one
+    # compares a count, and the edit this is here for changes no count: a
+    # corrected locator in one label leaves the case totals, the corpus size and
+    # every metric exactly as they were.
+    inputs = res.get("inputs")
+    if not inputs:
+        rep.note(name, "results", f"{rel} predates provenance; checked by content only")
+    else:
+        got = inputs.get("golden", {}).get("digest")
+        want = digest(gold_path)
+        if got != want:
+            rep.stale(name, "results",
+                      f"golden set has changed since {rel} was measured "
+                      f"({got} -> {want})", fix)
+        got_i = (inputs.get("index") or {}).get("digest")
+        want_i = digest(cfg["store"] / "metadata.json")
+        if got_i and got_i != want_i:
+            rep.stale(name, "results",
+                      f"the index has been rebuilt since {rel} was measured", fix)
+
     c = res.get("corpus") or {}
     n_ans = sum(1 for x in gold["cases"] if not x.get("unanswerable"))
     n_adv = len(gold["cases"]) - n_ans
