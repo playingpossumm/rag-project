@@ -144,6 +144,17 @@ README_LADDER = {
 }
 LADDER_METRICS = ["hit_rate", "mrr", "ndcg", "src_recall"]
 
+# HANDOFF §2's copy of the ladder, which spells the rows differently from the
+# README's and carries one more of them. Keys are the row label with emphasis
+# and parentheticals stripped.
+HANDOFF_LADDER = {
+    "dense, no rerank": "dense, no rerank",
+    "+ cross-encoder rerank": "dense + rerank",
+    "+ RRF hybrid fusion": "rrf + rerank",
+    "+ diversity cap 2/src": SHIPPED_ROW,
+    "+ diversity cap 1/src": "+ diversity 1/src",
+}
+
 
 def written_places(cell: str) -> int:
     """How many decimals the document itself wrote.
@@ -189,6 +200,36 @@ def check_handoff(measured: dict, problems: list[str], notes: list[str]) -> bool
                     f"HANDOFF.md §2, {row_label} / {measured[name]['label']}: "
                     f"says {cells[i].strip()}, measured {real}")
         notes.append(f"  §2 {row_label}")
+
+    # HANDOFF's own copy of the pipeline ladder. The README has one too, and a
+    # table duplicated across two documents is a table that agrees until one of
+    # them is edited.
+    ladder = parse_table(doc, "| pipeline") or parse_table(doc, "pipeline")
+    if not ladder:
+        problems.append("HANDOFF.md §2: the pipeline ladder table is gone")
+    else:
+        ml = measured.get("llm")
+        seen = 0
+        for row_label, cells in ladder.items():
+            key = HANDOFF_LADDER.get(re.sub(r"[*_]|\(.*?\)", "", row_label).strip())
+            if not key or not ml:
+                continue
+            real = ml["ladder"].get(key)
+            if real is None:
+                problems.append(f"HANDOFF.md §2 ladder: results.json has no row "
+                                f"{key!r}")
+                continue
+            seen += 1
+            for cell, metric in zip(cells, LADDER_METRICS):
+                if not close(num(cell), real[metric], written_places(cell)):
+                    problems.append(
+                        f"HANDOFF.md §2 ladder, {row_label} / {metric}: says "
+                        f"{cell.strip()}, measured {real[metric]:.3f}")
+        if seen != len(HANDOFF_LADDER):
+            problems.append(f"HANDOFF.md §2 ladder: matched {seen} of "
+                            f"{len(HANDOFF_LADDER)} rows -- the table has been "
+                            f"renamed or reordered")
+        notes.append("  §2 pipeline ladder")
 
     cases = table.get("cases")
     if cases is None:
