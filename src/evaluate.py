@@ -179,6 +179,10 @@ def main():
     ap.add_argument("--golden", type=Path, default=GOLDEN_SET,
                     help="golden set to score against")
     ap.add_argument("--per-case", action="store_true")
+    ap.add_argument("--rerank-blend", type=float, default=None,
+                    help="how much first-stage ordering survives reranking; "
+                         "default: the value corpora.json sets for this golden "
+                         "set, so the harness measures what the server serves")
     ap.add_argument("--emit", type=Path, default=None,
                     help="write machine-readable results here "
                          "(default: derived from --golden, so each corpus keeps "
@@ -190,6 +194,23 @@ def main():
     # documents while eval/RESULTS.md, which says its figures are copied from
     # that file, described 36 arXiv papers. Nothing errored; the two just
     # silently disagreed about which corpus they were about.
+    # The server reads rerank_blend per corpus from corpora.json. If the
+    # harness ignored it the two would disagree about the same pipeline: birds
+    # ships at 0.20 and would be measured at 0.00. Match on the golden set.
+    import rerank as _rr
+    if args.rerank_blend is not None:
+        _rr.RERANK_BLEND = args.rerank_blend
+    else:
+        try:
+            import corpora as _c
+            for _cfg in _c.registry().values():
+                if _cfg["golden"] and Path(_cfg["golden"]).name == args.golden.name:
+                    _rr.RERANK_BLEND = _cfg["rerank_blend"]
+                    break
+        except Exception:
+            pass
+    print(f"rerank blend: {_rr.RERANK_BLEND}")
+
     if args.emit is None:
         stem = args.golden.stem                      # golden_set / golden-birds
         suffix = "" if stem in ("golden_set", "golden") else stem.split("-", 1)[-1]

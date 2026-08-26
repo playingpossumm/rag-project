@@ -1,6 +1,6 @@
 # Handoff
 
-Written 2026-08-19 so a new session can pick this up cold, updated 2026-08-21.
+Written 2026-08-19 so a new session can pick this up cold, updated 2026-08-26.
 Everything here is measured or verifiable from the repo; where something is
 unverified it says so.
 
@@ -33,34 +33,54 @@ competes on what closed consumer products structurally cannot offer:
 
 ## 2. Current measured state
 
-Corpus: **20 documents, 2,768 chunks** — all PDFs (see §7, this is the biggest gap).
-Golden set: **66 answerable + 18 adversarial = 84 cases**.
+Three corpora, each with its own index, golden set, abstention threshold and
+rerank blend. **Nothing about a corpus transfers to another one** — that is the
+single most reused finding in this project, see §4.
 
-End-to-end at k=5 (from `eval/results.json`, regenerate with `src/evaluate.py`):
+| | ML & NLP papers | Ornithology | Quant finance |
+|---|---|---|---|
+| documents | 36 PDF | 45 mixed | 35 PDF |
+| passages | 5,459 | 864 | 6,184 |
+| cases | 67 + 17 adv | 26 + 6 adv | 35 + 6 adv |
+| any-hit@5 | **0.851** | **0.846** | **0.886** |
+| MRR | 0.738 | 0.613 | 0.714 |
+| source recall | 0.760 | 0.762 | 0.741 |
+| abstention threshold | 0.0 | −3.0 | −4.0 |
+| rerank blend | 0.0 | 0.20 | 0.0 |
+| answerable median | +4.93 | +1.21 | +2.34 |
 
-| pipeline | hit rate | MRR | NDCG | source recall |
+Shipped config throughout: RRF fusion, cross-encoder rerank, diversity cap
+2/source, window±1 context expansion.
+
+Reproduce: `python src/evaluate.py` (add `--golden eval/golden-birds.json` and
+the matching `RAG_STORE_DIR`/`RAG_DATA_DIR` for the others). It prints the
+rerank blend it is using and takes it from `corpora.json`, so the harness
+measures what the server serves.
+
+`eval/RESULTS.md` tables are **generated** from `eval/results.json` by
+`src/build_results_doc.py`; `--check` fails when they have drifted. The prose
+around them is not generated.
+
+ML pipeline ladder, each row adding one stage:
+
+| pipeline | any-hit | MRR | NDCG | src recall |
 |---|---|---|---|---|
-| dense, no rerank (naive RAG) | 0.788 | 0.601 | 0.645 | 0.704 |
-| + cross-encoder rerank | 0.788 | 0.710 | 0.715 | 0.711 |
-| + hybrid fusion (RRF) | 0.864 | 0.757 | 0.766 | 0.742 |
-| **+ diversity cap 2/src (default)** | **0.848** | **0.754** | **0.769** | **0.773** |
-| + diversity cap 1/src | 0.818 | 0.742 | 0.753 | 0.817 |
+| dense, no rerank *(naive RAG)* | 0.791 | 0.581 | 0.629 | 0.664 |
+| + cross-encoder rerank | 0.791 | 0.688 | 0.698 | 0.700 |
+| + RRF hybrid fusion | 0.866 | 0.741 | 0.754 | 0.724 |
+| **+ diversity cap 2/src** *(shipped)* | **0.851** | 0.738 | 0.754 | **0.760** |
+| + diversity cap 1/src | 0.776 | 0.708 | 0.719 | 0.805 |
 
-Context expansion: none 0.742 recall @ 997 tok/query · **window±1 0.833 @ 2371 (default)** ·
-page 0.848 @ 4828. Page buys 1.5 points of recall for 2× the tokens; window is the default.
+Context expansion (ML): none 0.746 recall @ 998 tok · **window±1 0.806 @ 2,355
+(default)** · page 0.851 @ 4,752. Page buys 4.5 points for twice the tokens.
 
-Abstention separation: answerable median **+4.93**, unanswerable median **−2.33**,
-threshold **0.0**. The distributions overlap (answerable min −4.02), so the
-threshold is a deliberate trade, not a clean split — and as of 2026-08-21 a
-**measured** one. `evaluate.py` reports "best net separation at +2" every run;
-that column is Youden's J, which subtracts rates over 18 adversarial and 66
-answerable cases and so values one adversarial case at 3.7 answerable ones. In
-cases, 0 → +2 trades 4 caught for 4 lost — break-even before any weighting, and
-+1 and +3 lose outright. 0.0 stays. See `eval/RESULTS.md` and
-`src/calibrate_threshold.py`, which names the three questions +1 would cost.
+Fusion is corpus-dependent too. On the candidate pool: RRF beats dense-only on
+ML and quant, and **loses** on birds (dense 0.962 vs RRF 0.885), where the more
+dense-weighted the better. Not acted on — 26 cases is too few to move a default.
 
 Indexing: full cold build **432 s** · re-index nothing changed **0.76 s** ·
-add 1 document to 20 **18.8 s**.
+add 1 document to 20 **18.8 s**. Re-ingest reuses embeddings by content hash, so
+a change that does not alter chunk text costs a re-index and no compute.
 
 ---
 
@@ -136,6 +156,47 @@ Other hard-won corrections worth not repeating:
 ---
 
 ## 5. UI state
+
+### Rewritten 2026-08-26 — the front page as it now stands
+
+`retrieval visualized/`. Header carries two links only: **Analytics** and
+**Previous version** (`/archive`, the pre-rebuild front page served live beside
+the current one, with its own copy of the drawing code so the two can be
+clicked through). The name is a **home button** that clears the thread.
+
+Flow: headline → what RAG is → the pipeline diagram → **pick a document set**
+(dropdown, each with an isometric mark, counts and formats) → ask. Clicking the
+field opens the example questions, grouped by what each exercises: *one figure
+in one place*, *spread over several documents*, *decoys that look right*, *not
+in these documents*. Those come from `eval/analytics.json` — **regenerate it
+after any golden-set change or the page offers questions the corpus cannot
+answer.**
+
+An answer shows the passage at normal weight with only the **answering words**
+bold, its citation with the document's real title, a plain-language reading of
+the score, and **Also found** — passages from *other* documents, open by
+default. That last one exists because the top passage is sometimes wrong in a
+specific way: asked for a bird's fused collarbone, the reranker prefers the
+pygostyle passage and puts the furcula second.
+
+The diagram: upright isometric panels, left to right, each stage a block whose
+**depth is how much survives** — six sheets at the index down to one at the
+answer. Projection is two numbers, not one angle: `SPREAD` 0.68 (how wide the
+ground axes fan) and `RISE` 0.15 (camera height; 0 is eye level, 0.5 is a true
+isometric). Conflating them is why several attempts went wrong.
+
+**Lessons that cost time, so they are written down:**
+
+- Verify at a laptop viewport (~660px of usable height) and a phone, not only
+  at 1400px+. A label collision at 1080px survived several rounds because I
+  only ever looked at wide windows.
+- **Never hide content to keep something above the fold.** A rule hiding the
+  hero blurb under 745px of height fired on an ordinary laptop and the page lost
+  its own explanation. The page scrolls; the constraint was mine, not the
+  user's.
+- Screenshot the rendered page. It has caught roughly twenty defects that
+  reading the diff did not.
+
 
 Rewritten in the session of 2026-08-19/20. `ui/index.html` is now an **app**, not
 the two-tab inspector this section used to describe.
@@ -331,6 +392,42 @@ Mode, so `git pull` in a skills repo will not update them; re-copy instead.
 ---
 
 ## 7. What is unfinished — stated plainly
+
+### Added 2026-08-26 — read this first
+
+**The cross-encoder is the weakest stage, and only partly addressed.** On the
+bird corpus the candidate pool contains the answer 96.2% of the time and the
+finished pipeline returns it 84.6% of the time. Reranking used to discard the
+first stage's ordering outright; it now keeps 20% of it on that corpus, which
+recovered a question and four points of MRR. What remains is the model itself:
+`ms-marco-MiniLM-L-6-v2` is weak on questions that DESCRIBE a term rather than
+naming it ("the burst of collective singing at first light"). `src/compare_rerankers.py`
+exists for trying another. **Use `src/sweep_blend.py` for anything touching the
+blend — it runs every corpus, because the trap is tuning to one.** I fell into
+exactly that trap: shipped 0.35 globally, then measured it worse than doing
+nothing on all three.
+
+**Deriving labels from answer strings has a hole.** It proves the string is
+present, not that the passage answers the question. Sixteen quant cases asked
+textbook definitions of research papers that use the term once in passing —
+"volatility clustering" inside a list of stylized facts. The label looked valid
+and the question was unanswerable. Fixing the questions moved that corpus from
+0.543 to 0.886 any-hit with retrieval untouched. **When a corpus scores badly,
+read the failing questions before concluding anything about retrieval.**
+
+**Generated files go stale silently, and it has happened three times.**
+`results.json` was shared by every corpus so the last run owned it;
+`RESULTS.md` claimed to be copied from it and was typed by hand; `per_case.json`
+had the same shared-path bug and had not been regenerated for four days, so the
+interface was offering questions I had just deleted as unanswerable. Only
+`RESULTS.md` has a `--check`. **The chain `per_case -> analytics -> the
+interface` still has no freshness test.** That is the most valuable small thing
+left.
+
+**Blocked, not forgotten:** the API key has no credit, so generated prose and
+query decomposition have never run. Everything the interface shows is the
+retrieved passage verbatim.
+
 
 1. **Closed 2026-08-21 — and the spreadsheet assumption was wrong.** The loaders
    have now run on real files. `load_xlsx` took row 1 as the header; a sheet whose
