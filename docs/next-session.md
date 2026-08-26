@@ -15,7 +15,8 @@ STATE: three corpora, all measured, all green.
   ML papers    36 docs  5,459 passages   any-hit 0.851
   Ornithology  45 docs    864 passages   any-hit 0.846
   Quant        35 docs  6,184 passages   any-hit 0.886
-  168 checks passing: 22 metrics, 28 loaders, 80 trace, 8 OCR, 30 freshness.
+  195 checks passing: 22 metrics, 28 loaders, 80 trace, 8 OCR, 30 freshness,
+  7 reranker cache, and 20 answer-highlight (node ui/test-answer-mark.mjs).
   Working tree clean, everything pushed.
 
 RUN IT:  python src/serve.py      then http://127.0.0.1:8000/
@@ -40,7 +41,16 @@ ten answerable questions were wrongly refused where the served configuration
 refuses four, and its retrieval numbers were a pipeline nobody runs. Both now
 resolve the corpus from `corpora.json`. See HANDOFF §7.
 
-**2. A better cross-encoder.** The bird candidate pool contains the answer 96.2%
+**2. ~~A better cross-encoder.~~ Answered 2026-08-27, and the answer is no.**
+Measured on all three corpora with a rebuilt `src/compare_rerankers.py`, which
+now scores ranking *and* gate separation because reranking fails in two ways
+and only one shows up in any-hit. MiniLM-L12 ranks better on the ML papers and
+worse on birds; BGE-reranker-base ranks worst of the three and separates best.
+Neither is shippable. Full numbers and the two refuted hypotheses are in
+`docs/engineering-log.md`. What is left of this item is query decomposition,
+which needs credit.
+
+**2b. The original text, for the record.** The bird candidate pool contains the answer 96.2%
 of the time; the pipeline returns it 84.6%. Blending 20% of the first stage back
 in recovered part of that, but the rest is `ms-marco-MiniLM-L-6-v2` being weak
 on questions that *describe* a term rather than naming it.
