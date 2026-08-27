@@ -43,8 +43,8 @@ single most reused finding in this project, see §4.
 | passages | 5,459 | 864 | 6,184 |
 | cases | 67 + 17 adv | 26 + 6 adv | 35 + 6 adv |
 | any-hit@5 | **0.851** | **0.846** | **0.886** |
-| MRR | 0.738 | 0.613 | 0.714 |
-| source recall | 0.760 | 0.762 | 0.741 |
+| MRR | 0.739 | 0.613 | 0.743 |
+| source recall | 0.761 | 0.762 | 0.741 |
 | abstention threshold | 0.0 | −5.5 | −4.0 |
 | rerank blend | 0.0 | 0.20 | 0.0 |
 | answerable median | +4.93 | +1.15 | +2.34 |
@@ -72,10 +72,10 @@ ML pipeline ladder, each row adding one stage:
 | pipeline | any-hit | MRR | NDCG | src recall |
 |---|---|---|---|---|
 | dense, no rerank *(naive RAG)* | 0.791 | 0.581 | 0.629 | 0.664 |
-| + cross-encoder rerank | 0.791 | 0.688 | 0.698 | 0.700 |
-| + RRF hybrid fusion | 0.866 | 0.741 | 0.754 | 0.724 |
-| **+ diversity cap 2/src** *(shipped)* | **0.851** | 0.738 | 0.754 | **0.760** |
-| + diversity cap 1/src | 0.776 | 0.708 | 0.719 | 0.805 |
+| + cross-encoder rerank | 0.806 | 0.666 | 0.688 | 0.688 |
+| + RRF hybrid fusion | 0.866 | 0.743 | 0.758 | 0.721 |
+| **+ diversity cap 2/src** *(shipped)* | **0.851** | 0.739 | 0.755 | **0.761** |
+| + diversity cap 1/src | 0.791 | 0.715 | 0.727 | 0.795 |
 
 Context expansion (ML): none 0.746 recall @ 998 tok · **window±1 0.806 @ 2,355
 (default)** · page 0.851 @ 4,752. Page buys 4.5 points for twice the tokens.
@@ -769,7 +769,7 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **299 checks** — 22 metrics, 28 loaders, 80
+Test counts, as of 2026-08-27: **300 checks** — 22 metrics, 28 loaders, 80
 trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
 9 ingest cache, 19 generate, 25 serve, 16 analytics, plus 20 answer-highlight
 checks under `node ui/test-answer-mark.mjs`.

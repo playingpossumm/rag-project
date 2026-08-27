@@ -19,7 +19,7 @@ STATE: three corpora, all measured, all green.
   10 reranker cache, 17 golden audit, 13 api, 9 ingest cache, 19 generate,
   25 serve, 16 analytics, 20 answer-highlight (node).
 SMOKE IT:  python src/smoke_routes.py     (needs a running server; not in the
-                                           299, and the only thing that asks
+                                           300, and the only thing that asks
                                            every route whether it answers)
 CHECK IT:  python src/check_freshness.py  (the generated chain)
            python src/check_golden.py     (labels still describe the corpus)

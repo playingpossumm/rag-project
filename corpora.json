@@ -5,8 +5,9 @@
     "store": "vector_store",
     "golden": "eval/golden_set.json",
     "threshold": 0.0,
-    "note": "36 arXiv papers. Calibrated: at 0.0 the gate wrongly refuses 1 of 67 answerable questions (1.5%) and catches 9 of 17 adversarial. Lowering costs more catching than it recovers here, which is why this corpus kept the value the whole project was built on.",
-    "rerank_blend": 0.0
+    "note": "36 arXiv papers. Calibrated: at 0.0 the gate wrongly refuses 1 of 67 answerable questions (1.5%) and catches 9 of 17 adversarial. Lowering costs more catching than it recovers here, which is why this corpus kept the value the whole project was built on. Candidate pool: 16 is weakly dominant here: any-hit unchanged, MRR +0.1, NDCG +0.2, source recall +0.1, and 25% less reranking. Measured 2026-08-27 by src/sweep_candidates.py.",
+    "rerank_blend": 0.0,
+    "candidate_k": 16
   },
   "birds": {
     "label": "Ornithology",
@@ -14,8 +15,9 @@
     "store": "store-birds",
     "golden": "eval/golden-birds.json",
     "threshold": -5.5,
-    "note": "45 Wikipedia documents, mixed .docx/.pptx/.xlsx/.pdf. Recalibrated 2026-08-26 and the reason it moved is worth more than the value: -3.0 was derived from confidences measured at rerank blend 0.00, and this corpus ships 0.20, so the gate had been calibrated against a pipeline the server does not run. Re-measured on the served pipeline, -3.0 is dominated. Every threshold in (-6.48, -4.55] catches the same five of six adversarial cases and wrongly refuses three of twenty-six rather than four, recovering bird-incubation for nothing. -5.5 is the middle of that interval: 0.95 of margin before it refuses an answerable question, 0.98 before it stops catching an adversarial one. An edge of the interval fits the threshold to one case. For scale, the ML papers' 0.0 wrongly refuses ten of the twenty-six here. What this does NOT fix: bird-dawn-chorus at -10.68 and bird-imprinting at -8.28 are questions whose answer the pipeline retrieved into the top five and whose passage the cross-encoder then scored below three of the six adversarial cases. No threshold recovers those without losing catches -- that is the reranker's calibration, not the gate's. Reranking keeps 20% of the first stage's ordering here (rerank_blend), which the other two corpora measured worse with: any-hit 0.808 -> 0.846 and MRR 0.570 -> 0.613, against -1.5 and -2.9 any-hit on the ML and quant sets at the same weight. On 26 cases the any-hit gain is one question, so MRR is the more trustworthy half of that.",
-    "rerank_blend": 0.2
+    "note": "45 Wikipedia documents, mixed .docx/.pptx/.xlsx/.pdf. Recalibrated 2026-08-26 and the reason it moved is worth more than the value: -3.0 was derived from confidences measured at rerank blend 0.00, and this corpus ships 0.20, so the gate had been calibrated against a pipeline the server does not run. Re-measured on the served pipeline, -3.0 is dominated. Every threshold in (-6.48, -4.55] catches the same five of six adversarial cases and wrongly refuses three of twenty-six rather than four, recovering bird-incubation for nothing. -5.5 is the middle of that interval: 0.95 of margin before it refuses an answerable question, 0.98 before it stops catching an adversarial one. An edge of the interval fits the threshold to one case. For scale, the ML papers' 0.0 wrongly refuses ten of the twenty-six here. What this does NOT fix: bird-dawn-chorus at -10.68 and bird-imprinting at -8.28 are questions whose answer the pipeline retrieved into the top five and whose passage the cross-encoder then scored below three of the six adversarial cases. No threshold recovers those without losing catches -- that is the reranker's calibration, not the gate's. Reranking keeps 20% of the first stage's ordering here (rerank_blend), which the other two corpora measured worse with: any-hit 0.808 -> 0.846 and MRR 0.570 -> 0.613, against -1.5 and -2.9 any-hit on the ML and quant sets at the same weight. On 26 cases the any-hit gain is one question, so MRR is the more trustworthy half of that. Candidate pool: 20, not the 16 the other two ship. At 16 this corpus keeps its any-hit and loses 2.6 points of MRR and 1.7 of NDCG, so the 22% saved is bought from ranking quality. The pool ceiling here also rises fastest with size -- 0.885 at 20 against 0.962 at 28 -- and this is the corpus whose reranker is weakest, which is the same story from the other end.",
+    "rerank_blend": 0.2,
+    "candidate_k": 20
   },
   "quant": {
     "label": "Quantitative finance",
@@ -23,7 +25,8 @@
     "store": "store-quant",
     "golden": "eval/golden-quant.json",
     "threshold": -4.0,
-    "note": "35 arXiv q-fin papers. Recalibrated 2026-08-26 after the golden set was rewritten: -6, -5 and -4 all catch every one of the six adversarial cases and wrongly refuse the same three of thirty-five, so the shipped -4 stands. At 0.0 it would refuse eleven. The earlier note claimed 0.0 refused nineteen of thirty-five; that was measured against a golden set asking textbook definitional questions this corpus never answers, and those questions scored low because they were unanswerable, not because the threshold was wrong. Answerable questions now score a median of +2.34, against -0.38 before.",
-    "rerank_blend": 0.0
+    "note": "35 arXiv q-fin papers. Recalibrated 2026-08-26 after the golden set was rewritten: -6, -5 and -4 all catch every one of the six adversarial cases and wrongly refuse the same three of thirty-five, so the shipped -4 stands. At 0.0 it would refuse eleven. The earlier note claimed 0.0 refused nineteen of thirty-five; that was measured against a golden set asking textbook definitional questions this corpus never answers, and those questions scored low because they were unanswerable, not because the threshold was wrong. Answerable questions now score a median of +2.34, against -0.38 before. Candidate pool: 16 is weakly dominant here too, and by more than on the ML set: MRR +2.9, NDCG +1.5, any-hit and source recall unchanged, 21% less reranking.",
+    "rerank_blend": 0.0,
+    "candidate_k": 16
   }
 }

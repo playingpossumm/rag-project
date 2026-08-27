@@ -90,6 +90,7 @@ def scenario(gold=None, pc=None, res=None, an=None, after=None):
         cfg = {"name": "t", "label": "Test corpus", "data": tmp / "data-t",
                "store": store, "golden": tmp / "eval" / "golden-t.json",
                "threshold": -3.0, "calibrated": True, "rerank_blend": 0.2,
+               "candidate_k": 20,
                "indexed": True}
 
         g = json.loads(json.dumps(GOLD))
@@ -101,7 +102,8 @@ def scenario(gold=None, pc=None, res=None, an=None, after=None):
         per = {
             "generated_by": "src/per_case.py",
             "options": {"k": 5, "candidate_k": 20, "rerank_blend": 0.2,
-                        "use_reranker": True, "fusion": "rrf", "max_per_source": 2},
+                        "candidate_k": 20,
+                    "use_reranker": True, "fusion": "rrf", "max_per_source": 2},
             "threshold": -3.0,
             "corpus": {"name": "t", "chunks": 6, "documents": 2},
             "inputs": {"golden": cf.stamp(cfg["golden"], cases=len(g["cases"])),
@@ -276,6 +278,9 @@ check("semantics / a case moved between answerable and adversarial",
 check("config / scored at another corpus's threshold",
       "corpora.json ships -3.0" in problems(scenario(pc=lambda d: d.update(threshold=0.0))),
       True)
+check("config / scored over another pool size",
+      "corpora.json ships 20 for this corpus" in problems(
+          scenario(pc=lambda d: d["options"].update(candidate_k=16))), True)
 check("config / scored at another corpus's rerank blend",
       "rerank blend 0.00" in problems(
           scenario(pc=lambda d: d["options"].update(rerank_blend=0.0))), True)

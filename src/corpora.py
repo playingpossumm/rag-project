@@ -28,6 +28,10 @@ import json
 import os
 from pathlib import Path
 
+# The fallback for a corpus that does not name its own, kept in one place so
+# this module and retrieve.py cannot disagree about what "default" means.
+CANDIDATE_K = 20
+
 ROOT = Path(__file__).parent.parent
 CONFIG = ROOT / "corpora.json"
 
@@ -67,6 +71,13 @@ def registry() -> dict[str, dict]:
             # 0.2 is worth a question and four points of MRR on the bird set
             # and costs a question on each of the other two.
             "rerank_blend": float(cfg.get("rerank_blend") or 0.0),
+            # How many candidates the reranker sees. Measured per corpus for
+            # the same reason as the two above: 16 is better or equal on every
+            # metric for the ML papers and quant and costs the bird corpus 2.6
+            # points of MRR, so as one global number it reads as a trade and
+            # per corpus it is not one. Reranking is 92-95% of query latency,
+            # so this is also the only latency dial that matters.
+            "candidate_k": int(cfg.get("candidate_k") or CANDIDATE_K),
             "indexed": bool(store and (store / "metadata.json").exists()),
         }
     return out

@@ -114,6 +114,16 @@ class Resources:
         """How much first-stage ordering this corpus keeps through reranking."""
         return (self.corpus or {}).get("rerank_blend") or 0.0
 
+    def candidate_k(self) -> int:
+        """How many candidates this corpus hands the reranker.
+
+        Per corpus, and it is the latency dial: reranking is 92-95% of a query,
+        linear in this number, and 16 measured better or equal to 20 on every
+        metric for two of the three corpora.
+        """
+        import corpora
+        return (self.corpus or {}).get("candidate_k") or corpora.CANDIDATE_K
+
     def reload(self):
         """Re-read the index after a rebuild, so serving matches what is on disk."""
         with self.lock:
@@ -441,8 +451,8 @@ def chat(question: str, payload: dict) -> dict:
         trace = attach_locators(trace_pipeline(
             question, RES.index, RES.metadata, RES.model, bm25=RES.bm25,
             k=int(payload.get("k", 5)), threshold=RES.threshold(),
-                                            rerank_blend=RES.rerank_blend(),
-            **trace_options(payload)))
+            rerank_blend=RES.rerank_blend(),
+            **{"candidate_k": RES.candidate_k(), **trace_options(payload)}))
 
     trace["attribution"] = attribution_for(question, trace)
     selected = trace["stages"][-1]["items"]

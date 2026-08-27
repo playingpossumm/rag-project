@@ -5,7 +5,7 @@
     "answerable_cases": 35,
     "adversarial_cases": 6,
     "k": 5,
-    "candidate_k": 20,
+    "candidate_k": 16,
     "golden": "eval\\golden-quant.json",
     "name": "quant",
     "rerank_blend": 0.0
@@ -14,32 +14,32 @@
     "dense": {
       "hit_rate": 0.914,
       "mrr": 0.434,
-      "ndcg": 0.52,
-      "src_recall": 0.812
+      "ndcg": 0.522,
+      "src_recall": 0.804
     },
     "rrf": {
-      "hit_rate": 0.943,
-      "mrr": 0.516,
-      "ndcg": 0.606,
-      "src_recall": 0.814
+      "hit_rate": 0.914,
+      "mrr": 0.492,
+      "ndcg": 0.597,
+      "src_recall": 0.796
     },
     "weighted a=0.3": {
-      "hit_rate": 0.943,
-      "mrr": 0.583,
-      "ndcg": 0.634,
-      "src_recall": 0.83
+      "hit_rate": 0.886,
+      "mrr": 0.585,
+      "ndcg": 0.625,
+      "src_recall": 0.796
     },
     "weighted a=0.5": {
-      "hit_rate": 0.943,
-      "mrr": 0.492,
-      "ndcg": 0.596,
-      "src_recall": 0.824
+      "hit_rate": 0.886,
+      "mrr": 0.482,
+      "ndcg": 0.576,
+      "src_recall": 0.796
     },
     "weighted a=0.7": {
-      "hit_rate": 0.971,
-      "mrr": 0.475,
-      "ndcg": 0.584,
-      "src_recall": 0.835
+      "hit_rate": 0.943,
+      "mrr": 0.483,
+      "ndcg": 0.58,
+      "src_recall": 0.8
     }
   },
   "end_to_end": {
@@ -51,50 +51,50 @@
     },
     "dense + rerank": {
       "hit_rate": 0.857,
-      "mrr": 0.68,
-      "ndcg": 0.692,
-      "src_recall": 0.744
+      "mrr": 0.681,
+      "ndcg": 0.689,
+      "src_recall": 0.745
     },
     "weighted + rerank": {
-      "hit_rate": 0.886,
-      "mrr": 0.714,
-      "ndcg": 0.736,
-      "src_recall": 0.726
+      "hit_rate": 0.857,
+      "mrr": 0.7,
+      "ndcg": 0.715,
+      "src_recall": 0.717
     },
     "rrf + rerank": {
       "hit_rate": 0.886,
-      "mrr": 0.714,
-      "ndcg": 0.731,
+      "mrr": 0.743,
+      "ndcg": 0.751,
       "src_recall": 0.726
     },
     "+ diversity 2/src": {
       "hit_rate": 0.886,
-      "mrr": 0.714,
-      "ndcg": 0.749,
+      "mrr": 0.743,
+      "ndcg": 0.764,
       "src_recall": 0.741
     },
     "+ diversity 1/src": {
-      "hit_rate": 0.886,
-      "mrr": 0.699,
-      "ndcg": 0.74,
-      "src_recall": 0.782
+      "hit_rate": 0.857,
+      "mrr": 0.729,
+      "ndcg": 0.741,
+      "src_recall": 0.789
     }
   },
   "expansion": {
     "none (chunks)": {
       "context_recall": 0.771,
-      "tokens_per_query": 1005,
+      "tokens_per_query": 1000,
       "blocks_per_query": 5.0
     },
     "window +/-1": {
-      "context_recall": 0.829,
-      "tokens_per_query": 2265,
+      "context_recall": 0.8,
+      "tokens_per_query": 2278,
       "blocks_per_query": 5.0
     },
     "page": {
       "context_recall": 0.886,
-      "tokens_per_query": 4604,
-      "blocks_per_query": 4.5
+      "tokens_per_query": 4696,
+      "blocks_per_query": 4.6
     }
   },
   "abstention": {
@@ -107,7 +107,7 @@
       {
         "threshold": -8,
         "caught": 2,
-        "false_abstain": 1
+        "false_abstain": 2
       },
       {
         "threshold": -6,
