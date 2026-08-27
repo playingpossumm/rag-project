@@ -768,6 +768,42 @@ believing, applied to a change that took four lines.
 
 ---
 
+## 2026-08-27 — The most persuasive place for a wrong number
+
+**Where nothing was looking.** `corpora.json` carries a `note` per corpus,
+arguing why that corpus ships the threshold it does — "at 0.0 the gate wrongly
+refuses 1 of 66 answerable questions (1.5%) and catches 9 of 18 adversarial".
+Those are measurements, hand-written, sitting next to the setting they justify.
+That is the most persuasive place in the repo for a number to be wrong, because
+it is not read as a number: it is read as the reason for a decision.
+
+**It had drifted.** The ML note said **1 of 66** and **9 of 18**. The golden set
+holds **67** answerable and **17** adversarial. The counts moved when the set
+grew and the sentence explaining the shipped threshold was never revisited —
+which is exactly the failure mode of every other stale number found today,
+except that this one argues for a config value rather than describing an
+outcome.
+
+Corrected, and `check_docs.py` now parses the notes for `refuses N of M` /
+`catches N of M` claims and compares against the golden sets. Seven claims
+across the three corpora, each one listed in the output so the coverage is
+visible rather than assumed. Verified to have teeth by reintroducing the exact
+stale figure and confirming it was caught.
+
+**One design decision worth recording, because the obvious version is wrong.**
+The quant note deliberately quotes a superseded figure: "The earlier note
+claimed 0.0 refused nineteen of thirty-five; that was measured against a golden
+set asking textbook definitional questions this corpus never answers." That
+sentence is an accurate statement *about a wrong number*, and a checker matching
+numerators would flag it as drift — misreading history as error, and training a
+reader to ignore the checker.
+
+So only the **denominator** is compared. The corpus size in that sentence is
+still 35 and still checkable; the numerator is the note's own business. The
+check reads the part of the claim that cannot be deliberately historical.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
