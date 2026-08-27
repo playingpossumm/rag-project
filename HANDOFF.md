@@ -185,6 +185,20 @@ as a success.
 | A stronger cross-encoder will fix the descriptive questions | ranking and gate separation move in **opposite** directions across models; L12 ranks better on ML, worse on birds | swap **rejected**, all three corpora measured |
 | Let the strong model do only the gate, at 1/20 the cost | BGE scored AUC 0.968 ranking *and* gating, 0.827 gating MiniLM's pick — the gain was self-consistency | idea **refuted by its own harness** |
 
+**The generalisation, added 2026-08-27 after five in a row.** Every defect
+found in this repo's last five working sessions was in code that had tests
+*around* it and nothing *running* it: `/ask` ignored its corpus argument, a
+wrong-typed JSON field dropped the connection, indexing one corpus deleted
+another's parse cache, six routes were served and documented nowhere, and
+`generate.py` had never been executed at all. In each case the module was read,
+reviewed and described correctly in the documents — and never invoked.
+
+So the rule is not "write more tests", it is **run the thing**. A test that
+imports a module and asserts on its output found all five; no amount of reading
+found any of them. The three claimed-but-absent tests in this repo's history are
+the same failure one step earlier: a check that was *performed* and not
+*committed* is indistinguishable, six days later, from one that never happened.
+
 **Corollary that keeps biting: render it and look at it.** Screenshotting the UI
 with Playwright caught four defects invisible in source, three of them in code
 written and reviewed in the same session. Do not treat visual verification as a
@@ -396,9 +410,16 @@ works — and both are recorded in `generate.py`'s docstring:
   `claude-opus-5`. Now 16000, with `effort="low"` as the actual cost control.
 
 Still unverified end to end: the account has no credit, so no real call has
-completed. What is now tested is everything up to the network boundary —
-`src/test_trace.py`'s sibling check in the session log stubbed the client and
-confirmed the model is handed exactly the passages the answer cites.
+completed. Everything up to the network boundary **is** now tested — by
+`src/test_generate.py`, 19 checks against a stubbed client.
+
+This paragraph used to say that testing had already happened, in "`test_trace.py`'s
+sibling check in the session log". **It had not.** The check was run in a session
+and never committed, which made it the third claimed-but-absent test in this
+repo after `test_trace_matches_pipeline` and the hand-computed NDCG cases. Found
+2026-08-27 by grepping for any test that imports `generate`; none did. The test
+now exists and has teeth: reintroducing the `chunk["page"]` lookup kills it on
+the first assertion, exactly as it would have killed every real call.
 
 ---
 
@@ -748,9 +769,9 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **239 checks** — 22 metrics, 28 loaders, 80
+Test counts, as of 2026-08-27: **258 checks** — 22 metrics, 28 loaders, 80
 trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
-9 ingest cache, plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
+9 ingest cache, 19 generate, plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 Three checks now guard the things that have gone wrong silently before, and
 all three exit non-zero rather than printing a warning nobody reads:
@@ -825,6 +846,7 @@ disclaim current work.
 | `src/test_api.py` | asserts `ask()` answers from the corpus it was handed, not a cached one |
 | `src/smoke_routes.py` | asks every dispatched route, against a running server |
 | `src/test_ingest_cache.py` | indexing one corpus must not evict another's caches |
+| `src/test_generate.py` | everything `generate.py` does short of the HTTP request |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
 | `src/check_golden.py` | does each golden set still describe the corpus it scores? |

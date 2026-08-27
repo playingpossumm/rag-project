@@ -1014,6 +1014,51 @@ empty". The fixture is twelve paragraphs now, and the docstring says why.
 
 ---
 
+## 2026-08-27 — The third test this repo said it had and did not
+
+**HANDOFF §5b, before today:** "What is now tested is everything up to the
+network boundary — `src/test_trace.py`'s sibling check in the session log
+stubbed the client and confirmed the model is handed exactly the passages the
+answer cites."
+
+`grep -l generate src/test_*.py` returns nothing. **No test imported
+`generate.py`.** The check was run in a session and never committed.
+
+That is the **third** claimed-but-absent test here, after
+`test_trace_matches_pipeline` and the four hand-computed NDCG cases. All three
+were found the same way — reading a confident sentence and then looking — and
+all three mattered. A check that was performed and not committed is
+indistinguishable, six days later, from one that never happened.
+
+**It matters more in this module than the others.** `generate.py` has never
+completed a real call, because the account has no credit. Nothing had executed
+it end to end, ever. Three defects were already found in it by reading it
+against the data it receives, including `build_context()` reading
+`chunk["page"]` when chunks carry `locator` — which would have killed *every*
+call with a KeyError.
+
+`src/test_generate.py` stubs the client and tests all of it except the HTTP
+request: 19 checks covering the citation format per locator kind, that the model
+is handed exactly the passages it will cite and nothing else, the settings the
+module's own comments argue for (`max_tokens` 16000 not the old 1024, effort
+low), a refusal raising a named error rather than `StopIteration`, an empty
+response raising rather than returning a blank answer, and a thinking block not
+leaking into the text.
+
+**Teeth, demonstrated:** put `chunk["page"]` back and the suite dies on the
+first assertion with `KeyError: 'page'` — exactly how every real call would have
+died. Put `max_tokens = 1024` back and that assertion fails too.
+
+**And the rule this belongs to**, now written into §4. Every defect found in the
+last five sessions was in code that had tests *around* it and nothing *running*
+it: `/ask` ignoring its corpus argument, a wrong-typed field dropping the
+connection, indexing one corpus deleting another's cache, six undocumented
+routes, and a module that had never been invoked. Each was read, reviewed and
+described correctly — and never called. The rule is not "write more tests", it
+is **run the thing**.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
