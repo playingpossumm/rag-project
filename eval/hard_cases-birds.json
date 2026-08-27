@@ -1,0 +1,49 @@
+{
+ "generated_by": "src/failure_overlap.py --emit-fixture",
+ "configurations": [
+  "cap1",
+  "default",
+  "dense",
+  "nocap",
+  "norerank",
+  "weighted"
+ ],
+ "note": "Answerable cases that fail under every configuration listed above, and adversarial cases answered under every gated one. Run with src/hard_cases.py.",
+ "structural": [
+  {
+   "id": "bird-alula",
+   "kind": "fact",
+   "question": "Which small group of feathers helps prevent a stall at low speed?",
+   "gold_sources": [
+    "bird.docx",
+    "flightless_bird.pdf"
+   ]
+  },
+  {
+   "id": "bird-hollow-bones",
+   "kind": "fact",
+   "question": "Which skeletal adaptation reduces a bird's weight for flight?",
+   "gold_sources": [
+    "bird_anatomy.docx",
+    "bird_anatomy.pptx"
+   ]
+  },
+  {
+   "id": "bird-precocial",
+   "kind": "cross-doc",
+   "question": "What term describes chicks able to move and feed themselves soon after hatching?",
+   "gold_sources": [
+    "bird_nest.docx",
+    "bird_nest.pptx",
+    "mallard.pdf"
+   ]
+  }
+ ],
+ "slips_the_gate": [
+  {
+   "id": "adv-bird-count-2024",
+   "question": "How many individuals were counted in the 2024 breeding survey?",
+   "confidence": 1.921
+  }
+ ]
+}

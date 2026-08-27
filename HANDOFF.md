@@ -575,7 +575,29 @@ retrieved passage verbatim.
 
    **Still open:** the OCR path has never seen a scanned document, and neither
    new corpus has a golden set, so neither is measurable yet.
-2. **Cross-document confusion — a ~11% floor, not a flat 15%.** The retriever
+2. **Two structural failure modes, ~10% and ~6%.** Measured on all three
+   corpora 2026-08-27, six configurations each: 7 of 67 ML cases (10.4%), 3 of
+   26 bird cases (11.5%) and 2 of 35 quant cases (5.7%) fail under *every*
+   configuration. The ~11% floor reproduces between ML and birds and does not
+   hold on quant, so do not quote it as universal.
+
+   Reading the twelve together, they are **two different problems**:
+
+   - **ML, all seven** — an attribute many papers share ("what dropout rate",
+     "which translation dataset", "how many parameters"). The topic matches a
+     dozen documents and the distinguishing clause is ignored. This is
+     cross-document confusion, and **query decomposition is the right fix**.
+   - **Birds and quant, all five** — the question *describes* a term and asks
+     its name ("which small group of feathers helps prevent a stall" → alula;
+     "which effect describes past winners continuing to outperform" → momentum).
+     The answer word is absent from the query. Nothing needs decomposing; this
+     is vocabulary mismatch, and `src/query_expansion.py` exists unmeasured
+     against it. **Not blocked on credit.**
+
+   Fixtures: `eval/hard_cases.json`, `eval/hard_cases-birds.json`,
+   `eval/hard_cases-quant.json`.
+
+   **Cross-document confusion — a ~11% floor, not a flat 15%.** The retriever
    matches the topic and ignores the constraint that distinguishes the answer
    ("normalisation across features *rather than examples*" still returns Batch
    Normalization). Mechanism understood; the obvious fix is ruled out by
