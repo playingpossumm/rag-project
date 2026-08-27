@@ -605,6 +605,41 @@ valuable small thing left, and what the entry above closes.
 query decomposition have never run. Everything the interface shows is the
 retrieved passage verbatim.
 
+**How to unblock each of them without Anthropic credit**, written down
+2026-08-27 so the next session can act rather than re-derive:
+
+1. **Generation, end to end.** The contract `generate.py` implements —
+   passages in, cited prose out, a named error on refusal — is not
+   Anthropic-specific. Add a second backend behind the same `synthesize()`
+   signature that posts to a local **Ollama** (`http://localhost:11434`) or any
+   OpenAI-compatible endpoint, selected by `RAG_GENERATOR`. That executes the
+   whole path for real: prompt assembly, the citation format, empty and refusal
+   handling, and `ask(generate=True)` rendering prose in the interface. The
+   *model* differs from what ships, and the *code* stops being code that has
+   never run. `src/test_generate.py` already pins the contract, so the backend
+   can be written against it.
+
+2. **Query decomposition, for the seven ML cases.** Splitting "normalisation
+   across features rather than examples" into topic and constraint is what an
+   LLM does well, and a local instruct model does it well enough to *measure*.
+   Score it against `eval/hard_cases.json`, which exists precisely for this and
+   has been verified stable across a threshold change, a blend change and a
+   corpus that grew. If a 7B local model moves 2 of the 7, that is the finding;
+   the shipped implementation can still call a better model later.
+
+3. **The five description cases.** These need no LLM at all — see the
+   embedder comparison of 2026-08-27. `multi-qa-MiniLM-L6-cos-v1` already
+   recovers `bird-alula`, which was called structural. The next experiment is a
+   **dense ensemble**: fuse two embedders by RRF, the same argument that
+   justifies fusing dense with BM25, on the evidence that the two models find
+   different cases at identical aggregate recall.
+
+4. **The reranker.** Exhausted among off-the-shelf options —
+   `compare_rerankers.py` covers three and `sweep_quantized.py` covers int8. The
+   remaining honest move is a **fine-tune** on this project's own labelled data,
+   which is 157 cases and probably too few, or accepting the ceiling and saying
+   so. Not credit-blocked; data-blocked.
+
 
 1. **Closed 2026-08-21 — and the spreadsheet assumption was wrong.** The loaders
    have now run on real files. `load_xlsx` took row 1 as the header; a sheet whose
@@ -631,7 +666,9 @@ retrieved passage verbatim.
 2. **Two structural failure modes, ~10% and ~6%.** Measured on all three
    corpora 2026-08-27, six configurations each: 7 of 67 ML cases (10.4%), 3 of
    26 bird cases (11.5%) and 2 of 35 quant cases (5.7%) fail under *every*
-   configuration. The ~11% floor reproduces between ML and birds and does not
+   configuration. **Relative to the first stage, not absolute** — all six
+   configurations shared one embedder, and  reaches
+    immediately. See the embedder comparison in the log. The ~11% floor reproduces between ML and birds and does not
    hold on quant, so do not quote it as universal.
 
    Reading the twelve together, they are **two different problems**:

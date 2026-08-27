@@ -1168,6 +1168,59 @@ removed from the common path is the wrong trade today.
 
 ---
 
+## 2026-08-27 — The structural fixture is relative to the first stage
+
+**The stage nobody had varied.** Of the twelve cases that fail under every
+pipeline configuration, five describe a term and ask for its name -- "which small
+group of feathers helps prevent a stall at low speed" for the alula -- and the
+answer word is absent from the question. Reranking cannot fix that
+(`compare_rerankers.py` found nothing better) and pseudo-relevance feedback
+cannot either (`sweep_query_expansion.py`: 0 of 12, because the feedback
+documents do not contain the missing word). Every one of those experiments
+varied a stage *after* retrieval.
+
+`all-MiniLM-L6-v2` is a general-purpose **symmetric** model, trained to place two
+similar sentences near each other. Description-to-term is **asymmetric**: a long
+question and a short passage sharing almost no vocabulary. So
+`src/compare_embedders.py` measures pool recall under models trained for that,
+without re-indexing -- each embeds the corpus in memory once.
+
+| Ornithology, pool of 20 | pool recall | structural found |
+|---|---|---|
+| all-MiniLM-L6-v2 *(shipped)* | 0.962 | 2/3 |
+| multi-qa-MiniLM-L6-cos-v1 | 0.962 | 2/3 |
+| bge-small-en-v1.5 | 0.923 | 1/3 |
+
+| Quantitative finance, pool of 16 | pool recall | structural found |
+|---|---|---|
+| all-MiniLM-L6-v2 *(shipped)* | **0.914** | 1/2 |
+| multi-qa-MiniLM-L6-cos-v1 | 0.857 | 1/2 |
+
+**Nothing dominates, and the aggregate hides the interesting part.** On birds
+`multi-qa` ties the shipped model at 0.962 while finding a *different* set:
+it **wins `bird-alula`** and loses `bird-precocial`. On quant it is worse
+outright. The fourth setting in a row that does not transfer.
+
+**But `bird-alula` is one of the twelve.** It was called structural because no
+fusion, rerank or cap change reached it -- and a different first stage reaches
+it immediately. So the fixture is **not a property of the questions**, as the
+2026-08-27 entry claimed on the strength of six configurations. It is a property
+of the questions *given this embedder*. Six configurations that all shared one
+first stage could not have discovered that, and the word "structural" was
+carrying more weight than the measurement supported.
+
+The honest restatement: seven ML cases are structural with respect to
+retrieval-as-a-whole and want query decomposition; of the five description
+cases, at least one is reachable by changing the embedder alone.
+
+**What this suggests, and it is measurable without credit:** the two models find
+*different* cases at the same aggregate. That is the exact condition under which
+fusing them helps -- the same argument that already justifies fusing dense with
+BM25, applied to two dense retrievers. A dense ensemble is the next experiment,
+and unlike everything else on the structural list it needs no LLM.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
