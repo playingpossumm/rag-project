@@ -1,0 +1,92 @@
+{
+ "llm": {
+  "label": "ML & NLP papers",
+  "threshold": 0.0,
+  "candidate_k": 16,
+  "runs": {
+   "float32": {
+    "hit_rate": 0.8507,
+    "mrr": 0.7393,
+    "ndcg": 0.7555,
+    "src_recall": 0.7607,
+    "wrongly_refused": 1,
+    "caught": 9,
+    "median_answerable": 4.934,
+    "median_adversarial": -0.177,
+    "ms_per_query": 1021
+   },
+   "int8": {
+    "hit_rate": 0.8507,
+    "mrr": 0.7393,
+    "ndcg": 0.7537,
+    "src_recall": 0.7637,
+    "wrongly_refused": 3,
+    "caught": 8,
+    "median_answerable": 4.681,
+    "median_adversarial": 0.017,
+    "ms_per_query": 598
+   }
+  },
+  "score_shift_mean": -0.2439
+ },
+ "birds": {
+  "label": "Ornithology",
+  "threshold": -5.5,
+  "candidate_k": 20,
+  "runs": {
+   "float32": {
+    "hit_rate": 0.8462,
+    "mrr": 0.6135,
+    "ndcg": 0.6709,
+    "src_recall": 0.7615,
+    "wrongly_refused": 3,
+    "caught": 5,
+    "median_answerable": 1.151,
+    "median_adversarial": -8.978,
+    "ms_per_query": 1058
+   },
+   "int8": {
+    "hit_rate": 0.8462,
+    "mrr": 0.6179,
+    "ndcg": 0.6751,
+    "src_recall": 0.7615,
+    "wrongly_refused": 3,
+    "caught": 5,
+    "median_answerable": 0.881,
+    "median_adversarial": -8.545,
+    "ms_per_query": 1074
+   }
+  },
+  "score_shift_mean": -0.209
+ },
+ "quant": {
+  "label": "Quantitative finance",
+  "threshold": -4.0,
+  "candidate_k": 16,
+  "runs": {
+   "float32": {
+    "hit_rate": 0.8857,
+    "mrr": 0.7429,
+    "ndcg": 0.7637,
+    "src_recall": 0.741,
+    "wrongly_refused": 3,
+    "caught": 6,
+    "median_answerable": 2.344,
+    "median_adversarial": -6.792,
+    "ms_per_query": 898
+   },
+   "int8": {
+    "hit_rate": 0.8571,
+    "mrr": 0.6876,
+    "ndcg": 0.7196,
+    "src_recall": 0.7505,
+    "wrongly_refused": 4,
+    "caught": 6,
+    "median_answerable": 2.092,
+    "median_adversarial": -6.94,
+    "ms_per_query": 568
+   }
+  },
+  "score_shift_mean": -0.2121
+ }
+}

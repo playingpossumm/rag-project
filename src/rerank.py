@@ -11,12 +11,27 @@ every query token attend to every chunk token. Far more accurate, far too slow
 to run over a whole corpus -- so it runs only over the candidates the
 bi-encoder already shortlisted.
 """
+import os
+
 from sentence_transformers import CrossEncoder
 
 RERANK_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 _model = None
 _model_name = None
+
+# Dynamic int8 quantisation of the cross-encoder's linear layers. Reranking is
+# 92-95% of a query (src/profile_query.py), so this is the only remaining lever
+# on latency that does not cost candidates.
+#
+# Off by default and switched on per corpus in corpora.json, because it changes
+# the scores. Measured on 16 real pairs: 1.53x faster, max score delta 0.031 on
+# a scale running -11 to +11, top-1 unchanged. That is small, and "small on
+# sixteen pairs" is not evidence about a golden set -- the abstention gate reads
+# these scores as absolute values, so a systematic shift of 0.03 moves the
+# threshold's meaning even when the ordering is identical. Hence
+# src/sweep_quantized.py before anything is switched on.
+QUANTIZE = os.environ.get("RAG_RERANK_INT8", "0") != "0"
 
 
 def load_reranker(model_name: str = RERANK_MODEL) -> CrossEncoder:
@@ -31,8 +46,30 @@ def load_reranker(model_name: str = RERANK_MODEL) -> CrossEncoder:
     global _model, _model_name
     if _model is None or model_name != _model_name:
         _model = CrossEncoder(model_name)
+        if QUANTIZE:
+            _model.model = _quantize(_model.model)
         _model_name = model_name
     return _model
+
+
+def _quantize(model):
+    """int8 the linear layers, or return the model untouched if that fails.
+
+    Failing soft on purpose: a quantisation backend missing on some machine
+    should make the server slower, not broken. The log line is what tells you
+    which one you are running, because the scores differ slightly and a
+    threshold calibrated against one is not calibrated against the other.
+    """
+    try:
+        import torch
+
+        quantized = torch.quantization.quantize_dynamic(
+            model, {torch.nn.Linear}, dtype=torch.qint8)
+        print("  reranker: int8 quantized")
+        return quantized
+    except Exception as exc:                                    # noqa: BLE001
+        print(f"  reranker: int8 unavailable, running float32 ({exc})")
+        return model
 
 
 # Scores are a pure function of (query, chunk text, model), so they cache. This

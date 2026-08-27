@@ -1105,6 +1105,69 @@ test asserts that quota. It is the same chain, one step up.
 
 ---
 
+## 2026-08-27 — "The website is very laggy", measured rather than assumed
+
+**The first measurement moved the target.** The obvious suspect was the
+cross-encoder, since `profile_query.py` had already put it at 92-95% of a query.
+But timing the endpoint the interface actually calls said something else:
+
+```
+  /api/chat   1,347-1,605 ms      (first time a question is asked)
+  /ask               61-70 ms      same questions, same server
+```
+
+Twenty times apart on the same warm process. Timing the two halves of
+`chat()` in-process found `trace_pipeline` at 88-100 ms and attribution at
+90-98 ms — about 190 ms, nowhere near 1,400. The gap was the **rerank cache**:
+`/ask` had been asked those questions before and `/api/chat` had not. Re-measured
+warm, `/api/chat` is **113 ms**.
+
+So the real shape is: **a cold question costs ~1,400 ms and a repeat costs
+~113 ms**, and the lag a visitor feels is entirely the cold path.
+
+**What shipped, and why it is not a quality change.** The questions the front
+page offers are known before anyone asks them — they come from
+`eval/analytics.json`. `serve.py` now scores them in a background thread once
+the index is loaded, warming exactly the cache entries the same call would have
+computed. Clicking an offered question went from ~1,400 ms to **102-178 ms**.
+A question nobody pre-warmed is 931 ms, down from ~1,400 because `candidate_k`
+went per-corpus earlier the same day.
+
+It runs in a thread and swallows its own errors on purpose: the server is ready
+to answer immediately, and a visitor typing their own question should not queue
+behind a warm-up for questions they did not ask.
+
+**And what was refuted.** Dynamic int8 quantisation of the cross-encoder looked
+excellent on a 16-pair sample: **1.53x faster, max score delta 0.031** on a scale
+running -11 to +11, top-1 unchanged. On the golden sets it fails, and it fails in
+the way the sweep's own docstring predicted before it ran:
+
+| | ranking | the gate | speed |
+|---|---|---|---|
+| ML papers | identical | **1 -> 3** wrongly refused, **9 -> 8** caught | 1.71x |
+| Ornithology | +0.004 MRR | unchanged | **0.99x** |
+| Quant | **-0.029** any-hit, **-0.055** MRR | 3 -> 4 wrongly refused | 1.58x |
+
+Every corpus shifts by a systematic **-0.22** in the mean. Ordering survives
+almost perfectly — which is all a normal rerank comparison would have checked —
+and this project's abstention gate reads the score as an **absolute** against a
+calibrated threshold. A change that preserves every ranking and moves every
+score down by a fifth of a point silently starts refusing answerable questions.
+That is what happened on the ML corpus, which lost two answerable questions and
+one adversarial catch while its hit rate and MRR did not move at all.
+
+Recalibrating the thresholds under int8 would recover the ML gate. It would not
+recover quant's ranking, and birds gets no speedup at all, so the option is
+rejected rather than patched. Kept behind `RAG_RERANK_INT8=1` and
+`src/sweep_quantized.py` so the finding is reproducible.
+
+**The lever that remains unmeasured** is ONNX export, which is a genuine
+possibility and needs `optimum` and `onnxruntime` installed. It is not on this
+machine and adding a dependency to chase latency the pre-warm has already
+removed from the common path is the wrong trade today.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
