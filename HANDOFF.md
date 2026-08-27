@@ -818,6 +818,7 @@ disclaim current work.
 | `eval/per_case.json` | every golden-set case's outcome, written by `src/per_case.py` |
 | `src/test_trace.py` | asserts the trace and the serving path agree under every option |
 | `src/test_api.py` | asserts `ask()` answers from the corpus it was handed, not a cached one |
+| `src/smoke_routes.py` | asks every dispatched route, against a running server |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
 | `src/check_golden.py` | does each golden set still describe the corpus it scores? |

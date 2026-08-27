@@ -660,6 +660,26 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self._send(404, {"error": f"no route {self.path}"})
 
+    def _text(self, payload: dict, field: str) -> str | None:
+        """A string field, or None after sending a 400 explaining why not.
+
+        JSON carries types, and a caller can send `{"question": {...}}` as
+        easily as a string. Every route here reads such a field with
+        `(payload.get(x) or "").strip()`, which raises AttributeError on
+        anything that is not a string -- outside the try that catches
+        everything else, so the connection dropped rather than answering. A
+        dropped connection is indistinguishable from the server having died,
+        which is a worse thing to tell a caller than "that field must be text".
+        """
+        value = payload.get(field)
+        if value is None:
+            value = ""
+        if not isinstance(value, str):
+            self._send(400, {"error": f"field {field!r} must be text, not "
+                                      f"{type(value).__name__}"})
+            return None
+        return value.strip()
+
     def do_POST(self):
         route = self.path.rstrip("/")
 
@@ -667,7 +687,9 @@ class Handler(BaseHTTPRequestHandler):
             payload = self._body()
             if payload is None:
                 return
-            name = (payload.get("name") or "").strip()
+            name = self._text(payload, "name")
+            if name is None:
+                return
             try:
                 RES.switch(name)
             except ValueError as exc:
@@ -688,7 +710,9 @@ class Handler(BaseHTTPRequestHandler):
             # /inspect it means nothing, so it is an error rather than a 200
             # reporting zero documents -- which would read as "your folder is
             # empty" for a request that never named a folder.
-            raw = (payload.get("path") or "").strip()
+            raw = self._text(payload, "path")
+            if raw is None:
+                return
             try:
                 folder, supported, skipped = (
                     inspect_folder(raw) if raw or route.endswith("inspect")
@@ -719,7 +743,9 @@ class Handler(BaseHTTPRequestHandler):
             payload = self._body()
             if payload is None:
                 return
-            question = (payload.get("question") or "").strip()
+            question = self._text(payload, "question")
+            if question is None:
+                return
             if not question:
                 self._send(400, {"error": "field 'question' is required"})
                 return
@@ -739,7 +765,9 @@ class Handler(BaseHTTPRequestHandler):
         if payload is None:
             return
 
-        question = (payload.get("question") or "").strip()
+        question = self._text(payload, "question")
+        if question is None:
+            return
         if not question:
             self._send(400, {"error": "field 'question' is required"})
             return
