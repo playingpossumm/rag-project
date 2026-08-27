@@ -810,9 +810,10 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **300 checks + the route suite** — 22 metrics, 28 loaders, 80
+Test counts, as of 2026-08-27: **318 checks + the route suite** — 22 metrics, 28 loaders, 80
 trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
-9 ingest cache, 19 generate, 25 serve, 16 analytics, plus 20 answer-highlight
+9 ingest cache, 19 generate, 18 local generation, 25 serve, 16 analytics,
+plus 20 answer-highlight
 checks under `node ui/test-answer-mark.mjs`.
 
 Three checks now guard the things that have gone wrong silently before, and
@@ -890,6 +891,9 @@ disclaim current work.
 | `src/test_routes.py` | the same checks, against a server it starts itself |
 | `src/test_ingest_cache.py` | indexing one corpus must not evict another's caches |
 | `src/test_generate.py` | everything `generate.py` does short of the HTTP request |
+| `src/generate_local.py` | the same contract against a local Ollama, so the path can run |
+| `src/test_generate_local.py` | that path over a real socket, against a fake Ollama |
+| `src/sweep_ensemble.py` | two embedders fused; the first change to move the fixture |
 | `src/test_serve.py` | request handling, the offered questions, and the folder intake |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
