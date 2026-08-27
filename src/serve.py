@@ -282,6 +282,40 @@ def examples_for(name: str | None) -> list[dict]:
     return EXAMPLES
 
 
+def prewarm(corpus_name: str | None = None) -> int:
+    """Score the offered questions once, so the first click is not the slow one.
+
+    Measured with src/profile_query.py: a cold question costs about 1.4 s and
+    92-95% of that is the cross-encoder. A repeat costs about 110 ms, because
+    rerank.py caches on (query, chunk text, model). The questions the front page
+    offers are known before anyone asks them -- they come from
+    eval/analytics.json -- so the expensive part can be paid before a visitor is
+    waiting on it.
+
+    This is not a quality change and cannot be: it warms a cache whose entries
+    are exactly what the same call would have computed. If it is skipped or
+    fails the only consequence is the first click being slow again, which is why
+    it runs in a thread and swallows its own errors rather than delaying a
+    server that is otherwise ready to answer.
+    """
+    from pipeline_trace import trace_pipeline
+
+    questions = [e["q"] for e in examples_for(corpus_name or
+                                              (RES.corpus or {}).get("name"))]
+    warmed = 0
+    for q in questions:
+        try:
+            with RES.lock:
+                trace_pipeline(q, RES.index, RES.metadata, RES.model,
+                               bm25=RES.bm25, k=5, threshold=RES.threshold(),
+                               rerank_blend=RES.rerank_blend(),
+                               candidate_k=RES.candidate_k())
+            warmed += 1
+        except Exception:                                       # noqa: BLE001
+            break        # a warm-up is never worth failing a request over
+    return warmed
+
+
 def inspect_folder(raw: str) -> tuple[Path, list[str], list[tuple[str, str]]]:
     """Resolve a pasted folder path and report what indexing it would find.
 
@@ -842,6 +876,18 @@ def main():
     print(f"  map        http://{host}:{port}/~/architecture")
     print(f"  api        POST /ask, POST /api/trace")
     print(f"  corpus     {stats['chunks']} chunks from {stats['documents']} documents")
+
+    # The questions on the front page, scored before anyone clicks one. In a
+    # thread: the server is ready to answer now, and a visitor who types their
+    # own question should not wait behind the warm-up for questions they did
+    # not ask.
+    def _warm():
+        n = prewarm()
+        if n:
+            print(f"  warmed     {n} offered question(s); the first click is "
+                  f"now as fast as a repeat")
+
+    threading.Thread(target=_warm, daemon=True).start()
 
     # The questions this page offers come from eval/analytics.json, which is
     # generated. It has been stale before -- the front page spent four days
