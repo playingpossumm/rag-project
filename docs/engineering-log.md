@@ -1231,6 +1231,106 @@ and unlike everything else on the structural list it needs no LLM.
 
 ---
 
+## 2026-08-27 — Two embedders fused, and the first thing to move the fixture
+
+**The prediction, made before the run**, was that two dense models might be too
+correlated to fuse usefully: dense and BM25 fuse well because one scores meaning
+and the other exact terms, while two dense models trained on overlapping data
+may produce a union that is mostly the intersection. That happened once and the
+rest of the time it did not.
+
+Pool recall, and the structural cases each pool contains:
+
+| | ML papers | Ornithology | Quant |
+|---|---|---|---|
+| all-MiniLM-L6-v2 *(shipped)* | 0.866 · 3/7 | 0.962 · 2/3 | **0.914** · 1/2 |
+| multi-qa-MiniLM-L6-cos-v1 | 0.866 · 3/7 | 0.962 · 2/3 | 0.857 · 1/2 |
+| bge-small-en-v1.5 | **0.910** · 3/7 | 0.923 · 1/3 | 0.886 · 0/2 |
+| fused: shipped + multi-qa | 0.881 · **4/7** | **1.000** · **3/3** | 0.857 ✗ |
+| **fused: shipped + bge** | **0.881** · 3/7 | **1.000** · **3/3** | **0.914** · 1/2 |
+
+**Fusing the shipped model with `bge-small` is weakly dominant** — +0.015 on the
+ML papers, +0.038 on birds, and exactly level on quant. That is the first
+retrieval change in this project to be better-or-equal on all three corpora
+rather than a trade.
+
+**And it moves the fixture.** `bird-alula` — "which small group of feathers
+helps prevent a stall at low speed" — was one of the twelve cases that fail
+under every pipeline configuration. Fused, it is in the pool. Bird pool recall
+reaches **1.000**: every answerable question in that corpus now reaches the
+reranker. With the `multi-qa` pairing the ML fixture moves too, `gpt3-params`
+and `cot-prompt` both entering the pool — and that pairing costs quant 0.057, so
+it is the wrong one to ship.
+
+**Two things the aggregate hides, and both matter.**
+
+`bge-small` **alone** is the best single first stage on the ML papers by a
+distance — 0.910 against the shipped 0.866 — and worse on both other corpora.
+The fifth setting in a row that does not transfer, and a reminder that "which
+embedder" is a per-corpus question exactly like the threshold, the blend, the
+fusion and the candidate pool.
+
+On the ML papers the fusion (0.881) is **worse than `bge-small` alone** (0.910).
+That is the correlation dilution predicted in the sweep's docstring, caught in
+the act: RRF damping can push a passage one model ranked first below one that
+both ranked seventh. So "fuse two dense models" is not a general improvement; it
+is a thing that happened to help two of these three corpora.
+
+**Not shipped, and the reason is engineering rather than evidence.** A second
+embedder means a second vector per chunk: the index roughly doubles, ingest
+gains a second encode pass over the whole corpus, and `retrieve()` grows a
+second dense arm to fuse before the existing dense+BM25 fusion. That is a real
+change to the shape of the store, not a value in `corpora.json`, and it wants
+its own session with its own re-index and re-calibration. The measurement is
+here, reproducible with `src/sweep_ensemble.py`, and it says the work is worth
+doing.
+
+---
+
+## 2026-08-27 — The generation path finally runs
+
+`generate.py` targets `claude-opus-5` and has never completed a call: no credit.
+`src/test_generate.py` covers everything up to the network boundary by stubbing
+the client, which leaves the one part that involves a network permanently unrun.
+
+The contract is not Anthropic-specific — passages in, cited prose out, a named
+error when the model declines, a named error when nothing comes back. So
+`src/generate_local.py` speaks it to a local **Ollama**, selected by
+`RAG_GENERATOR=ollama`, with the same `synthesize(question, chunks)` signature
+and the same raising behaviour, so `api.ask` and `serve.chat` can call either
+without knowing which.
+
+**Ollama is not installed on this machine, and the test does not need it to be.**
+`src/test_generate_local.py` stands up a real `ThreadingHTTPServer` implementing
+the two endpoints the module uses, on an ephemeral port, and points the module
+at it. The request is built, sent over a socket, answered, parsed, and returned.
+Nothing is monkeypatched except the host.
+
+That makes it the first test here in which the generation path actually
+executes end to end. The model is a fake that echoes its prompt — which is
+exactly what lets the test assert that the passages reaching the model are the
+ones the answer will cite — but the transport, the JSON shapes and every error
+branch are real. Eighteen checks: the happy path, the citation format per
+locator kind, deterministic sampling because this path gets measured, an empty
+answer raising rather than rendering blank, a model that is not pulled saying
+`ollama pull`, a 500 that is *not* misreported as "go install something", and
+nothing listening at all saying `ollama serve`.
+
+**What it is not:** a claim that a small local model writes answers as well as
+Claude. It will not. It is the difference between code that has never run and
+code that has, on the one path in this repo where that distinction was still
+outstanding.
+
+One detour worth recording: the first teardown called `server_close()` while a
+thread was still inside `serve_forever()`, which printed a traceback from a
+daemon thread *after* the results and read like a failure that was not one. And
+the "nothing listening" check first pointed at the shut-down server rather than a
+dead port — `shutdown()` stops serving but leaves the socket bound, so the
+connection is accepted and never answered, which is a hang rather than the
+refusal being asserted.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
