@@ -618,6 +618,72 @@ rather than new, and worth noting that it reproduced.
 
 ---
 
+## 2026-08-27 — Every corpus gets a fixture, and there turn out to be two failure modes
+
+**Why.** The structural-versus-contested split had only ever been computed for
+the ML corpus, so "stress-test all the golden sets" was two-thirds unmet. Six
+configurations each for birds and quant — default, no-rerank, dense-only,
+weighted fusion, no cap, cap 1/src — through `src/failure_overlap.py`.
+
+| | ML papers | Ornithology | Quant |
+|---|---|---|---|
+| answerable | 67 | 26 | 35 |
+| fail under *some* configuration | 21 (31%) | 11 (42%) | 12 (34%) |
+| **structural** — fail under all six | **7 (10.4%)** | **3 (11.5%)** | **2 (5.7%)** |
+| lowest-failing configuration | nocap 14.9% | **weighted 19.2%** | default/nocap/weighted 14.3% |
+
+The "~11% floor" HANDOFF §7 records for the ML corpus reproduces almost exactly
+on birds — 10.4% against 11.5% — on a corpus of Wikipedia pages in four file
+formats rather than arXiv PDFs. Quant is **5.7%**, about half, so the floor is
+not universal and should not be quoted as if it were.
+
+**Then read the twelve structural questions together, and they split in two.**
+
+*ML — all seven ask about an attribute many papers share:*
+"How does the optimizer correct for bias in its moment estimates", "what dropout
+rate was applied", "how many parameters does the largest autoregressive model
+have", "which translation dataset". The topic matches a dozen documents and the
+clause that picks one out is ignored. This is the cross-document confusion the
+project already names.
+
+*Birds and quant — all five describe a term and ask for its name:*
+"Which small group of feathers helps prevent a stall at low speed" (alula),
+"which skeletal adaptation reduces a bird's weight" (hollow bones), "what term
+describes chicks able to move and feed themselves soon after hatching"
+(precocial), "which behaviour describes prices being pulled back toward a
+long-run level" (mean reversion), "which effect describes past winners
+continuing to outperform" (momentum). **The answer word never appears in the
+question at all.**
+
+**These are different problems and they want different fixes.** Query
+decomposition — the planned fix, blocked on credit — splits a question into its
+constraints, which is exactly right for "normalisation across features *rather
+than examples*". It does nothing obvious for "which small group of feathers
+prevents a stall", where nothing needs splitting and the target vocabulary is
+simply absent. That is a vocabulary-mismatch problem, and `src/query_expansion.py`
+already exists in the repo unmeasured against it.
+
+So the roadmap item "the ~11% floor needs query decomposition" was **one plan for
+two problems**, and it covers seven of the twelve cases rather than all of them.
+Recorded rather than acted on: measuring query expansion against the five is the
+next thing this suggests, and it is not blocked on credit.
+
+**Three confirmations that came free.**
+
+- `bird-hollow-bones`, whose broken locator was fixed earlier today, is
+  **structural** — it fails under all six configurations. That independently
+  confirms what was said at the time: the broken label was not masking a hit.
+- `bird-dawn-chorus` and `bird-imprinting` are contested and work **only under
+  `norerank`**. With reranking off there is no calibrated score and no gate, so
+  "works" there means the first stage retrieved the answer and the cross-encoder's
+  score is what refused it. Third independent route to the same conclusion.
+- `weighted` fusion has the lowest failure rate on birds (19.2% against the
+  shipped 23.1%), matching `sweep_fusion.py`'s finding from the other direction.
+
+Fixtures written to `eval/hard_cases-birds.json` and `eval/hard_cases-quant.json`.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
