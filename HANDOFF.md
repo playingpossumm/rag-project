@@ -769,9 +769,10 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **283 checks** — 22 metrics, 28 loaders, 80
+Test counts, as of 2026-08-27: **299 checks** — 22 metrics, 28 loaders, 80
 trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
-9 ingest cache, 19 generate, 25 serve, plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
+9 ingest cache, 19 generate, 25 serve, 16 analytics, plus 20 answer-highlight
+checks under `node ui/test-answer-mark.mjs`.
 
 Three checks now guard the things that have gone wrong silently before, and
 all three exit non-zero rather than printing a warning nobody reads:
