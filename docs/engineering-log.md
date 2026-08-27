@@ -904,6 +904,64 @@ undispatched.
 
 ---
 
+## 2026-08-27 — Asking every route, and a field of the wrong type
+
+**The next step after writing the routes down** is asking them. `check_docs.py`
+proves a route is documented and dispatched; neither proves it answers, and
+`POST /ask` was documented, dispatched, and wrong for its whole life.
+
+`src/smoke_routes.py` reads the route list **out of `serve.py`'s dispatch**
+rather than repeating it, so a route added tomorrow is exercised tomorrow
+without anyone remembering. Typing the list here would reproduce the exact gap
+it exists to close. The bar is deliberately low — not a 5xx, and a body that
+parses as whatever the content type claims — because a route can return the
+wrong corpus with a perfectly good 200. It is a floor, not a verdict.
+
+All 21 routes answer. Two things came back that were not 200, and only one of
+them was the server's fault.
+
+**Mine:** `/api/index/inspect` returned a correct 400 because the probe pointed
+it at the repo root, which holds no indexable documents. The route was right and
+the request was wrong. Pointed at `data/` it answers.
+
+**The server's:** `/api/corpus/select` **closed the connection without
+responding**.
+
+```
+name = (payload.get("name") or "").strip()
+                                   ^^^^^ 'dict' object has no attribute 'strip'
+```
+
+The probe sent `{"name": {...}}` — its own bug, from reading the corpus name out
+of a response without checking its type. But JSON carries types and any caller
+can send an object where a string belongs, and the answer should be a sentence
+saying so. The route has `except ValueError` and a bare `except Exception`
+around the work; the `.strip()` runs *before* the try, so the wrong-typed field
+escaped both and dropped the socket. A dropped connection is indistinguishable
+from the server having died, which is a worse thing to tell a caller than "that
+field must be text".
+
+**The same line shape was at four routes** — `/api/corpus/select`,
+`/api/index/inspect`, `/api/chat`, and the `/ask` + `/api/trace` pair. All four
+now go through one helper that answers 400 with the field name and the type it
+got. The smoke test asks every POST route with a wrong-typed field and requires
+a 400, so the fix is guarded by the thing that found it:
+
+```
+  /api/chat            question  400 field 'question' must be text, not dict
+  /api/corpus/select       name  400 field 'name' must be text, not dict
+  /api/index/inspect       path  400 field 'path' must be text, not dict
+  /api/trace           question  400 field 'question' must be text, not dict
+  /ask                 question  400 field 'question' must be text, not dict
+```
+
+**Not part of the counted suite**, because it needs a running server. That is a
+real gap and is stated rather than papered over: 230 checks run without one, and
+this is the twenty-second route's worth of coverage that only exists when
+somebody runs it.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
