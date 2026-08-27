@@ -850,6 +850,60 @@ was given — 13 checks, and it fails against the unfixed code.
 
 ---
 
+## 2026-08-27 — Six routes nobody had written down
+
+**Generalising the previous finding.** `POST /ask` served the wrong corpus for
+its whole life because nothing exercised it. The general shape of that is not
+"one route was broken", it is **a route the code serves and no document
+mentions** — nobody tests what nobody has written down.
+
+So `check_docs.py` now reads the dispatch out of `serve.py` with `ast` and
+compares it against HANDOFF §6 in both directions. A regex was the obvious tool
+and the wrong one: the dispatch is a chain of `route == "..."`, `route in (...)`
+and `route.startswith(...)`, and a regex over that collects whichever quoted
+strings happen to sit nearby.
+
+**Six routes were served and documented nowhere:**
+
+| route | what it is |
+|---|---|
+| `/api/analytics` | everything the analytics page plots |
+| `/api/corpora` | the corpus list behind the document-set picker |
+| `/quality` | the retrieval-quality dashboard |
+| `/archive`, `/archive/pipeline-map.js` | the pre-rebuild front page, served live beside the current one |
+| `/answer-mark.js` | the highlight module, added earlier today |
+
+None of them broken — but `/ask` was not broken *visibly* either. `/api/chat`,
+the endpoint the interface calls for every question, was itself listed nowhere
+until this morning's `/ask` entry mentioned it in passing.
+
+§6's route list is now grouped by what each route is for — pages, assets,
+asking, corpus, measurements — rather than being a flat run of paths, since a
+list nobody can read is a list nobody checks either.
+
+**Three of the checker's first complaints were its own bugs**, and they are worth
+recording because each is a way this kind of check quietly lies:
+
+- `/` reported as documented-but-not-served. `serve.py` rstrips the trailing
+  slash and compares against `""`, so the route the document calls `/` appears
+  in the tree as the empty string.
+- `/api/index/inspect` and its siblings reported as not served, because a
+  documented wildcard `/api/index/*` was being used to *remove* served routes
+  rather than to excuse undocumented ones. A wildcard must only ever forgive.
+- `/api/index/inspect\`` — a trailing backtick captured into the route name.
+
+**And one of its complaints was real, immediately.** Rewriting §6 changed the
+heading from `- Routes:` to `- Routes.`, and the checker said "the route list is
+gone -- this checker looks for a line starting '- Routes:'" rather than matching
+nothing and reporting success. That is the behaviour every check here is
+supposed to have, caught in the act.
+
+Verified in both directions by misspelling one documented route, which produces
+two findings from one typo: the real route undocumented, and the misspelling
+undispatched.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
