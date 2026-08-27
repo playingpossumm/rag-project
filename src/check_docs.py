@@ -355,6 +355,86 @@ def check_defaults(problems: list[str], notes: list[str]) -> bool:
     return True
 
 
+# Number words, because the notes are written as prose and count in words as
+# often as in digits. Only what actually appears in them -- inventing a general
+# parser would be more code than the thing it checks.
+WORDS = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12,
+    "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
+    "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
+    "twenty-five": 25, "twenty-six": 26, "thirty": 30, "thirty-five": 35,
+    "sixty-six": 66, "sixty-seven": 67,
+}
+
+
+def as_count(token: str):
+    token = token.lower().strip()
+    if token.isdigit():
+        return int(token)
+    return WORDS.get(token)
+
+
+def check_notes(measured: dict, problems: list[str], notes: list[str]) -> bool:
+    """corpora.json's per-corpus notes carry measured claims in prose.
+
+    Each note argues why that corpus ships the threshold it does, in sentences
+    like "at 0.0 the gate wrongly refuses 1 of 66 answerable questions and
+    catches 9 of 18 adversarial". Those are measurements, written by hand, next
+    to the setting they justify -- the most persuasive place in the repo for a
+    number to be wrong, because it is read as the reason for a decision.
+
+    It had drifted: the ML note said 1 of 66 and 9 of 18 while the golden set
+    holds 67 answerable and 17 adversarial.
+
+    Only claims of the form "refuses N of M" / "catches N of M" are checked, and
+    every one that is checked is listed, so the coverage is visible rather than
+    assumed. A note may argue anything else it likes in prose.
+    """
+    import corpora as _c
+
+    raw = json.loads((ROOT / "corpora.json").read_text(encoding="utf-8"))
+    reg = _c.registry()
+    checked = 0
+
+    for name, entry in raw.items():
+        note = entry.get("note") or ""
+        cfg = reg.get(name)
+        if not note or not cfg or name not in measured:
+            continue
+        m = measured[name]
+        n_ans, n_adv = m["answerable"], m["adversarial"]
+
+        for verb, count, total in re.findall(
+                r"(refuse[sd]?|catch(?:es|)|caught)\s+"
+                r"(?:the\s+same\s+|every\s+one\s+of\s+the\s+|the\s+)?"
+                r"([\w-]+)\s+of\s+(?:the\s+)?([\w-]+)", note):
+            got_total = as_count(total)
+            if got_total is None:          # "of the corpus", "of them" -- prose
+                continue
+            checked += 1
+            # Only the DENOMINATOR is compared. A note may quote a superseded
+            # numerator on purpose -- the quant note reports that "the earlier
+            # note claimed 0.0 refused nineteen of thirty-five", which is an
+            # accurate statement about a wrong number, and flagging it would
+            # be the check misreading history as drift. The corpus size in that
+            # sentence is still checkable and still right.
+            want_total = n_adv if verb.startswith("catch") else n_ans
+            if got_total != want_total:
+                problems.append(
+                    f"corpora.json, {name}: the note says {verb} "
+                    f"{count} of {total}, but the golden set holds {want_total} "
+                    f"{'adversarial' if verb.startswith('catch') else 'answerable'} cases")
+            notes.append(f"  corpora.json {name}: {verb} … of {total}")
+
+    if not checked:
+        problems.append("corpora.json: no note makes a checkable "
+                        "'refuses N of M' claim -- either they were rewritten "
+                        "or this check has stopped matching them")
+        return False
+    return True
+
+
 def check_readme(measured: dict, problems: list[str], notes: list[str]) -> bool:
     doc = (ROOT / "README.md").read_text(encoding="utf-8")
     ml = measured.get("llm")
@@ -433,6 +513,7 @@ def main() -> int:
     ok = check_handoff(measured, problems, notes)
     ok = check_readme(measured, problems, notes) and ok
     ok = check_defaults(problems, notes) and ok
+    ok = check_notes(measured, problems, notes) and ok
 
     if not args.quiet and notes:
         print("checked:")
@@ -450,8 +531,9 @@ def main() -> int:
               f"measurements.\nThe measurement is the truth; edit the document.")
         return 1
     print("every number quoted in HANDOFF.md §2 and README.md matches the "
-          "measurement it came from,\nand every default §3 lists matches the "
-          "constant that defines it")
+          "measurement it came from,\nevery default §3 lists matches the "
+          "constant that defines it, and the corpus\nnotes agree with the "
+          "golden sets they argue about")
     return 0
 
 

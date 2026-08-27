@@ -5,7 +5,7 @@
     "store": "vector_store",
     "golden": "eval/golden_set.json",
     "threshold": 0.0,
-    "note": "36 arXiv papers. Calibrated: at 0.0 the gate wrongly refuses 1 of 66 answerable questions (1.5%) and catches 9 of 18 adversarial. Lowering costs more catching than it recovers here, which is why this corpus kept the value the whole project was built on.",
+    "note": "36 arXiv papers. Calibrated: at 0.0 the gate wrongly refuses 1 of 67 answerable questions (1.5%) and catches 9 of 17 adversarial. Lowering costs more catching than it recovers here, which is why this corpus kept the value the whole project was built on.",
     "rerank_blend": 0.0
   },
   "birds": {
