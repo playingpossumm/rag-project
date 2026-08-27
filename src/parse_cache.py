@@ -24,6 +24,11 @@ import hashlib
 import json
 from pathlib import Path
 
+# Default for a caller that does not know its corpus. ingest.build_index()
+# passes the store being written, because prune() deletes every entry that does
+# not belong to the corpus in hand -- shared across corpora, that meant indexing
+# one wiped the parse cache of the others, and their next re-index re-parsed
+# every document. Measured 2026-08-27: 90 entries, all of them one corpus's.
 CACHE_DIR = Path(__file__).parent.parent / "vector_store" / "parse_cache"
 
 # Bumped when the parsing logic changes in a way that alters its output.

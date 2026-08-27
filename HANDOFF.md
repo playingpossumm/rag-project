@@ -122,6 +122,11 @@ improves. 16 candidates gives *identical* any-hit on all three for ~22% less
 time, at −2.6 MRR on birds; a real option, not shipped, because it regresses a
 corpus that was not the problem.
 
+Indexing caches live in the store being written, one set per corpus — until
+2026-08-27 they were shared and `prune()` deleted whatever did not belong to
+the corpus in hand, so indexing one corpus made the next re-index of the
+others a full re-parse. The timings below assume the caches survive.
+
 Indexing: full cold build **432 s** · re-index nothing changed **0.76 s** ·
 add 1 document to 20 **18.8 s**. Re-ingest reuses embeddings by content hash, so
 a change that does not alter chunk text costs a re-index and no compute.
@@ -743,9 +748,9 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **230 checks** — 22 metrics, 28 loaders, 80
+Test counts, as of 2026-08-27: **239 checks** — 22 metrics, 28 loaders, 80
 trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
-plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
+9 ingest cache, plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 Three checks now guard the things that have gone wrong silently before, and
 all three exit non-zero rather than printing a warning nobody reads:
@@ -819,6 +824,7 @@ disclaim current work.
 | `src/test_trace.py` | asserts the trace and the serving path agree under every option |
 | `src/test_api.py` | asserts `ask()` answers from the corpus it was handed, not a cached one |
 | `src/smoke_routes.py` | asks every dispatched route, against a running server |
+| `src/test_ingest_cache.py` | indexing one corpus must not evict another's caches |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
 | `src/check_golden.py` | does each golden set still describe the corpus it scores? |

@@ -9,7 +9,7 @@ import numpy as np
 from corpus_health import SUPPORTED, page_report, scan_unsupported, verdict
 # sentence_transformers (and torch beneath it) is imported inside _LazyModel,
 # not here: importing it costs ~15s and a fully-cached re-index never needs it.
-from embedding_cache import embed_with_cache
+from embedding_cache import EmbeddingCache, embed_with_cache
 from parse_cache import ParseCache, file_key
 from loaders import extract_title, load_document
 
@@ -307,7 +307,12 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
     for path, reason in scan_unsupported(data_dir):
         emit({"stage": "skip_unsupported", "document": path.name, "reason": reason})
 
-    parse_cache = ParseCache()
+    # Rooted in this corpus's store, not in a module constant. Both caches
+    # used to default to vector_store/ whatever was being indexed, and
+    # prune() below removes every entry not belonging to the corpus in hand --
+    # so indexing one corpus deleted the parse cache of every other one, and
+    # the next re-index of those re-parsed every document from scratch.
+    parse_cache = ParseCache(store_dir / "parse_cache")
 
     all_chunks, skipped, fresh_chunks = [], [], []
     for i, doc_path in enumerate(docs, start=1):
@@ -356,7 +361,8 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
     emit({"stage": "embed", "chunks": len(texts), "fresh": len(fresh_chunks)})
     # Only chunks whose text is new to the cache are actually encoded, so adding
     # one document to an existing corpus costs one document's worth of work.
-    embeddings, cache_stats = embed_with_cache(texts, lazy, EMBEDDING_MODEL)
+    embeddings, cache_stats = embed_with_cache(
+        texts, lazy, EMBEDDING_MODEL, cache=EmbeddingCache(store_dir))
     # Entries for documents no longer present would accumulate forever.
     parse_cache.prune({file_key(p) for p in docs}
                       | {file_key(p, chunk_salt()) for p in docs})
