@@ -494,7 +494,7 @@ def chat(question: str, payload: dict) -> dict:
 
     if payload.get("generate"):
         try:
-            from generate import synthesize
+            from generate import synthesize_with_backend as synthesize
 
             # Generate from the passages the trace reports, not a second
             # retrieval, so the citations shown and the text read are the same.

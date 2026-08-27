@@ -163,6 +163,48 @@ def main() -> int:
         check("no passages is the caller's error and a different one",
               _raises_value_error(), True)
 
+        # ---- the selector, because a module nothing calls does not work ----
+        # generate_local.py was written, tested, and reachable from nothing:
+        # api.ask and serve.chat both said "from generate import synthesize"
+        # outright. That is the fifth time this session a module has been
+        # correct and unreachable, so the wiring gets its own checks.
+        import os
+
+        import generate
+
+        BEHAVIOUR["mode"] = "echo"
+        RECEIVED.clear()
+        was = os.environ.get("RAG_GENERATOR")
+        try:
+            os.environ.pop("RAG_GENERATOR", None)
+            check("the default backend is unchanged", generate.backend(), "anthropic")
+
+            os.environ["RAG_GENERATOR"] = "ollama"
+            check("the env var selects the local one", generate.backend(), "ollama")
+            answer = generate.synthesize_with_backend("routed?", CHUNKS)
+            check("and synthesize_with_backend really reaches it",
+                  answer.startswith("ANSWER<<"), True)
+            check("over the same socket, with the same passages",
+                  "routed?" in RECEIVED[-1]["messages"][-1]["content"], True)
+
+            os.environ["RAG_GENERATOR"] = "local"
+            check("'local' is accepted as a synonym",
+                  generate.synthesize_with_backend("q", CHUNKS).startswith("ANSWER<<"),
+                  True)
+
+            os.environ["RAG_GENERATOR"] = "gpt-9"
+            try:
+                generate.synthesize_with_backend("q", CHUNKS)
+                unknown = "no error raised"
+            except ValueError as exc:
+                unknown = str(exc)
+            check("an unknown backend names itself rather than falling back",
+                  "gpt-9" in unknown, True)
+        finally:
+            os.environ.pop("RAG_GENERATOR", None)
+            if was is not None:
+                os.environ["RAG_GENERATOR"] = was
+
         # ---- nothing listening is the common case on a fresh machine -------
         # Pointed at a port nothing is bound to, rather than shutting the fake
         # one down: shutdown() stops serve_forever but leaves the socket bound,

@@ -28,6 +28,7 @@ Which is the argument for the rest of the project's discipline, restated: code
 that has never run is not code that works, and reviewing it against the data it
 actually receives is cheaper than finding out later.
 """
+import os
 import sys
 
 import anthropic
@@ -120,6 +121,35 @@ def synthesize(question: str, chunks: list[dict]) -> str:
             "If this is 'max_tokens', raise MAX_TOKENS."
         )
     return text
+
+
+def backend() -> str:
+    """Which generator to use: "anthropic" (default) or "ollama".
+
+    A module that nothing calls is a module that does not work -- this repo has
+    found that five times in one session. `generate_local.py` was written and
+    tested and then reachable from nothing, because `api.ask` and `serve.chat`
+    both said `from generate import synthesize` outright.
+    """
+    return os.environ.get("RAG_GENERATOR", "anthropic").strip().lower()
+
+
+def synthesize_with_backend(question: str, chunks: list[dict]) -> str:
+    """`synthesize` from whichever backend RAG_GENERATOR names.
+
+    Same signature and the same raising behaviour either way, so callers do not
+    branch. Imported inside the function because `generate_local` imports from
+    this module, and because a caller running retrieval-only should not load
+    either client.
+    """
+    name = backend()
+    if name in ("ollama", "local"):
+        from generate_local import synthesize as local
+        return local(question, chunks)
+    if name not in ("anthropic", ""):
+        raise ValueError(
+            f"unknown RAG_GENERATOR {name!r}; expected 'anthropic' or 'ollama'")
+    return synthesize(question, chunks)
 
 
 def main():

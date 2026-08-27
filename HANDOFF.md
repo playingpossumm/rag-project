@@ -608,16 +608,17 @@ retrieved passage verbatim.
 **How to unblock each of them without Anthropic credit**, written down
 2026-08-27 so the next session can act rather than re-derive:
 
-1. **Generation, end to end.** The contract `generate.py` implements —
-   passages in, cited prose out, a named error on refusal — is not
-   Anthropic-specific. Add a second backend behind the same `synthesize()`
-   signature that posts to a local **Ollama** (`http://localhost:11434`) or any
-   OpenAI-compatible endpoint, selected by `RAG_GENERATOR`. That executes the
-   whole path for real: prompt assembly, the citation format, empty and refusal
-   handling, and `ask(generate=True)` rendering prose in the interface. The
-   *model* differs from what ships, and the *code* stops being code that has
-   never run. `src/test_generate.py` already pins the contract, so the backend
-   can be written against it.
+1. **Generation, end to end — BUILT 2026-08-27.** `src/generate_local.py`
+   speaks the same `synthesize(question, chunks)` contract to a local **Ollama**,
+   selected by `RAG_GENERATOR=ollama`, and `generate.synthesize_with_backend()`
+   is what `api.ask` and `serve.chat` now call so neither has to branch.
+   `src/test_generate_local.py` stands up a real HTTP server implementing
+   Ollama's two endpoints and drives the module over a socket — 24 checks, the
+   first in this repo where the generation path executes end to end.
+
+   **Still outstanding:** no real model has answered. Install Ollama, `ollama
+   pull llama3.2`, set `RAG_GENERATOR=ollama`, and `ask(generate=True)` writes
+   prose for the first time. The transport is proven; the model is not.
 
 2. **Query decomposition, for the seven ML cases.** Splitting "normalisation
    across features rather than examples" into topic and constraint is what an
@@ -627,12 +628,22 @@ retrieved passage verbatim.
    corpus that grew. If a 7B local model moves 2 of the 7, that is the finding;
    the shipped implementation can still call a better model later.
 
-3. **The five description cases.** These need no LLM at all — see the
-   embedder comparison of 2026-08-27. `multi-qa-MiniLM-L6-cos-v1` already
-   recovers `bird-alula`, which was called structural. The next experiment is a
-   **dense ensemble**: fuse two embedders by RRF, the same argument that
-   justifies fusing dense with BM25, on the evidence that the two models find
-   different cases at identical aggregate recall.
+3. **The five description cases — MEASURED 2026-08-27, and the answer is
+   yes.** `src/sweep_ensemble.py` fuses the shipped embedder with a second one
+   by RRF. Fused with `bge-small-en-v1.5` it is **weakly dominant**: +0.015 pool
+   recall on the ML papers, +0.038 on birds, level on quant — the first
+   retrieval change here that is better-or-equal on all three rather than a
+   trade. Bird pool recall reaches **1.000** and `bird-alula` leaves the
+   structural fixture.
+
+   **Not shipped, for engineering reasons rather than evidence:** a second
+   embedder is a second vector per chunk, so the index roughly doubles, ingest
+   gains an encode pass, and `retrieve()` grows a second dense arm to fuse
+   before the existing dense+BM25 fusion. That is a change to the shape of the
+   store and wants its own session with its own re-index and re-calibration.
+   Two cautions live in the log: `bge-small` **alone** beats the fusion on the
+   ML papers (0.910 vs 0.881), and the `multi-qa` pairing costs quant 0.057, so
+   "fuse two dense models" is not a general improvement.
 
 4. **The reranker.** Exhausted among off-the-shelf options —
    `compare_rerankers.py` covers three and `sweep_quantized.py` covers int8. The
@@ -719,11 +730,15 @@ retrieved passage verbatim.
    right document at rank 1 and miss on page, which looks like incomplete
    labels rather than bad retrieval. Context recall is 0.000 for all seven —
    the answer text was not returned at all. They are real misses.
-3. **Generation is unverified end to end.** `generate.py` targets `claude-opus-5`
-   and has never completed a real call. Code written, evidence absent — but as of
-   2026-08-21 the code has at least been read against the data it receives, and
-   three defects fixed (§5b). Everything up to the network boundary is exercised
-   with a stubbed client. One judgement call left open deliberately: the current
+3. **Generation is unverified against a real model.** `generate.py` targets
+   `claude-opus-5` and has never completed a real call. As of **2026-08-27 the
+   path itself does execute**: `generate_local.py` speaks the same contract to a
+   local Ollama and `test_generate_local.py` drives it over a real socket
+   against a fake one, so prompt assembly, the citation format, the refusal
+   branch and the empty-response branch have all now actually run. What has
+   never happened is a real language model answering. Three defects were also
+   fixed by reading the code against the data it receives (§5b), and everything
+   up to the network boundary is exercised with a stubbed client. One judgement call left open deliberately: the current
    API guidance is to pass server-side `fallbacks` on `claude-opus-5` calls so a
    safety decline reroutes rather than stopping. It is **not** added here — it is
    an unverifiable beta parameter on a path that has never run, and a refusal on
@@ -810,9 +825,9 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **318 checks + the route suite** — 22 metrics, 28 loaders, 80
+Test counts, as of 2026-08-27: **324 checks + the route suite** — 22 metrics, 28 loaders, 80
 trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
-9 ingest cache, 19 generate, 18 local generation, 25 serve, 16 analytics,
+9 ingest cache, 19 generate, 24 local generation, 25 serve, 16 analytics,
 plus 20 answer-highlight
 checks under `node ui/test-answer-mark.mjs`.
 
