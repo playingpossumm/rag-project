@@ -94,18 +94,31 @@ def ask(
     expansion: str = DEFAULT_EXPANSION,
     min_confidence: float = DEFAULT_MIN_CONFIDENCE,
     generate: bool = False,
+    resources=None,
+    rerank_blend: float | None = None,
 ) -> Answer:
     """Answer a question from the indexed corpus.
 
     With generate=False (the default) this returns the retrieved passages and
     their citations, and makes no network call of any kind.
+
+    `resources` is `(index, metadata, model, bm25)` for a caller that already
+    holds a corpus, and `rerank_blend` is that corpus's blend. Both exist for
+    the server, which can switch corpora while this module's own cache cannot:
+    `_resources()` is an lru_cache over the process, so a server that called
+    this function served whichever corpus loaded first no matter what the
+    interface said was selected -- the ML papers, under Ornithology's name and
+    Ornithology's document count. Omit both and the behaviour is unchanged,
+    because the library entry point should still be able to load a corpus by
+    itself.
     """
-    index, metadata, model, bm25 = _resources()
+    index, metadata, model, bm25 = resources or _resources()
 
     # Ranking happens on small chunks; confidence is read here, before any
     # expansion, so it reflects the text the reranker actually scored.
     ranked = retrieve(question, index, metadata, model,
-                      k=k, candidate_k=candidate_k, bm25=bm25, use_reranker=True)
+                      k=k, candidate_k=candidate_k, bm25=bm25, use_reranker=True,
+                      rerank_blend=rerank_blend)
 
     confidence = ranked[0]["rerank_score"] if ranked else float("-inf")
     confident = confidence >= min_confidence

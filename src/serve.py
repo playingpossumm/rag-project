@@ -757,13 +757,24 @@ class Handler(BaseHTTPRequestHandler):
                 result["attribution"] = attribution_for(question, result)
                 self._send(200, result)
             else:
-                answer = ask(
-                    question,
-                    k=int(payload.get("k", 5)),
-                    expansion=payload.get("expansion", "page"),
-                    min_confidence=float(payload.get("min_confidence", -2.0)),
-                    generate=bool(payload.get("generate", False)),
-                )
+                # From RES, like /api/trace and /api/chat. This route used to
+                # call ask() bare, which loads and caches its own index -- so it
+                # answered from whichever corpus the process loaded first,
+                # ignored the selected one, ignored that corpus's rerank blend,
+                # and gated on a hardcoded -2.0 instead of its calibrated
+                # threshold. The interface never noticed because the interface
+                # talks to /api/chat.
+                with RES.lock:
+                    answer = ask(
+                        question,
+                        k=int(payload.get("k", 5)),
+                        expansion=payload.get("expansion", "page"),
+                        min_confidence=float(payload.get(
+                            "min_confidence", RES.threshold())),
+                        generate=bool(payload.get("generate", False)),
+                        resources=(RES.index, RES.metadata, RES.model, RES.bm25),
+                        rerank_blend=RES.rerank_blend(),
+                    )
                 self._send(200, answer.to_dict())
         except ValueError as exc:
             # A rejected option is the caller's mistake, not the server's, and

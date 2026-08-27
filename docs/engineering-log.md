@@ -804,6 +804,52 @@ check reads the part of the claim that cannot be deliberately historical.
 
 ---
 
+## 2026-08-27 — `POST /ask` answered from the wrong corpus, and the UI hid it
+
+**Found by rendering the app**, which this project's §4 says to do and which had
+not been done since `rerank.py` changed. The page itself was clean at every
+viewport with no console errors, and the highlight was inside its bounds — 8, 12
+and 3 words. Then a probe of the HTTP API selected the bird corpus, asked a bird
+question, and got back `t5.pdf`.
+
+**The defect.** `/api/trace` and `/api/chat` both take the live resources from
+`RES` — index, metadata, BM25, the corpus's threshold, its rerank blend.
+`POST /ask` called `api.ask()` bare. That function loads its own index through
+an `lru_cache` over the process, which is right for a library entry point and
+wrong for a server that can switch corpora. So `/ask` served:
+
+- whichever corpus loaded first, **whatever the interface said was selected**
+- at rerank blend 0.00, whatever the corpus ships (birds ship 0.20)
+- against a hardcoded `min_confidence=-2.0`, not the calibrated threshold
+
+The server would report "Ornithology, 45 documents, threshold -5.5" and answer
+out of the ML papers, with citations pointing at documents that were never
+searched. `retrieve.py`'s own comment names this exact failure as the reason the
+store and the index must move together.
+
+**Why it survived.** The interface talks to `/api/chat`, which was corpus-aware
+all along. `/ask` is the documented HTTP API — HANDOFF §6 lists it, the README
+calls it the wrapper around the library — and **nothing in the repo calls it**.
+A route can be in every document and exercised by nothing.
+
+**The fix** gives `ask()` optional `resources` and `rerank_blend`, and has
+`serve.py` pass `RES`'s. Omitting both leaves the library path byte-identical,
+because loading a corpus by itself is what the library entry point is for.
+
+**Verified end to end, and it confirmed two other things at once.** With the ML
+corpus selected the bird question is declined at -11.11 out of ML papers, which
+is correct. With Ornithology selected it is **answered at -4.55 out of
+`peregrine_falcon.pdf`** — the same confidence the harness measured for
+`bird-incubation`, answered under the new -5.5 where the old -3.0 refused. One
+call confirming the corpus switch, the threshold recalibration, and that the
+server and the harness agree.
+
+`src/test_api.py` stubs retrieval and asserts the resources handed in are the
+ones searched, that the blend is forwarded, and that the gate uses the value it
+was given — 13 checks, and it fails against the unfixed code.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

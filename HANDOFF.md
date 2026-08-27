@@ -404,6 +404,8 @@ confirmed the model is handed exactly the passages the answer cites.
 - Run the server: `.venv\Scripts\python.exe src\serve.py` → http://127.0.0.1:8000/
 - Routes: `/` the app · `/~/architecture` the map · `/pipeline-map.js` ·
   `/api/trace` (takes pipeline options) · `/api/chunks` · `/api/corpus` ·
+  `/api/corpus/select` (switches the served corpus; `/ask`, `/api/trace` and
+  `/api/chat` all follow it — `/ask` did not until 2026-08-27) ·
   `/api/eval` · `/api/index/inspect` · `/api/index/start` ·
   `/api/index/status` · `/fonts/*` · `/health`
 - Playwright + Chromium installed in that venv. Use it; see §4.
@@ -720,9 +722,9 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **217 checks** — 22 metrics, 28 loaders, 80
-trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, plus 20
-answer-highlight checks under `node ui/test-answer-mark.mjs`.
+Test counts, as of 2026-08-27: **230 checks** — 22 metrics, 28 loaders, 80
+trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
+plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 Three checks now guard the things that have gone wrong silently before, and
 all three exit non-zero rather than printing a warning nobody reads:
@@ -794,6 +796,7 @@ disclaim current work.
 | `docs/ui-brief.md` | the UI design interview and direction (superseded in part) |
 | `eval/per_case.json` | every golden-set case's outcome, written by `src/per_case.py` |
 | `src/test_trace.py` | asserts the trace and the serving path agree under every option |
+| `src/test_api.py` | asserts `ask()` answers from the corpus it was handed, not a cached one |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
 | `src/check_golden.py` | does each golden set still describe the corpus it scores? |
