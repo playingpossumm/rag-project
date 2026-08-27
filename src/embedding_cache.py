@@ -30,6 +30,10 @@ from pathlib import Path
 
 import numpy as np
 
+# The default is the ML corpus's store, which is where this lived when there
+# was only one corpus. Callers that know their corpus pass its store instead --
+# ingest.build_index() does -- so each corpus's derived files sit together, the
+# same rule corpora.py states for the index and the golden set.
 CACHE_DIR = Path(__file__).parent.parent / "vector_store"
 KEYS_FILE = CACHE_DIR / "embedding_cache_keys.json"
 VECS_FILE = CACHE_DIR / "embedding_cache_vectors.npy"

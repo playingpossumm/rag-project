@@ -962,6 +962,58 @@ somebody runs it.
 
 ---
 
+## 2026-08-27 — Indexing one corpus deleted the parse cache of the other two
+
+**Fourth defect in four iterations of exercising rather than reading**, and the
+largest. Indexing is the biggest subsystem nothing had ever run in a test, and
+HANDOFF §2 quotes three timings that depend entirely on caches: full cold build
+432 s, **re-index nothing changed 0.76 s**, add one document 18.8 s.
+
+`ParseCache()` and `embed_with_cache()` were both called with no directory, so
+both defaulted to a module constant pointing at `vector_store/` — the ML
+corpus's store — whatever corpus was being indexed. Both caches are
+content-addressed, so sharing them is safe on its own. `prune()` is what made it
+unsafe:
+
+```python
+parse_cache.prune({file_key(p) for p in docs} | {file_key(p, chunk_salt()) for p in docs})
+```
+
+It deletes every entry whose key is not in that set, and the set holds only the
+documents of the corpus in hand. **So indexing the birds deleted the parse cache
+for the ML papers and for quant.**
+
+**Measured before touching anything**, which is what turned a reading of the
+code into a finding: `vector_store/parse_cache` held 90 entries — 45 bird
+documents under two key forms — and **nothing at all** for the 36 ML documents
+or the 35 quant ones. The last ingest run in this repo's history was the bird
+corpus, and it had taken both other corpora's caches with it. Re-indexing the ML
+papers today would have re-parsed all 36 PDFs, and the documented 0.76 s holds
+only if no other corpus has been indexed in between. This repo has three.
+
+**Fixed** by rooting both caches in the store being written, which is the rule
+`corpora.py` already states for the index, the golden set and the threshold: a
+corpus and everything derived from it travel together. For the ML papers
+`store_dir` *is* `vector_store`, so its caches keep working untouched; birds and
+quant start empty caches in their own stores and pay one re-parse each on their
+next ingest — which they were paying every time under the old behaviour.
+
+`src/test_ingest_cache.py` runs the real `build_index` over two throwaway
+corpora, because the defect is entirely about which directory each cache
+chooses, and a stub would have to decide that itself and would therefore assert
+its own opinion. Nine checks. Against the old code five of them fail, including
+the one that matters most: *"re-indexing an unchanged corpus parses nothing
+again — got 2, want 0"*, which is the documented claim breaking in the test.
+
+**One detour worth recording.** The first fixture was a heading and one
+sentence, and `build_index` stopped after parsing — headings are not indexed as
+passages, so the document produced no chunks and there was nothing to embed. The
+stages emitted were `scan, parse, done`, no cache event at all, which surfaced
+as four mysterious assertion failures rather than as "your test corpus is
+empty". The fixture is twelve paragraphs now, and the docstring says why.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
