@@ -1,0 +1,86 @@
+{
+ "llm": {
+  "label": "ML & NLP papers",
+  "n": 67,
+  "structural": [
+   "adam-bias",
+   "dropout-rate",
+   "gpt3-fewshot",
+   "gpt3-params",
+   "roberta-nsp-drop",
+   "t5-text2text",
+   "wmt14"
+  ],
+  "modes": {
+   "none": {
+    "hit_rate": 0.8507,
+    "mrr": 0.7381,
+    "ndcg": 0.7539,
+    "src_recall": 0.76,
+    "structural_hit": "0/7"
+   },
+   "prf": {
+    "hit_rate": 0.8507,
+    "mrr": 0.7435,
+    "ndcg": 0.7588,
+    "src_recall": 0.7624,
+    "structural_hit": "0/7"
+   }
+  },
+  "won": [],
+  "lost": []
+ },
+ "birds": {
+  "label": "Ornithology",
+  "n": 26,
+  "structural": [
+   "bird-alula",
+   "bird-hollow-bones",
+   "bird-precocial"
+  ],
+  "modes": {
+   "none": {
+    "hit_rate": 0.8462,
+    "mrr": 0.6135,
+    "ndcg": 0.6709,
+    "src_recall": 0.7615,
+    "structural_hit": "0/3"
+   },
+   "prf": {
+    "hit_rate": 0.8462,
+    "mrr": 0.616,
+    "ndcg": 0.6726,
+    "src_recall": 0.7538,
+    "structural_hit": "0/3"
+   }
+  },
+  "won": [],
+  "lost": []
+ },
+ "quant": {
+  "label": "Quantitative finance",
+  "n": 35,
+  "structural": [
+   "qf-mean-reversion",
+   "qf-momentum"
+  ],
+  "modes": {
+   "none": {
+    "hit_rate": 0.8857,
+    "mrr": 0.7143,
+    "ndcg": 0.749,
+    "src_recall": 0.741,
+    "structural_hit": "0/2"
+   },
+   "prf": {
+    "hit_rate": 0.8857,
+    "mrr": 0.731,
+    "ndcg": 0.7581,
+    "src_recall": 0.741,
+    "structural_hit": "0/2"
+   }
+  },
+  "won": [],
+  "lost": []
+ }
+}

@@ -591,8 +591,14 @@ retrieved passage verbatim.
      its name ("which small group of feathers helps prevent a stall" → alula;
      "which effect describes past winners continuing to outperform" → momentum).
      The answer word is absent from the query. Nothing needs decomposing; this
-     is vocabulary mismatch, and `src/query_expansion.py` exists unmeasured
-     against it. **Not blocked on credit.**
+     is vocabulary mismatch. `src/query_expansion.py` (RM3 pseudo-relevance
+     feedback) was **measured against it on 2026-08-27 and recovers 0 of 12**,
+     with no question changing hands on any corpus. The reason is structural:
+     feedback terms are harvested from the top results of the original query,
+     and the missing word is not in those passages either — checked directly,
+     not inferred. A stopword leak found in the same module was fixed and
+     measured **worse** on two corpora of three, and reverted. See
+     `docs/engineering-log.md`.
 
    Fixtures: `eval/hard_cases.json`, `eval/hard_cases-birds.json`,
    `eval/hard_cases-quant.json`.

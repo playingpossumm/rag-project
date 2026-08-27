@@ -684,6 +684,90 @@ Fixtures written to `eval/hard_cases-birds.json` and `eval/hard_cases-quant.json
 
 ---
 
+## 2026-08-27 — Query expansion against the description-style cases: refuted twice
+
+**The hypothesis, from the previous entry.** The twelve structural cases split
+in two, and the five on birds and quant describe a term without naming it —
+vocabulary mismatch rather than cross-document confusion. Query decomposition
+needs credit; `src/query_expansion.py` implements RM3 pseudo-relevance feedback,
+needs nothing, and had been sitting in the repo unmeasured. It is the classical
+answer to exactly this failure.
+
+**The way it could fail was written down before the run**, in the harness's own
+docstring: feedback terms come from the top results of the *original* query, so
+if the answer word is absent from those, expansion cannot invent it — it can
+only sharpen a query already pointed at the wrong passages.
+
+**That is what happened.**
+
+| | any-hit | MRR | structural recovered |
+|---|---|---|---|
+| ML, none *(shipped)* | 0.851 | 0.738 | — |
+| ML, prf | 0.851 | 0.744 | **0 of 7** |
+| birds, none | 0.846 | 0.614 | — |
+| birds, prf | 0.846 | 0.616 | **0 of 3** |
+| quant, none | 0.886 | 0.714 | — |
+| quant, prf | 0.886 | 0.731 | **0 of 2** |
+
+Zero of twelve, and **not one question changes hands on any corpus**. The gains
+are MRR and NDCG only: reordering inside a result set that is already the same
+set.
+
+**The mechanism was checked rather than assumed.** For each of the five,
+`prf_terms` was asked what it would add:
+
+```
+bird-alula        adds: ratio, aspect, hoverers, kestrels, hovering, ...   'alula'     absent
+bird-precocial    adds: days, nutritional, independence, enhanced, ...     'precocial' absent
+qf-mean-reversion adds: the, and, certify, need, segments, our, ...        'reversion' absent
+qf-momentum       adds: attempt, algorithm, picks, instruments, ...        'momentum'  absent
+```
+
+The target word is in none of them. No term-selection rule can help, because the
+word is not in the material being harvested.
+
+**A second defect fell out, and fixing it made things worse.** Look at the
+`qf-mean-reversion` row: `the`, `and`, `our`. The module's docstring says
+"a term must be both common among the top results and rare across the corpus.
+Frequency alone selects 'the'" — and 'the' is being selected. The arithmetic:
+feedback frequency is capped at the number of feedback documents, so it spans
+one order of magnitude, while BM25's idf for a common word is small but not
+small enough. On quant, `the` scores 1.788 against `momentum` at 5.341 — a
+factor of three that ten-in-ten beats easily.
+
+Thresholding on mean idf was rejected by measurement first: the distribution is
+skewed towards rare terms (mean 7.15, max 8.32 on quant), so "above the mean"
+would also discard `momentum` at 5.341 and `precocial` at 5.253. A document
+frequency cut separates them properly — `the` is in ~17% of quant chunks,
+`momentum` in ~0.5% — so terms appearing in more than 5% of the corpus were
+excluded, with the threshold derived from BM25's own idf formula so it means the
+same thing on 900 chunks and 6,000.
+
+It worked, in the sense that `the`, `and` and `while` disappeared from the
+feedback terms. Then it was measured:
+
+| | before the fix | after the fix |
+|---|---|---|
+| ML any-hit | 0.851 | **0.836** *(loses `lora-frozen`)* |
+| ML MRR / src recall | 0.744 / 0.762 | 0.741 / 0.745 |
+| birds MRR | 0.616 | 0.623 |
+| quant MRR / NDCG | 0.731 / 0.758 | 0.726 / 0.749 |
+
+**Worse on two corpora of three, and it costs a question on the largest.**
+The stopwords were doing less harm than what replaced them: they contribute
+almost nothing to a BM25 score, but they occupy slots in a fixed-size term list,
+and freeing those slots admitted more mid-frequency terms that pulled the query
+further from its intent. **Reverted**, alongside `USE_TITLE_PREFIX` and the
+rerank swaps.
+
+**Two things to carry forward.** PRF is not the fix for the description-style
+cases and is not worth turning on for the MRR — it is off by default and stays
+off. And an obvious-looking defect ("it selects 'the'!") was doing less damage
+than its obvious-looking fix, which is the entire argument for measuring before
+believing, applied to a change that took four lines.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
