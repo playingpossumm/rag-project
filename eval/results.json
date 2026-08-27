@@ -5,7 +5,7 @@
     "answerable_cases": 67,
     "adversarial_cases": 17,
     "k": 5,
-    "candidate_k": 20,
+    "candidate_k": 16,
     "golden": "eval\\golden_set.json",
     "name": "llm",
     "rerank_blend": 0.0
@@ -14,32 +14,32 @@
     "dense": {
       "hit_rate": 0.866,
       "mrr": 0.588,
-      "ndcg": 0.64,
-      "src_recall": 0.834
+      "ndcg": 0.644,
+      "src_recall": 0.794
     },
     "rrf": {
-      "hit_rate": 0.925,
-      "mrr": 0.696,
-      "ndcg": 0.717,
-      "src_recall": 0.812
+      "hit_rate": 0.91,
+      "mrr": 0.691,
+      "ndcg": 0.713,
+      "src_recall": 0.796
     },
     "weighted a=0.3": {
-      "hit_rate": 0.94,
-      "mrr": 0.717,
+      "hit_rate": 0.925,
+      "mrr": 0.718,
       "ndcg": 0.733,
-      "src_recall": 0.813
+      "src_recall": 0.8
     },
     "weighted a=0.5": {
-      "hit_rate": 0.94,
-      "mrr": 0.71,
-      "ndcg": 0.722,
-      "src_recall": 0.81
+      "hit_rate": 0.925,
+      "mrr": 0.689,
+      "ndcg": 0.72,
+      "src_recall": 0.794
     },
     "weighted a=0.7": {
-      "hit_rate": 0.94,
-      "mrr": 0.656,
-      "ndcg": 0.692,
-      "src_recall": 0.82
+      "hit_rate": 0.925,
+      "mrr": 0.649,
+      "ndcg": 0.691,
+      "src_recall": 0.784
     }
   },
   "end_to_end": {
@@ -50,51 +50,51 @@
       "src_recall": 0.664
     },
     "dense + rerank": {
-      "hit_rate": 0.791,
-      "mrr": 0.688,
-      "ndcg": 0.698,
-      "src_recall": 0.7
+      "hit_rate": 0.806,
+      "mrr": 0.666,
+      "ndcg": 0.688,
+      "src_recall": 0.688
     },
     "weighted + rerank": {
       "hit_rate": 0.866,
-      "mrr": 0.737,
-      "ndcg": 0.753,
-      "src_recall": 0.724
+      "mrr": 0.743,
+      "ndcg": 0.756,
+      "src_recall": 0.706
     },
     "rrf + rerank": {
       "hit_rate": 0.866,
-      "mrr": 0.741,
-      "ndcg": 0.754,
-      "src_recall": 0.724
+      "mrr": 0.743,
+      "ndcg": 0.758,
+      "src_recall": 0.721
     },
     "+ diversity 2/src": {
       "hit_rate": 0.851,
-      "mrr": 0.738,
-      "ndcg": 0.754,
-      "src_recall": 0.76
+      "mrr": 0.739,
+      "ndcg": 0.755,
+      "src_recall": 0.761
     },
     "+ diversity 1/src": {
-      "hit_rate": 0.776,
-      "mrr": 0.708,
-      "ndcg": 0.719,
-      "src_recall": 0.805
+      "hit_rate": 0.791,
+      "mrr": 0.715,
+      "ndcg": 0.727,
+      "src_recall": 0.795
     }
   },
   "expansion": {
     "none (chunks)": {
-      "context_recall": 0.746,
-      "tokens_per_query": 998,
+      "context_recall": 0.761,
+      "tokens_per_query": 990,
       "blocks_per_query": 5.0
     },
     "window +/-1": {
-      "context_recall": 0.806,
-      "tokens_per_query": 2355,
+      "context_recall": 0.821,
+      "tokens_per_query": 2340,
       "blocks_per_query": 5.0
     },
     "page": {
       "context_recall": 0.851,
-      "tokens_per_query": 4752,
-      "blocks_per_query": 4.5
+      "tokens_per_query": 4660,
+      "blocks_per_query": 4.4
     }
   },
   "abstention": {
@@ -116,7 +116,7 @@
       },
       {
         "threshold": -5,
-        "caught": 1,
+        "caught": 2,
         "false_abstain": 0
       },
       {

@@ -13,9 +13,9 @@ been written up as results turned out to be wrong.**
 ```
                        any-hit@5    MRR    NDCG   source recall
   naive RAG                0.791  0.581   0.629           0.664
-  + cross-encoder rerank   0.791  0.688   0.698           0.700
-  + hybrid BM25 fusion     0.866  0.741   0.754           0.724
-  + diversity cap (2/src)  0.851  0.738   0.754           0.760
+  + cross-encoder rerank   0.806  0.666   0.688           0.688
+  + hybrid BM25 fusion     0.866  0.743   0.758           0.721
+  + diversity cap (2/src)  0.851  0.739   0.755           0.761
 ```
 
 36 arXiv ML/NLP papers, 5,459 passages, 84 labelled cases — 67 answerable and

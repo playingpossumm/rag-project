@@ -2,7 +2,7 @@
  "generated_by": "src/per_case.py",
  "options": {
   "k": 5,
-  "candidate_k": 20,
+  "candidate_k": 16,
   "rerank_blend": 0.0,
   "use_reranker": true,
   "fusion": "rrf",
@@ -30,9 +30,9 @@
   "answerable": {
    "n": 67,
    "hit_rate": 0.8507,
-   "mrr": 0.7381,
-   "ndcg": 0.7539,
-   "src_recall": 0.76,
+   "mrr": 0.7393,
+   "ndcg": 0.7555,
+   "src_recall": 0.7607,
    "refused_wrongly": 1,
    "missed": 10
   },
@@ -71,23 +71,23 @@
     },
     {
      "rank": 3,
-     "source": "vision_transformer.pdf",
-     "locator": "page 2",
-     "score": 1.7415,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
      "locator": "page 2",
      "score": -1.9514,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
      "locator": "page 7",
      "score": -2.2525,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 13",
+     "score": -2.266,
      "relevant": false
     }
    ],
@@ -179,23 +179,23 @@
     },
     {
      "rank": 3,
-     "source": "roberta.pdf",
-     "locator": "page 2",
-     "score": 1.1527,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
      "locator": "page 4",
      "score": 0.9067,
      "relevant": false
     },
     {
+     "rank": 4,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 5",
+     "score": -1.5777,
+     "relevant": false
+    },
+    {
      "rank": 5,
-     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
-     "locator": "page 4",
-     "score": 0.3713,
+     "source": "t5.pdf",
+     "locator": "page 12",
+     "score": -3.3245,
      "relevant": false
     }
    ],
@@ -348,16 +348,16 @@
     },
     {
      "rank": 4,
-     "source": "gpt3.pdf",
-     "locator": "page 8",
-     "score": -8.3559,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 19",
+     "score": 1.1353,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "batch_normalization.pdf",
-     "locator": "page 1",
-     "score": -10.767,
+     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+     "locator": "page 18",
+     "score": 0.9464,
      "relevant": false
     }
    ],
@@ -667,36 +667,36 @@
     },
     {
      "rank": 2,
-     "source": "adam_optimizer.pdf",
-     "locator": "page 5",
-     "score": -4.0217,
-     "relevant": false
-    },
-    {
-     "rank": 3,
      "source": "attention_is_all_you_need.pdf",
      "locator": "page 7",
      "score": -5.7418,
      "relevant": true
     },
     {
-     "rank": 4,
+     "rank": 3,
      "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
      "locator": "page 9",
      "score": -6.8952,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "adam_optimizer.pdf",
      "locator": "page 8",
      "score": -7.378,
      "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
+     "locator": "page 17",
+     "score": -8.5132,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.3333,
-   "ndcg": 0.5,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
    "src_recall": 0.25,
    "context_recall": 1.0
   },
@@ -742,23 +742,23 @@
     },
     {
      "rank": 4,
-     "source": "layer_normalization.pdf",
-     "locator": "page 2",
-     "score": -1.7651,
-     "relevant": true
-    },
-    {
-     "rank": 5,
      "source": "attention_is_all_you_need.pdf",
      "locator": "page 3",
      "score": -3.3929,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "vision_transformer.pdf",
+     "locator": "page 3",
+     "score": -3.5377,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 0.8772,
-   "src_recall": 0.6,
+   "ndcg": 1.0,
+   "src_recall": 0.4,
    "context_recall": 1.0
   },
   {
@@ -955,29 +955,29 @@
     },
     {
      "rank": 3,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 9",
-     "score": 2.4654,
+     "source": "rag.pdf",
+     "locator": "page 19",
+     "score": -3.4657,
      "relevant": false
     },
     {
      "rank": 4,
      "source": "dense_passage_retrieval.pdf",
-     "locator": "page 10",
-     "score": -1.4555,
-     "relevant": true
+     "locator": "page 9",
+     "score": -3.7485,
+     "relevant": false
     },
     {
      "rank": 5,
      "source": "rag.pdf",
      "locator": "page 19",
-     "score": -3.4657,
+     "score": -5.0867,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 0.9675,
+   "ndcg": 1.0,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -1067,29 +1067,29 @@
     {
      "rank": 3,
      "source": "lora.pdf",
-     "locator": "page 2",
-     "score": 3.5342,
-     "relevant": true
-    },
-    {
-     "rank": 4,
-     "source": "lora.pdf",
      "locator": "page 9",
      "score": 1.8923,
      "relevant": true
     },
     {
-     "rank": 5,
-     "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
-     "locator": "page 9",
-     "score": -10.5084,
+     "rank": 4,
+     "source": "lora.pdf",
+     "locator": "page 22",
+     "score": 1.7372,
      "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "lora.pdf",
+     "locator": "page 2",
+     "score": 1.1175,
+     "relevant": true
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
-   "src_recall": 0.5,
+   "ndcg": 0.9829,
+   "src_recall": 0.25,
    "context_recall": 1.0
   },
   {
@@ -1290,23 +1290,23 @@
     },
     {
      "rank": 3,
-     "source": "t5.pdf",
-     "locator": "page 5",
-     "score": 0.0109,
-     "relevant": false
+     "source": "vision_transformer.pdf",
+     "locator": "page 3",
+     "score": 1.6651,
+     "relevant": true
     },
     {
      "rank": 4,
-     "source": "t5.pdf",
-     "locator": "page 16",
-     "score": -4.1152,
-     "relevant": false
+     "source": "vision_transformer.pdf",
+     "locator": "page 1",
+     "score": 1.5053,
+     "relevant": true
     },
     {
      "rank": 5,
-     "source": "resnet.pdf",
-     "locator": "page 12",
-     "score": -9.3297,
+     "source": "t5.pdf",
+     "locator": "page 5",
+     "score": 0.0109,
      "relevant": false
     }
    ],
@@ -1414,9 +1414,9 @@
     },
     {
      "rank": 5,
-     "source": "batch_normalization.pdf",
-     "locator": "page 6",
-     "score": -10.5045,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 25",
+     "score": -11.0184,
      "relevant": false
     }
    ],
@@ -1468,9 +1468,9 @@
     },
     {
      "rank": 5,
-     "source": "batch_normalization.pdf",
-     "locator": "page 3",
-     "score": -7.0962,
+     "source": "t5.pdf",
+     "locator": "page 37",
+     "score": -7.3191,
      "relevant": false
     }
    ],
@@ -1515,16 +1515,16 @@
     },
     {
      "rank": 4,
-     "source": "sentence_bert.pdf",
-     "locator": "page 3",
-     "score": -3.7706,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 7",
+     "score": -7.4856,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 7",
-     "score": -7.4856,
+     "source": "sentence_bert.pdf",
+     "locator": "page 8",
+     "score": -7.8512,
      "relevant": false
     }
    ],
@@ -1683,30 +1683,30 @@
     },
     {
      "rank": 3,
-     "source": "layer_normalization.pdf",
-     "locator": "page 2",
-     "score": 4.8865,
+     "source": "batch_normalization.pdf",
+     "locator": "page 4",
+     "score": 5.7553,
      "relevant": true
     },
     {
      "rank": 4,
      "source": "layer_normalization.pdf",
      "locator": "page 2",
-     "score": 4.4751,
+     "score": 4.8865,
      "relevant": true
     },
     {
      "rank": 5,
-     "source": "resnet.pdf",
-     "locator": "page 10",
-     "score": -0.7201,
+     "source": "layer_normalization.pdf",
+     "locator": "page 2",
+     "score": 4.4751,
      "relevant": true
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 0.6,
+   "src_recall": 0.4,
    "context_recall": 1.0
   },
   {
@@ -1753,8 +1753,8 @@
     {
      "rank": 5,
      "source": "roberta.pdf",
-     "locator": "page 4",
-     "score": 1.7992,
+     "locator": "page 2",
+     "score": -0.1282,
      "relevant": true
     }
    ],
@@ -1901,17 +1901,17 @@
     },
     {
      "rank": 2,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 2",
-     "score": -0.5589,
-     "relevant": true
-    },
-    {
-     "rank": 3,
      "source": "gpt3.pdf",
      "locator": "page 18",
      "score": -0.9663,
      "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 3",
+     "score": -1.6955,
+     "relevant": true
     },
     {
      "rank": 4,
@@ -1929,8 +1929,8 @@
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.5,
-   "ndcg": 0.6309,
+   "mrr": 0.3333,
+   "ndcg": 0.5,
    "src_recall": 0.5,
    "context_recall": 1.0
   },
@@ -1963,28 +1963,28 @@
     {
      "rank": 3,
      "source": "chain_of_thought.pdf",
-     "locator": "page 21",
-     "score": 7.1622,
-     "relevant": true
-    },
-    {
-     "rank": 4,
-     "source": "chain_of_thought.pdf",
      "locator": "page 9",
      "score": 6.4594,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "chain_of_thought.pdf",
      "locator": "page 5",
      "score": 6.4371,
+     "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "chain_of_thought.pdf",
+     "locator": "page 16",
+     "score": 5.9347,
      "relevant": true
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 0.8855,
+   "ndcg": 0.8529,
    "src_recall": 1.0,
    "context_recall": 0.0
   },
@@ -2016,10 +2016,10 @@
     },
     {
      "rank": 3,
-     "source": "dense_passage_retrieval.pdf",
-     "locator": "page 3",
-     "score": -0.0935,
-     "relevant": false
+     "source": "colbert.pdf",
+     "locator": "page 5",
+     "score": 5.2512,
+     "relevant": true
     },
     {
      "rank": 4,
@@ -2072,22 +2072,22 @@
     {
      "rank": 3,
      "source": "dense_passage_retrieval.pdf",
-     "locator": "page 4",
-     "score": 2.3639,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "dense_passage_retrieval.pdf",
      "locator": "page 5",
      "score": 2.3462,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "roberta.pdf",
      "locator": "page 4",
      "score": 0.8946,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 6",
+     "score": 0.2386,
      "relevant": false
     }
    ],
@@ -2238,15 +2238,15 @@
     {
      "rank": 3,
      "source": "faiss_billion_scale.pdf",
-     "locator": "page 8",
-     "score": 3.7485,
+     "locator": "page 10",
+     "score": 3.5789,
      "relevant": true
     },
     {
      "rank": 4,
      "source": "faiss_billion_scale.pdf",
-     "locator": "page 10",
-     "score": 3.5789,
+     "locator": "page 8",
+     "score": 2.461,
      "relevant": true
     },
     {
@@ -2306,9 +2306,9 @@
     },
     {
      "rank": 5,
-     "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
-     "locator": "page 24",
-     "score": -7.6714,
+     "source": "dense_passage_retrieval.pdf",
+     "locator": "page 7",
+     "score": -8.5985,
      "relevant": false
     }
    ],
@@ -2347,30 +2347,30 @@
     },
     {
      "rank": 3,
-     "source": "chain_of_thought.pdf",
-     "locator": "page 4",
-     "score": -1.8584,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "rag.pdf",
      "locator": "page 19",
      "score": -3.0582,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "t5.pdf",
      "locator": "page 19",
      "score": -3.5532,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "gpt3.pdf",
+     "locator": "page 39",
+     "score": -3.8443,
      "relevant": false
     }
    ],
    "hit_rate": 0.0,
    "mrr": 0.0,
    "ndcg": 0.0,
-   "src_recall": 0.0,
+   "src_recall": 0.5,
    "context_recall": 0.0
   },
   {
@@ -2410,16 +2410,16 @@
     },
     {
      "rank": 4,
-     "source": "seq2seq.pdf",
-     "locator": "page 9",
-     "score": -1.1111,
+     "source": "layer_normalization.pdf",
+     "locator": "page 14",
+     "score": -1.1253,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "layer_normalization.pdf",
-     "locator": "page 14",
-     "score": -1.1253,
+     "source": "adam_optimizer.pdf",
+     "locator": "page 5",
+     "score": -6.003,
      "relevant": false
     }
    ],
@@ -2583,22 +2583,22 @@
     },
     {
      "rank": 4,
-     "source": "conceptguard_benchmarking_context_sensitive_unlearning_in.pdf",
-     "locator": "page 15",
-     "score": -0.9727,
-     "relevant": false
-    },
-    {
-     "rank": 5,
      "source": "layer_normalization.pdf",
      "locator": "page 1",
      "score": -1.8044,
      "relevant": true
+    },
+    {
+     "rank": 5,
+     "source": "healmed_multilingual_evaluation_of_large_language_models_i.pdf",
+     "locator": "page 24",
+     "score": -5.7246,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 0.3333,
-   "ndcg": 0.5438,
+   "ndcg": 0.5706,
    "src_recall": 0.25,
    "context_recall": 1.0
   },
@@ -2624,8 +2624,8 @@
     {
      "rank": 2,
      "source": "lora.pdf",
-     "locator": "page 9",
-     "score": 4.5171,
+     "locator": "page 17",
+     "score": 4.1989,
      "relevant": false
     },
     {
@@ -2684,23 +2684,23 @@
     },
     {
      "rank": 3,
-     "source": "gpt3.pdf",
-     "locator": "page 40",
-     "score": 2.0325,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "memtrapbench_benchmarking_cognitive_traps_in_llm_memory_us.pdf",
      "locator": "page 30",
      "score": -4.5155,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
      "locator": "page 5",
      "score": -4.6977,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "t5.pdf",
+     "locator": "page 24",
+     "score": -7.7446,
      "relevant": false
     }
    ],
@@ -2792,23 +2792,23 @@
     },
     {
      "rank": 3,
+     "source": "rag.pdf",
+     "locator": "page 2",
+     "score": 2.4184,
+     "relevant": true
+    },
+    {
+     "rank": 4,
      "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
      "locator": "page 10",
      "score": -6.5607,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 5,
      "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
      "locator": "page 14",
      "score": -7.539,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "gpt3.pdf",
-     "locator": "page 43",
-     "score": -8.6842,
      "relevant": false
     }
    ],
@@ -2853,16 +2853,16 @@
     },
     {
      "rank": 4,
-     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
-     "locator": "page 3",
-     "score": -8.943,
+     "source": "batch_normalization.pdf",
+     "locator": "page 2",
+     "score": -9.1497,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "batch_normalization.pdf",
-     "locator": "page 2",
-     "score": -9.1497,
+     "source": "vision_transformer.pdf",
+     "locator": "page 7",
+     "score": -10.2477,
      "relevant": false
     }
    ],
@@ -2967,23 +2967,23 @@
     },
     {
      "rank": 4,
-     "source": "layer_normalization.pdf",
-     "locator": "page 11",
-     "score": 1.7934,
+     "source": "vision_transformer.pdf",
+     "locator": "page 18",
+     "score": -2.934,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "t5.pdf",
-     "locator": "page 60",
-     "score": -1.514,
+     "source": "batch_normalization.pdf",
+     "locator": "page 6",
+     "score": -5.3386,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 1.0,
-   "src_recall": 0.2,
+   "src_recall": 0.4,
    "context_recall": 1.0
   },
   {
@@ -3016,21 +3016,21 @@
      "rank": 3,
      "source": "bert.pdf",
      "locator": "page 16",
-     "score": -2.4049,
+     "score": -2.8857,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "bert.pdf",
-     "locator": "page 16",
-     "score": -2.8857,
+     "source": "t5.pdf",
+     "locator": "page 15",
+     "score": -4.3352,
      "relevant": false
     },
     {
      "rank": 5,
      "source": "t5.pdf",
-     "locator": "page 15",
-     "score": -4.3352,
+     "locator": "page 18",
+     "score": -4.4349,
      "relevant": false
     }
    ],
@@ -3231,29 +3231,29 @@
     },
     {
      "rank": 3,
-     "source": "gpt3.pdf",
-     "locator": "page 16",
-     "score": 2.3837,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "seq2seq.pdf",
      "locator": "page 1",
      "score": -1.6826,
      "relevant": true
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "gpt3.pdf",
      "locator": "page 15",
      "score": -1.6835,
      "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 8",
+     "score": -1.8911,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.25,
-   "ndcg": 0.4307,
+   "mrr": 0.3333,
+   "ndcg": 0.5,
    "src_recall": 0.5,
    "context_recall": 1.0
   },
@@ -3286,22 +3286,22 @@
     {
      "rank": 3,
      "source": "seq2seq.pdf",
-     "locator": "page 3",
-     "score": -1.8441,
+     "locator": "page 1",
+     "score": -2.1661,
      "relevant": true
     },
     {
      "rank": 4,
-     "source": "attention_is_all_you_need.pdf",
-     "locator": "page 2",
-     "score": -2.5494,
+     "source": "word2vec.pdf",
+     "locator": "page 10",
+     "score": -3.4648,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "word2vec.pdf",
-     "locator": "page 10",
-     "score": -3.4648,
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 2",
+     "score": -5.2667,
      "relevant": false
     }
    ],
@@ -3309,7 +3309,7 @@
    "mrr": 1.0,
    "ndcg": 0.9197,
    "src_recall": 1.0,
-   "context_recall": 0.0
+   "context_recall": 1.0
   },
   {
    "id": "t5-c4",
@@ -3453,28 +3453,28 @@
     {
      "rank": 3,
      "source": "t5.pdf",
-     "locator": "page 21",
-     "score": 3.6646,
-     "relevant": false
+     "locator": "page 22",
+     "score": 3.372,
+     "relevant": true
     },
     {
      "rank": 4,
-     "source": "bert.pdf",
-     "locator": "page 1",
-     "score": -2.2548,
-     "relevant": false
+     "source": "t5.pdf",
+     "locator": "page 23",
+     "score": 3.1956,
+     "relevant": true
     },
     {
      "rank": 5,
      "source": "bert.pdf",
      "locator": "page 1",
-     "score": -4.2642,
+     "score": -2.2548,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
+   "ndcg": 0.906,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -3574,9 +3574,9 @@
     },
     {
      "rank": 5,
-     "source": "resnet.pdf",
-     "locator": "page 9",
-     "score": -6.2754,
+     "source": "layer_normalization.pdf",
+     "locator": "page 10",
+     "score": -7.6609,
      "relevant": false
     }
    ],
@@ -3721,23 +3721,23 @@
     {
      "rank": 2,
      "source": "word2vec.pdf",
-     "locator": "page 1",
-     "score": 4.4405,
-     "relevant": true
-    },
-    {
-     "rank": 3,
-     "source": "word2vec.pdf",
      "locator": "page 8",
      "score": 3.6566,
      "relevant": true
     },
     {
+     "rank": 3,
+     "source": "word2vec.pdf",
+     "locator": "page 2",
+     "score": 3.6142,
+     "relevant": true
+    },
+    {
      "rank": 4,
-     "source": "bert.pdf",
-     "locator": "page 15",
-     "score": -7.9703,
-     "relevant": false
+     "source": "word2vec.pdf",
+     "locator": "page 7",
+     "score": 2.728,
+     "relevant": true
     },
     {
      "rank": 5,
@@ -3793,9 +3793,9 @@
     },
     {
      "rank": 5,
-     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
-     "locator": "page 10",
-     "score": -9.1503,
+     "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+     "locator": "page 12",
+     "score": -10.6501,
      "relevant": false
     }
    ]
@@ -3820,8 +3820,8 @@
     {
      "rank": 2,
      "source": "multi_agent_orchestration_with_the_common_sense_reasoning.pdf",
-     "locator": "page 2",
-     "score": 2.2481,
+     "locator": "page 6",
+     "score": 2.0891,
      "relevant": false
     },
     {
@@ -3921,8 +3921,8 @@
     {
      "rank": 3,
      "source": "chain_of_thought.pdf",
-     "locator": "page 27",
-     "score": -1.5546,
+     "locator": "page 17",
+     "score": -2.2156,
      "relevant": false
     },
     {
@@ -4007,30 +4007,30 @@
     },
     {
      "rank": 2,
-     "source": "t5.pdf",
-     "locator": "page 57",
-     "score": -9.9012,
-     "relevant": false
-    },
-    {
-     "rank": 3,
-     "source": "gpt3.pdf",
-     "locator": "page 9",
-     "score": -10.2028,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
      "locator": "page 2",
      "score": -10.2978,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 3,
      "source": "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
      "locator": "page 8",
      "score": -10.7594,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "gpt3.pdf",
+     "locator": "page 42",
+     "score": -10.7619,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 4",
+     "score": -10.8327,
      "relevant": false
     }
    ]
@@ -4054,30 +4054,30 @@
     },
     {
      "rank": 2,
-     "source": "lora.pdf",
-     "locator": "page 18",
-     "score": 2.7585,
-     "relevant": false
-    },
-    {
-     "rank": 3,
      "source": "chain_of_thought.pdf",
      "locator": "page 15",
      "score": 1.61,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 3,
      "source": "inject_align_recover_staged_post_training_for_retrieval_fr.pdf",
      "locator": "page 12",
      "score": -0.2143,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
      "locator": "page 22",
      "score": -3.5183,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 30",
+     "score": -3.8719,
      "relevant": false
     }
    ]
@@ -4088,22 +4088,22 @@
    "question": "What did the peer reviewers say about this work?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -4.058,
+   "confidence": -5.23,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
      "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
-     "locator": "page 28",
-     "score": -4.0578,
+     "locator": "page 12",
+     "score": -5.2304,
      "relevant": false
     },
     {
      "rank": 2,
      "source": "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
-     "locator": "page 12",
-     "score": -5.2304,
+     "locator": "page 28",
+     "score": -6.1901,
      "relevant": false
     },
     {
@@ -4162,16 +4162,16 @@
     },
     {
      "rank": 4,
-     "source": "gpt3.pdf",
-     "locator": "page 48",
-     "score": -5.4804,
+     "source": "an_agentic_approach_for_active_data_collection_travel_beha.pdf",
+     "locator": "page 22",
+     "score": -6.2077,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "an_agentic_approach_for_active_data_collection_travel_beha.pdf",
-     "locator": "page 22",
-     "score": -6.2077,
+     "source": "gpt3.pdf",
+     "locator": "page 46",
+     "score": -6.3629,
      "relevant": false
     }
    ]
@@ -4203,8 +4203,8 @@
     {
      "rank": 3,
      "source": "formaltcs_benchmarking_end_to_end_frontier_formal_theoreti.pdf",
-     "locator": "page 21",
-     "score": -7.959,
+     "locator": "page 5",
+     "score": -8.3789,
      "relevant": false
     },
     {
@@ -4249,23 +4249,23 @@
     },
     {
      "rank": 3,
-     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
-     "locator": "page 2",
-     "score": -3.9088,
+     "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
+     "locator": "page 4",
+     "score": -7.8575,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "lora.pdf",
-     "locator": "page 5",
-     "score": -5.9894,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 1",
+     "score": -9.0711,
      "relevant": false
     },
     {
      "rank": 5,
      "source": "break_it_down_pass_it_on_cross_task_skill_transfer_in_llm.pdf",
-     "locator": "page 4",
-     "score": -7.8575,
+     "locator": "page 3",
+     "score": -9.4457,
      "relevant": false
     }
    ]
@@ -4350,16 +4350,16 @@
     },
     {
      "rank": 4,
-     "source": "vision_transformer.pdf",
-     "locator": "page 20",
-     "score": -7.5589,
+     "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+     "locator": "page 37",
+     "score": -8.6,
      "relevant": false
     },
     {
      "rank": 5,
      "source": "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
-     "locator": "page 37",
-     "score": -8.6,
+     "locator": "page 23",
+     "score": -8.6266,
      "relevant": false
     }
    ]
@@ -4397,16 +4397,16 @@
     },
     {
      "rank": 4,
-     "source": "faiss_billion_scale.pdf",
-     "locator": "page 9",
-     "score": -5.8127,
+     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+     "locator": "page 1",
+     "score": -9.322,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
-     "locator": "page 1",
-     "score": -9.322,
+     "source": "lora.pdf",
+     "locator": "page 17",
+     "score": -9.3794,
      "relevant": false
     }
    ]
@@ -4444,16 +4444,16 @@
     },
     {
      "rank": 4,
-     "source": "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
-     "locator": "page 1",
-     "score": -0.2401,
+     "source": "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
+     "locator": "page 12",
+     "score": -0.9581,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "auditing_cross_lingual_fairness_in_language_model_watermar.pdf",
-     "locator": "page 12",
-     "score": -0.9581,
+     "source": "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf",
+     "locator": "page 20",
+     "score": -1.8666,
      "relevant": false
     }
    ]

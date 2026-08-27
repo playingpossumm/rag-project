@@ -23,31 +23,31 @@
     },
     {
      "config": "dense + rerank",
-     "hit_rate": 0.791,
-     "mrr": 0.688,
-     "ndcg": 0.698,
-     "src_recall": 0.7
+     "hit_rate": 0.806,
+     "mrr": 0.666,
+     "ndcg": 0.688,
+     "src_recall": 0.688
     },
     {
      "config": "rrf + rerank",
      "hit_rate": 0.866,
-     "mrr": 0.741,
-     "ndcg": 0.754,
-     "src_recall": 0.724
+     "mrr": 0.743,
+     "ndcg": 0.758,
+     "src_recall": 0.721
     },
     {
      "config": "+ diversity 2/src",
      "hit_rate": 0.851,
-     "mrr": 0.738,
-     "ndcg": 0.754,
-     "src_recall": 0.76
+     "mrr": 0.739,
+     "ndcg": 0.755,
+     "src_recall": 0.761
     },
     {
      "config": "+ diversity 1/src",
-     "hit_rate": 0.776,
-     "mrr": 0.708,
-     "ndcg": 0.719,
-     "src_recall": 0.805
+     "hit_rate": 0.791,
+     "mrr": 0.715,
+     "ndcg": 0.727,
+     "src_recall": 0.795
     }
    ],
    "pool": [
@@ -55,36 +55,36 @@
      "config": "dense",
      "hit_rate": 0.866,
      "mrr": 0.588,
-     "ndcg": 0.64,
-     "src_recall": 0.834
+     "ndcg": 0.644,
+     "src_recall": 0.794
     },
     {
      "config": "rrf",
-     "hit_rate": 0.925,
-     "mrr": 0.696,
-     "ndcg": 0.717,
-     "src_recall": 0.812
+     "hit_rate": 0.91,
+     "mrr": 0.691,
+     "ndcg": 0.713,
+     "src_recall": 0.796
     },
     {
      "config": "weighted a=0.3",
-     "hit_rate": 0.94,
-     "mrr": 0.717,
+     "hit_rate": 0.925,
+     "mrr": 0.718,
      "ndcg": 0.733,
-     "src_recall": 0.813
+     "src_recall": 0.8
     },
     {
      "config": "weighted a=0.5",
-     "hit_rate": 0.94,
-     "mrr": 0.71,
-     "ndcg": 0.722,
-     "src_recall": 0.81
+     "hit_rate": 0.925,
+     "mrr": 0.689,
+     "ndcg": 0.72,
+     "src_recall": 0.794
     },
     {
      "config": "weighted a=0.7",
-     "hit_rate": 0.94,
-     "mrr": 0.656,
-     "ndcg": 0.692,
-     "src_recall": 0.82
+     "hit_rate": 0.925,
+     "mrr": 0.649,
+     "ndcg": 0.691,
+     "src_recall": 0.784
     }
    ],
    "dist": {
@@ -159,10 +159,10 @@
     ],
     "adversarial": [
      -9.517,
+     -5.23,
      -4.772,
      -4.602,
      -4.403,
-     -4.058,
      -1.932,
      -1.356,
      -0.742,
@@ -213,12 +213,12 @@
     {
      "t": -5.0,
      "refused": 0,
-     "caught": 1
+     "caught": 2
     },
     {
      "t": -4.5,
      "refused": 0,
-     "caught": 3
+     "caught": 4
     },
     {
      "t": -4.0,
@@ -731,30 +731,30 @@
     {
      "config": "dense + rerank",
      "hit_rate": 0.857,
-     "mrr": 0.68,
-     "ndcg": 0.692,
-     "src_recall": 0.744
+     "mrr": 0.681,
+     "ndcg": 0.689,
+     "src_recall": 0.745
     },
     {
      "config": "rrf + rerank",
      "hit_rate": 0.886,
-     "mrr": 0.714,
-     "ndcg": 0.731,
+     "mrr": 0.743,
+     "ndcg": 0.751,
      "src_recall": 0.726
     },
     {
      "config": "+ diversity 2/src",
      "hit_rate": 0.886,
-     "mrr": 0.714,
-     "ndcg": 0.749,
+     "mrr": 0.743,
+     "ndcg": 0.764,
      "src_recall": 0.741
     },
     {
      "config": "+ diversity 1/src",
-     "hit_rate": 0.886,
-     "mrr": 0.699,
-     "ndcg": 0.74,
-     "src_recall": 0.782
+     "hit_rate": 0.857,
+     "mrr": 0.729,
+     "ndcg": 0.741,
+     "src_recall": 0.789
     }
    ],
    "pool": [
@@ -762,43 +762,43 @@
      "config": "dense",
      "hit_rate": 0.914,
      "mrr": 0.434,
-     "ndcg": 0.52,
-     "src_recall": 0.812
+     "ndcg": 0.522,
+     "src_recall": 0.804
     },
     {
      "config": "rrf",
-     "hit_rate": 0.943,
-     "mrr": 0.516,
-     "ndcg": 0.606,
-     "src_recall": 0.814
+     "hit_rate": 0.914,
+     "mrr": 0.492,
+     "ndcg": 0.597,
+     "src_recall": 0.796
     },
     {
      "config": "weighted a=0.3",
-     "hit_rate": 0.943,
-     "mrr": 0.583,
-     "ndcg": 0.634,
-     "src_recall": 0.83
+     "hit_rate": 0.886,
+     "mrr": 0.585,
+     "ndcg": 0.625,
+     "src_recall": 0.796
     },
     {
      "config": "weighted a=0.5",
-     "hit_rate": 0.943,
-     "mrr": 0.492,
-     "ndcg": 0.596,
-     "src_recall": 0.824
+     "hit_rate": 0.886,
+     "mrr": 0.482,
+     "ndcg": 0.576,
+     "src_recall": 0.796
     },
     {
      "config": "weighted a=0.7",
-     "hit_rate": 0.971,
-     "mrr": 0.475,
-     "ndcg": 0.584,
-     "src_recall": 0.835
+     "hit_rate": 0.943,
+     "mrr": 0.483,
+     "ndcg": 0.58,
+     "src_recall": 0.8
     }
    ],
    "dist": {
     "answerable": [
      -8.61,
+     -8.047,
      -7.206,
-     -6.41,
      -3.434,
      -2.304,
      -1.63,
@@ -811,17 +811,17 @@
      1.045,
      1.104,
      1.19,
-     1.272,
+     1.244,
      1.705,
      2.344,
      2.718,
      2.814,
      2.914,
      3.828,
+     3.846,
      4.013,
      4.028,
      4.258,
-     4.312,
      4.536,
      4.556,
      4.83,
@@ -833,7 +833,7 @@
      7.247
     ],
     "adversarial": [
-     -11.146,
+     -11.228,
      -10.938,
      -6.908,
      -6.676,
@@ -846,22 +846,22 @@
    "sweep": [
     {
      "t": -8.0,
-     "refused": 1,
+     "refused": 2,
      "caught": 2
     },
     {
      "t": -7.5,
-     "refused": 1,
+     "refused": 2,
      "caught": 2
     },
     {
      "t": -7.0,
-     "refused": 2,
+     "refused": 3,
      "caught": 2
     },
     {
      "t": -6.5,
-     "refused": 2,
+     "refused": 3,
      "caught": 5
     },
     {
@@ -966,7 +966,7 @@
     },
     {
      "t": 4.0,
-     "refused": 22,
+     "refused": 23,
      "caught": 6
     }
    ],
@@ -1039,7 +1039,7 @@
   }
  ],
  "inputs": {
-  "corpora_json": "sha256:26c5ad8c1fbe9010",
+  "corpora_json": "sha256:fcef6cf062544aa2",
   "per_corpus": {
    "llm": {
     "golden": {
@@ -1048,11 +1048,11 @@
     },
     "per_case": {
      "path": "eval/per_case.json",
-     "digest": "sha256:5144d08619a50ebe"
+     "digest": "sha256:112fd124c4d190b8"
     },
     "results": {
      "path": "eval/results.json",
-     "digest": "sha256:b4706e1957270bfe"
+     "digest": "sha256:879d8a33c69d125d"
     }
    },
    "birds": {
@@ -1076,11 +1076,11 @@
     },
     "per_case": {
      "path": "eval/per_case-quant.json",
-     "digest": "sha256:43e82e0eb2d618b7"
+     "digest": "sha256:807f6693ef655829"
     },
     "results": {
      "path": "eval/results-quant.json",
-     "digest": "sha256:69ee4baa8b7f0cf3"
+     "digest": "sha256:9f5de04e3979295c"
     }
    }
   }

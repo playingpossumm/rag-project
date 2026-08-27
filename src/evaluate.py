@@ -173,7 +173,9 @@ def score_run(cases, retrieve_fn, k: int = 5) -> tuple[dict, list[dict]]:
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--k", type=int, default=TOP_K)
-    ap.add_argument("--candidate-k", type=int, default=CANDIDATE_K)
+    # None means "whatever this corpus ships", resolved once the corpus is
+    # known. The module constant would measure a pool the server does not use.
+    ap.add_argument("--candidate-k", type=int, default=None)
     # A corpus and its questions travel together, like the corpus and its
     # index. Scoring one corpus against another corpus's golden set produces
     # numbers that look fine and mean nothing.
@@ -217,12 +219,15 @@ def main():
     # still being read from the module constant here -- so a bird run recorded
     # `shipped_threshold: 0.0` while corpora.json ships -3.0 for that corpus,
     # and the paragraph printed under it reasoned about a gate nobody serves.
+    if args.candidate_k is None:
+        args.candidate_k = (corpus_cfg["candidate_k"] if corpus_cfg
+                            else CANDIDATE_K)
     shipped = (corpus_cfg["threshold"] if corpus_cfg and corpus_cfg["calibrated"]
                else ABSTAIN_THRESHOLD)
     if corpus_cfg:
         print(f"corpus {corpus_cfg['name']} ({corpus_cfg['label']}): threshold "
               f"{shipped:+.1f}, rerank blend {_rr.RERANK_BLEND}, "
-              f"index {corpus_cfg['store'].name}")
+              f"candidates {args.candidate_k}, index {corpus_cfg['store'].name}")
     else:
         print(f"{args.golden.name} is not in corpora.json -- module defaults: "
               f"threshold {shipped:+.1f}, rerank blend {_rr.RERANK_BLEND}")

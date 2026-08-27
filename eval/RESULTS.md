@@ -12,7 +12,7 @@
 <!-- generated:corpus -->
 **Corpus:** 36 documents -> 5,459 chunks (210 tokens, 40 overlap).
 **Golden set:** 67 answerable + 17 adversarial, labels *derived* from answer strings against the current corpus rather than hand-written.
-**Retrieved:** k=5 from 20 candidates.
+**Retrieved:** k=5 from 16 candidates.
 **Reproduce:** `python src/evaluate.py`
 <!-- /generated:corpus -->
 
@@ -22,11 +22,11 @@
 | pipeline | any-hit@5 | MRR | NDCG | src recall |
 |---|---|---|---|---|
 | dense, no rerank | 0.791 | 0.581 | 0.629 | 0.664 |
-| dense + rerank | 0.791 | 0.688 | 0.698 | 0.700 |
-| weighted + rerank | 0.866 | 0.737 | 0.753 | 0.724 |
-| rrf + rerank | 0.866 | 0.741 | 0.754 | 0.724 |
-| + diversity 2/src | 0.851 | 0.738 | 0.754 | 0.760 |
-| + diversity 1/src | 0.776 | 0.708 | 0.719 | 0.805 |
+| dense + rerank | 0.806 | 0.666 | 0.688 | 0.688 |
+| weighted + rerank | 0.866 | 0.743 | 0.756 | 0.706 |
+| rrf + rerank | 0.866 | 0.743 | 0.758 | 0.721 |
+| + diversity 2/src | 0.851 | 0.739 | 0.755 | 0.761 |
+| + diversity 1/src | 0.791 | 0.715 | 0.727 | 0.795 |
 <!-- /generated:end-to-end -->
 
 Each row adds one stage to the row above it. `+ diversity cap 2/src` is what
@@ -41,11 +41,11 @@ downstream can lift.
 <!-- generated:candidate-pool -->
 | first stage | any-hit@5 | MRR | src recall |
 |---|---|---|---|
-| dense | 0.866 | 0.588 | 0.834 |
-| rrf | 0.925 | 0.696 | 0.812 |
-| weighted a=0.3 | 0.940 | 0.717 | 0.813 |
-| weighted a=0.5 | 0.940 | 0.710 | 0.810 |
-| weighted a=0.7 | 0.940 | 0.656 | 0.820 |
+| dense | 0.866 | 0.588 | 0.794 |
+| rrf | 0.910 | 0.691 | 0.796 |
+| weighted a=0.3 | 0.925 | 0.718 | 0.800 |
+| weighted a=0.5 | 0.925 | 0.689 | 0.794 |
+| weighted a=0.7 | 0.925 | 0.649 | 0.784 |
 <!-- /generated:candidate-pool -->
 
 Fusion is what is judged here. Sparse-only is a reference point, not a candidate
@@ -59,9 +59,9 @@ plainly does:
 <!-- generated:diversity-cap -->
 | cap | any-hit | src recall | trade vs no cap |
 |---|---|---|---|
-| none | 0.866 | 0.724 | — |
-| 2/src | 0.851 | 0.760 | +3.6 src recall for -1.5 any-hit |
-| 1/src | 0.776 | 0.805 | +8.1 src recall for -9.0 any-hit |
+| none | 0.866 | 0.721 | — |
+| 2/src | 0.851 | 0.761 | +4.0 src recall for -1.5 any-hit |
+| 1/src | 0.791 | 0.795 | +7.4 src recall for -7.5 any-hit |
 <!-- /generated:diversity-cap -->
 
 When a question is answered by only one document, capping that document pushes a
@@ -430,9 +430,9 @@ now.
 <!-- generated:expansion -->
 | expansion | context recall | tokens/query | blocks/query |
 |---|---|---|---|
-| none (chunks) | 0.746 | 998 | 5.000 |
-| window +/-1 | 0.806 | 2,355 | 5.000 |
-| page | 0.851 | 4,752 | 4.500 |
+| none (chunks) | 0.761 | 990 | 5.000 |
+| window +/-1 | 0.821 | 2,340 | 5.000 |
+| page | 0.851 | 4,660 | 4.400 |
 <!-- /generated:expansion -->
 
 | mode | context recall | tokens/query | recall per 1k tokens |
@@ -454,7 +454,7 @@ default; page remains right where a citation must point at a complete unit.
 | -10 | 0 / 17 | 0 / 67 |
 | -8 | 1 / 17 | 0 / 67 |
 | -6 | 1 / 17 | 0 / 67 |
-| -5 | 1 / 17 | 0 / 67 |
+| -5 | 2 / 17 | 0 / 67 |
 | -4 | 5 / 17 | 0 / 67 |
 | -3 | 5 / 17 | 1 / 67 |
 | -2 | 5 / 17 | 1 / 67 |

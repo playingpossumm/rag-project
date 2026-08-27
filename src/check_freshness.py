@@ -220,6 +220,11 @@ def check_per_case(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Pat
         rep.stale(name, "per_case",
                   f"scored at threshold {pc['threshold']:+.1f}; corpora.json "
                   f"ships {want_thr:+.1f} for this corpus", fix)
+    got_cand = pc.get("options", {}).get("candidate_k")
+    if got_cand is not None and got_cand != cfg.get("candidate_k", got_cand):
+        rep.stale(name, "per_case",
+                  f"scored over {got_cand} candidates; corpora.json ships "
+                  f"{cfg.get('candidate_k')} for this corpus", fix)
     got_blend = pc.get("options", {}).get("rerank_blend")
     if got_blend is not None and abs(got_blend - cfg["rerank_blend"]) > 1e-9:
         rep.stale(name, "per_case",
@@ -304,6 +309,11 @@ def check_results(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Path
         rep.stale(name, "results",
                   f"records a shipped threshold of {got_thr:+.1f}; corpora.json "
                   f"ships {want_thr:+.1f}", fix)
+    got_cand = c.get("candidate_k")
+    if got_cand is not None and got_cand != cfg.get("candidate_k", got_cand):
+        rep.stale(name, "results",
+                  f"measured over {got_cand} candidates; corpora.json ships "
+                  f"{cfg.get('candidate_k')}", fix)
     got_blend = c.get("rerank_blend")
     if got_blend is not None and abs(got_blend - cfg["rerank_blend"]) > 1e-9:
         rep.stale(name, "results",

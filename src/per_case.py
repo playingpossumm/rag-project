@@ -85,7 +85,10 @@ def outcome(case: dict, results: list[dict], gold: set, confident: bool) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--k", type=int, default=TOP_K)
-    ap.add_argument("--candidate-k", type=int, default=CANDIDATE_K)
+    # None means "whatever this corpus ships", resolved below. Defaulting to
+    # the module constant would measure 20 for corpora that serve 16, which is
+    # the trap this file already fell into for the threshold and the blend.
+    ap.add_argument("--candidate-k", type=int, default=None)
     # A corpus and its questions travel together, like the corpus and its
     # index. Scoring one corpus against another corpus's golden set produces
     # numbers that look fine and mean nothing.
@@ -117,13 +120,18 @@ def main() -> int:
     if cfg:
         threshold = cfg["threshold"] if cfg["calibrated"] else 0.0
         blend = cfg["rerank_blend"]
+        if args.candidate_k is None:
+            args.candidate_k = cfg["candidate_k"]
         store = cfg["store"]
         _rerank.RERANK_BLEND = blend
         print(f"corpus {cfg['name']} ({cfg['label']}): threshold {threshold:+.1f}, "
-              f"rerank blend {blend:.2f}, index {store.name}")
+              f"rerank blend {blend:.2f}, candidates {args.candidate_k}, "
+              f"index {store.name}")
     else:
         print(f"{args.golden.name} is not in corpora.json -- using the module "
               f"defaults: threshold {threshold:+.1f}, rerank blend {blend:.2f}")
+    if args.candidate_k is None:
+        args.candidate_k = CANDIDATE_K
 
     opts = dict(use_reranker=not args.no_rerank, fusion=args.fusion,
                 max_per_source=args.max_per_source or None)
