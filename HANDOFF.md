@@ -622,8 +622,12 @@ retrieved passage verbatim.
    the index with `RAG_DATA_DIR`, so indexing a second corpus no longer overwrites
    the first one's store.
 
-   **Still open:** the OCR path has never seen a scanned document, and neither
-   new corpus has a golden set, so neither is measurable yet.
+   **Closed since, and this paragraph was stale until 2026-08-27.** The OCR path
+   has seen a scanned document since 2026-08-23: `src/test_ocr.py` builds one by
+   rendering a page to an image and putting it on a fresh page, then asserts the
+   text is unextractable before OCR and recovered after -- 8 checks, including
+   that a page with no text yields no invented text. Both new corpora have
+   golden sets and are measured: 26 + 6 bird cases, 35 + 6 quant.
 2. **Two structural failure modes, ~10% and ~6%.** Measured on all three
    corpora 2026-08-27, six configurations each: 7 of 67 ML cases (10.4%), 3 of
    26 bird cases (11.5%) and 2 of 35 quant cases (5.7%) fail under *every*
