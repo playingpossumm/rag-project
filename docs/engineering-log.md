@@ -1059,6 +1059,52 @@ is **run the thing**.
 
 ---
 
+## 2026-08-27 — Checking my own claim, which was too broad
+
+Last entry ended with "every module in `src/` that can be executed without
+credit has something executing it". §4 now says to check rather than assert, so
+the claim got the treatment it asks for: an import graph from the ten test files,
+transitively closed, against every module in `src/`.
+
+**22 modules reachable. 32 never imported by any test.**
+
+Most of the 32 are one-off scripts run by hand and recently — the sweeps,
+`profile_query`, `fetch_topic`, `retitle`. "Nothing runs them" is false for
+those; they are run, just not automatically. But the list also held **`serve.py`,
+the largest module in the project**, and the claim was wrong.
+
+What exercised `serve.py` was `smoke_routes.py`, which needs a running server and
+is deliberately not in the counted suite. So everything between a request
+arriving and retrieval starting had no automated coverage at all.
+
+`src/test_serve.py` covers the three parts that have actually gone wrong, without
+starting a server:
+
+- **`_text()`** — the wrong-typed-field validation added earlier today. Until now
+  only the live smoke test proved it, which meant it was proved only when
+  somebody remembered to run a server. Reverting the fix now kills the suite with
+  the same `AttributeError: 'dict' object has no attribute 'strip'` that dropped
+  the connection.
+- **`examples_for()`** — the questions the front page offers, which is the end of
+  the chain that went stale and spent four days suggesting questions deleted from
+  the golden set. Covered: a known corpus gets its own, and an unknown corpus, an
+  empty list, a corrupt `analytics.json` and a missing one all fall back rather
+  than raising or offering nothing.
+- **`inspect_folder()`** — indexing REPLACES the vector store, so a pasted path
+  that quietly resolves to an empty directory would destroy a working index and
+  report success. Covered: empty string, missing path, a file rather than a
+  folder, a folder with nothing indexable, and a Windows "copy as path" string
+  with the quotes still on it.
+
+25 checks. Importing `serve` costs about 25 seconds because it pulls the
+embedding stack in at module level; it starts no server and loads no index.
+
+**Still not covered, and stated rather than implied:** `build_analytics.examples()`
+picks *which* questions reach the front page by a quota per case kind, and no
+test asserts that quota. It is the same chain, one step up.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

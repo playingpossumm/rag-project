@@ -769,9 +769,9 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **258 checks** — 22 metrics, 28 loaders, 80
+Test counts, as of 2026-08-27: **283 checks** — 22 metrics, 28 loaders, 80
 trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
-9 ingest cache, 19 generate, plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
+9 ingest cache, 19 generate, 25 serve, plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 Three checks now guard the things that have gone wrong silently before, and
 all three exit non-zero rather than printing a warning nobody reads:
@@ -847,6 +847,7 @@ disclaim current work.
 | `src/smoke_routes.py` | asks every dispatched route, against a running server |
 | `src/test_ingest_cache.py` | indexing one corpus must not evict another's caches |
 | `src/test_generate.py` | everything `generate.py` does short of the HTTP request |
+| `src/test_serve.py` | request handling, the offered questions, and the folder intake |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
 | `src/check_golden.py` | does each golden set still describe the corpus it scores? |

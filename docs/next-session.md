@@ -15,11 +15,11 @@ STATE: three corpora, all measured, all green.
   ML papers    36 docs  5,459 passages   any-hit 0.851
   Ornithology  45 docs    864 passages   any-hit 0.846
   Quant        35 docs  6,184 passages   any-hit 0.886
-  258 checks passing: 22 metrics, 28 loaders, 80 trace, 8 OCR, 32 freshness,
+  283 checks passing: 22 metrics, 28 loaders, 80 trace, 8 OCR, 32 freshness,
   10 reranker cache, 17 golden audit, 13 api, 9 ingest cache, 19 generate,
-  20 answer-highlight (node).
+  25 serve, 20 answer-highlight (node).
 SMOKE IT:  python src/smoke_routes.py     (needs a running server; not in the
-                                           258, and the only thing that asks
+                                           283, and the only thing that asks
                                            every route whether it answers)
 CHECK IT:  python src/check_freshness.py  (the generated chain)
            python src/check_golden.py     (labels still describe the corpus)
