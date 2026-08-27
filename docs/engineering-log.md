@@ -1195,11 +1195,21 @@ without re-indexing -- each embeds the corpus in memory once.
 |---|---|---|
 | all-MiniLM-L6-v2 *(shipped)* | **0.914** | 1/2 |
 | multi-qa-MiniLM-L6-cos-v1 | 0.857 | 1/2 |
+| bge-small-en-v1.5 | 0.886 | 0/2 |
 
 **Nothing dominates, and the aggregate hides the interesting part.** On birds
 `multi-qa` ties the shipped model at 0.962 while finding a *different* set:
 it **wins `bird-alula`** and loses `bird-precocial`. On quant it is worse
 outright. The fourth setting in a row that does not transfer.
+
+On quant the pattern repeats with different names: `bge-small` scores below the
+shipped model overall and still **wins `qf-cvar-interval`**, losing
+`qf-momentum` and `qf-sparse-params`. Three models, two corpora, and in every
+pairing each finds something the others cannot.
+
+One detail worth keeping: `qf-momentum` is structural and the shipped embedder
+DOES put it in the pool. The pipeline loses it after retrieval, which makes it a
+reranker failure wearing a retrieval failure's label.
 
 **But `bird-alula` is one of the twelve.** It was called structural because no
 fusion, rerank or cap change reached it -- and a different first stage reaches
