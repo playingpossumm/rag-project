@@ -15,8 +15,8 @@ STATE: three corpora, all measured, all green.
   ML papers    36 docs  5,459 passages   any-hit 0.851
   Ornithology  45 docs    864 passages   any-hit 0.846
   Quant        35 docs  6,184 passages   any-hit 0.886
-  217 checks passing: 22 metrics, 28 loaders, 80 trace, 8 OCR, 32 freshness,
-  10 reranker cache, 17 golden audit, 20 answer-highlight (node).
+  230 checks passing: 22 metrics, 28 loaders, 80 trace, 8 OCR, 32 freshness,
+  10 reranker cache, 17 golden audit, 13 api, 20 answer-highlight (node).
 CHECK IT:  python src/check_freshness.py  (the generated chain)
            python src/check_golden.py     (labels still describe the corpus)
            python src/check_docs.py       (documents still match the numbers)
