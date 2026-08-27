@@ -375,6 +375,96 @@ def as_count(token: str):
     return WORDS.get(token)
 
 
+def served_routes() -> set[str]:
+    """Every route serve.py dispatches on, read from its syntax tree.
+
+    The dispatch is a chain of `route == "..."`, `route in (...)` and
+    `route.startswith("...")`. A regex over that picks up whichever quoted
+    strings sit nearby; the tree says which ones are actually compared against
+    the request path.
+    """
+    import ast
+
+    tree = ast.parse((ROOT / "src" / "serve.py").read_text(encoding="utf-8"))
+    found: set[str] = set()
+
+    def literals(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return [node.value]
+        if isinstance(node, (ast.Tuple, ast.List, ast.Set)):
+            out = []
+            for elt in node.elts:
+                out += literals(elt)
+            return out
+        return []
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Compare) and isinstance(node.left, ast.Name) \
+                and node.left.id == "route":
+            for comp in node.comparators:
+                found.update(literals(comp))
+        # `route.startswith("/fonts/")` -- a prefix route, recorded with its
+        # wildcard so it reads the way the document writes it.
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) \
+                and node.func.attr == "startswith" \
+                and isinstance(node.func.value, ast.Name) \
+                and node.func.value.id == "route":
+            for arg in node.args:
+                found.update(v.rstrip("/") + "/*" for v in literals(arg))
+
+    # serve.py rstrips the trailing slash before dispatching, so the app route
+    # is compared against the empty string. It is "/" everywhere a person
+    # writes it down.
+    if "" in found:
+        found = (found - {""}) | {"/"}
+    return {r for r in found if r.startswith("/")}
+
+
+def check_routes(problems: list[str], notes: list[str]) -> bool:
+    """HANDOFF §6's route list against the dispatch itself.
+
+    Both directions matter, and the second is the one that bit. A documented
+    route that does not exist is a broken promise a reader finds immediately. A
+    route that exists and is documented nowhere is a surface nobody thinks to
+    test -- which is how `POST /ask` served the wrong corpus for its whole life
+    while the interface, which calls `/api/chat`, looked correct.
+    """
+    doc = (ROOT / "HANDOFF.md").read_text(encoding="utf-8")
+    m = re.search(r"- Routes:(.*?)\n- ", doc, re.S)
+    if not m:
+        problems.append("HANDOFF.md §6: the route list is gone -- this checker "
+                        "looks for a line starting '- Routes:'")
+        return False
+
+    documented = {r.rstrip("`.,·") for r in re.findall(r"`(/[^`]*)`", m.group(1))}
+    # The architecture sketch in §3 names the two POST routes as well, and a
+    # route documented in either place is documented.
+    documented |= {r.rstrip("`.,·") for r in re.findall(r"(?:POST|GET\|POST) (/\S+)", doc)}
+    served = served_routes()
+
+    # A documented wildcard covers everything under it: "/api/index/*" is how
+    # the architecture sketch writes the three index routes, and expanding it
+    # into three lines would make the document worse to read. It only ever
+    # EXCUSES an undocumented route -- it must not remove a served one, or the
+    # explicitly documented members start reporting as missing.
+    prefixes = tuple(r[:-1] for r in documented if r.endswith("/*"))
+    covered = {r for r in served if prefixes and r.startswith(prefixes)}
+
+    for route in sorted(served - documented - covered):
+        problems.append(f"HANDOFF.md §6: serve.py serves {route} and no "
+                        f"document lists it -- an undocumented route is one "
+                        f"nobody thinks to test")
+    for route in sorted(documented - served):
+        if route.endswith("/*"):
+            continue          # a prefix route; its members were folded in above
+        if route.rstrip("/*") in {r.rstrip("/*") for r in served}:
+            continue
+        problems.append(f"HANDOFF.md §6 lists {route}, which serve.py does not "
+                        f"dispatch on")
+    notes.append(f"  §6 routes ({len(served)} served, {len(documented)} documented)")
+    return True
+
+
 def check_notes(measured: dict, problems: list[str], notes: list[str]) -> bool:
     """corpora.json's per-corpus notes carry measured claims in prose.
 
@@ -514,6 +604,7 @@ def main() -> int:
     ok = check_readme(measured, problems, notes) and ok
     ok = check_defaults(problems, notes) and ok
     ok = check_notes(measured, problems, notes) and ok
+    ok = check_routes(problems, notes) and ok
 
     if not args.quiet and notes:
         print("checked:")
