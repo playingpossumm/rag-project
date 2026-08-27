@@ -773,7 +773,7 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **300 checks** — 22 metrics, 28 loaders, 80
+Test counts, as of 2026-08-27: **300 checks + the route suite** — 22 metrics, 28 loaders, 80
 trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
 9 ingest cache, 19 generate, 25 serve, 16 analytics, plus 20 answer-highlight
 checks under `node ui/test-answer-mark.mjs`.
@@ -850,6 +850,7 @@ disclaim current work.
 | `src/test_trace.py` | asserts the trace and the serving path agree under every option |
 | `src/test_api.py` | asserts `ask()` answers from the corpus it was handed, not a cached one |
 | `src/smoke_routes.py` | asks every dispatched route, against a running server |
+| `src/test_routes.py` | the same checks, against a server it starts itself |
 | `src/test_ingest_cache.py` | indexing one corpus must not evict another's caches |
 | `src/test_generate.py` | everything `generate.py` does short of the HTTP request |
 | `src/test_serve.py` | request handling, the offered questions, and the folder intake |

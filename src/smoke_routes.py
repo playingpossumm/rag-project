@@ -40,7 +40,10 @@ POST_BODIES = {
     "/api/chat": {"question": "What is attention?"},
     "/api/trace": {"question": "What is attention?"},
     "/api/corpus/select": None,          # filled in below with the active corpus
-    "/api/index/inspect": {"path": "data"},   # a folder that really holds documents
+    # Absolute, resolved from this file rather than the working directory: run
+    # from src/ a relative "data" is src/data, and the route correctly answers
+    # "no such folder" to a probe that is simply wrong.
+    "/api/index/inspect": {"path": str(Path(__file__).parent.parent / "data")},
     "/api/index/start": "SKIP",          # replaces the vector store; never smoke-tested
 }
 
@@ -69,18 +72,14 @@ def request(base: str, route: str, body=None, timeout=180):
         return None, f"{type(exc).__name__}: {exc}", b""
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--base", default="http://127.0.0.1:8000")
-    args = ap.parse_args()
+def smoke(base: str) -> list[tuple[str, str]]:
+    """Ask every dispatched route and return what did not answer cleanly.
 
-    status, _, _ = request(args.base, "/health", timeout=5)
-    if status is None:
-        print(f"no server at {args.base} -- start one with "
-              f".venv\\Scripts\\python.exe src\\serve.py")
-        return 2
-
+    Returns rather than exits, so `src/test_routes.py` can start a server on an
+    ephemeral port and call this directly. The CLI below keeps its own exit
+    codes; the checking lives here once.
+    """
+    args = argparse.Namespace(base=base)
     # The active corpus, so /api/corpus/select is asked for something real
     # rather than for a name that would correctly 400.
     _, _, body = request(args.base, "/api/corpus")
@@ -168,6 +167,23 @@ def main() -> int:
             failures.append((route, f"a {field} of the wrong type gave {status}, "
                                     f"not 400"))
 
+    return failures
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--base", default="http://127.0.0.1:8000")
+    cli = ap.parse_args()
+
+    status, _, _ = request(cli.base, "/health", timeout=5)
+    if status is None:
+        print(f"no server at {cli.base} -- start one with "
+              f".venv\\Scripts\\python.exe src\\serve.py, or run "
+              f"src\\test_routes.py which starts its own")
+        return 2
+
+    failures = smoke(cli.base)
     print()
     if failures:
         print(f"{len(failures)} route(s) did not answer cleanly:")
