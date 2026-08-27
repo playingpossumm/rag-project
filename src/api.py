@@ -171,9 +171,12 @@ def ask(
         # the optional branch, it could only fail on a path that has never run
         # for want of API credit -- so the code was wrong for as long as it was
         # unexercised, and looked fine.
-        from generate import synthesize
+        from generate import synthesize_with_backend
 
-        result.answer = synthesize(question, results)
+        # Whichever backend RAG_GENERATOR names. The default is unchanged;
+        # setting it to "ollama" runs the same contract against a local model,
+        # which is how this path can execute at all without API credit.
+        result.answer = synthesize_with_backend(question, results)
         result.mode = "generated"
 
     return result
