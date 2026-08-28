@@ -79,20 +79,42 @@ def synthesize(question: str, chunks: list[dict]) -> str:
     if not chunks:
         raise ValueError("synthesize() needs at least one passage")
 
+    # The user message opens "Excerpts:" rather than "Context:", and the
+    # difference is not cosmetic. Measured 2026-08-28 on llama3.2 at
+    # temperature 0, same passages, same system prompt, one word changed:
+    #
+    #   "Context:"   ->  "[36, page 1]"
+    #   "Excerpts:"  ->  "According to the text, the label smoothing value
+    #                     used during training is (epsilon)ls = 0.1 [36]."
+    #
+    # Reproducible in both directions on demand. A 3B model appears to read
+    # "Context" as the name of a block to be cited and "Excerpts" as material
+    # to be read, and collapses to emitting a citation and nothing else. The
+    # Anthropic path keeps its own wording and is unaffected: this brittleness
+    # belongs to small local models, and so does the workaround.
+
     payload = {
         "model": MODEL,
         "stream": False,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user",
-             "content": f"Context:\n\n{build_context(chunks)}\n\n"
+             "content": f"Excerpts:\n\n{build_context(chunks)}\n\n"
                         f"Question: {question}"},
         ],
         # Deterministic, because this path is measured. A sampled answer would
         # make two runs of the same question disagree for reasons that have
         # nothing to do with retrieval, which is the one thing this project
         # measures carefully.
-        "options": {"temperature": 0.0},
+        "options": {
+            "temperature": 0.0,
+            # Ollama defaults to a 4096-token window and TRUNCATES silently
+            # past it. Five passages plus the citation instruction can exceed
+            # that, and a truncated prompt looks exactly like a model ignoring
+            # its context -- which is what the first real run of this path
+            # produced: an answer consisting of "[36, page 1]" and nothing else.
+            "num_ctx": int(os.environ.get("RAG_OLLAMA_NUM_CTX", "8192")),
+        },
     }
 
     request = urllib.request.Request(
@@ -124,6 +146,20 @@ def synthesize(question: str, chunks: list[dict]) -> str:
     return text
 
 
+def as_chunks(passages) -> list[dict]:
+    """`ask()`'s public passages as the dicts `synthesize` reads.
+
+    `ask` returns `Passage` dataclasses to its callers and passes raw retrieval
+    dicts to the generator internally, so the two shapes are not
+    interchangeable -- `synthesize` calls `.get("locator")` and a dataclass has
+    no `.get`. The first version of this function did not exist and this CLI
+    wrote `result["passages"]`, which fails twice over: `Answer` is not
+    subscriptable either.
+    """
+    return [{"source": p.source, "locator": p.locator, "text": p.text}
+            for p in passages]
+
+
 def main():
     """Ask the local model one question over the shipped corpus."""
     import sys
@@ -141,7 +177,7 @@ def main():
 
     result = ask(question, k=5)
     print(f"\n{question}\n")
-    print(synthesize(question, result["passages"]))
+    print(synthesize(question, as_chunks(result.passages)))
     return 0
 
 

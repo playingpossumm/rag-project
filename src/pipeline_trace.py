@@ -73,6 +73,7 @@ def trace_pipeline(
     threshold: float | None = None,
     # How much of the first stage's ordering survives reranking, per corpus.
     rerank_blend: float | None = None,
+    ensemble=None,
 ) -> dict:
     """Run retrieval, recording every intermediate ranking.
 
@@ -120,6 +121,17 @@ def trace_pipeline(
     # ---- stage 1 & 2: the two retrievers, run independently ----------------
     dense = search(query, index, metadata, model, k=pool_k)
 
+    # The optional second dense retriever, run here because the serving path
+    # runs it. src/test_trace.py asserts the two agree under every option
+    # combination, so an arm added to one and not the other is a test failure
+    # rather than a silent divergence -- which is the entire reason that test
+    # exists.
+    second = []
+    if ensemble is not None and fusion != "none":
+        from retrieve import search_ensemble
+
+        second = search_ensemble(query, ensemble, metadata, k=pool_k)
+
     # fusion="none" is dense-only, so BM25 genuinely does not run. Building it
     # anyway to report a ranking nothing consumed would make the trace show work
     # the pipeline did not do.
@@ -132,6 +144,7 @@ def trace_pipeline(
 
     dense_rank = {c["chunk_id"]: i for i, c in enumerate(dense, 1)}
     sparse_rank = {c["chunk_id"]: i for i, c in enumerate(sparse, 1)}
+    second_rank = {c["chunk_id"]: i for i, c in enumerate(second, 1)}
 
     stages.append(Stage(
         "dense", "Dense retrieval",
@@ -143,6 +156,20 @@ def trace_pipeline(
          for i, c in enumerate(dense, 1)],
         note=f"all-MiniLM-L6-v2, {index.ntotal} chunks searched",
     ))
+
+    if second:
+        stages.append(Stage(
+            "dense2", "Second dense retrieval",
+            "A different embedding model over the same chunks. It is here "
+            "because two embedders that score the same on average disagree "
+            "case by case -- measured on this corpus, one finds passages the "
+            "other misses and the reverse -- so fusing them recovers questions "
+            "neither reaches alone.",
+            [{**_identity(c), "rank": i, "score": round(c["score"], 4),
+              "also_found_by": dense_rank.get(c["chunk_id"])}
+             for i, c in enumerate(second, 1)],
+            note=f"{ensemble[1]}, {len(second)} candidates",
+        ))
 
     query_terms = tokenize(query)
     stages.append(Stage(
@@ -178,7 +205,13 @@ def trace_pipeline(
         # RRF, and dense-only: dense-only is RRF over one list, which preserves
         # dense's order exactly, so the same arithmetic covers both and the
         # stage stays comparable across runs instead of switching score scale.
-        for results, which in ((dense, "dense"), (sparse, "sparse")):
+        arms = [(dense, "dense"), (sparse, "sparse")]
+        if second:
+            # Joins the same fusion rather than pre-fusing with dense: pre-fusing
+            # would let the two dense arms vote twice against BM25's once, which
+            # is a weighting decision made by accident of nesting.
+            arms.insert(1, (second, "dense2"))
+        for results, which in arms:
             for rank, r in enumerate(results, start=1):
                 entry = fused.setdefault(r["chunk_id"], {**r, "fusion_score": 0.0,
                                                         "contrib": {}})
@@ -189,7 +222,8 @@ def trace_pipeline(
                         reverse=True)[:pool_k]
     pool = {c["chunk_id"]: c for c in fused_list}
 
-    both = sum(1 for c in fused_list if len(c["contrib"]) == 2)
+    arm_count = 3 if second else 2
+    both = sum(1 for c in fused_list if len(c["contrib"]) == arm_count)
     stages.append(Stage(
         "fused", {"none": "Fusion (off -- dense only)",
                   "rrf": "Reciprocal rank fusion",

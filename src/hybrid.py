@@ -57,23 +57,37 @@ def bm25_search(query: str, bm25: BM25Okapi, metadata: list[dict], k: int,
     ]
 
 
-def fuse_rrf(dense: list[dict], sparse: list[dict], k: int, rrf_k: int = RRF_K) -> list[dict]:
-    """Reciprocal rank fusion: score each doc by 1/(rrf_k + rank) per retriever.
+def fuse_rrf_many(lists: list[list[dict]], k: int,
+                  rrf_k: int = RRF_K) -> list[dict]:
+    """Reciprocal rank fusion over any number of retrievers.
 
     Uses only *rank*, never the raw score, which is what makes it scale-free --
     cosine similarities and BM25 scores live on incomparable scales, so any
     method that adds them needs per-query normalization and inherits that
     normalization's failure modes. RRF sidesteps the problem entirely and has no
     weight to tune.
+
+    Generalised to N lists on 2026-08-27 for the second dense retriever. Note
+    what adding an arm does to the arithmetic: a passage found by two of three
+    retrievers now scores below one found by all three, where before "found by
+    both" was the ceiling. That is the intended behaviour and it is also why
+    adding an arm is not free -- `sweep_ensemble.py` measured a case on the ML
+    corpus where fusing a better model with a worse one landed between them.
     """
     fused: dict[int, dict] = {}
-    for results in (dense, sparse):
+    for results in lists:
         for rank, r in enumerate(results, start=1):
             entry = fused.setdefault(r["chunk_id"], {**r, "fusion_score": 0.0})
             entry["fusion_score"] += 1.0 / (rrf_k + rank)
 
     out = sorted(fused.values(), key=lambda c: c["fusion_score"], reverse=True)
     return out[:k]
+
+
+def fuse_rrf(dense: list[dict], sparse: list[dict], k: int,
+             rrf_k: int = RRF_K) -> list[dict]:
+    """Two-retriever RRF. Kept as the name every caller already uses."""
+    return fuse_rrf_many([dense, sparse], k, rrf_k)
 
 
 def _minmax(values: list[float]) -> list[float]:

@@ -45,7 +45,7 @@ from evaluate import (GOLDEN_SET, context_recall, gold_keys, gold_sources, hit_r
                       source_recall)
 from hybrid import build_bm25
 from retrieve import (CANDIDATE_K, DEFAULT_FUSION, EMBEDDING_MODEL, TOP_K,
-                      load_index, retrieve)
+                      load_ensemble, load_index, retrieve)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -95,6 +95,9 @@ def main() -> int:
     ap.add_argument("--golden", type=Path, default=GOLDEN_SET,
                     help="golden set to score against")
     ap.add_argument("--no-rerank", action="store_true")
+    ap.add_argument("--no-ensemble", action="store_true",
+                    help="ignore this corpus's second dense index, to measure "
+                         "what it is worth")
     ap.add_argument("--fusion", default=DEFAULT_FUSION,
                     choices=["none", "rrf", "weighted"])
     ap.add_argument("--max-per-source", type=int, default=2,
@@ -141,6 +144,13 @@ def main() -> int:
     # can no longer be scored against another corpus's index by forgetting an
     # environment variable.
     index, metadata = load_index(store)
+    # The second dense retriever, if this corpus has one. Measured here because
+    # the server runs it: a harness that skipped it would report a pipeline
+    # nobody serves, which is the trap the threshold and the blend both fell
+    # into before they were resolved per corpus.
+    ensemble = None if args.no_ensemble else load_ensemble(store)
+    if ensemble:
+        print(f"second dense retriever: {ensemble[1]}")
     model = SentenceTransformer(EMBEDDING_MODEL)
     bm25 = build_bm25(metadata)
 
@@ -150,7 +160,8 @@ def main() -> int:
     rows = []
     for case in answerable + adversarial:
         results = retrieve(case["question"], index, metadata, model, k=args.k,
-                           candidate_k=args.candidate_k, bm25=bm25, **opts)
+                           candidate_k=args.candidate_k, bm25=bm25,
+                           ensemble=ensemble, **opts)
         gold = gold_keys(case)
         sources = gold_sources(case)
 
@@ -210,7 +221,8 @@ def main() -> int:
     payload = {
         "generated_by": "src/per_case.py",
         "options": {"k": args.k, "candidate_k": args.candidate_k,
-                    "rerank_blend": blend, **opts},
+                    "rerank_blend": blend,
+                    "ensemble": ensemble[1] if ensemble else None, **opts},
         "threshold": threshold,
         "corpus": {"name": cfg["name"] if cfg else None,
                    "chunks": len(metadata),
