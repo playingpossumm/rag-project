@@ -20,3 +20,18 @@ data-birds/
 # corpora above -- keeping it here would put in git exactly what those lines
 # keep out. ui/test-answer-mark.mjs skips its sweep when this is absent.
 eval/top-passages.json
+
+# Third-party source documents and everything derived from them. Removed from
+# git history on 2026-08-28, before this repository was made public: 36 arXiv
+# PDFs and two vector stores holding the same text again, verbatim, in
+# metadata.json. Publishing them would redistribute other people's papers, and
+# a file in the history of a public repo is published whether or not it is in
+# HEAD.
+#
+# All of it is rebuildable and the README says how:
+#   python src/fetch_corpus.py                      -> data/
+#   python src/fetch_topic.py --topic birds ...     -> data-birds/
+#   python src/ingest.py                            -> the store
+data/
+store-birds/
+store-quant/
