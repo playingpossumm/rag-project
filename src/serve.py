@@ -38,7 +38,6 @@ HOST, PORT = "127.0.0.1", 8000
 MAX_BODY = 64 * 1024  # a question is small; refuse anything that clearly is not
 ROOT = Path(__file__).parent.parent
 UI_FILE = Path(__file__).parent.parent / "ui" / "index.html"
-ARCH_FILE = Path(__file__).parent.parent / "docs" / "architecture.html"
 EVAL_DIR = Path(__file__).parent.parent / "eval"
 EVAL_FILE = EVAL_DIR / "results.json"
 
@@ -592,17 +591,6 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, about.read_bytes(), "text/html; charset=utf-8")
 
-        elif route == "/~/architecture":
-            # A committed artifact, served rather than generated: it is built by
-            # `npm run architecture:build` and opens straight from docs/ with no
-            # server at all. The route exists so it is reachable from the running
-            # tool as well.
-            if not ARCH_FILE.exists():
-                self._send(404, {"error": "docs/architecture.html is missing -- "
-                                          "run npm run architecture:build"})
-                return
-            self._raw(200, ARCH_FILE.read_bytes(), "text/html; charset=utf-8")
-
         elif route in ("/pipeline-map.js", "/answer-mark.js"):
             # answer-mark.js holds the logic that decides which words of a
             # passage are set bold. It lived inline in index.html, where nothing
@@ -887,7 +875,6 @@ def main():
     print(f"Ready on http://{host}:{port}")
     print(f"  inspector  http://{host}:{port}/")
     print(f"  quality    http://{host}:{port}/quality   (retrieval quality dashboard)")
-    print(f"  map        http://{host}:{port}/~/architecture")
     print(f"  api        POST /ask, POST /api/trace")
     print(f"  corpus     {stats['chunks']} chunks from {stats['documents']} documents")
 

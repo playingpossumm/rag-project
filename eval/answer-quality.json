@@ -1,0 +1,123 @@
+{
+ "generated_by": "src/evaluate_answers.py",
+ "note": "No LLM judge. Citations and correctness are objective; groundedness is a lexical proxy and not a verdict.",
+ "corpora": {
+  "birds": {
+   "label": "Ornithology",
+   "model": "llama3.2",
+   "summary": {
+    "n": 9,
+    "invented_citations": 0,
+    "answers_with_invented": 0,
+    "correct": 3,
+    "n_answerable": 6,
+    "refused_wrongly": 0,
+    "refused_rightly": 2,
+    "n_adversarial": 3,
+    "grounded_mean": 0.602,
+    "seconds": 501.6
+   },
+   "cases": [
+    {
+     "id": "bird-syrinx",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.684,
+     "refused": false,
+     "correct": true,
+     "chars": 212,
+     "answer": "The organ that birds use to produce song is called the syrinx, which is a bony structure located at the base of the trachea. [bird_vocalization.pdf, page 2; bird_vocalization.docx, section Anatomy and physiology]"
+    },
+    {
+     "id": "bird-keel",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.818,
+     "refused": false,
+     "correct": false,
+     "chars": 104,
+     "answer": "The keel on their breastbone anchors the muscles needed for wing movement. [flightless_bird.pdf, page 2]"
+    },
+    {
+     "id": "bird-barbules",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.444,
+     "refused": false,
+     "correct": false,
+     "chars": 105,
+     "answer": "The interlocking structures that hold the vane of a feather together are barbicels. [feather.pdf, page 2]"
+    },
+    {
+     "id": "bird-down",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.769,
+     "refused": false,
+     "correct": true,
+     "chars": 298,
+     "answer": "According to [feather.pdf, page 2], down feathers provide insulation rather than flight surface. This is stated in the sentence: \"Down feathers are fluffy because they lack barbicels, so the barbules float free of each other, allowing the down to trap air and provide excellent thermal insulation.\""
+    },
+    {
+     "id": "bird-airsacs",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.92,
+     "refused": false,
+     "correct": false,
+     "chars": 250,
+     "answer": "According to [peregrine_falcon.pdf, page 5], small bony tubercles on a falcon's nostrils are theorized to guide the powerful airflow away from the nostrils, enabling the bird to breathe more easily while diving by reducing the change in air pressure."
+    },
+    {
+     "id": "bird-brood-parasite",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.545,
+     "refused": false,
+     "correct": true,
+     "chars": 122,
+     "answer": "According to the excerpts, the phenomenon of a bird laying its eggs in another species' nest is called \"brood parasitism\"."
+    },
+    {
+     "id": "adv-bird-transformer",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.333,
+     "refused": true,
+     "correct": null,
+     "chars": 104,
+     "answer": "There is no mention of the transformer architecture or its attention mechanism in the provided excerpts."
+    },
+    {
+     "id": "adv-bird-insulin",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.348,
+     "refused": true,
+     "correct": null,
+     "chars": 320,
+     "answer": "This question cannot be answered based on the provided context excerpts. The context only discusses the physiology and adaptations of various bird species, such as the emperor penguin, owl, and ruby-throated hummingbird, but does not provide information on human physiology or the regulation of blood glucose by insulin."
+    },
+    {
+     "id": "adv-bird-consensus",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.556,
+     "refused": false,
+     "correct": null,
+     "chars": 243,
+     "answer": "I don't have any information about proof of stake protocols or consensus mechanisms from the provided excerpts. The provided excerpts are about the classification of bird orders, the origin of birds, and the adaptations of the emperor penguin."
+    }
+   ]
+  }
+ }
+}
