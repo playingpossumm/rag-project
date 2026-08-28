@@ -582,6 +582,16 @@ class Handler(BaseHTTPRequestHandler):
                 self._raw(200, f.read_bytes(),
                           "text/javascript; charset=utf-8")
 
+        elif route == "/about":
+            # Why the project exists, how the pipeline works, and a glossary of
+            # every term the interface uses. A reader who has never met "BM25"
+            # or "abstention threshold" should be able to start here.
+            about = UI_FILE.parent / "about.html"
+            if not about.exists():
+                self._send(404, {"error": "ui/about.html is missing"})
+                return
+            self._raw(200, about.read_bytes(), "text/html; charset=utf-8")
+
         elif route == "/~/architecture":
             # A committed artifact, served rather than generated: it is built by
             # `npm run architecture:build` and opens straight from docs/ with no
