@@ -432,7 +432,8 @@ the first assertion, exactly as it would have killed every real call.
   both ways, because the gap that mattered was a route the code
   served and no document mentioned — nobody tests what nobody has written down.
 
-  **Pages** — `/` the app · `/quality` the retrieval-quality dashboard ·
+  **Pages** — `/` the app · `/about` why the project exists, a guide to the
+  pipeline and a glossary · `/quality` the retrieval-quality dashboard ·
   `/archive` the pre-rebuild front page, served live beside the current one ·
   `/~/architecture` the map.
 
