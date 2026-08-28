@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why this exists</title>
+<style>
+/* Same fonts, tokens and devices as the app and the analytics page. One system,
+   three views -- and nothing here is loaded from a network. */
+@font-face{font-family:Inter;src:url("/fonts/Inter-400_700.woff2") format("woff2");
+  font-weight:400 700;font-display:swap;font-style:normal}
+@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-400.woff2") format("woff2");
+  font-weight:400;font-display:swap;font-style:normal}
+@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-500.woff2") format("woff2");
+  font-weight:500;font-display:swap;font-style:normal}
+
+:root{
+  --bg:#0b0c0d; --panel:#141618; --sunk:#1b1e21;
+  --ink:#f4f6f7; --soft:#a9b0b5; --muted:#7d858b; --faint:#5b6368;
+  --line:#22262a; --rule:#2e3338;
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
+  --good:#3fb950; --critical:#f0685f; --serious:#d9a441;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --ease-out:cubic-bezier(0.23,1,0.32,1);
+  --max:1180px; --pad:clamp(1.25rem,4vw,3.25rem);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6;letter-spacing:-.006em;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.022em;line-height:1.15}
+a{color:inherit}
+.lab{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.folio{border-bottom:1px solid var(--rule);background:var(--panel);
+  position:sticky;top:0;z-index:20}
+.folio-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:54px;
+  display:flex;align-items:center;gap:22px}
+.folio .name{font-size:14px;font-weight:600;white-space:nowrap}
+.folio .rule{flex:1;height:1px;background:var(--rule)}
+.folio a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
+.folio a:hover{color:var(--ink)}
+.folio a.here{color:var(--ink)}
+
+.wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 110px}
+
+.hero{max-width:70ch;margin:22px 0 8px}
+.hero h1{font-size:clamp(28px,4.2vw,44px)}
+.hero .sub{color:var(--muted);font-size:clamp(17px,2vw,21px);font-weight:600;
+  letter-spacing:-.018em;margin-top:6px}
+.hero p{color:var(--soft);margin:18px 0 0}
+
+.panel{border:1px solid var(--rule);background:var(--panel);margin-top:26px;
+  border-radius:12px;overflow:hidden}
+.phead{display:flex;align-items:baseline;gap:16px;padding:11px 18px;
+  border-bottom:1px solid var(--line);flex-wrap:wrap}
+.phead .right{margin-left:auto}
+.pbody{padding:22px 18px}
+.prose{max-width:74ch}
+.prose p{color:var(--soft);margin:0 0 15px}
+.prose p:last-child{margin-bottom:0}
+.prose b,.prose strong{color:var(--ink);font-weight:600}
+.prose h3{font-size:16px;margin:26px 0 10px}
+.prose h3:first-child{margin-top:0}
+.prose code{font-family:var(--mono);font-size:.88em;background:var(--sunk);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--ink)}
+
+/* The comparison that states the thesis. Two columns, because the claim is a
+   contrast and a list would flatten it. */
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:9px;overflow:hidden;margin:4px 0 0}
+.versus>div{background:var(--panel);padding:14px 16px}
+.versus .q{grid-column:1/-1;background:var(--sunk);color:var(--ink);
+  font-weight:600;font-size:14px;padding:11px 16px}
+.versus .closed{color:var(--muted)}
+.versus .here-col{color:var(--soft)}
+.versus .tag{display:block;margin-bottom:5px}
+@media(max-width:720px){.versus{grid-template-columns:1fr}}
+
+/* The pipeline walk-through: a numbered rail, because the order is the point. */
+.steps{counter-reset:s;margin:0;padding:0;list-style:none}
+.steps li{counter-increment:s;position:relative;padding:0 0 20px 46px;
+  border-left:1px solid var(--rule);margin-left:12px}
+.steps li:last-child{border-left-color:transparent;padding-bottom:0}
+.steps li::before{content:counter(s,decimal-leading-zero);position:absolute;
+  left:-13px;top:0;width:26px;height:26px;border-radius:50%;
+  background:var(--sunk);border:1px solid var(--rule);color:var(--faint);
+  font-family:var(--mono);font-size:10px;display:grid;place-items:center}
+.steps h3{font-size:15px;margin:2px 0 6px}
+.steps p{color:var(--muted);font-size:13.5px;margin:0;max-width:70ch}
+.steps .why{color:var(--soft);display:block;margin-top:6px}
+
+/* Glossary: a definition list that stays readable at phone width. */
+.gloss{display:grid;grid-template-columns:minmax(150px,210px) 1fr;
+  gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:9px;overflow:hidden}
+.gloss dt{background:var(--sunk);padding:12px 15px;font-weight:600;font-size:14px}
+.gloss dd{background:var(--panel);padding:12px 16px;margin:0;color:var(--soft);
+  font-size:13.5px}
+.gloss dd .aka{color:var(--faint);font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;display:block;margin-top:5px}
+@media(max-width:640px){
+  .gloss{grid-template-columns:1fr}
+  .gloss dt{padding-bottom:2px;background:var(--panel)}
+  .gloss dd{padding-top:4px}
+}
+
+.stats{display:flex;flex-wrap:wrap;gap:10px}
+.stat{flex:1 1 150px;background:var(--sunk);border:1px solid var(--line);
+  border-radius:9px;padding:13px 15px}
+.stat .v{font-family:var(--mono);font-size:22px;font-weight:500;
+  font-variant-numeric:tabular-nums}
+.stat .k{color:var(--muted);font-size:12.5px;margin-top:3px}
+
+.callout{border-left:2px solid var(--series-2);background:var(--sunk);
+  padding:13px 16px;border-radius:0 8px 8px 0;margin:18px 0 0}
+.callout p{margin:0;color:var(--soft);font-size:13.5px}
+
+.foot{color:var(--faint);font-size:12.5px;margin-top:30px;max-width:74ch}
+.foot a{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="folio"><div class="folio-in">
+  <a class="name" href="/" style="letter-spacing:-.02em">retrieval visualized<span style="color:var(--faint)">/</span></a>
+  <span class="rule"></span>
+  <a class="here" href="/about">About</a>
+  <a href="/quality">Analytics</a>
+  <a href="/">Ask</a>
+</div></header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>Why this exists.</h1>
+    <div class="sub">A retrieval system built by hand, to find out what the parts actually do.</div>
+    <p>Most retrieval-augmented generation is assembled from a framework in an
+       afternoon: four imports, a vector store, a prompt. It works, and you learn
+       almost nothing, because every decision that matters was made for you and
+       none of them are visible. This one is built from parts — no framework —
+       and every default in it had to earn its place against a measurement.</p>
+  </section>
+
+  <!-- ---------------------------------------------------------------- why -->
+  <section class="panel">
+    <div class="phead"><span class="lab">The argument</span>
+      <span class="lab right">What this can offer that a product cannot</span></div>
+    <div class="pbody">
+      <div class="prose">
+        <p>This will not beat NotebookLM or Glean on answer quality. They have
+           better models, more compute and teams of people. That is not a
+           weakness to apologise for — it is the reason to build something else.
+           A closed product is a <b>destination</b>: you put a question in and
+           get an answer out, and the middle is not yours to see. The questions
+           below are the ones that middle makes unanswerable.</p>
+      </div>
+
+      <div class="versus" style="margin-top:18px">
+        <div class="q">Why did it return <em>that</em>?</div>
+        <div class="closed"><span class="lab tag">Closed product</span>No answer. The passage arrived; how is not exposed.</div>
+        <div class="here-col"><span class="lab tag">Here</span>Every stage is inspectable, with the score each one assigned. Ask a question and the diagram shows what each retriever found, what reranking moved, and what the diversity cap dropped.</div>
+
+        <div class="q">Did my change help?</div>
+        <div class="closed"><span class="lab tag">Closed product</span>No numbers exist. You have an impression.</div>
+        <div class="here-col"><span class="lab tag">Here</span>Labelled questions across three corpora, scored under every pipeline configuration. A change is accepted or rejected on the measurement, and several were rejected.</div>
+
+        <div class="q">What if it does not know?</div>
+        <div class="closed"><span class="lab tag">Closed product</span>It answers anyway. Confident prose either way.</div>
+        <div class="here-col"><span class="lab tag">Here</span>It declines, below a threshold calibrated per corpus against questions the documents genuinely cannot answer.</div>
+
+        <div class="q">What if the sources disagree?</div>
+        <div class="closed"><span class="lab tag">Closed product</span>Blended into one voice.</div>
+        <div class="here-col"><span class="lab tag">Here</span>Passages from other documents are shown alongside, because the top result is sometimes wrong in a specific and visible way.</div>
+
+        <div class="q">Can I put it in my own tool?</div>
+        <div class="closed"><span class="lab tag">Closed product</span>No. It is a place you visit.</div>
+        <div class="here-col"><span class="lab tag">Here</span>A Python library with an HTTP wrapper around it. The interface is one caller, not the product.</div>
+      </div>
+
+      <div class="callout">
+        <p><b>The discipline is the actual subject.</b> Five times a measurement
+           overturned a plan that sounded obviously right. Prefixing every chunk
+           with its document title was built, measured, and reverted — it cost
+           source recall. An eight-times-larger reranker fixed the same two
+           questions as the small one, ten times slower. Quantising the
+           cross-encoder was 1.5× faster with near-identical rankings and
+           silently made the system refuse questions it could answer. Those are
+           in the engineering log with their numbers, including the ones that
+           made the project worse.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------- guide -->
+  <section class="panel">
+    <div class="phead"><span class="lab">A guide</span>
+      <span class="lab right">What happens when you ask</span></div>
+    <div class="pbody">
+      <div class="prose" style="margin-bottom:20px">
+        <p>Pick a document set, type a question, and the answer comes back with
+           the passage it rests on and the route it took. Nothing is generated by
+           default: what you read is the retrieved text, verbatim. Here is the
+           whole path, in order.</p>
+      </div>
+
+      <ol class="steps">
+        <li>
+          <h3>The documents are cut into passages</h3>
+          <p>Each document is split into overlapping windows of about 210 tokens.
+            <span class="why">Whole documents are too big to compare against a
+            question and too big to read back. Overlap exists so an answer that
+            straddles a boundary is not lost by the cut.</span></p>
+        </li>
+        <li>
+          <h3>Two retrievers search, at the same moment</h3>
+          <p><b>Dense retrieval</b> compares meaning, by turning the question and
+            every passage into vectors. <b>BM25</b> compares exact words,
+            weighting rare ones heavily.
+            <span class="why">They fail in opposite directions. Dense survives
+            paraphrase and misses model numbers; BM25 finds an identifier
+            instantly and is blind to a question that shares no vocabulary with
+            its answer. Neither is the better one.</span></p>
+        </li>
+        <li>
+          <h3>The two rankings are fused</h3>
+          <p>Each retriever contributes <code>1/(60 + rank)</code> to every
+            passage it returned, and the sums are sorted.
+            <span class="why">Only position is used, never the raw score:
+            cosine similarity and BM25 live on scales that cannot be added
+            without inventing a conversion.</span></p>
+        </li>
+        <li>
+          <h3>A cross-encoder re-reads the survivors</h3>
+          <p>The shortlist is scored again by a model that reads the question and
+            the passage <em>together</em> and answers "does this passage answer
+            this question".
+            <span class="why">The first stage compared two summaries made
+            independently. This one actually reads both at once — far more
+            accurate, far too slow to run over a whole corpus, which is why it
+            only sees a shortlist.</span></p>
+        </li>
+        <li>
+          <h3>At most two passages per document survive</h3>
+          <p>The diversity cap.
+            <span class="why">Measured as a genuine trade rather than a free
+            win: it costs a little hit rate and buys the answer more of the
+            documents that actually contain it. A question answered by four
+            papers should not return four passages from one.</span></p>
+        </li>
+        <li>
+          <h3>The gate decides whether to answer at all</h3>
+          <p>If the best passage scores below this corpus's threshold, the system
+            declines instead of answering.
+            <span class="why">Nearest-neighbour search always returns something.
+            Ask an ornithology corpus about tax law and it will hand back its
+            five least-unrelated passages, at scores that look ordinary. The
+            threshold is calibrated per corpus against questions the documents
+            genuinely cannot answer.</span></p>
+        </li>
+      </ol>
+
+      <div class="prose" style="margin-top:24px">
+        <h3>Reading what comes back</h3>
+        <p><b>The passage</b> is shown verbatim, with only the answering words in
+           bold. <b>The citation</b> names the real document title and the
+           location — a page for a PDF, a slide for a deck, a sheet for a
+           spreadsheet.</p>
+        <p><b>The score</b> is a relevance judgement from the cross-encoder,
+           running roughly &minus;11 to +11. It is not a probability and not a
+           percentage. Positive means the passage answers the question directly;
+           strongly negative means the corpus probably does not contain the
+           answer.</p>
+        <p><b>“Also found”</b> lists passages from <em>other</em> documents. It
+           is open by default because the top passage is sometimes wrong in a
+           specific way: asked for a bird's fused collarbone, the reranker
+           prefers the pygostyle passage and puts the furcula second.</p>
+        <p><b>“The corpus does not contain this”</b> means the gate declined. It
+           is the system working, not failing — and some of the example questions
+           offered on the front page are chosen precisely to trigger it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------------------------------------- the numbers -->
+  <section class="panel">
+    <div class="phead"><span class="lab">Where it stands</span>
+      <span class="lab right" id="asof">read live from the running system</span></div>
+    <div class="pbody">
+      <div class="stats" id="stats">
+        <div class="stat"><div class="v">&hellip;</div><div class="k">loading</div></div>
+      </div>
+      <div class="prose" style="margin-top:16px">
+        <p>These are read from the same generated file the analytics page plots,
+           so this page cannot quote a number the measurements do not support.
+           <a href="/quality">The analytics page</a> shows every configuration,
+           every threshold sweep and every case.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------- glossary -->
+  <section class="panel">
+    <div class="phead"><span class="lab">Glossary</span>
+      <span class="lab right">Every term this interface uses</span></div>
+    <div class="pbody">
+      <dl class="gloss">
+        <dt>RAG</dt>
+        <dd>Retrieval-augmented generation. Answering a question by searching a
+          set of documents first and quoting what is found, rather than relying
+          on what a model memorised.
+          <span class="aka">retrieval-augmented generation</span></dd>
+
+        <dt>Corpus</dt>
+        <dd>One set of documents, with everything derived from it: its index, its
+          labelled questions, its threshold. Nothing about one corpus transfers
+          to another — the single most reused finding in this project.
+          <span class="aka">document set</span></dd>
+
+        <dt>Chunk</dt>
+        <dd>One passage: a window of about 210 tokens cut from a document, with
+          40 tokens of overlap onto its neighbour.
+          <span class="aka">passage</span></dd>
+
+        <dt>Locator</dt>
+        <dd>Where a passage came from, in the unit its format actually has — a
+          page for a PDF, a slide for a deck, a sheet or section elsewhere.
+          Saying “page 3” of a slide deck sends a reader somewhere that does not
+          exist.</dd>
+
+        <dt>Embedding</dt>
+        <dd>A passage or question turned into a list of numbers, positioned so
+          that things meaning similar things sit near each other.
+          <span class="aka">vector</span></dd>
+
+        <dt>Dense retrieval</dt>
+        <dd>Search by comparing embeddings. Matches meaning, survives paraphrase,
+          and misses rare tokens that carry meaning by identity.
+          <span class="aka">vector search · semantic search</span></dd>
+
+        <dt>BM25</dt>
+        <dd>Search by exact term overlap, weighting rare words far above common
+          ones. The exact inverse profile: strong on identifiers, blind to
+          paraphrase.
+          <span class="aka">sparse retrieval · lexical search</span></dd>
+
+        <dt>Fusion</dt>
+        <dd>Combining two rankings into one. This system uses reciprocal rank
+          fusion: each retriever contributes <code>1/(60 + rank)</code>, so only
+          position counts and no score conversion is needed.
+          <span class="aka">RRF · hybrid search</span></dd>
+
+        <dt>Candidate pool</dt>
+        <dd>The shortlist the first stage hands to the reranker. Its size is a
+          latency dial: reranking is over 90% of the time a query takes and costs
+          scale linearly with it.
+          <span class="aka">candidate_k</span></dd>
+
+        <dt>Cross-encoder</dt>
+        <dd>A model that reads a question and a passage together and scores
+          whether one answers the other. Far more accurate than comparing two
+          separately-made embeddings, and far too slow to run over a whole
+          corpus.
+          <span class="aka">reranker</span></dd>
+
+        <dt>Reranking</dt>
+        <dd>Re-ordering the shortlist with the cross-encoder. On some corpora a
+          fraction of the first stage's ordering is deliberately kept, because
+          when a question <em>describes</em> a term rather than naming it the
+          cross-encoder has little to work with.</dd>
+
+        <dt>Diversity cap</dt>
+        <dd>A limit of two passages per document in the final answer. Trades a
+          little hit rate for covering more of the documents that answer the
+          question.</dd>
+
+        <dt>Context expansion</dt>
+        <dd>Attaching the neighbouring passages to each result, so a sentence cut
+          by a chunk boundary is still readable. Cannot change any ranking — it
+          runs after selection.</dd>
+
+        <dt>Abstention threshold</dt>
+        <dd>The score below which the system declines to answer. Calibrated per
+          corpus: the same number that costs one corpus a single question costs
+          another ten.
+          <span class="aka">the gate · confidence threshold</span></dd>
+
+        <dt>Golden set</dt>
+        <dd>The labelled questions a corpus is scored against — each with the
+          documents and locations that answer it. Every number on the analytics
+          page comes from these.</dd>
+
+        <dt>Adversarial case</dt>
+        <dd>A question deliberately included because the documents <em>cannot</em>
+          answer it. Refusing one is a success; answering it is the failure being
+          measured.
+          <span class="aka">unanswerable case</span></dd>
+
+        <dt>any-hit@5</dt>
+        <dd>The fraction of questions where at least one correct passage appears
+          in the five returned. Asks "did it find it at all".</dd>
+
+        <dt>MRR</dt>
+        <dd>Mean reciprocal rank. Rewards putting the right passage <em>first</em>
+          — 1.0 if it is first, 0.5 if second, and so on.
+          <span class="aka">mean reciprocal rank</span></dd>
+
+        <dt>NDCG</dt>
+        <dd>A ranking-quality score over all the relevant passages returned, not
+          just the first, discounting each by how far down it sits.
+          <span class="aka">normalised discounted cumulative gain</span></dd>
+
+        <dt>Source recall</dt>
+        <dd>How many of the documents that answer a question were actually
+          returned. The metric hit rate cannot express: returning one of four
+          answering papers scores a perfect hit rate while missing three
+          quarters of the answer.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <p class="foot">Built by hand in Python: no retrieval framework, no CDN, no
+     external request from this page. The server binds to localhost on purpose —
+     the documents may be private, and a page about private documents should not
+     call a font host. Fonts are bundled.</p>
+
+</main>
+
+<script>
+// The numbers are read from the same generated file the analytics page plots.
+// A transcribed number is a number that goes stale silently, and this project
+// has been bitten by that three times; so this page holds none.
+(async () => {
+  const box = document.getElementById("stats");
+  try {
+    const data = await (await fetch("/api/analytics")).json();
+    const corpora = data.corpora || [];
+    if (!corpora.length) throw new Error("no corpora");
+
+    const docs = corpora.reduce((n, c) => n + (c.documents || 0), 0);
+    const chunks = corpora.reduce((n, c) => n + (c.chunks || 0), 0);
+    const cases = corpora.reduce((n, c) => n + (c.n_answerable || 0) + (c.n_adversarial || 0), 0);
+    const hits = corpora
+      .map(c => (c.ladder || []).find(r => r.config === "+ diversity 2/src"))
+      .filter(Boolean).map(r => r.hit_rate);
+    const lo = Math.min(...hits), hi = Math.max(...hits);
+
+    const cell = (v, k) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`;
+    box.innerHTML =
+      cell(corpora.length, "document sets, each measured separately") +
+      cell(docs.toLocaleString(), "documents indexed") +
+      cell(chunks.toLocaleString(), "passages") +
+      cell(cases.toLocaleString(), "labelled questions") +
+      cell(hits.length ? `${lo.toFixed(3)}–${hi.toFixed(3)}` : "—",
+           "any-hit@5 across the three sets");
+    document.getElementById("asof").textContent =
+      "read live from /api/analytics";
+  } catch (err) {
+    // Saying nothing is better than saying a number nobody measured.
+    box.innerHTML =
+      '<div class="stat"><div class="v">—</div><div class="k">' +
+      'the measurements are not available; run <code>python src/evaluate.py</code>' +
+      '</div></div>';
+    document.getElementById("asof").textContent = "not measured yet";
+  }
+})();
+</script>
+</body>
+</html>
