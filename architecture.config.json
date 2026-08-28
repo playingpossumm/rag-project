@@ -1,6 +1,0 @@
-{
-  "coverage": "architecture/coverage.json",
-  "output": "architecture/measured.generated.ts",
-  "sources": ["src/**/*.py"],
-  "ignore": []
-}

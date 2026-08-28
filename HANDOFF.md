@@ -394,59 +394,40 @@ field into the masthead is the opposite of that. The work is in git
 
 ---
 
-## 5b. The architecture map — built
+## 5b. The architecture map — removed 2026-08-28
 
-`docs/architecture.html`, a self-contained 241 KB page. Opens from the filesystem
-with no server; also served at `/~/architecture`.
+`docs/architecture.html` was a self-contained isometric map of the codebase,
+generated from measured module sizes and hand-authored prose per building. It
+is gone, along with `architecture/`, the three build scripts, `package.json`,
+`tsconfig.json` and 43 MB of `node_modules`.
 
-Built with the `architecture-map` skill and follows its rule: **prose, groups and
-flows are authored; counts, coverage and geometry are measured.** 21 buildings
-cover all 27 modules in `src/`, so the drift counter reads zero and means it.
+**Three reasons, in the order that decided it.**
 
-```
-npm run architecture:sync     # re-measure after changing src/
-npm run architecture:build    # re-bundle docs/architecture.html
-npm run architecture:check    # CI-style staleness check
-```
+**It was stale and said so itself.** `node scripts/architecture-sync.mjs --check`
+printed "measured.generated.ts is stale". Its coverage file described
+twenty-nine modules; `src/` holds seventy-five. Fixing it did not mean re-running
+the sync — the measurements regenerate, but every unclaimed module appears as
+drift until somebody writes prose for it, so the real cost was authoring
+forty-six buildings' worth of description that this document already covers in
+words.
 
-- `architecture/graph.ts` is the authored half — every module's prose, the five
-  neighbourhood names, the five flows. Edit this; nothing else needs to change.
-- `architecture/coverage.json` says which files each building owns.
-- `scripts/architecture-sync.mjs` is vendored **byte-identical to the skill** so
-  it can be replaced on update. `scripts/architecture-history.mjs` is the local
-  addition; it reuses the sync script's exported `measure()`.
-- Node tooling (`package.json`, `tsconfig.json`, `node_modules/`) exists only for
-  this. The project itself is still pure Python.
+**Nothing linked to it.** No `href` anywhere in `ui/` pointed at
+`/~/architecture`. It was reachable only by typing the URL, which means it was
+serving no reader.
 
-**The prose is a first draft.** The geometry and numbers are derived and correct,
-but "what this subsystem does" is where one pass is weakest, and worth an
-editing pass.
+**It contradicted the thing the project claims to be.** The README's first
+paragraph is that this is Python from parts with no framework; the map dragged
+in React 19, TypeScript and esbuild for one page. `package.json`'s own
+description conceded the point — "the project itself is Python; this exists
+because the map ships as a bundled standalone page."
 
-**A finding it surfaced, fixed 2026-08-21:** `src/api.py:152` did
-`from generate_answer import synthesize`, a module that has never existed.
-`generate.py` now exports `synthesize()` and `api.py` imports it from there.
-Reading the rest of that file against the data it actually receives turned up
-two more defects of the same kind — code that has never run is not code that
-works — and both are recorded in `generate.py`'s docstring:
+**What replaced it, and it is better.** The `/about` page explains the pipeline
+in plain language with a glossary, the front page draws the live pipeline from
+real per-document chunk counts, and this document is the structural account. All
+three are current by construction; the map was current only when somebody
+remembered to rebuild it.
 
-- `build_context()` read `chunk["page"]`. Chunks carry `locator`; there is no
-  `page` key. Every call would have died on KeyError.
-- `max_tokens=1024` predates thinking counting against the same ceiling on
-  `claude-opus-5`. Now 16000, with `effort="low"` as the actual cost control.
-
-Still unverified end to end: the account has no credit, so no real call has
-completed. Everything up to the network boundary **is** now tested — by
-`src/test_generate.py`, 19 checks against a stubbed client.
-
-This paragraph used to say that testing had already happened, in "`test_trace.py`'s
-sibling check in the session log". **It had not.** The check was run in a session
-and never committed, which made it the third claimed-but-absent test in this
-repo after `test_trace_matches_pipeline` and the hand-computed NDCG cases. Found
-2026-08-27 by grepping for any test that imports `generate`; none did. The test
-now exists and has teeth: reintroducing the `chunk["page"]` lookup kills it on
-the first assertion, exactly as it would have killed every real call.
-
----
+It is in git history if it is ever wanted back.
 
 ## 6. Environment
 
@@ -464,8 +445,7 @@ the first assertion, exactly as it would have killed every real call.
 
   **Pages** — `/` the app · `/about` why the project exists, a guide to the
   pipeline and a glossary · `/quality` the retrieval-quality dashboard ·
-  `/archive` the pre-rebuild front page, served live beside the current one ·
-  `/~/architecture` the map.
+  `/archive` the pre-rebuild front page, served live beside the current one.
 
   **Assets** — `/pipeline-map.js` the diagram · `/answer-mark.js` the logic
   that decides which words of a passage are set bold ·
