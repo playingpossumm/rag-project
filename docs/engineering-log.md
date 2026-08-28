@@ -463,7 +463,7 @@ project has, and it came from a latency experiment.
 on all three corpora, MRR nets +0.4 points across them (+0.1, −2.6, +2.9), and
 it removes roughly 220 ms from a 1,100 ms query. But the −2.6 on birds is a
 regression on a corpus that was not the problem, and this project's rule is that
-such a change is not shippable as a default. It is a trade for the owner to
+such a change is not shippable as a default. It is a trade for the author to
 make, with the numbers on the table, rather than a decision to slip in under a
 latency heading.
 

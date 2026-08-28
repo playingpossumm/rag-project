@@ -1,8 +1,15 @@
-# Handoff
+# The complete technical account
 
-Written 2026-08-19 so a new session can pick this up cold, updated 2026-08-26.
-Everything here is measured or verifiable from the repo; where something is
-unverified it says so.
+The long version of this system: what it does, what was measured, what the
+measurements overturned, and what is still wrong with it. `README.md` is the
+short version and the `/about` page in the running app is the plain-language
+one.
+
+Started 2026-08-19, current as of 2026-08-28. **Everything here is measured or
+verifiable from the repository, and where something is unverified it says so.**
+Numbers in §2 and §3 are checked against the generated measurements by
+`python src/check_docs.py`, so this document cannot quietly drift from the
+system it describes.
 
 ---
 
@@ -210,10 +217,11 @@ Other hard-won corrections worth not repeating:
   hand-computed cases the field notes have always said were verified but which
   were never committed. The regression has teeth — the pre-fix arithmetic
   returns 2.131 where the assertion demands ≤ 1.0. Second claimed-but-absent
-  test found this session, after `test_trace_matches_pipeline`.
+  test found in this project, after `test_trace_matches_pipeline`.
 - Embeddings were silently truncated at 256 tokens (median 370 tokens lost per
   chunk) because chunk size was specified in *words*. Now token-based, with an assertion.
-- README numbers went stale against a grown golden set; the owner caught it. Re-running
+- README numbers went stale against a grown golden set, and were caught by hand rather
+  than by anything automatic — which is why `check_docs.py` now exists. Re-running
   eval surfaced three more conclusion reversals.
 - `src/trace.py` would have shadowed the stdlib `trace` module for every dependency
   (`src/` is first on `sys.path`). Renamed `pipeline_trace.py`.
@@ -276,7 +284,7 @@ owner was not happy with. Read that as a signal about sequencing rather than
 taste: the interface was being designed ahead of the capabilities it is meant to
 expose, so each pass was decorating a demo instead of surfacing a tool.
 
-What this means for the next session:
+What that means for the work after it:
 
 - **Do not start another whole-page visual pass.** Simplify what is there.
 - **The isometric city is the most elaborate thing on the page and is a fair
@@ -306,7 +314,7 @@ rather than outstanding.
 
 ### Design direction — supersedes docs/ui-brief.md
 
-The brief was written before the owner saw a reference they liked
+The brief was written before a reference design was chosen
 (`JearDesuss/compute-debt-obligations`, a near-black editorial explainer). Where
 the two disagree, this list wins and the brief is marked stale:
 
@@ -330,7 +338,7 @@ panel entry, specific transition properties, reduced-motion honoured.
 Stages are places, and **the city is always fully drawn** — every block, tower
 and road exists before a question is asked; a query changes lighting and nothing
 else. This is load-bearing and was arrived at the hard way: an earlier draft grew
-the roads as results arrived and the owner's verdict was that it "pops out",
+the roads as results arrived, and the verdict on it was that it "pops out",
 because structure appearing as a consequence of the question is backwards.
 
 - The index is one block per document, sized by that document's **real** chunk
@@ -394,7 +402,7 @@ npm run architecture:check    # CI-style staleness check
   this. The project itself is still pure Python.
 
 **The prose is a first draft.** The geometry and numbers are derived and correct,
-but "what this subsystem does" is where one pass is weakest. Worth the owner's
+but "what this subsystem does" is where one pass is weakest, and worth an
 editing pass.
 
 **A finding it surfaced, fixed 2026-08-21:** `src/api.py:152` did
@@ -425,8 +433,13 @@ the first assertion, exactly as it would have killed every real call.
 
 ## 6. Environment
 
-- Windows 11. Project at `C:\Users\owner\Desktop\rag-project`.
-- venv at `.venv` — **always use `.venv\Scripts\python.exe`**, not bare `python`.
+- Developed on Windows 11, which is why the paths in these documents use
+  backslashes. Nothing in the code is Windows-specific and the test suite has
+  no platform dependencies, but it has not been run on Linux or macOS — treat
+  that as untested rather than as supported.
+- venv at `.venv`. On Windows use `.venv\Scripts\python.exe` rather than bare
+  `python`, so the tooling runs against the pinned dependencies rather than
+  whatever is on PATH.
 - Run the server: `.venv\Scripts\python.exe src\serve.py` → http://127.0.0.1:8000/
 - Routes: checked against the dispatch in `serve.py` by `src/check_docs.py`,
   both ways, because the gap that mattered was a route the code
@@ -509,8 +522,8 @@ recovered a question and four points of MRR. What remains is the model itself:
 `ms-marco-MiniLM-L-6-v2` is weak on questions that DESCRIBE a term rather than
 naming it ("the burst of collective singing at first light"). `src/compare_rerankers.py`
 exists for trying another. **Use `src/sweep_blend.py` for anything touching the
-blend — it runs every corpus, because the trap is tuning to one.** I fell into
-exactly that trap: shipped 0.35 globally, then measured it worse than doing
+blend — it runs every corpus, because the trap is tuning to one.** That trap was
+walked into directly: 0.35 was shipped globally, then measured worse than doing
 nothing on all three.
 
 **The adversarial half was read, 2026-08-27, and the labels held.** The ML gate
@@ -607,7 +620,7 @@ The original entry, kept because the history is the argument:
 `results.json` was shared by every corpus so the last run owned it;
 `RESULTS.md` claimed to be copied from it and was typed by hand; `per_case.json`
 had the same shared-path bug and had not been regenerated for four days, so the
-interface was offering questions I had just deleted as unanswerable. Only
+interface was offering questions that had just been deleted as unanswerable. Only
 `RESULTS.md` had a `--check`, and the chain `per_case -> analytics -> the
 interface` had no freshness test at all -- which is what made it the most
 valuable small thing left, and what the entry above closes.
@@ -617,7 +630,7 @@ query decomposition have never run. Everything the interface shows is the
 retrieved passage verbatim.
 
 **How to unblock each of them without Anthropic credit**, written down
-2026-08-27 so the next session can act rather than re-derive:
+2026-08-27 so the next attempt can act rather than re-derive:
 
 1. **Generation, end to end — BUILT 2026-08-27.** `src/generate_local.py`
    speaks the same `synthesize(question, chunks)` contract to a local **Ollama**,
@@ -823,9 +836,10 @@ retrieved passage verbatim.
    already measured the served configuration independently, and the harness now
    reproduces its figures to three decimals from a separate code path.
 
-Ranked by value: **(1) is worth more than everything else combined**, and only
-the owner can unblock it — and the folder intake in (7) is now the mechanism for
-doing so, so it no longer needs files copied into `data/`. (8) is done.
+Ranked by value: **(1) is worth more than everything else combined**, and it is
+unblocked by pointing the system at more documents rather than by writing code —
+the folder intake in (7) is the mechanism, so it no longer needs files copied
+into `data/`. (8) is done.
 
 **The cross-encoder question is now answered, and the answer is no.** Measured
 on all three corpora 2026-08-27: MiniLM-L12 and BGE-reranker-base both trade a
@@ -868,7 +882,7 @@ not carried by any session.
 
 **To update one, pass its URL.** Publishing the source file without the `url`
 creates a *second, separate* artifact instead of updating the existing one, and
-the owner's existing link silently goes stale. This is the single easiest way to
+the existing link silently goes stale. This is the single easiest way to
 break something here, and nothing in the file itself warns you — which is why the
 URLs are recorded here.
 
@@ -908,7 +922,7 @@ disclaim current work.
 | `README.md` | project overview, current numbers |
 | `eval/RESULTS.md` | every measurement and the default it justifies |
 | `eval/results.json` | machine-readable, regenerated by `src/evaluate.py` |
-| `docs/next-session.md` | a paste-ready prompt for starting fresh, and why it says what it says |
+| `docs/roadmap.md` | what is worth doing next, what has been ruled out, and why |
 | `docs/ui-brief.md` | the UI design interview and direction (superseded in part) |
 | `eval/per_case.json` | every golden-set case's outcome, written by `src/per_case.py` |
 | `src/test_trace.py` | asserts the trace and the serving path agree under every option |
