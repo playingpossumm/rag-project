@@ -26,6 +26,7 @@ not the default.
     curl -s localhost:8000/ask -d '{"question": "What is late interaction?"}'
 """
 import json
+import os
 import sys
 import threading
 import time
@@ -34,7 +35,16 @@ from pathlib import Path
 
 from api import ask
 
-HOST, PORT = "127.0.0.1", 8000
+# Loopback by default, because the corpus may be private and a RAG server is a
+# document-reading service: binding it to the world by accident is the failure
+# with the worst consequences in this whole file.
+#
+# A container platform assigns the port and requires 0.0.0.0, so both are
+# overridable -- and setting HOST to anything else is treated as a deliberate
+# choice rather than a mistake, which is why the warning at startup changes
+# rather than disappears.
+HOST = os.environ.get("RAG_HOST", "127.0.0.1")
+PORT = int(os.environ.get("PORT") or os.environ.get("RAG_PORT") or 8000)
 MAX_BODY = 64 * 1024  # a question is small; refuse anything that clearly is not
 ROOT = Path(__file__).parent.parent
 UI_FILE = Path(__file__).parent.parent / "ui" / "index.html"
@@ -908,8 +918,19 @@ def main():
         print(f"  (freshness check did not run: {e})")
 
     if host not in ("127.0.0.1", "localhost"):
-        print("  WARNING: bound to a non-loopback address -- this exposes your "
-              "document contents to the network.")
+        if os.environ.get("RAG_PUBLIC") == "1":
+            print("  public     bound to a non-loopback address deliberately "
+                  "(RAG_PUBLIC=1).")
+            print("             Everything this serves is readable by anyone "
+                  "who can reach it:")
+            print("             passage text, document names and the whole "
+                  "trace. Serve a corpus")
+            print("             you are willing to publish.")
+        else:
+            print("  WARNING: bound to a non-loopback address -- this exposes "
+                  "your document contents")
+            print("           to the network. Set RAG_PUBLIC=1 if that is "
+                  "deliberate.")
 
     ThreadingHTTPServer((host, port), Handler).serve_forever()
 
