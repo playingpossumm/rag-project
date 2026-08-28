@@ -78,6 +78,252 @@ def questions_for(cfg: dict, every: bool) -> list[dict]:
     return []
 
 
+def record_reads(serve, out: Path, name: str) -> None:
+    """The GET endpoints the page calls on load, frozen to files.
+
+    The interface asks for the corpus, the corpus list, the chunk counts that
+    size the index diagram, and the evaluation summary. None of them depend on
+    the question, so each is one file per corpus and the page needs no server to
+    draw itself.
+    """
+    import corpora
+
+    # /api/chunks, computed the same way serve.py computes it: which document
+    # each chunk belongs to, so the index diagram draws one block per document
+    # at its real size rather than an even split that looks right and is wrong.
+    with serve.RES.lock:
+        sources = sorted({c["source"] for c in serve.RES.metadata})
+        order = {src: i for i, src in enumerate(sources)}
+        doc = [order[c["source"]] for c in serve.RES.metadata]
+
+    reads = {
+        "corpus": corpora.describe(serve.RES.corpus),
+        "corpora": [corpora.describe(c) for c in corpora.available().values()],
+        "chunks": {"n": len(doc), "sources": sources, "doc": doc},
+    }
+    for filename, payload in reads.items():
+        if payload is None:
+            continue
+        (out / f"{filename}.json").write_text(
+            json.dumps(payload, indent=1), encoding="utf-8")
+
+
+def write_site(out: Path, manifest: dict) -> None:
+    """Copy the interface next to the recordings and wire it to read them.
+
+    The page is unchanged. A small script installed before it intercepts
+    `fetch` and answers from the recorded files instead of from a server --
+    which keeps the static build honest: it is the same interface, not a
+    reimplementation that could drift from it.
+    """
+    import shutil
+
+    ui = Path(__file__).parent.parent / "ui"
+    site = out / "site"
+    if site.exists():
+        shutil.rmtree(site)
+    site.mkdir(parents=True)
+
+    for item in ui.iterdir():
+        if item.is_dir():
+            shutil.copytree(item, site / item.name)
+        else:
+            shutil.copy2(item, site / item.name)
+
+    # The recordings, beside the page that reads them.
+    data = site / "recorded"
+    if data.exists():
+        shutil.rmtree(data)
+    shutil.copytree(out, data, ignore=shutil.ignore_patterns("site"))
+
+    (site / "offline.js").write_text(OFFLINE_JS, encoding="utf-8")
+
+    index = site / "index.html"
+    html = index.read_text(encoding="utf-8")
+    if "offline.js" not in html:
+        html = html.replace("<head>", '<head>\n<script src="/offline.js"></script>', 1)
+        if 'src="/offline.js"' not in html:      # no <head> to hook
+            html = '<script src="/offline.js"></script>\n' + html
+        index.write_text(html, encoding="utf-8")
+
+    (out / "vercel.json").write_text(json.dumps({
+        "$schema": "https://openapi.vercel.sh/vercel.json",
+        "outputDirectory": "site",
+        "cleanUrls": True,
+        "headers": [{
+            "source": "/recorded/(.*)",
+            "headers": [{"key": "Cache-Control",
+                         "value": "public, max-age=31536000, immutable"}],
+        }],
+    }, indent=1), encoding="utf-8")
+
+
+OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so the page runs
+// with no server behind it.
+//
+// The page is not modified beyond loading this script. That is deliberate: a
+// static build that reimplemented the interface would be a second thing to keep
+// in step, and this project has spent a lot of effort on exactly that class of
+// bug -- two code paths that agree until one is edited.
+(function () {
+  const KEY = (q) => {
+    // Must match src/record_static.py's key(): sha256 of the trimmed,
+    // lowercased question, first 16 hex characters.
+    const bytes = new TextEncoder().encode(q.trim().toLowerCase());
+    return crypto.subtle.digest("SHA-256", bytes).then((buf) =>
+      Array.from(new Uint8Array(buf))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("")
+        .slice(0, 16));
+  };
+
+  let corpus = null;
+  const base = () => `/recorded/${corpus || MANIFEST.default}`;
+
+  // A loading state, because the first paint waits on a fetch. Injected from
+  // here rather than added to the page: the live interface has a server that
+  // answers in milliseconds and needs none of this, and the static build should
+  // not leave a spinner in the markup that never fires there.
+  const veil = document.createElement("div");
+  veil.id = "recorded-loading";
+  veil.innerHTML =
+    '<div class="rl-inner">' +
+    '<div class="rl-bars"><i></i><i></i><i></i><i></i><i></i></div>' +
+    '<p class="rl-title">Loading the recorded traces</p>' +
+    '<p class="rl-sub">Every answer here was computed in advance by the real ' +
+    'pipeline, then written to a file. There is no model behind this page.</p>' +
+    "</div>";
+  const style = document.createElement("style");
+  style.textContent = `
+    #recorded-loading{position:fixed;inset:0;z-index:9999;display:grid;
+      place-items:center;background:var(--bg,#0b0b0c);
+      transition:opacity .45s cubic-bezier(.23,1,.32,1)}
+    #recorded-loading.gone{opacity:0;pointer-events:none}
+    #recorded-loading .rl-inner{text-align:center;max-width:34rem;padding:0 1.5rem}
+    #recorded-loading .rl-bars{display:flex;gap:6px;justify-content:center;
+      height:44px;align-items:flex-end;margin-bottom:1.5rem}
+    /* Five bars, because the pipeline has five stages and the thing being
+       waited on is those stages' recorded output. A generic spinner would say
+       nothing; this at least rhymes with what is loading. */
+    #recorded-loading .rl-bars i{width:6px;height:12px;border-radius:2px;
+      background:currentColor;opacity:.5;
+      animation:rl 1.1s cubic-bezier(.23,1,.32,1) infinite}
+    #recorded-loading .rl-bars i:nth-child(2){animation-delay:.09s}
+    #recorded-loading .rl-bars i:nth-child(3){animation-delay:.18s}
+    #recorded-loading .rl-bars i:nth-child(4){animation-delay:.27s}
+    #recorded-loading .rl-bars i:nth-child(5){animation-delay:.36s}
+    @keyframes rl{0%,100%{height:12px;opacity:.35}45%{height:40px;opacity:1}}
+    #recorded-loading .rl-title{font-size:.95rem;margin:0 0 .5rem;
+      letter-spacing:.01em}
+    #recorded-loading .rl-sub{font-size:.8rem;opacity:.6;line-height:1.55;margin:0}
+    @media (prefers-reduced-motion:reduce){
+      #recorded-loading .rl-bars i{animation:none;height:26px}
+      #recorded-loading{transition:none}
+    }`;
+  const mount = () => {
+    document.head.appendChild(style);
+    document.body.appendChild(veil);
+  };
+  if (document.body) mount();
+  else document.addEventListener("DOMContentLoaded", mount);
+
+  const dismiss = () => {
+    veil.classList.add("gone");
+    setTimeout(() => veil.remove(), 500);
+  };
+
+  let MANIFEST = { default: null, corpora: {} };
+  const ready = fetch("/recorded/manifest.json")
+    .then((r) => r.json())
+    .then((m) => {
+      MANIFEST = m;
+      MANIFEST.default = Object.keys(m.corpora)[0];
+      corpus = MANIFEST.default;
+      return m;
+    })
+    .finally(() => {
+      // Dismissed on settle rather than on success: if the manifest is missing
+      // the page should show its own error, not sit behind a veil that never
+      // lifts. A loading state that can outlive the load is worse than none.
+      if (document.body) dismiss();
+      else document.addEventListener("DOMContentLoaded", dismiss);
+    });
+
+  const json = (data, status = 200) =>
+    new Response(JSON.stringify(data), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
+
+  const real = window.fetch.bind(window);
+
+  window.fetch = async function (input, init) {
+    const url = typeof input === "string" ? input : input.url;
+    const path = url.replace(/^https?:\/\/[^/]+/, "").split("?")[0];
+    if (!path.startsWith("/api/")) return real(input, init);
+    await ready;
+
+    if (path === "/api/corpus") return real(`${base()}/corpus.json`);
+    if (path === "/api/corpora") return real(`${base()}/corpora.json`);
+    if (path === "/api/chunks") return real(`${base()}/chunks.json`);
+    if (path === "/api/analytics") return real("/recorded/analytics.json");
+    if (path === "/api/eval") return real("/recorded/eval.json");
+
+    if (path === "/api/corpus/select") {
+      const body = JSON.parse((init && init.body) || "{}");
+      if (MANIFEST.corpora[body.name]) corpus = body.name;
+      return real(`${base()}/corpus.json`);
+    }
+
+    if (path === "/api/chat" || path === "/ask" || path === "/api/trace") {
+      const body = JSON.parse((init && init.body) || "{}");
+      const question = (body.question || "").trim();
+      if (!question) return json({ error: "field 'question' is required" }, 400);
+      const k = await KEY(question);
+
+      // The selected corpus first, then the others. A visitor who types a
+      // question from the bird set while the papers are selected means the
+      // question, not the corpus -- and every corpus is recorded here, so
+      // refusing on a technicality would be pedantry rather than fidelity.
+      const order = [corpus, ...Object.keys(MANIFEST.corpora)].filter(
+        (c, i, a) => c && a.indexOf(c) === i);
+      for (const c of order) {
+        const hit = await real(`/recorded/${c}/${k}.json`);
+        if (hit.ok) {
+          if (c !== corpus) corpus = c;   // follow the question
+          return hit;
+        }
+      }
+      // The honest failure. A recorded demo cannot answer a question nobody
+      // recorded, and saying so is better than an empty result that reads as
+      // the retrieval having failed.
+      // The message goes in `error` because that is the field the interface
+      // renders. Putting the explanation somewhere the page does not read
+      // would show a visitor the string "not-recorded" and nothing else,
+      // which is how the first version of this failed.
+      const total = Object.values(MANIFEST.corpora)
+        .reduce((n, c) => n + (c.questions || 0), 0);
+      return json({
+        error:
+          "This is the recorded demo. It holds " + total + " questions, each " +
+          "answered in advance by the real pipeline and written to a file — " +
+          "there is no model behind this page, so it cannot answer a new one. " +
+          "Pick a question from the list to see its full retrieval trace, or " +
+          "run the project locally to ask anything you like.",
+        code: "not-recorded",
+      }, 404);
+    }
+
+    if (path.startsWith("/api/index/")) {
+      return json({ error: "read-only", message:
+        "The recorded demo cannot index documents." }, 405);
+    }
+    return json({ error: `no recorded route ${path}` }, 404);
+  };
+})();
+"""
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -151,6 +397,7 @@ def main() -> int:
 
         (corpus_dir / "index.json").write_text(
             json.dumps(index, indent=1), encoding="utf-8")
+        record_reads(serve, corpus_dir, name)
         manifest["corpora"][name] = {
             "label": cfg["label"], "questions": len(index),
             **{k: v for k, v in corpora.describe(cfg).items()
@@ -162,8 +409,20 @@ def main() -> int:
         return 1
 
     args.out.mkdir(parents=True, exist_ok=True)
+    manifest["default"] = next(iter(manifest["corpora"]), None)
     (args.out / "manifest.json").write_text(
         json.dumps(manifest, indent=1), encoding="utf-8")
+
+    # The evaluation figures the quality page draws, copied rather than
+    # regenerated so the static build shows the same numbers as the live one.
+    for src_name, dest in (("analytics.json", "analytics.json"),
+                           ("results.json", "eval.json")):
+        src_path = ROOT / "eval" / src_name
+        if src_path.exists():
+            (args.out / dest).write_text(
+                src_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+    write_site(args.out, manifest)
     total = sum(c["questions"] for c in manifest["corpora"].values())
     size = sum(f.stat().st_size for f in args.out.rglob("*.json"))
     print(f"\n  {total} question(s), {size / 1e6:.1f} MB in "
