@@ -1,0 +1,32 @@
+# The virtualenv is 1.5 GB and is rebuilt inside the image from requirements.txt
+# with the CPU torch wheel. Copying it in would ship CUDA nobody uses.
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# The two corpora that are not redistributable. Excluded here as well as from
+# git, so a stray local copy cannot end up in a published image -- the whole
+# point of ATTRIBUTION.md is that a RAG demo publishes its corpus.
+data/
+data-quant/
+vector_store/
+store-quant/
+
+# Secrets. .env holds an API key and has never been committed; a container image
+# is exactly as public as a repository, so it is excluded twice.
+.env
+*.key
+
+.git/
+.gitignore
+.claude/
+archive/
+.tmp-ui/
+
+# Development artefacts that the image has no use for. The eval JSON the
+# interface reads (analytics.json, results*.json) is NOT excluded -- the
+# quality dashboard is part of the demo and reads it at runtime.
+docs/*.html
+eval/top-passages.json
+*.log
