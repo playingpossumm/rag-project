@@ -1,0 +1,84 @@
+{
+ "generated_by": "src/uniform_baseline.py",
+ "uniform_config": {
+  "candidate_k": 20,
+  "blend": 0.0,
+  "fusion": "rrf",
+  "max_per_source": 2,
+  "ensemble": false
+ },
+ "spread_under_uniform": {
+  "hit_rate": 0.078,
+  "mrr": 0.1682,
+  "ndcg": 0.1191,
+  "src_recall": 0.0205
+ },
+ "corpora": {
+  "llm": {
+   "label": "ML & NLP papers",
+   "n": 67,
+   "uniform": {
+    "hit_rate": 0.8507,
+    "mrr": 0.7381,
+    "ndcg": 0.7539,
+    "src_recall": 0.76
+   },
+   "tuned": {
+    "hit_rate": 0.8507,
+    "mrr": 0.7393,
+    "ndcg": 0.7555,
+    "src_recall": 0.7607
+   },
+   "delta": {
+    "hit_rate": 0.0,
+    "mrr": 0.0012,
+    "ndcg": 0.0016,
+    "src_recall": 0.0007
+   }
+  },
+  "birds": {
+   "label": "Ornithology",
+   "n": 26,
+   "uniform": {
+    "hit_rate": 0.8077,
+    "mrr": 0.5699,
+    "ndcg": 0.6348,
+    "src_recall": 0.7615
+   },
+   "tuned": {
+    "hit_rate": 0.8462,
+    "mrr": 0.6135,
+    "ndcg": 0.6709,
+    "src_recall": 0.7615
+   },
+   "delta": {
+    "hit_rate": 0.0385,
+    "mrr": 0.0436,
+    "ndcg": 0.0361,
+    "src_recall": 0.0
+   }
+  },
+  "quant": {
+   "label": "Quantitative finance",
+   "n": 35,
+   "uniform": {
+    "hit_rate": 0.8857,
+    "mrr": 0.7143,
+    "ndcg": 0.749,
+    "src_recall": 0.741
+   },
+   "tuned": {
+    "hit_rate": 0.8857,
+    "mrr": 0.7786,
+    "ndcg": 0.7856,
+    "src_recall": 0.769
+   },
+   "delta": {
+    "hit_rate": 0.0,
+    "mrr": 0.0643,
+    "ndcg": 0.0366,
+    "src_recall": 0.028
+   }
+  }
+ }
+}

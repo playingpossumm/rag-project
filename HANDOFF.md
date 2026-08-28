@@ -59,6 +59,23 @@ single most reused finding in this project, see §4.
 Shipped config throughout: RRF fusion, cross-encoder rerank, diversity cap
 2/source, window±1 context expansion.
 
+**Those are three tuned pipelines, not one pipeline on three corpora.** Four
+settings are per-corpus, so the table above answers "what does this system do on
+this corpus" and not "does this approach generalise". The second question needs
+one configuration everywhere, and `src/uniform_baseline.py` measures it:
+
+| under the untuned defaults | any-hit | MRR | NDCG | src recall |
+|---|---|---|---|---|
+| ML & NLP papers | 0.851 | 0.738 | 0.754 | 0.760 |
+| Ornithology | 0.808 | 0.570 | 0.635 | 0.761 |
+| Quantitative finance | 0.886 | 0.714 | 0.749 | 0.741 |
+
+**Quote this table for the generalisation claim and the one above for the
+per-corpus one.** Across three corpora sharing no format, subject or provenance,
+one untuned configuration spans 0.078 of any-hit — and the corpus the pipeline
+was developed on gains +0.000 any-hit from its own tuning, so the tuning is not
+holding up three special cases.
+
 Reproduce: `python src/evaluate.py` (add `--golden eval/golden-birds.json` and
 the matching `RAG_STORE_DIR`/`RAG_DATA_DIR` for the others). It prints the
 rerank blend it is using and takes it from `corpora.json`, so the harness
