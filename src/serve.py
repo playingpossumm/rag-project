@@ -82,7 +82,7 @@ class Resources:
 
         import corpora
         from hybrid import build_bm25
-        from retrieve import EMBEDDING_MODEL, load_index
+        from retrieve import EMBEDDING_MODEL, load_ensemble, load_index
 
         cfg = corpora.get(name or corpora.active_name())
         if not cfg["indexed"]:
@@ -95,6 +95,10 @@ class Resources:
         # replaced together -- a half-switched state would serve one corpus's
         # passages under another's citations.
         self.index, self.metadata = load_index(cfg["store"])
+        # The optional second dense index. Replaced with the rest of the
+        # corpus's state, for the same reason: a half-switched server would
+        # search one corpus's vectors against another's metadata.
+        self.ensemble = load_ensemble(cfg["store"])
         if not hasattr(self, "model"):
             self.model = SentenceTransformer(EMBEDDING_MODEL)
         self.bm25 = build_bm25(self.metadata)
@@ -485,7 +489,7 @@ def chat(question: str, payload: dict) -> dict:
         trace = attach_locators(trace_pipeline(
             question, RES.index, RES.metadata, RES.model, bm25=RES.bm25,
             k=int(payload.get("k", 5)), threshold=RES.threshold(),
-            rerank_blend=RES.rerank_blend(),
+            rerank_blend=RES.rerank_blend(), ensemble=RES.ensemble,
             **{"candidate_k": RES.candidate_k(), **trace_options(payload)}))
 
     trace["attribution"] = attribution_for(question, trace)

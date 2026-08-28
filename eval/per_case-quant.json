@@ -4,6 +4,7 @@
   "k": 5,
   "candidate_k": 16,
   "rerank_blend": 0.0,
+  "ensemble": "BAAI/bge-small-en-v1.5",
   "use_reranker": true,
   "fusion": "rrf",
   "max_per_source": 2
@@ -30,16 +31,16 @@
   "answerable": {
    "n": 35,
    "hit_rate": 0.8857,
-   "mrr": 0.7429,
-   "ndcg": 0.7637,
-   "src_recall": 0.741,
+   "mrr": 0.7786,
+   "ndcg": 0.7856,
+   "src_recall": 0.7691,
    "refused_wrongly": 3,
    "missed": 2
   },
   "adversarial": {
    "n": 6,
-   "refused": 6,
-   "answered_anyway": 0
+   "refused": 5,
+   "answered_anyway": 1
   }
  },
  "cases": [
@@ -56,29 +57,29 @@
     "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
     "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
    ],
-   "confidence": -1.229,
+   "confidence": -1.15,
    "abstained": false,
    "outcome": "found",
    "results": [
     {
      "rank": 1,
+     "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+     "locator": "page 2",
+     "score": -1.1503,
+     "relevant": true
+    },
+    {
+     "rank": 2,
      "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
      "locator": "page 10",
      "score": -1.2287,
      "relevant": false
     },
     {
-     "rank": 2,
+     "rank": 3,
      "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
      "locator": "page 1",
      "score": -1.8653,
-     "relevant": false
-    },
-    {
-     "rank": 3,
-     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-     "locator": "page 26",
-     "score": -2.4797,
      "relevant": false
     },
     {
@@ -91,15 +92,15 @@
     {
      "rank": 5,
      "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
-     "locator": "page 13",
-     "score": -4.4612,
+     "locator": "page 33",
+     "score": -5.0525,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.25,
-   "ndcg": 0.4307,
-   "src_recall": 0.4,
+   "mrr": 1.0,
+   "ndcg": 0.8772,
+   "src_recall": 0.6,
    "context_recall": 1.0
   },
   {
@@ -144,9 +145,9 @@
     },
     {
      "rank": 5,
-     "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
-     "locator": "page 14",
-     "score": -3.3681,
+     "source": "simulating_stress_laws_under_extremal_dependence_character.pdf",
+     "locator": "page 1",
+     "score": -1.2009,
      "relevant": false
     }
    ],
@@ -201,16 +202,16 @@
     },
     {
      "rank": 5,
-     "source": "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
-     "locator": "page 7",
-     "score": -8.4503,
-     "relevant": false
+     "source": "zlend_a_dual_scope_cash_flow_reconstruction_framework_for.pdf",
+     "locator": "page 6",
+     "score": -8.6841,
+     "relevant": true
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
-   "src_recall": 0.5,
+   "ndcg": 0.9469,
+   "src_recall": 0.75,
    "context_recall": 1.0
   },
   {
@@ -243,23 +244,23 @@
     },
     {
      "rank": 3,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 14",
+     "score": -0.596,
+     "relevant": false
+    },
+    {
+     "rank": 4,
      "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
      "locator": "page 19",
      "score": -1.7232,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 5,
      "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
      "locator": "page 48",
      "score": -2.6748,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
-     "locator": "page 26",
-     "score": -3.6956,
      "relevant": false
     }
    ],
@@ -314,14 +315,14 @@
     {
      "rank": 5,
      "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-     "locator": "page 9",
-     "score": 0.7614,
-     "relevant": true
+     "locator": "page 6",
+     "score": -0.1214,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 0.5,
-   "ndcg": 0.6797,
+   "ndcg": 0.6509,
    "src_recall": 0.6667,
    "context_recall": 1.0
   },
@@ -350,22 +351,22 @@
     {
      "rank": 2,
      "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 2",
+     "score": -0.3723,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
      "locator": "page 5",
      "score": -0.9362,
      "relevant": false
     },
     {
-     "rank": 3,
+     "rank": 4,
      "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
      "locator": "page 3",
      "score": -2.6852,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-     "locator": "page 21",
-     "score": -3.0899,
      "relevant": false
     },
     {
@@ -392,50 +393,50 @@
     "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
     "large_language_model_driven_small_capitalization_trading_i.pdf"
    ],
-   "confidence": -2.304,
+   "confidence": -2.969,
    "abstained": false,
    "outcome": "found",
    "results": [
     {
      "rank": 1,
-     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-     "locator": "page 18",
-     "score": -2.3036,
-     "relevant": false
-    },
-    {
-     "rank": 2,
      "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
      "locator": "page 3",
      "score": -2.9686,
      "relevant": true
     },
     {
-     "rank": 3,
-     "source": "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf",
-     "locator": "page 29",
-     "score": -3.1532,
+     "rank": 2,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 2",
+     "score": -3.1884,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 3,
      "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
      "locator": "page 3",
      "score": -4.7885,
      "relevant": true
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
      "locator": "page 4",
      "score": -5.0164,
      "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+     "locator": "page 2",
+     "score": -5.1486,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
-   "mrr": 0.5,
-   "ndcg": 0.6509,
-   "src_recall": 0.3333,
+   "mrr": 1.0,
+   "ndcg": 0.9197,
+   "src_recall": 0.6667,
    "context_recall": 1.0
   },
   {
@@ -482,16 +483,16 @@
     },
     {
      "rank": 5,
-     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-     "locator": "page 2",
-     "score": -0.7552,
+     "source": "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+     "locator": "page 3",
+     "score": -4.1303,
      "relevant": true
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
    "ndcg": 0.8503,
-   "src_recall": 0.3333,
+   "src_recall": 0.6667,
    "context_recall": 1.0
   },
   {
@@ -519,16 +520,16 @@
     },
     {
      "rank": 2,
-     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
-     "locator": "page 36",
-     "score": -2.615,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 1",
+     "score": -1.1473,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-     "locator": "page 10",
-     "score": -3.5753,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 36",
+     "score": -2.615,
      "relevant": false
     },
     {
@@ -588,16 +589,16 @@
     },
     {
      "rank": 4,
-     "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
+     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
      "locator": "page 5",
-     "score": -7.7623,
+     "score": -10.2628,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
-     "locator": "page 6",
-     "score": -10.4283,
+     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+     "locator": "page 5",
+     "score": -10.644,
      "relevant": false
     }
    ],
@@ -659,15 +660,15 @@
     },
     {
      "rank": 5,
-     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
-     "locator": "page 1",
-     "score": -9.8446,
-     "relevant": true
+     "source": "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+     "locator": "page 3",
+     "score": -9.5474,
+     "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 0.8503,
+   "ndcg": 1.0,
    "src_recall": 0.4,
    "context_recall": 1.0
   },
@@ -767,9 +768,9 @@
     },
     {
      "rank": 5,
-     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-     "locator": "page 12",
-     "score": -10.1321,
+     "source": "self_consistent_adjoint_policy_iteration_for_constrained_d.pdf",
+     "locator": "page 14",
+     "score": -10.4599,
      "relevant": false
     }
    ],
@@ -823,16 +824,16 @@
     },
     {
      "rank": 5,
-     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
-     "locator": "page 9",
-     "score": -7.1289,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 21",
+     "score": -8.0884,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 0.5,
    "ndcg": 0.6309,
-   "src_recall": 1.0,
+   "src_recall": 0.6667,
    "context_recall": 1.0
   },
   {
@@ -866,28 +867,28 @@
     {
      "rank": 3,
      "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 7",
+     "score": 0.3431,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
      "locator": "page 2",
      "score": -1.9255,
      "relevant": true
     },
     {
-     "rank": 4,
-     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
-     "locator": "page 12",
-     "score": -2.3963,
-     "relevant": true
-    },
-    {
      "rank": 5,
-     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
-     "locator": "page 23",
-     "score": -9.7044,
+     "source": "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+     "locator": "page 7",
+     "score": -2.1513,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
+   "ndcg": 0.9675,
    "src_recall": 0.3333,
    "context_recall": 1.0
   },
@@ -1021,30 +1022,30 @@
     },
     {
      "rank": 2,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 15",
+     "score": -7.5467,
+     "relevant": false
+    },
+    {
+     "rank": 3,
      "source": "multi_level_market_making_with_reinforcement_learning.pdf",
      "locator": "page 17",
      "score": -7.8906,
      "relevant": false
     },
     {
-     "rank": 3,
-     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-     "locator": "page 7",
-     "score": -8.4835,
-     "relevant": false
-    },
-    {
      "rank": 4,
-     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-     "locator": "page 19",
-     "score": -9.5328,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 26",
+     "score": -8.0088,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
-     "locator": "page 2",
-     "score": -9.9822,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 7",
+     "score": -8.4835,
      "relevant": false
     }
    ],
@@ -1095,16 +1096,16 @@
     },
     {
      "rank": 4,
-     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
-     "locator": "page 4",
-     "score": -9.2626,
+     "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
+     "locator": "page 28",
+     "score": -9.3539,
      "relevant": false
     },
     {
      "rank": 5,
      "source": "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
-     "locator": "page 12",
-     "score": -9.9679,
+     "locator": "page 24",
+     "score": -9.5453,
      "relevant": false
     }
    ],
@@ -1157,23 +1158,23 @@
     },
     {
      "rank": 4,
-     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
-     "locator": "page 3",
-     "score": -3.4777,
-     "relevant": false
+     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
+     "locator": "page 6",
+     "score": -2.4735,
+     "relevant": true
     },
     {
      "rank": 5,
-     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
-     "locator": "page 5",
-     "score": -3.5985,
+     "source": "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+     "locator": "page 3",
+     "score": -3.4777,
      "relevant": false
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 1.0,
-   "src_recall": 0.4,
+   "ndcg": 0.9675,
+   "src_recall": 0.6,
    "context_recall": 0.0
   },
   {
@@ -1211,22 +1212,22 @@
     },
     {
      "rank": 4,
-     "source": "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
-     "locator": "page 12",
-     "score": -4.6005,
+     "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
+     "locator": "page 2",
+     "score": 1.6585,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
-     "locator": "page 6",
-     "score": -8.7554,
-     "relevant": false
+     "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
+     "locator": "page 1",
+     "score": 1.6044,
+     "relevant": true
     }
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 0.9197,
+   "ndcg": 0.8855,
    "src_recall": 1.0,
    "context_recall": 1.0
   },
@@ -1238,22 +1239,22 @@
    "gold_sources": [
     "dependence_informed_sparse_neural_architecture_for_stock_r.pdf"
    ],
-   "confidence": -0.203,
+   "confidence": -1.09,
    "abstained": false,
    "outcome": "missed",
    "results": [
     {
      "rank": 1,
      "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
-     "locator": "page 5",
-     "score": -0.2031,
+     "locator": "page 1",
+     "score": -1.0902,
      "relevant": false
     },
     {
      "rank": 2,
      "source": "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
-     "locator": "page 1",
-     "score": -1.0902,
+     "locator": "page 7",
+     "score": -3.4416,
      "relevant": false
     },
     {
@@ -1273,8 +1274,8 @@
     {
      "rank": 5,
      "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
-     "locator": "page 3",
-     "score": -8.6168,
+     "locator": "page 1",
+     "score": -9.3433,
      "relevant": false
     }
    ],
@@ -1488,9 +1489,9 @@
     },
     {
      "rank": 5,
-     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
-     "locator": "page 14",
-     "score": -10.4581,
+     "source": "a_contribution_to_the_critique_of_blockchain_censorship.pdf",
+     "locator": "page 5",
+     "score": -2.3582,
      "relevant": false
     }
    ],
@@ -1508,7 +1509,7 @@
    "gold_sources": [
     "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf"
    ],
-   "confidence": 2.344,
+   "confidence": 3.473,
    "abstained": false,
    "outcome": "found",
    "results": [
@@ -1516,28 +1517,28 @@
      "rank": 1,
      "source": "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
      "locator": "page 1",
-     "score": 2.3442,
+     "score": 3.4729,
      "relevant": true
     },
     {
      "rank": 2,
+     "source": "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
+     "locator": "page 1",
+     "score": 2.3442,
+     "relevant": true
+    },
+    {
+     "rank": 3,
      "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
      "locator": "page 8",
      "score": -0.7283,
      "relevant": false
     },
     {
-     "rank": 3,
-     "source": "calibration_induced_degeneracy_in_llm_financial_forecastin.pdf",
-     "locator": "page 5",
-     "score": -1.2618,
-     "relevant": true
-    },
-    {
      "rank": 4,
      "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
-     "locator": "page 6",
-     "score": -2.9956,
+     "locator": "page 1",
+     "score": -2.0814,
      "relevant": false
     },
     {
@@ -1550,9 +1551,9 @@
    ],
    "hit_rate": 1.0,
    "mrr": 1.0,
-   "ndcg": 0.9197,
+   "ndcg": 1.0,
    "src_recall": 1.0,
-   "context_recall": 1.0
+   "context_recall": 0.0
   },
   {
    "id": "qf-credit-stakeholders",
@@ -1704,9 +1705,9 @@
     },
     {
      "rank": 5,
-     "source": "governing_agentic_ai_in_fintech.pdf",
-     "locator": "page 16",
-     "score": -9.5885,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 40",
+     "score": -11.0599,
      "relevant": false
     }
    ],
@@ -1738,29 +1739,29 @@
     {
      "rank": 2,
      "source": "governing_agentic_ai_in_fintech.pdf",
-     "locator": "page 1",
-     "score": 3.0274,
-     "relevant": true
-    },
-    {
-     "rank": 3,
-     "source": "governing_agentic_ai_in_fintech.pdf",
-     "locator": "page 3",
-     "score": 2.803,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "governing_agentic_ai_in_fintech.pdf",
      "locator": "page 10",
      "score": 2.4576,
      "relevant": false
     },
     {
+     "rank": 3,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 13",
+     "score": 0.5975,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 16",
+     "score": -0.2762,
+     "relevant": false
+    },
+    {
      "rank": 5,
      "source": "governing_agentic_ai_in_fintech.pdf",
-     "locator": "page 17",
-     "score": 2.158,
+     "locator": "page 10",
+     "score": -0.3728,
      "relevant": false
     }
    ],
@@ -1778,29 +1779,29 @@
    "gold_sources": [
     "is_the_medium_the_message_social_disclosure_channels_and_f.pdf"
    ],
-   "confidence": 6.941,
+   "confidence": 7.103,
    "abstained": false,
    "outcome": "found",
    "results": [
     {
      "rank": 1,
      "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
-     "locator": "page 16",
-     "score": 6.9412,
+     "locator": "page 26",
+     "score": 7.1026,
      "relevant": false
     },
     {
      "rank": 2,
      "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
-     "locator": "page 3",
-     "score": 6.3084,
+     "locator": "page 16",
+     "score": 6.9412,
      "relevant": false
     },
     {
      "rank": 3,
      "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
-     "locator": "page 28",
-     "score": 6.1204,
+     "locator": "page 3",
+     "score": 6.3084,
      "relevant": false
     },
     {
@@ -1846,22 +1847,22 @@
     {
      "rank": 2,
      "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-     "locator": "page 21",
-     "score": 0.4416,
+     "locator": "page 22",
+     "score": 0.433,
      "relevant": false
     },
     {
      "rank": 3,
      "source": "multi_level_market_making_with_reinforcement_learning.pdf",
      "locator": "page 22",
-     "score": 0.433,
+     "score": 0.3809,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-     "locator": "page 22",
-     "score": 0.3809,
+     "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+     "locator": "page 1",
+     "score": -3.1142,
      "relevant": false
     },
     {
@@ -1940,7 +1941,7 @@
    "gold_sources": [
     "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf"
    ],
-   "confidence": 3.846,
+   "confidence": 4.312,
    "abstained": false,
    "outcome": "found",
    "results": [
@@ -1948,35 +1949,35 @@
      "rank": 1,
      "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
      "locator": "page 2",
-     "score": 3.8462,
+     "score": 4.3116,
      "relevant": true
     },
     {
      "rank": 2,
      "source": "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
-     "locator": "page 11",
-     "score": 2.3927,
-     "relevant": false
+     "locator": "page 2",
+     "score": 3.8462,
+     "relevant": true
     },
     {
      "rank": 3,
-     "source": "communicating_credit_risk_with_large_language_models_evalu.pdf",
-     "locator": "page 28",
-     "score": -5.1839,
-     "relevant": false
-    },
-    {
-     "rank": 4,
      "source": "communicating_credit_risk_with_large_language_models_evalu.pdf",
      "locator": "page 34",
      "score": -6.6804,
      "relevant": false
     },
     {
-     "rank": 5,
+     "rank": 4,
      "source": "governing_agentic_ai_in_fintech.pdf",
      "locator": "page 50",
      "score": -6.8963,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "the_triadic_stress_index_in_financial_markets.pdf",
+     "locator": "page 4",
+     "score": -7.0025,
      "relevant": false
     }
    ],
@@ -1984,7 +1985,7 @@
    "mrr": 1.0,
    "ndcg": 1.0,
    "src_recall": 1.0,
-   "context_recall": 0.0
+   "context_recall": 1.0
   },
   {
    "id": "adv-qf-syrinx",
@@ -2019,16 +2020,16 @@
     },
     {
      "rank": 4,
-     "source": "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
-     "locator": "page 8",
-     "score": -11.1226,
+     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
+     "locator": "page 21",
+     "score": -11.1314,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf",
-     "locator": "page 21",
-     "score": -11.1314,
+     "source": "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
+     "locator": "page 5",
+     "score": -11.1713,
      "relevant": false
     }
    ]
@@ -2039,22 +2040,22 @@
    "question": "How does the Calvin cycle fix carbon during photosynthesis?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -11.228,
+   "confidence": -11.146,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-     "locator": "page 17",
-     "score": -11.228,
+     "source": "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+     "locator": "page 6",
+     "score": -11.1458,
      "relevant": false
     },
     {
      "rank": 2,
-     "source": "is_the_medium_the_message_social_disclosure_channels_and_f.pdf",
-     "locator": "page 12",
-     "score": -11.2334,
+     "source": "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+     "locator": "page 17",
+     "score": -11.228,
      "relevant": false
     },
     {
@@ -2066,16 +2067,16 @@
     },
     {
      "rank": 4,
-     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
-     "locator": "page 30",
-     "score": -11.2624,
+     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
+     "locator": "page 2",
+     "score": -11.2668,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf",
-     "locator": "page 2",
-     "score": -11.2668,
+     "source": "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+     "locator": "page 23",
+     "score": -11.274,
      "relevant": false
     }
    ]
@@ -2113,16 +2114,16 @@
     },
     {
      "rank": 4,
-     "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
-     "locator": "page 24",
-     "score": -9.4062,
+     "source": "governing_agentic_ai_in_fintech.pdf",
+     "locator": "page 57",
+     "score": -9.3171,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "governing_agentic_ai_in_fintech.pdf",
-     "locator": "page 57",
-     "score": -9.7919,
+     "source": "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+     "locator": "page 24",
+     "score": -9.4062,
      "relevant": false
     }
    ]
@@ -2133,43 +2134,43 @@
    "question": "What commission does the broker charge per executed trade?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -6.101,
-   "abstained": true,
-   "outcome": "refused",
+   "confidence": -3.36,
+   "abstained": false,
+   "outcome": "answered_anyway",
    "results": [
     {
      "rank": 1,
+     "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -3.3603,
+     "relevant": false
+    },
+    {
+     "rank": 2,
      "source": "governing_agentic_ai_in_fintech.pdf",
      "locator": "page 10",
      "score": -6.1013,
      "relevant": false
     },
     {
-     "rank": 2,
+     "rank": 3,
      "source": "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
      "locator": "page 2",
      "score": -6.6207,
      "relevant": false
     },
     {
-     "rank": 3,
-     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
-     "locator": "page 18",
-     "score": -7.5535,
-     "relevant": false
-    },
-    {
      "rank": 4,
-     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
-     "locator": "page 2",
-     "score": -8.0293,
+     "source": "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
+     "locator": "page 22",
+     "score": -7.0103,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "governing_agentic_ai_in_fintech.pdf",
-     "locator": "page 10",
-     "score": -8.99,
+     "source": "multi_level_market_making_with_reinforcement_learning.pdf",
+     "locator": "page 2",
+     "score": -8.0293,
      "relevant": false
     }
    ]
@@ -2193,30 +2194,30 @@
     },
     {
      "rank": 2,
+     "source": "the_price_of_permission_classification_uncertainty_in_cons.pdf",
+     "locator": "page 40",
+     "score": -7.7441,
+     "relevant": false
+    },
+    {
+     "rank": 3,
      "source": "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
      "locator": "page 22",
      "score": -9.1715,
      "relevant": false
     },
     {
-     "rank": 3,
+     "rank": 4,
      "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
      "locator": "page 18",
      "score": -9.5573,
      "relevant": false
     },
     {
-     "rank": 4,
+     "rank": 5,
      "source": "large_language_model_driven_small_capitalization_trading_i.pdf",
      "locator": "page 8",
      "score": -9.673,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
-     "locator": "page 36",
-     "score": -10.3567,
      "relevant": false
     }
    ]

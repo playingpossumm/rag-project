@@ -738,23 +738,23 @@
     {
      "config": "rrf + rerank",
      "hit_rate": 0.886,
-     "mrr": 0.743,
-     "ndcg": 0.751,
-     "src_recall": 0.726
+     "mrr": 0.779,
+     "ndcg": 0.769,
+     "src_recall": 0.744
     },
     {
      "config": "+ diversity 2/src",
      "hit_rate": 0.886,
-     "mrr": 0.743,
-     "ndcg": 0.764,
-     "src_recall": 0.741
+     "mrr": 0.779,
+     "ndcg": 0.786,
+     "src_recall": 0.769
     },
     {
      "config": "+ diversity 1/src",
      "hit_rate": 0.857,
-     "mrr": 0.729,
-     "ndcg": 0.741,
-     "src_recall": 0.789
+     "mrr": 0.764,
+     "ndcg": 0.769,
+     "src_recall": 0.796
     }
    ],
    "pool": [
@@ -768,9 +768,9 @@
     {
      "config": "rrf",
      "hit_rate": 0.914,
-     "mrr": 0.492,
-     "ndcg": 0.597,
-     "src_recall": 0.796
+     "mrr": 0.592,
+     "ndcg": 0.619,
+     "src_recall": 0.798
     },
     {
      "config": "weighted a=0.3",
@@ -800,28 +800,28 @@
      -8.047,
      -7.206,
      -3.434,
-     -2.304,
+     -2.969,
      -1.63,
-     -1.229,
+     -1.15,
+     -1.09,
      -1.053,
      -0.619,
      -0.21,
-     -0.203,
      0.048,
      1.045,
      1.104,
      1.19,
      1.244,
      1.705,
-     2.344,
      2.718,
      2.814,
      2.914,
+     3.473,
      3.828,
-     3.846,
      4.013,
      4.028,
      4.258,
+     4.312,
      4.536,
      4.556,
      4.83,
@@ -829,19 +829,19 @@
      4.886,
      5.692,
      6.113,
-     6.941,
+     7.103,
      7.247
     ],
     "adversarial": [
-     -11.228,
+     -11.146,
      -10.938,
      -6.908,
      -6.676,
      -6.593,
-     -6.101
+     -3.36
     ]
    },
-   "median_answerable": 2.344,
+   "median_answerable": 2.718,
    "median_adversarial": -6.792,
    "sweep": [
     {
@@ -867,32 +867,32 @@
     {
      "t": -6.0,
      "refused": 3,
-     "caught": 6
+     "caught": 5
     },
     {
      "t": -5.5,
      "refused": 3,
-     "caught": 6
+     "caught": 5
     },
     {
      "t": -5.0,
      "refused": 3,
-     "caught": 6
+     "caught": 5
     },
     {
      "t": -4.5,
      "refused": 3,
-     "caught": 6
+     "caught": 5
     },
     {
      "t": -4.0,
      "refused": 3,
-     "caught": 6
+     "caught": 5
     },
     {
      "t": -3.5,
      "refused": 3,
-     "caught": 6
+     "caught": 5
     },
     {
      "t": -3.0,
@@ -901,7 +901,7 @@
     },
     {
      "t": -2.5,
-     "refused": 4,
+     "refused": 5,
      "caught": 6
     },
     {
@@ -916,12 +916,12 @@
     },
     {
      "t": -1.0,
-     "refused": 8,
+     "refused": 9,
      "caught": 6
     },
     {
      "t": -0.5,
-     "refused": 9,
+     "refused": 10,
      "caught": 6
     },
     {
@@ -951,12 +951,12 @@
     },
     {
      "t": 2.5,
-     "refused": 18,
+     "refused": 17,
      "caught": 6
     },
     {
      "t": 3.0,
-     "refused": 21,
+     "refused": 20,
      "caught": 6
     },
     {
@@ -966,7 +966,7 @@
     },
     {
      "t": 4.0,
-     "refused": 23,
+     "refused": 22,
      "caught": 6
     }
    ],
@@ -976,7 +976,7 @@
    },
    "at_calibrated": {
     "refused": 3,
-    "caught": 6
+    "caught": 5
    },
    "gold_mean": 2.51,
    "gold_divisor": 2.14,
@@ -1039,7 +1039,7 @@
   }
  ],
  "inputs": {
-  "corpora_json": "sha256:fcef6cf062544aa2",
+  "corpora_json": "sha256:ec33c91753611ee3",
   "per_corpus": {
    "llm": {
     "golden": {
@@ -1076,11 +1076,11 @@
     },
     "per_case": {
      "path": "eval/per_case-quant.json",
-     "digest": "sha256:807f6693ef655829"
+     "digest": "sha256:9c704956b591147b"
     },
     "results": {
      "path": "eval/results-quant.json",
-     "digest": "sha256:9f5de04e3979295c"
+     "digest": "sha256:97381673d96b2cd1"
     }
    }
   }

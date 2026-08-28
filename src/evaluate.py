@@ -32,7 +32,8 @@ from sentence_transformers import SentenceTransformer
 
 from abstain import ABSTAIN_THRESHOLD
 from hybrid import build_bm25
-from retrieve import CANDIDATE_K, EMBEDDING_MODEL, TOP_K, load_index, retrieve, shortlist
+from retrieve import (CANDIDATE_K, EMBEDDING_MODEL, TOP_K, load_ensemble,
+                      load_index, retrieve, shortlist)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -252,6 +253,13 @@ def main():
     # variable. The env var still decides when the golden set is not one of
     # the configured corpora.
     index, metadata = load_index(corpus_cfg["store"] if corpus_cfg else None)
+    # The second dense retriever, if this corpus has one. Without it this file
+    # measured MRR 0.743 on quant while per_case.py and the server produced
+    # 0.779 -- two independent paths disagreeing, which is the signal this
+    # project treats as a defect rather than as noise.
+    ensemble = load_ensemble(corpus_cfg["store"] if corpus_cfg else None)
+    if ensemble:
+        print(f"second dense retriever: {ensemble[1]}")
     model = SentenceTransformer(EMBEDDING_MODEL)
     bm25 = build_bm25(metadata)
 
@@ -264,6 +272,7 @@ def main():
     # to prevent. eval/RESULTS.md still said 20 papers and 2,768 chunks long
     # after the corpus reached 36 and 5,459.
     emitted["corpus"] = {
+        "ensemble": ensemble[1] if ensemble else None,
         "chunks": int(index.ntotal),
         "documents": len({c["source"] for c in metadata}),
         "answerable_cases": len(answerable),
@@ -288,7 +297,7 @@ def main():
     print(f"{'first stage':<18}{'any-hit':>9}{'MRR':>9}{'src recall':>12}")
     for label, cfg in pools:
         summary, _ = score_run(answerable, lambda q, c=cfg: shortlist(
-            q, index, metadata, model, k=args.candidate_k, bm25=bm25, **c),
+            q, index, metadata, model, k=args.candidate_k, bm25=bm25, ensemble=ensemble, **c),
             k=args.candidate_k)
         emitted["candidate_pool"][label] = {
             k2: round(v, 3) for k2, v in summary.items()}
@@ -326,7 +335,7 @@ def main():
     for label, cfg in finals:
         summary, per_case = score_run(answerable, lambda q, c=cfg: retrieve(
             q, index, metadata, model, k=args.k,
-            candidate_k=args.candidate_k, bm25=bm25, **c), k=args.k)
+            candidate_k=args.candidate_k, bm25=bm25, ensemble=ensemble, **c), k=args.k)
         runs[label] = (summary, per_case)
         emitted["end_to_end"][label.strip()] = {
             k2: round(v, 3) for k2, v in summary.items()}
@@ -358,7 +367,7 @@ def main():
         hits, toks, blocks = 0.0, 0, 0
         for case in with_answers:
             res = retrieve(case["question"], index, metadata, model, k=args.k,
-                           candidate_k=args.candidate_k, bm25=bm25,
+                           candidate_k=args.candidate_k, bm25=bm25, ensemble=ensemble,
                            use_reranker=True, **cfg)
             hits += context_recall(res, case["answer_contains"])
             toks += context_tokens(res, tok)
@@ -377,7 +386,7 @@ def main():
     # the tradeoff curve it should be picked from.
     def top1(case):
         res = retrieve(case["question"], index, metadata, model, k=args.k,
-                       candidate_k=args.candidate_k, bm25=bm25, use_reranker=True)
+                       candidate_k=args.candidate_k, bm25=bm25, ensemble=ensemble, use_reranker=True)
         return res[0]["rerank_score"] if res else float("-inf")
 
     ans_scores = [top1(c) for c in answerable]

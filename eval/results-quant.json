@@ -1,5 +1,6 @@
 {
   "corpus": {
+    "ensemble": "BAAI/bge-small-en-v1.5",
     "chunks": 6184,
     "documents": 35,
     "answerable_cases": 35,
@@ -19,9 +20,9 @@
     },
     "rrf": {
       "hit_rate": 0.914,
-      "mrr": 0.492,
-      "ndcg": 0.597,
-      "src_recall": 0.796
+      "mrr": 0.592,
+      "ndcg": 0.619,
+      "src_recall": 0.798
     },
     "weighted a=0.3": {
       "hit_rate": 0.886,
@@ -63,21 +64,21 @@
     },
     "rrf + rerank": {
       "hit_rate": 0.886,
-      "mrr": 0.743,
-      "ndcg": 0.751,
-      "src_recall": 0.726
+      "mrr": 0.779,
+      "ndcg": 0.769,
+      "src_recall": 0.744
     },
     "+ diversity 2/src": {
       "hit_rate": 0.886,
-      "mrr": 0.743,
-      "ndcg": 0.764,
-      "src_recall": 0.741
+      "mrr": 0.779,
+      "ndcg": 0.786,
+      "src_recall": 0.769
     },
     "+ diversity 1/src": {
       "hit_rate": 0.857,
-      "mrr": 0.729,
-      "ndcg": 0.741,
-      "src_recall": 0.789
+      "mrr": 0.764,
+      "ndcg": 0.769,
+      "src_recall": 0.796
     }
   },
   "expansion": {
@@ -87,14 +88,14 @@
       "blocks_per_query": 5.0
     },
     "window +/-1": {
-      "context_recall": 0.8,
-      "tokens_per_query": 2278,
+      "context_recall": 0.829,
+      "tokens_per_query": 2288,
       "blocks_per_query": 5.0
     },
     "page": {
       "context_recall": 0.886,
-      "tokens_per_query": 4696,
-      "blocks_per_query": 4.6
+      "tokens_per_query": 4528,
+      "blocks_per_query": 4.5
     }
   },
   "abstention": {
@@ -111,17 +112,17 @@
       },
       {
         "threshold": -6,
-        "caught": 6,
+        "caught": 5,
         "false_abstain": 3
       },
       {
         "threshold": -5,
-        "caught": 6,
+        "caught": 5,
         "false_abstain": 3
       },
       {
         "threshold": -4,
-        "caught": 6,
+        "caught": 5,
         "false_abstain": 3
       },
       {
@@ -137,7 +138,7 @@
       {
         "threshold": -1,
         "caught": 6,
-        "false_abstain": 8
+        "false_abstain": 9
       },
       {
         "threshold": 0,
@@ -156,10 +157,10 @@
       }
     ],
     "shipped_threshold": -4.0,
-    "best_net_threshold": -6,
+    "best_net_threshold": -3,
     "n_answerable": 35,
     "n_adversarial": 6,
-    "answerable_median": 2.3441600799560547,
+    "answerable_median": 2.718047618865967,
     "adversarial_median": -6.79162073135376
   },
   "generated_by": "src/evaluate.py",

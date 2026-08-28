@@ -25,8 +25,10 @@
     "store": "store-quant",
     "golden": "eval/golden-quant.json",
     "threshold": -4.0,
-    "note": "35 arXiv q-fin papers. Recalibrated 2026-08-26 after the golden set was rewritten: -6, -5 and -4 all catch every one of the six adversarial cases and wrongly refuse the same three of thirty-five, so the shipped -4 stands. At 0.0 it would refuse eleven. The earlier note claimed 0.0 refused nineteen of thirty-five; that was measured against a golden set asking textbook definitional questions this corpus never answers, and those questions scored low because they were unanswerable, not because the threshold was wrong. Answerable questions now score a median of +2.34, against -0.38 before. Candidate pool: 16 is weakly dominant here too, and by more than on the ML set: MRR +2.9, NDCG +1.5, any-hit and source recall unchanged, 21% less reranking.",
+    "note": "35 arXiv q-fin papers. Recalibrated 2026-08-26 after the golden set was rewritten: -6, -5 and -4 all catch every one of the six adversarial cases and wrongly refuse the same three of thirty-five, so the shipped -4 stands. At 0.0 it would refuse eleven. The earlier note claimed 0.0 refused nineteen of thirty-five; that was measured against a golden set asking textbook definitional questions this corpus never answers, and those questions scored low because they were unanswerable, not because the threshold was wrong. Answerable questions now score a median of +2.72, against -0.38 before the golden set was rewritten and +2.34 before the second dense retriever. Candidate pool: 16 is weakly dominant here too, and by more than on the ML set: MRR +2.9, NDCG +1.5, any-hit and source recall unchanged, 21% less reranking. Second dense retriever: bge-small-en-v1.5, fused by RRF alongside dense and BM25. Measured end to end 2026-08-28: MRR 0.743 -> 0.779, NDCG 0.764 -> 0.786, source recall 0.741 -> 0.769, any-hit unchanged at 0.886. Enabled here and NOT on the other two: the ML papers lose 0.030 of any-hit and every other metric with it, and birds gains a question of any-hit while losing MRR, which this project reads as the less trustworthy half on 26 cases.",
     "rerank_blend": 0.0,
-    "candidate_k": 16
+    "candidate_k": 16,
+    "ensemble_model": "BAAI/bge-small-en-v1.5",
+    "ensemble_prefix": "Represent this sentence for searching relevant passages: "
   }
 }

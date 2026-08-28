@@ -43,11 +43,11 @@ single most reused finding in this project, see §4.
 | passages | 5,459 | 864 | 6,184 |
 | cases | 67 + 17 adv | 26 + 6 adv | 35 + 6 adv |
 | any-hit@5 | **0.851** | **0.846** | **0.886** |
-| MRR | 0.739 | 0.613 | 0.743 |
-| source recall | 0.761 | 0.762 | 0.741 |
+| MRR | 0.739 | 0.613 | 0.779 |
+| source recall | 0.761 | 0.762 | 0.769 |
 | abstention threshold | 0.0 | −5.5 | −4.0 |
 | rerank blend | 0.0 | 0.20 | 0.0 |
-| answerable median | +4.93 | +1.15 | +2.34 |
+| answerable median | +4.93 | +1.15 | +2.72 |
 
 Shipped config throughout: RRF fusion, cross-encoder rerank, diversity cap
 2/source, window±1 context expansion.

@@ -220,6 +220,12 @@ def check_per_case(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Pat
         rep.stale(name, "per_case",
                   f"scored at threshold {pc['threshold']:+.1f}; corpora.json "
                   f"ships {want_thr:+.1f} for this corpus", fix)
+    got_ens = pc.get("options", {}).get("ensemble")
+    want_ens = cfg.get("ensemble_model")
+    if "ensemble" in pc.get("options", {}) and got_ens != want_ens:
+        rep.stale(name, "per_case",
+                  f"scored with second retriever {got_ens!r}; corpora.json "
+                  f"ships {want_ens!r}", fix)
     got_cand = pc.get("options", {}).get("candidate_k")
     if got_cand is not None and got_cand != cfg.get("candidate_k", got_cand):
         rep.stale(name, "per_case",

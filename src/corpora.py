@@ -78,6 +78,12 @@ def registry() -> dict[str, dict]:
             # per corpus it is not one. Reranking is 92-95% of query latency,
             # so this is also the only latency dial that matters.
             "candidate_k": int(cfg.get("candidate_k") or CANDIDATE_K),
+            # The optional second dense retriever. Named here rather than
+            # assumed, and the query prefix travels with it: the BGE and E5
+            # families are trained with an instruction on the query side and
+            # score materially worse without it.
+            "ensemble_model": cfg.get("ensemble_model"),
+            "ensemble_prefix": cfg.get("ensemble_prefix", ""),
             "indexed": bool(store and (store / "metadata.json").exists()),
         }
     return out

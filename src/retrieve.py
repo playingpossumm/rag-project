@@ -20,6 +20,12 @@ if hasattr(sys.stdout, "reconfigure"):
 STORE_DIR = Path(os.environ.get("RAG_STORE_DIR",
                                 Path(__file__).parent.parent / "vector_store")).expanduser()
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+
+# The second dense retriever's embedder, held for the life of the process. None
+# until a corpus that names one is served; a corpus without an ensemble index
+# never constructs it.
+_ensemble_model = None
+_ensemble_model_name = None
 TOP_K = 5
 
 # The reranker only reorders what the first stage hands it, so a relevant chunk
@@ -34,6 +40,23 @@ CANDIDATE_K = 20
 # property of the method. Defaulting to RRF is the choice that stays correct as
 # the corpus grows.
 DEFAULT_FUSION = "rrf"
+
+
+def load_ensemble(store_dir=None):
+    """The optional second dense index, or None if this corpus has none.
+
+    Returns (index, model_name, query_prefix). Kept separate from load_index()
+    so a corpus without one costs nothing: no file is opened and no second
+    embedder is constructed.
+    """
+    store = Path(store_dir) if store_dir else STORE_DIR
+    manifest = store / "ensemble.json"
+    index_file = store / "index-ensemble.faiss"
+    if not (manifest.exists() and index_file.exists()):
+        return None
+    meta = json.loads(manifest.read_text(encoding="utf-8"))
+    return (faiss.read_index(str(index_file)),
+            meta["model"], meta.get("query_prefix", ""))
 
 
 def load_index(store_dir=None):
@@ -83,6 +106,25 @@ def search(query: str, index, metadata, model, k: int = TOP_K,
     return results
 
 
+def search_ensemble(query: str, ensemble, metadata, k: int,
+                    allowed_ids: list[int] | None = None) -> list[dict]:
+    """Dense search over the second index, with its own embedder.
+
+    The embedder is cached on the module rather than rebuilt per query: it is
+    the same object for the life of the process, and constructing a
+    SentenceTransformer costs seconds.
+    """
+    global _ensemble_model, _ensemble_model_name
+    faiss_index, model_name, prefix = ensemble
+    if _ensemble_model is None or _ensemble_model_name != model_name:
+        from sentence_transformers import SentenceTransformer
+
+        _ensemble_model = SentenceTransformer(model_name)
+        _ensemble_model_name = model_name
+    return search(prefix + query, faiss_index, metadata, _ensemble_model,
+                  k=k, allowed_ids=allowed_ids)
+
+
 def shortlist(
     query: str,
     index,
@@ -94,6 +136,7 @@ def shortlist(
     alpha: float = 0.5,
     allowed_ids: list[int] | None = None,
     query_expansion: str = "none",
+    ensemble=None,
 ) -> list[dict]:
     """First stage: produce the candidate pool the reranker will reorder.
 
@@ -105,7 +148,8 @@ def shortlist(
     if fusion == "none":
         return dense
 
-    from hybrid import bm25_search, build_bm25, fuse_rrf, fuse_weighted
+    from hybrid import (bm25_search, build_bm25, fuse_rrf, fuse_rrf_many,
+                        fuse_weighted)
 
     # Callers that run many queries should build this once and pass it in; the
     # eval harness does. Building per call is only acceptable for one-shot use.
@@ -126,6 +170,20 @@ def shortlist(
     sparse = bm25_search(query, bm25, metadata, k=k, allowed_ids=allowed_ids,
                          terms=terms)
     if fusion == "rrf":
+        # The optional second dense retriever. Measured before it was built
+        # (src/sweep_ensemble.py): fusing the shipped embedder with
+        # bge-small-en-v1.5 is weakly dominant across all three corpora and
+        # takes bird pool recall to 1.000, pulling bird-alula out of the
+        # structural fixture.
+        #
+        # It joins the SAME fusion rather than pre-fusing with dense and then
+        # fusing that with BM25. Pre-fusing would let the two dense arms vote
+        # twice against BM25's once, which is a weighting decision made by
+        # accident of nesting rather than on evidence.
+        if ensemble is not None:
+            second = search_ensemble(query, ensemble, metadata, k=k,
+                                     allowed_ids=allowed_ids)
+            return fuse_rrf_many([dense, second, sparse], k=k)
         return fuse_rrf(dense, sparse, k=k)
     if fusion == "weighted":
         return fuse_weighted(dense, sparse, k=k, alpha=alpha)
@@ -152,6 +210,9 @@ def retrieve(
     # the module default in rerank.py, which is 0.0 -- the cross-encoder
     # deciding alone. Set per corpus, because it does not transfer.
     rerank_blend: float | None = None,
+    # The optional second dense index, from load_ensemble(). None means this
+    # corpus does not have one and the pipeline behaves exactly as before.
+    ensemble=None,
 ) -> list[dict]:
     """Full retrieval pipeline: shortlist, rerank, then expand context.
 
@@ -166,7 +227,8 @@ def retrieve(
         candidates = shortlist(query, index, metadata, model, k=candidate_k,
                                fusion=fusion, bm25=bm25, alpha=alpha,
                                allowed_ids=allowed_ids,
-                               query_expansion=query_expansion)
+                               query_expansion=query_expansion,
+                               ensemble=ensemble)
         # Rerank the whole pool, then select k. Selecting first would give the
         # diversity step nothing to choose between.
         ranked = rerank(query, candidates, k=len(candidates),
@@ -177,7 +239,8 @@ def retrieve(
         results = shortlist(query, index, metadata, model, k=k,
                             fusion=fusion, bm25=bm25, alpha=alpha,
                             allowed_ids=allowed_ids,
-                            query_expansion=query_expansion)
+                            query_expansion=query_expansion,
+                            ensemble=ensemble)
 
     # Expansion runs last, deliberately. Ranking on small chunks is what keeps
     # precision high; growing them any earlier would feed the reranker diluted
