@@ -468,6 +468,16 @@ echo, commit, or include it in any artifact. **The account has zero credit**, so
 generation calls fail with `invalid_request_error`. Retrieval-only works and is the
 deliberate default.
 
+**Licence: MIT** (`LICENSE`), added 2026-08-28 for the public release.
+
+**`data/`, `store-birds/` and `store-quant/` are untracked** as of 2026-08-28 —
+78 MB of third-party papers and the same text again inside `metadata.json`.
+They remain in the *history* deliberately: `HANDOFF.md` §5 cites `f2ab5de` and
+`f1ea450`, and `serve.py` embeds `d1f8c71` in the archive banner a visitor
+reads, so a rewrite would silently dangle three live references. See
+`docs/engineering-log.md`, 2026-08-28. Rebuild the corpora with
+`src/fetch_corpus.py`, `src/fetch_topic.py` and `src/ingest.py`.
+
 **Git identity is repo-local**: `playingpossumm <the owner's address, removed 2026-09-07>`. The owner
 explicitly did not want their work email on this repo — do not change it.
 

@@ -1331,6 +1331,50 @@ refusal being asserted.
 
 ---
 
+## 2026-08-28 — Going public: MIT, and the history stays
+
+**The licence is MIT.** "Public" without one legally means nobody may reuse
+anything, which for a project whose stated purpose is to be read and learned
+from is the opposite of the intent. Apache-2.0 was considered and rejected: its
+patent grant and NOTICE requirements are overhead here with no corresponding
+benefit.
+
+**The source documents are untracked but NOT purged from history**, and the
+second half of that was the real decision.
+
+`data/` is 36 arXiv PDFs and the two topic stores hold the same text again,
+verbatim, inside `metadata.json` — 78 MB of other people's work. Adding them to
+`.gitignore` does not untrack them, so all 44 files were still in HEAD; they are
+out now, and rebuildable with `fetch_corpus.py`, `fetch_topic.py` and
+`ingest.py`.
+
+Removing them from the *history* is a different operation, and the argument for
+it is sound: a file in the history of a public repository is published whether
+or not it is in HEAD, so every clone still downloads all 78 MB and the PDFs stay
+retrievable from earlier commits. `git-filter-repo` was installed and the rewrite
+prepared, with a backup branch, a tag and a copy of the files.
+
+**It was not run, and the deciding reason is specific rather than general.**
+This project's documents cite its own commit SHAs. `HANDOFF.md` §5 points at
+`f2ab5de` and `f1ea450` for the deleted ambient-field work, and `serve.py`
+embeds `d1f8c71` in the banner it serves over the archived front page — a
+visitor reads that SHA on screen. All three resolve today. A rewrite changes
+every SHA in the repository, so all three would become dangling references, and
+they would fail silently: nothing in the test suite or the four guards checks
+that a commit named in prose still exists.
+
+Weighed against that, the redistribution concern is real but modest. arXiv's
+submission licence grants a non-exclusive right to distribute, many of these
+papers are CC-BY, and a research-tooling repository carrying the papers it was
+measured against is ordinary practice. 67 MB is unremarkable for GitHub.
+
+So: history preserved, HEAD clean, and the reasoning written down rather than
+left as an unexplained absence. If the redistribution question is ever revisited,
+the rewrite is one command — and the three SHA references have to be fixed in
+the same change, which is the part that is easy to miss.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
