@@ -10,6 +10,13 @@ down to the page, slide or spreadsheet row.
 design decision in it was measured — and several conclusions that had already
 been written up as results turned out to be wrong.**
 
+New here? Run it and open **`/about`**, which explains why the project exists,
+walks the pipeline stage by stage, and defines every term the interface uses.
+If you would rather read than run: [what was measured and what it
+overturned](#why-this-exists) is the short version, and
+[`docs/engineering-log.md`](docs/engineering-log.md) is the long one, including
+the experiments that failed.
+
 ```
                        any-hit@5    MRR    NDCG   source recall
   naive RAG                0.791  0.581   0.629           0.664
@@ -262,18 +269,64 @@ RAG_STORE_DIR=store-birds RAG_DATA_DIR=data-birds python src/ingest.py
 python src/calibrate_threshold.py --golden eval/golden-birds.json
 ```
 
+**Measuring.** Every number in this README and on the analytics page comes
+from these, and nothing is transcribed by hand:
+
 ```bash
 python src/evaluate.py         # reproduce every number in this README
 python src/per_case.py         # per-case outcomes -> eval/per_case.json
 python src/build_analytics.py  # what the pages plot -> eval/analytics.json
-python src/check_freshness.py  # is any of the above stale? exit 1 if so
 python src/hard_cases.py       # only the cases nothing gets right, in ~20s
-python src/test_metrics.py     # the scoring functions, hand-computed (ms)
-python src/test_trace.py       # the trace and the serving path still agree
-python src/test_freshness.py   # the staleness check catches each known failure
-python src/serve.py            # local HTTP API and UI on :8000
-python src/test_loaders.py     # .docx/.pptx/.xlsx/.pdf round-trips
 ```
+
+**Four guards, each exiting non-zero rather than printing a warning nobody
+reads.** They exist because a generated file has gone stale silently three
+times, and once the front page spent four days offering questions that had been
+deleted from the golden set for being unanswerable:
+
+```bash
+python src/check_freshness.py     # golden set -> per_case -> analytics -> front page
+python src/check_golden.py        # do the labels still describe the corpus?
+python src/check_docs.py          # do the documents match the measurements?
+python src/build_results_doc.py --check
+```
+
+**Experiments**, kept because a refuted one is worth as much as a shipped one:
+
+```bash
+python src/sweep_fusion.py            # every fusion, every corpus
+python src/sweep_candidates.py        # what reranking fewer candidates costs
+python src/sweep_ensemble.py          # two embedders fused
+python src/compare_rerankers.py       # would a different cross-encoder help?
+python src/profile_query.py           # where the time in one query goes
+```
+
+**Tests.** All of them run without a network and without an API key:
+
+```bash
+python src/test_metrics.py        # the scoring functions, hand-computed
+python src/test_trace.py          # the trace and the serving path agree
+python src/test_loaders.py        # .docx/.pptx/.xlsx/.pdf round-trips
+python src/test_golden.py         # the label audit catches each known fault
+python src/test_freshness.py      # the staleness check catches each known fault
+python src/test_routes.py         # every HTTP route answers (starts its own server)
+python src/test_generate_local.py # generation over a real socket
+node  ui/test-answer-mark.mjs     # which words of a passage are set bold
+```
+
+**Writing prose from the passages is optional and off by default.** What the
+interface shows is the retrieved text, verbatim. To have a model write the
+answer instead, point it at a local one — no API key, no account, no data
+leaving the machine:
+
+```bash
+ollama serve && ollama pull llama3.2
+RAG_GENERATOR=ollama python src/serve.py
+```
+
+`RAG_GENERATOR=anthropic` (the default) uses `claude-opus-5` and needs
+`ANTHROPIC_API_KEY` in a `.env`. Both go through one `synthesize(question,
+chunks)` contract, so the rest of the system does not know which is running.
 
 The server binds to 127.0.0.1 on purpose and makes no external request: the
 documents may be private, and the interface's fonts are bundled rather than
@@ -291,6 +344,9 @@ only version there is.
 ## The interface
 
 `python src/serve.py`, then <http://127.0.0.1:8000>.
+
+Three pages: **`/`** to ask, **`/about`** for why the project exists and what
+every term means, **`/quality`** for every measurement behind it.
 
 Pick a set of documents, ask a question, and the answer arrives with the passage
 it came from, cited to the page, slide, or spreadsheet rows. A passage pulled
@@ -321,21 +377,40 @@ parameters had to be re-derived when the corpus changed, and one conclusion
 reversed outright. Pointing this at different documents means re-running the
 harness.
 
-- **Cross-document confusion is unsolved.** "What optimizer was used to train the
-  Transformer?" returns Vision Transformer. Title prefixing was tried and failed.
+- **Twelve questions fail under every pipeline configuration**, and they are two
+  different problems. Seven, on the ML papers, ask about an attribute many
+  papers share — the topic matches a dozen documents and the clause that picks
+  one out is ignored. The other five *describe* a term and ask for its name
+  ("which small group of feathers helps prevent a stall at low speed"), so the
+  answer word is absent from the question. The first wants query decomposition;
+  the second is vocabulary mismatch, and one of the five was recovered by
+  changing the embedder alone.
+- **The reranker is the weakest stage and off-the-shelf options are exhausted.**
+  Three cross-encoders were compared and int8 quantisation measured; the
+  candidates that are faster are worse, and the one that separates best is
+  dramatically slower and ranks worse. What remains is a fine-tune on 157
+  labelled cases, which is probably too few.
+- **No real model has been benchmarked writing answers.** Generation runs — the
+  path executes end to end against a local Ollama — but no measurement of answer
+  *quality* exists, only of retrieval. A 3B local model is also brittle: changing
+  one word of the prompt from "Context:" to "Excerpts:" is the difference
+  between a citation with no prose and a correct answer.
 - **Native Google Docs cannot be read.** A `.gdoc` is a URL pointer with no
   content; ingestion says so explicitly rather than indexing emptiness.
-- **Generation has never been executed** — the code path exists but requires API
-  credit. Retrieval-only is fully functional.
 - **No permissions model.** Fine for one user; not for a team.
-- **The corpus is 20 ML papers.** Deliberately similar, which is the hard case,
-  but not contracts or spreadsheets — behaviour on those is untested.
-- **84 cases is still small.** Each answerable case is worth ~1.5 points, so
-  treat differences under ~0.03 as noise. The 23-case set had a 4.3-point
-  resolution and produced three false conclusions (finding 6); assume this one
-  is hiding others.
+- **157 cases across three corpora is still small.** On the 26-case bird set each
+  answerable question is worth ~3.8 points, so a one-question difference looks
+  like a result and is not. Treat small differences as noise: a 23-case set
+  earlier in this project produced three false conclusions (finding 6), and
+  assume these are hiding others.
 - **Labels were authored by the same process that built the system.** Mitigated by
-  deriving them from the corpus, not eliminated.
+  deriving them from the corpus and by auditing them structurally
+  (`src/check_golden.py`), not eliminated.
+- **Every corpus needs its own tuning.** Five settings have now been measured as
+  per-corpus rather than global — the abstention threshold, the rerank blend, the
+  candidate pool size, the choice of embedder, and whether fusing a second
+  embedder helps at all. Pointing this at your own documents means re-running the
+  harness, not just re-indexing.
 
 ---
 
