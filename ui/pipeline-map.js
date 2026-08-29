@@ -995,10 +995,10 @@ export function captions(run) {
   return [
     { title: "Index",
       text: `${run.city.docs} documents were split into ${run.city.total.toLocaleString()} `
-          + `overlapping passages — overlapping so a sentence that straddles a `
-          + `boundary survives whole in one of them — and each was turned into a `
-          + `vector once, before any question was asked. Every stage after this `
-          + `one narrows it.` },
+          + `overlapping passages. They overlap so that a sentence crossing a `
+          + `boundary survives whole in one of them. Each was turned into a `
+          + `vector once, before any question was asked, and every stage after `
+          + `this one narrows the set.` },
 
     { title: "Dense retrieval",
       text: `The question becomes a vector the same way the passages did, and `
@@ -1010,8 +1010,8 @@ export function captions(run) {
       text: c.sparse
         ? `The same index searched a second way, by word overlap, weighting rare `
           + `words far above common ones. ${c.sparse} candidates. It runs alongside `
-          + `dense retrieval rather than after it, and catches the exact terms — a `
-          + `species name, a symbol — that an embedding averages away.`
+          + `dense retrieval rather than after it, and catches exact terms that `
+          + `an embedding averages away, such as a species name or a symbol.`
         : `No word in the question appears in the index, so lexical search returned `
           + `nothing and the result rests on dense retrieval alone.` },
 
@@ -1023,9 +1023,9 @@ export function captions(run) {
 
     { title: "Cross-encoder",
       text: `Every stage so far compared the question and the passage separately. `
-          + `Here a second model reads them together, one pair at a time — slower, `
-          + `and much better at telling a passage that mentions the subject from one `
-          + `that answers the question. `
+          + `Here a second model reads them together, one pair at a time. It is `
+          + `slower, and much better at telling a passage that mentions the subject `
+          + `from one that answers the question. `
           + (big
               ? `Biggest correction: ${shortDoc(big.source)} moved `
                 + `${big.delta > 0 ? "up" : "down"} ${Math.abs(big.delta)} places.`
@@ -1041,9 +1041,9 @@ export function captions(run) {
       text: run.confident
         ? `The ${c.selected} passages above are what the answer is drawn from and `
           + `what gets cited. Nothing outside them reached the answer.`
-        : `The best passage scored below this set's cut-off — the score under `
-          + `which passages from these documents usually turn out not to hold the `
-          + `answer. So nothing is returned. The candidates are still listed, so `
-          + `you can see what was considered and judge for yourself.` },
+        : `The best passage scored below this set's cut-off. That is the score `
+          + `under which passages from these documents usually turn out not to `
+          + `hold the answer, so nothing is returned. The candidates are still `
+          + `listed, so you can see what was considered and judge for yourself.` },
   ];
 }

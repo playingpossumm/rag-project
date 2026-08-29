@@ -83,6 +83,16 @@ button,input,textarea{font:inherit;color:inherit}
 .brand span{color:var(--faint)}
 .top nav{margin-left:auto;display:flex;gap:20px;align-items:center}
 .top nav a{white-space:nowrap}
+.herovizhead{display:flex;flex-direction:column;gap:3px;align-items:center;
+  margin-bottom:6px}
+.herovizhead .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint)}
+.herovizhead .sub{font-size:12.5px;color:var(--mute);max-width:52ch;
+  text-align:center}
+.setwhy{font-family:var(--sans);font-size:10.5px;letter-spacing:0;
+  text-transform:none;color:var(--mute);text-decoration:underline;
+  text-underline-offset:2px;margin-left:7px}
+.setwhy:hover{color:var(--ink)}
 /* A phone header. The name and the links do not fit at 13px on a 375px
    screen: the brand broke after "retrieval" and the header went to two rows.
    Both step down. */
@@ -124,6 +134,10 @@ button,input,textarea{font:inherit;color:inherit}
   color:var(--dim);writing-mode:vertical-rl;
   transition:color 160ms var(--ease),border-color 160ms var(--ease)}
 .trayTab:hover{color:var(--ink);border-color:var(--edge)}
+/* Nothing to configure before there is an answer to configure. The tab used to
+   sit on the edge of an empty page inviting a visitor to tune a pipeline they
+   had not yet run. */
+body:not(.asked) .tray{display:none}
 .trayTab .ico{width:6px;height:6px;border-radius:50%;background:var(--wire);flex:none}
 .trayTab.on .ico{background:var(--warn)}
 /* Transform and opacity, not width. Animating width relayouts the panel and
@@ -132,7 +146,11 @@ button,input,textarea{font:inherit;color:inherit}
    anchored to, which is also where it comes from. visibility is transitioned
    with a delay so a closed panel leaves the accessibility tree without
    cutting the fade short. */
+/* Height-capped and scrollable. It was centred on the viewport with no
+   ceiling, so on a laptop the top and bottom of the panel sat off-screen and
+   the only way to see the whole thing was to zoom the browser out. */
 .trayPanel{position:absolute;right:100%;top:50%;width:min(430px,86vw);
+  max-height:min(88vh,760px);overflow-y:auto;overscroll-behavior:contain;
   transform:translate(14px,-50%);opacity:0;visibility:hidden;pointer-events:none;
   background:var(--card);border:1px solid var(--hair);border-radius:12px 0 0 12px;
   box-shadow:-18px 0 44px rgba(0,0,0,.5);
@@ -524,10 +542,14 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .ranwith .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
   text-transform:uppercase;color:var(--faint)}
 .ranwith .vv{font-size:13px;color:var(--mute)}
-.ranwith .tweak{margin-left:auto;background:none;border:1px solid var(--hair);
+.ranwith .tweak{margin-left:auto;background:rgba(57,135,229,.12);
+  border:1px solid rgba(57,135,229,.42);
   border-radius:999px;padding:6px 14px;cursor:pointer;font:inherit;font-size:12.5px;
-  color:var(--dim);transition:border-color 160ms var(--ease),color 160ms var(--ease)}
-.ranwith .tweak:hover{border-color:var(--edge);color:var(--ink)}
+  font-weight:500;color:var(--s1);
+  transition:background 160ms var(--ease),border-color 160ms var(--ease),
+             color 160ms var(--ease)}
+.ranwith .tweak:hover{background:rgba(57,135,229,.2);
+  border-color:var(--s1);color:#8fbdf2}
 
 .why{margin:18px 0 4px}
 .why summary{display:inline-block;cursor:pointer;list-style:none;
@@ -587,6 +609,8 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .vizhead{display:flex;align-items:center;gap:14px;padding:14px clamp(22px,3.4vw,34px);
   flex-wrap:wrap}
 .vizhead .lab{color:var(--mute)}
+.vizhead .vizsub{font-size:12.5px;color:var(--faint);
+  font-family:var(--sans);letter-spacing:0;text-transform:none}
 .legend{margin-left:auto;display:flex;gap:14px;flex-wrap:wrap}
 .legend span{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
   font-size:10px;color:var(--faint)}
@@ -625,8 +649,8 @@ canvas.city{display:block;width:100%;height:var(--map-h)}
   gap:10px;padding:8px 0;transition:opacity 160ms var(--ease)}
 .also > summary::-webkit-details-marker{display:none}
 .also > summary:hover{opacity:.78}
-.also > summary .lab{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--faint)}
+.also > summary .lab{font-family:var(--sans);font-size:13px;font-weight:600;
+  letter-spacing:0;color:var(--dim)}
 .also > summary .hint{font-size:12.5px;color:var(--mute)}
 .also > summary::after{content:"";width:6px;height:6px;margin-left:auto;flex:none;
   align-self:center;border-right:1.5px solid var(--faint);
@@ -637,10 +661,11 @@ canvas.city{display:block;width:100%;height:var(--map-h)}
 .alt .ahead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .alt .ahead i{width:7px;height:7px;border-radius:2px;flex:none}
 .alt .an{font-family:var(--mono);font-size:11px;color:var(--dim);
+  text-transform:none;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .alt .as{margin-left:auto;font-family:var(--mono);font-size:11px;
   font-weight:500;color:var(--faint);flex:none}
-.alt .atext{margin:0;font-size:14.5px;line-height:1.55;color:var(--mute);
+.alt .atext{margin:0;font-size:14.5px;line-height:1.6;color:var(--dim);
   max-width:64em}
 .alt .atext mark{background:none;color:var(--ink);font-weight:600}
 
@@ -777,18 +802,25 @@ tr.out td{color:var(--faint)}
 
 <div class="wrap">
   <section class="hero" id="hero">
-    <h1>Retrieval-Augmented Generation.<br><em>See how it answers.</em></h1>
-    <p>RAG answers a question by searching a set of documents first and quoting
-      what it finds, rather than recalling it. This runs that search in front of
-      you and draws every stage of it — what was found, what was cut, and which
-      passages the answer is standing on.</p>
+    <h1>RAG in Motion</h1>
+    <p>Retrieval-augmented generation answers a question by searching a set of
+      documents and quoting what it finds, rather than recalling it from
+      training. Every sentence traces back to a named document and a page, so
+      the answer can be checked against its source. This page runs that search
+      and draws each stage of it as it happens.</p>
+    <div class="herovizhead">
+      <span class="lab">The RAG process</span>
+      <span class="sub">Seven stages, from the whole index down to the passages
+        an answer is allowed to use</span>
+    </div>
     <div class="heroviz"><canvas id="idle"></canvas></div>
 
     <!-- Which documents to search comes before what to ask. The answer, the
          threshold it is judged against and the questions worth asking all
          change with it, so it cannot be an afterthought in a corner. -->
     <div class="pickset" id="pickset">
-      <span class="setlab">Document set</span>
+      <span class="setlab">Document set
+        <a class="setwhy" href="/about#corpora">what is this?</a></span>
       <div class="dd" id="dd">
         <button class="ddbtn" id="ddBtn" type="button"
                 aria-haspopup="listbox" aria-expanded="false">
@@ -802,7 +834,7 @@ tr.out td{color:var(--faint)}
     </div>
 
     <form class="field" id="form">
-      <textarea id="q" rows="1" placeholder="Ask a question, or pick one from the list"
+      <textarea id="q" rows="1" placeholder="Pick a question from the list"
                 data-short="Ask a question"
                 aria-label="Your question"></textarea>
       <button class="go" id="goBtn" type="submit">Ask</button>
@@ -1022,10 +1054,10 @@ function alsoFound(sel, top, question, colour) {
   }
   if (!others.length) return "";
 
-  return `<details class="also" open><summary>
+  return `<details class="also"><summary>
       <span class="lab">Also found</span>
       <span class="hint">${others.length} other document${
-        others.length > 1 ? "s" : ""} carried a passage for this</span>
+        others.length > 1 ? "s" : ""} also matched this question</span>
     </summary>
     ${others.map(it => `<div class="alt">
       <div class="ahead">
@@ -1325,7 +1357,7 @@ Promise.all([loadCorpus(), loadPicker()]).then(() => {
     ? "The recorded traces did not load."
     : "Server unreachable.";
   $("#hero").insertAdjacentHTML("beforeend", recorded
-    ? `<p class="err">The recorded traces did not load — reloading usually fixes it.</p>`
+    ? `<p class="err">The recorded traces did not load. Reloading usually fixes it.</p>`
     : `<p class="err">Start the server: <span class="num">.venv\\Scripts\\python.exe src\\serve.py</span></p>`);
 });
 
@@ -1461,7 +1493,8 @@ async function loadPicker() {
   $("#traysets").innerHTML = `
     <div class="top2"><h5>Documents</h5></div>
     <p class="sdesc">Which set the search runs over. Changing it clears the
-      thread — answers already on the page came from different documents.</p>
+      thread, because answers already on the page came from different
+      documents.</p>
     ${data.corpora.map(c => `
       <button type="button" class="trayset" data-name="${esc(c.name)}"
               ${c.indexed ? "" : "disabled"}
@@ -1485,6 +1518,7 @@ async function loadPicker() {
 $("#home").onclick = () => {
   if (BUSY) return;
   $("#thread").innerHTML = "";
+  document.body.classList.remove("asked");
   N = 0; BASELINE = null; LAST = null;
   $("#hero").classList.remove("gone");
   $("#dock").classList.add("hide");
@@ -1523,6 +1557,7 @@ async function selectCorpus(name) {
     // a new heading would attribute them to documents that never saw the
     // question.
     $("#thread").innerHTML = "";
+    document.body.classList.remove("asked");
     N = 0; BASELINE = null;
     $("#hero").classList.remove("gone");
     $("#dock").classList.add("hide");
@@ -1594,7 +1629,7 @@ markScrollEnd(document.querySelector(".heroviz"));
 const shortQ = matchMedia("(max-width: 560px)");
 function syncPlaceholder() {
   const ta = $("#q");
-  const long = "Ask a question, or pick one from the list";
+  const long = "Pick a question from the list";
   ta.placeholder = shortQ.matches ? (ta.dataset.short || long) : long;
 }
 syncPlaceholder();
@@ -1637,6 +1672,10 @@ function submit() {
   // question goes.
   if (!N) {
     $("#hero").classList.add("gone");
+    // The settings tab appears here and nowhere earlier: it configures the
+    // next answer, and before the first one there is nothing to compare a
+    // change against.
+    document.body.classList.add("asked");
     const dock = $("#dock");
     dock.append($("#form"));
     dock.classList.remove("hide");
@@ -1739,10 +1778,11 @@ function renderTurn(turn, question, data, opts) {
        the passages against. What is below is the best the search could do,
        unranked by confidence.`
     : v.confident
-      ? `The best passage scored <b>${sig(v.confidence)}</b> — ${reading(v.confidence, v.threshold).text}.
-         The number is a relevance judgement from the cross-encoder, which reads
-         the question and the passage together; it runs roughly −11 to +11 and
-         is not a probability.`
+      ? `The best passage scored <b>${sig(v.confidence)}</b>. At that score,
+         ${reading(v.confidence, v.threshold).text}. The number is a relevance
+         judgement from the cross-encoder, which reads the question and the
+         passage together. It runs roughly −11 to +11 and is not a
+         probability.`
       : `Nothing scored high enough to answer with. The closest passage reached
          <b>${sig(v.confidence)}</b>, and everything below that is further away
          still. The passages are shown so you can see what was considered.`;
@@ -1800,13 +1840,36 @@ function renderTurn(turn, question, data, opts) {
         : gen.state === "ok"
           ? `<p class="note">Written from the ${sel.length} passages below.</p>`
           : ""}
+
+      <!-- Settings were reachable only from a tab on the edge of the window,
+           which is the wrong place for the thing that explains why an answer
+           came out the way it did. Every answer now states what it was run
+           with, and opens the panel from here. -->
+      <div class="ranwith">
+        <span class="k">Run with</span>
+        <span class="vv">${esc(optsSummary(opts))}</span>
+        <button class="tweak" type="button">Change and re-run</button>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="vizhead"><span class="lab">The RAG process</span>
+        <span class="vizsub">How this answer was found, stage by stage</span></div>
+      <canvas class="city"></canvas>
+      <div class="vizfoot">
+        <span class="cap"></span>
+        <input type="range" class="scrub" min="0" max="100" value="100" aria-label="Stage">
+        <button class="replay" type="button">Replay</button>
+      </div>
+    </div>
+
       <div class="result">
         <div class="rhead"><span class="lab">Retrieval result</span>${
           gated ? `<span class="score ${read.band}">${sig(v.confidence)}
             <em>${read.band}</em></span>` : ""}</div>
         <p>${why}</p>
         ${thin ? `<p class="thin">The cited passage is only
-          ${thin} characters long — a heading or a fragment rather than a
+          ${thin} characters long, a heading or a fragment rather than a
           statement. Retrieval ranked it first, but there is little there to
           answer with. Turning context expansion back on, or reranking, usually
           replaces it with the passage around it.</p>` : ""}
@@ -1825,31 +1888,9 @@ function renderTurn(turn, question, data, opts) {
                 ? `, across ${data.context.blocks} passages` : ""}.</span></div>
           <div><span class="k">Time taken</span>
             <span class="vv mono">${data.ms.toFixed(0)} ms</span>
-            <span class="note2">Search, scoring and reranking. No model was
-              called to write prose.</span></div>
+            <span class="note2">Search, scoring and reranking.</span></div>
         </div>
       </div>
-
-      <!-- Settings were reachable only from a tab on the edge of the window,
-           which is the wrong place for the thing that explains why an answer
-           came out the way it did. Every answer now states what it was run
-           with, and opens the panel from here. -->
-      <div class="ranwith">
-        <span class="k">Run with</span>
-        <span class="vv">${esc(optsSummary(opts))}</span>
-        <button class="tweak" type="button">Change and re-run</button>
-      </div>
-    </div>
-
-    <div class="viz">
-      <div class="vizhead"><span class="lab">The RAG process</span></div>
-      <canvas class="city"></canvas>
-      <div class="vizfoot">
-        <span class="cap"></span>
-        <input type="range" class="scrub" min="0" max="100" value="100" aria-label="Stage">
-        <button class="replay" type="button">Replay</button>
-      </div>
-    </div>
 
     <details class="detail"><summary>
       <span class="lab">Detail</span>
@@ -1968,8 +2009,8 @@ function renderStack(turn, data, colour, sig) {
   });
 
   host.innerHTML = `
-    <div class="hd"><span class="k">BM25 only — dense retrieval has no
-      per-word equivalent</span></div>
+    <div class="hd"><span class="k">BM25 only. Dense retrieval has no
+      per-word equivalent.</span></div>
     <div class="grid" style="grid-template-columns:118px repeat(${cols.length}, minmax(0, 1fr))">
       ${out.join("")}</div>`;
 }
@@ -2052,7 +2093,7 @@ function settingsHTML(opts) {
       d: `A second model reads the question and each passage together and
           reorders them. Slower, and much better at telling a passage that
           mentions the subject from one that answers the question. The number
-          is mean reciprocal rank — how near the top the right passage lands,
+          is mean reciprocal rank: how near the top the right passage lands,
           measured on this project's own question set.`,
       opts: [
       ["On", true, g(e2e["dense + rerank"], "mrr")],
@@ -2078,8 +2119,8 @@ function settingsHTML(opts) {
       ["None", null, g(e2e["rrf + rerank"], "src_recall")]] },
     { h: "Context", u: "context recall", key: "expansion",
       d: `How much text around a matched passage is read back. Passages are cut
-          on a fixed length, so an answer often finishes just past the edge —
-          window pulls in the neighbours on either side, page pulls the whole
+          at a fixed length, so an answer often finishes just past the edge.
+          Window pulls in the neighbours on either side; page pulls the whole
           page. The number is how often the full answer ends up inside what was
           read.`,
       opts: [
@@ -2139,8 +2180,8 @@ function renderCompare(turn, data, opts) {
   if (!box) return;
   if (!data) {
     box.innerHTML = `<span class="lab">defaults</span> These are the settings it
-      normally uses. Ask something, then change one — the question runs again and
-      only what moved is shown.`;
+      normally uses. Ask something, then change one. The question runs again,
+      and only what moved is shown.`;
     return;
   }
   if (JSON.stringify(opts) === JSON.stringify(DEFAULTS) || !BASELINE) {

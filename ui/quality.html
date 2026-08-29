@@ -76,9 +76,20 @@ a{color:inherit}
 .pill[aria-pressed="true"]{color:var(--ink);border-color:var(--faint);background:var(--sunk)}
 .pill .n{font-family:var(--mono);font-size:10px;color:var(--faint)}
 
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;
   background:var(--line)}
-.tile{background:var(--panel);padding:15px 17px}
+/* One vertical rhythm for the page. Sections were spaced by whatever inline
+   margin each one had picked up, so the gaps between them were all different. */
+main.wrap > section.panel{margin-top:30px}
+main.wrap > .note{margin-top:30px}
+.pbody > .note:first-child{margin-top:0}
+.pbody > .note{margin-top:22px}
+.pbody > .legend{margin-top:18px}
+.tile{background:var(--panel);padding:15px 17px;cursor:help;outline:none;
+  transition:background 140ms ease-out}
+.tile[data-why]:hover,.tile[data-why]:focus-visible{background:var(--nest,#1f2022)}
+.tile[data-why] .lab{border-bottom:1px dotted var(--faint);
+  padding-bottom:1px;display:inline-block}
 .tile .v{font-family:var(--mono);font-size:25px;font-variant-numeric:tabular-nums;
   letter-spacing:-.02em;line-height:1.15;margin-top:5px}
 .tile .c{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.35}
@@ -105,8 +116,17 @@ svg g.row:hover .bar{opacity:.72}
   font-family:var(--mono);font-size:10px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--muted)}
 .legend span{display:flex;align-items:center;gap:7px}
-.legend i{width:9px;height:9px;border-radius:2px;display:block}
+.legend i{width:9px;height:9px;border-radius:2px;display:block;flex:none}
+.legend i.dot{border-radius:50%}
 .legend i.ring{background:none;border:1.5px solid currentColor;border-radius:50%}
+/* A legend for a line chart has to show lines. A filled square standing for
+   "solid" and a paler square standing for "dashed" told a reader the colour
+   and left them to guess the rest. */
+.legend i.line{width:18px;height:0;border-radius:0;border-top:2px solid}
+.legend i.line{border-top-color:currentColor}
+.legend i.line.dash{background:none;border-top-style:dashed}
+.legend i.rule{width:0;height:14px;border-left:1.5px dashed var(--muted);
+  background:none;border-radius:0}
 
 .tip{position:fixed;z-index:60;pointer-events:none;background:#000;
   border:1px solid var(--rule);border-radius:8px;padding:7px 10px;font-size:12px;
@@ -148,11 +168,6 @@ details[open] summary::before{content:"- ";}
 
 <main class="wrap">
 
-  <p class="note" style="margin-bottom:18px">Every number on this page is
-  generated from <b>eval/results*.json</b> and <b>eval/per_case*.json</b> by
-  <b>src/build_analytics.py</b>. Nothing here is transcribed &mdash; four figures
-  in this project's docs were wrong once because they were copied out of a
-  terminal by hand after the configuration that produced them had changed.</p>
 
   <div class="pills" id="pills"></div>
   <div class="tiles panel" id="tiles" style="margin-top:14px"></div>
@@ -162,11 +177,11 @@ details[open] summary::before{content:"- ";}
     <div class="phead"><span class="lab">What each mechanism is worth</span>
       <span class="right lab" id="ladder-n"></span></div>
     <div class="pbody">
-      <p class="note">Each row adds one mechanism to the row above it, scored end
-      to end at k=5 on the same questions. <b>The cross-encoder is the largest
-      single gain</b> and the diversity cap is the only row that trades one
-      metric for another &mdash; it gives up ranking to return more of the
-      documents that answer the question, which is the trade this system chose.</p>
+      <p class="note">Each row is the row above it plus one more mechanism,
+      run on the same questions. <b>The cross-encoder gains the most.</b> The
+      diversity cap is the only row that gives something up: it accepts a lower
+      hit rate in return for finding more of the documents that answer the
+      question. This system takes that trade.</p>
       <div class="grid2" id="ladder"></div>
       <details><summary>Table</summary><div class="scroll"><table id="ladder-t"></table></div></details>
     </div>
@@ -181,32 +196,31 @@ details[open] summary::before{content:"- ";}
       were built to find out how much of it is a property of the system and how
       much of the documents it was tuned on.</p>
       <div class="grid2" id="cross"></div>
-      <p class="note" style="margin-top:20px"><b>Source recall is not comparable
-      across these three as a raw number.</b> It is normalised by
-      <span class="num">min(|gold|, 5)</span>, and the corpora do not agree on how
-      many documents answer a question &mdash; so the finance corpus is scored
-      against a divisor <span id="div-gap" class="num"></span> larger than the ML
-      one and has to return more documents in the same five slots to score the
-      same.</p>
+      <p class="note" style="margin-top:20px"><b>Do not compare source recall
+      across these three corpora.</b> Questions on the finance set are answered
+      by more documents than questions on the ML set, so the finance corpus has
+      to return more documents in the same five slots to earn the same score.
+      Its divisor is <span id="div-gap" class="num"></span> larger. The scores
+      are honest within a corpus and misleading between them.</p>
       <div id="divisor" style="max-width:520px"></div>
     </div>
   </section>
 
   <!-- 3. the threshold ----------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><span class="lab">The abstention threshold does not transfer</span>
+    <div class="phead"><span class="lab">Where each corpus stops answering</span>
       <span class="right lab">the finding that matters</span></div>
     <div class="pbody">
       <p class="note">Every question scored by the cross-encoder, plotted on one
       axis. <b>Filled marks are questions the corpus can answer; hollow rings are
       adversarial questions whose answer is deliberately absent.</b> The gate
-      refuses everything left of its cut point, so the ideal threshold sits in the
-      gap between the two populations &mdash; and that gap is in a different place
-      on every corpus.</p>
+      refuses everything left of its cut point, so the best threshold sits in
+      the gap between the two groups. That gap is in a different place on every
+      corpus, which is why one number cannot serve all three.</p>
       <div id="dists"></div>
       <div class="legend">
-        <span><i style="background:var(--soft)"></i>answerable &mdash; should be answered</span>
-        <span style="color:var(--soft)"><i class="ring"></i>adversarial &mdash; should be refused</span>
+        <span><i class="dot" style="background:var(--soft)"></i>should be answered</span>
+        <span style="color:var(--soft)"><i class="ring"></i>should be refused</span>
       </div>
       <p class="note" style="margin-top:22px">Moving each corpus to its own cut
       point recovers answers at <b>no adversarial cost whatever</b> &mdash; the
@@ -228,18 +242,19 @@ details[open] summary::before{content:"- ";}
       answerable questions thrown away.</p>
       <div id="sweep"></div>
       <div class="legend">
-        <span><i style="background:var(--soft)"></i>solid &mdash; answerable questions refused, the cost</span>
-        <span><i style="background:var(--soft);opacity:.55"></i>dashed &mdash; adversarial questions caught, the benefit</span>
-        <span>vertical rule &mdash; this corpus's calibrated cut point</span>
+        <span><i class="line" style="background:var(--soft)"></i>questions that should be answered, refused. The cost.</span>
+        <span><i class="line dash" style="border-color:var(--soft)"></i>questions that should be refused, caught. The benefit.</span>
+        <span><i class="rule"></i>this corpus's calibrated cut point</span>
       </div>
     </div>
   </section>
 
-  <p class="note" style="margin-top:32px">This system does its job and is
-  measured honestly about where it does not. It is not competitive with
-  NotebookLM or Glean, which is not what it is for &mdash; it exists so every
-  stage of retrieval can be watched and every default can be made to earn its
-  place against a number.</p>
+  <p class="note" style="margin-top:32px">This is a learning project, not a
+  product. It will not match NotebookLM, Glean, or the enterprise search and
+  RAG platforms sold to companies: they have larger models, far more compute,
+  and teams working on them. What it has instead is that every stage of
+  retrieval can be watched, and every default in it had to earn its place
+  against a measurement on this page.</p>
 </main>
 
 <div class="tip" id="tip" hidden></div>
@@ -373,7 +388,7 @@ function strip(host, c, domain, last) {
   rule(0, "var(--faint)", "3 3", c.threshold === 0 ? "" : "old global 0.0");
   rule(c.threshold, HUE[c.i], "",
        (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1) +
-       (c.threshold === 0 ? " — calibrated here" : " calibrated"));
+       (c.threshold === 0 ? " calibrated here" : " calibrated"));
 
   const dot = (v, filled, kind) => {
     const cy = filled ? 30 : 48;
@@ -499,18 +514,39 @@ if (!A || !A.corpora?.length) {
     const c = active;
     const shipped = c.ladder.find(r => r.config === "+ diversity 2/src") || c.ladder.at(-1);
     $("#tiles").innerHTML = [
-      ["Corpus", nf(c.chunks), `${c.documents} documents · ${Object.keys(c.formats).join(" ").toUpperCase()}`],
+      ["Corpus", nf(c.chunks), `${c.documents} documents · ${Object.keys(c.formats).join(" ").toUpperCase()}`,
+       "One set of documents and everything derived from it. The number is how many passages the documents were cut into, which is what the search actually looks through."],
       ["Golden set", c.n_answerable + c.n_adversarial,
-       `${c.n_answerable} answerable · ${c.n_adversarial} adversarial`],
-      ["Hit rate @5", f3(shipped.hit_rate), "a relevant passage returned"],
-      ["Source recall", f3(shipped.src_recall), "of the documents that answer"],
+       `${c.n_answerable} answerable · ${c.n_adversarial} adversarial`,
+       "The labelled questions this corpus is scored against, each with the documents that answer it. Every number on this page comes from running these."],
+      ["Hit rate @5", f3(shipped.hit_rate), "a relevant passage returned",
+       "How often at least one correct passage appears in the top five. A high hit rate means the answer was found; it says nothing about how far down the list it was."],
+      ["Source recall", f3(shipped.src_recall), "of the documents that answer",
+       "How many of the documents that answer a question were actually returned. Hit rate can be perfect while three of four answering documents are missed; this is the number that notices."],
       ["Threshold", (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1),
-       c.calibrated ? "calibrated on this corpus" : "borrowed — not calibrated"],
+       c.calibrated ? "calibrated on this corpus" : "borrowed, not calibrated",
+       "The score below which the system declines to answer. Set per corpus, because the same number refuses almost nothing on one set and a third of the answers on another."],
       ["Wrongly refused", `${c.at_calibrated.refused} / ${c.n_answerable}`,
-       `${c.at_zero.refused} at the old global 0.0`],
-    ].map(([k, v, s]) =>
-      `<div class="tile"><div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
-       <div class="c">${esc(s)}</div></div>`).join("");
+       `${c.at_zero.refused} at the old global 0.0`,
+       "Questions the documents can answer that the gate turned down anyway. This is the cost of refusing at all, and it is the number a threshold is chosen to keep small."],
+    ].map(([k, v, s, why]) =>
+      `<div class="tile" data-why="${esc(why)}" tabindex="0">
+         <div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
+         <div class="c">${esc(s)}</div></div>`).join("");
+
+    for (const tile of $("#tiles").querySelectorAll(".tile[data-why]")) {
+      const why = tile.dataset.why;
+      const head = tile.querySelector(".lab").textContent;
+      hover(tile, `<div class="k">${esc(head)}</div>${esc(why)}`);
+      tile.addEventListener("focus", () => {
+        tip.innerHTML = `<div class="k">${esc(head)}</div>${esc(why)}`;
+        tip.hidden = false;
+        const r = tile.getBoundingClientRect();
+        tip.style.left = Math.min(r.left, innerWidth - 270) + "px";
+        tip.style.top = Math.max(8, r.top - tip.getBoundingClientRect().height - 10) + "px";
+      });
+      tile.addEventListener("blur", () => { tip.hidden = true; });
+    }
 
     $("#ladder-n").textContent = `${c.label} · ${c.n_answerable} answerable cases`;
     const host = $("#ladder"); host.innerHTML = "";
@@ -581,7 +617,7 @@ if (!A || !A.corpora?.length) {
         c: HUE[c.i], on: true,
         note: `${(c.at_calibrated.refused / c.n_answerable * 100).toFixed(1)}% of ${c.n_answerable}` },
     ]), { fmt: v => String(v), padLeft: 148 });
-  hbars(cost, "Adversarial questions still caught", "unchanged by the move — this is what makes it a free change",
+  hbars(cost, "Adversarial questions still caught", "unchanged by the move, which is what makes it a free change",
     A.corpora.flatMap(c => [
       { k: c.label + " @ 0.0", v: c.at_zero.caught, c: HUE[c.i], on: false,
         note: `of ${c.n_adversarial} planted` },
