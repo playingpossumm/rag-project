@@ -281,15 +281,19 @@ export function buildRun(trace, city, ink, variant = "flat") {
     // the wider stages looking half-empty when they were full.
     const [cols, rows] = plate.cells || [1, 1];
     const items = st.items.slice(0, cols * rows);
+    // No `z: plate.z` here. slot() already returns the cell's own height, and
+    // overwriting it sent every cable to the plate's centre plane while the
+    // square it was flying to sat on its layer -- the line and the lit cell
+    // disagreeing by exactly the layer offset.
     placed.set(plate.id, items.map((it, i) => ({
-      ...it, ...slot(plate, i, items.length), z: plate.z,
+      ...it, ...slot(plate, i, items.length),
       lives: survivors.has(it.chunk_id),
       colour: survivors.has(it.chunk_id) ? colour(it.source) : null,
     })));
   }
   const sel = placed.get("selected") || [];
   const ap = platesFor(variant).find(p => p.id === "answer");
-  placed.set("answer", sel.map((m, i) => ({ ...m, ...slot(ap, i, sel.length), z: ap.z })));
+  placed.set("answer", sel.map((m, i) => ({ ...m, ...slot(ap, i, sel.length) })));
 
   const lit = new Map();
   for (const name of ["dense", "sparse"]) {
