@@ -167,8 +167,8 @@ a{color:inherit}
       <div class="prose">
         <p>NotebookLM, Glean and the enterprise search tools sold to companies
            will answer better than this. They have larger models and far more
-           compute. They also answer from a closed middle. You put a question
-           in, an answer comes out, and what happened in between is not shown.
+           compute. They also answer from a closed middle. You put a question in and an answer comes out. What happened in
+           between is not shown.
            Here are five questions about that middle, and what each version can
            say.</p>
       </div>
@@ -176,7 +176,7 @@ a{color:inherit}
       <div class="versus" style="margin-top:18px">
         <div class="q">Why did it return <em>that</em>?</div>
         <div class="closed"><span class="lab tag">Closed product</span>No answer. The passage arrived; how is not exposed.</div>
-        <div class="here-col"><span class="lab tag">Here</span>Every stage is inspectable, with the score each one assigned. Ask a question and the diagram shows what each retriever found, what reranking moved, and what the diversity cap dropped.</div>
+        <div class="here-col"><span class="lab tag">Here</span>Every stage is shown, with the score it assigned. Ask a question and the diagram draws what each retriever found, what the cross-encoder moved and what the cap dropped.</div>
 
         <div class="q">Did my change help?</div>
         <div class="closed"><span class="lab tag">Closed product</span>No numbers exist. You have an impression.</div>
@@ -188,7 +188,7 @@ a{color:inherit}
 
         <div class="q">What if the sources disagree?</div>
         <div class="closed"><span class="lab tag">Closed product</span>Blended into one voice.</div>
-        <div class="here-col"><span class="lab tag">Here</span>Passages from other documents are shown alongside, because the top result is sometimes wrong in a specific and visible way.</div>
+        <div class="here-col"><span class="lab tag">Here</span>Passages from other documents are shown alongside. The top result is sometimes the wrong one.</div>
 
         <div class="q">Can I put it in my own tool?</div>
         <div class="closed"><span class="lab tag">Closed product</span>No. It is a place you visit.</div>
@@ -222,9 +222,9 @@ a{color:inherit}
            understand retrieval by making every part of it visible, rather than
            to serve documents at scale. What you can search here is three
            prepared sets: 36 machine-learning papers, 45 ornithology articles,
-           and 35 quantitative-finance papers. They are fixed, because each one
-           had to be indexed, labelled with questions, and calibrated before any
-           number on this site could be measured.</p>
+           and 35 quantitative-finance papers. They are fixed. Each one had to be indexed, given a set of labelled
+           questions, and calibrated before any number on this site could be
+           measured.</p>
         <p>To point it at your own documents, or to have it run the search live
            rather than replay a recorded one,
            <a href="https://github.com/ArdellAlfatih/rag-project" target="_blank"
@@ -251,56 +251,57 @@ a{color:inherit}
         <li>
           <h3>The documents are cut into passages</h3>
           <p>Each document is split into overlapping windows of about 210 tokens.
-            <span class="why">Whole documents are too big to compare against a
-            question and too big to read back. Overlap exists so an answer that
-            straddles a boundary is not lost by the cut.</span></p>
+            <span class="why">A whole document is too large to compare
+            against a single question. The windows overlap so that an answer
+            sitting across a cut still appears whole in one of them.</span></p>
         </li>
         <li>
           <h3>Two retrievers search, at the same moment</h3>
           <p><b>Dense retrieval</b> compares meaning, by turning the question and
             every passage into vectors. <b>BM25</b> compares exact words,
             weighting rare ones heavily.
-            <span class="why">They fail in opposite directions. Dense survives
-            paraphrase and misses model numbers; BM25 finds an identifier
-            instantly and is blind to a question that shares no vocabulary with
-            its answer. Neither is the better one.</span></p>
+            <span class="why">Each one fails where the other works. Dense
+            retrieval handles a question worded differently from its answer,
+            and misses exact tokens such as a model number. BM25 finds those
+            tokens immediately, and returns nothing when the question and the
+            answer share no words. Running both covers each gap.</span></p>
         </li>
         <li>
           <h3>The two rankings are fused</h3>
           <p>Each retriever contributes <code>1/(60 + rank)</code> to every
             passage it returned, and the sums are sorted.
-            <span class="why">Only position is used, never the raw score:
-            cosine similarity and BM25 live on scales that cannot be added
-            without inventing a conversion.</span></p>
+            <span class="why">Only the position counts, never the score
+            itself. The two retrievers measure different things on different
+            scales, so adding their numbers together would require inventing a
+            conversion between them.</span></p>
         </li>
         <li>
           <h3>A cross-encoder re-reads the survivors</h3>
           <p>The shortlist is scored again by a model that reads the question and
             the passage <em>together</em> and answers "does this passage answer
             this question".
-            <span class="why">The first stage compared two summaries made
-            independently. This one reads both at once. It is far more
-            accurate, and far too slow to run over a whole corpus, so it only
-            sees a shortlist.</span></p>
+            <span class="why">The earlier stages turned the question and the
+            passage into numbers separately, then compared the numbers. This
+            model reads the two together. It is more accurate and much slower,
+            which is why it only sees a shortlist.</span></p>
         </li>
         <li>
           <h3>At most two passages per document survive</h3>
           <p>The diversity cap.
-            <span class="why">Measured as a genuine trade rather than a free
-            win: it costs a little hit rate and buys the answer more of the
-            documents that contain it. A question answered by four
-            papers should not return four passages from one.</span></p>
+            <span class="why">This is a trade. It lowers the hit rate a
+            little and raises how many of the answering documents come back.
+            A question answered by four papers should not return four passages
+            from one of them.</span></p>
         </li>
         <li>
           <h3>The gate decides whether to answer at all</h3>
           <p>If the best passage scores below this corpus's threshold, the system
             declines instead of answering.
-            <span class="why">Nearest-neighbour search always returns something.
-            Ask an ornithology corpus about tax law and it will hand back its
-            five closest passages, none of them about tax, at scores that look
-            ordinary. The
-            threshold is calibrated per corpus against questions the documents
-            genuinely cannot answer.</span></p>
+            <span class="why">A search always returns its closest matches,
+            however far away they are. Ask the ornithology set about tax law
+            and it returns five passages about birds. The threshold is set for
+            each set of documents by measuring where its real answers stop and
+            its near-misses begin.</span></p>
         </li>
       </ol>
 
@@ -310,15 +311,14 @@ a{color:inherit}
            bold. <b>The citation</b> names the real document title and the
            location: a page for a PDF, a slide for a deck, a sheet for a
            spreadsheet.</p>
-        <p><b>The score</b> is a relevance judgement from the cross-encoder,
-           running roughly &minus;11 to +11. It is not a probability and not a
-           percentage. Positive means the passage answers the question directly;
-           strongly negative means the corpus probably does not contain the
-           answer.</p>
-        <p><b>“Also found”</b> lists passages from <em>other</em> documents. It
-           is open by default because the top passage is sometimes wrong in a
-           specific way: asked for a bird's fused collarbone, the reranker
-           prefers the pygostyle passage and puts the furcula second.</p>
+        <p><b>The score</b> comes from the cross-encoder and runs roughly
+           &minus;11 to +11. It is neither a probability nor a percentage. A
+           positive score means the passage answers the question. A strongly
+           negative one means the documents probably do not hold the answer.</p>
+        <p><b>“Also found”</b> lists passages from <em>other</em> documents
+           that matched. The top passage is sometimes the wrong one. Asked for
+           a bird's fused collarbone, the cross-encoder ranks the pygostyle
+           passage first and the furcula second.</p>
         <p><b>“The corpus does not contain this”</b> means the gate declined.
            That is the system working. Some of the example questions on the
            front page are chosen to trigger it.</p>
@@ -378,8 +378,9 @@ a{color:inherit}
           <span class="aka">vector</span></dd>
 
         <dt>Dense retrieval</dt>
-        <dd>Search by comparing embeddings. Matches meaning, survives paraphrase,
-          and misses rare tokens that carry meaning by identity.
+        <dd>Search by comparing embeddings. It matches meaning and handles a
+          question worded differently from its answer. It misses rare tokens
+          that carry their meaning by being exact, such as a model number.
           <span class="aka">vector search · semantic search</span></dd>
 
         <dt>BM25</dt>
@@ -409,8 +410,8 @@ a{color:inherit}
 
         <dt>Reranking</dt>
         <dd>Re-ordering the shortlist with the cross-encoder. On some corpora a
-          fraction of the first stage's ordering is deliberately kept, because
-          when a question <em>describes</em> a term rather than naming it the
+          fraction of the first stage's ordering is deliberately kept. When a
+          question <em>describes</em> a term instead of naming it, the
           cross-encoder has little to work with.</dd>
 
         <dt>Diversity cap</dt>
@@ -464,9 +465,9 @@ a{color:inherit}
   </section>
 
   <p class="foot">Built by hand in Python: no retrieval framework, no CDN, no
-     external request from this page. The server binds to localhost on purpose,
-     because the documents may be private, and a page about private documents
-     should not call a font host. Fonts are bundled.</p>
+     external request from this page. The server binds to localhost, since the
+     documents may be private. A page about private documents should not call a
+     font host, so the fonts are bundled.</p>
 
 </main>
 
