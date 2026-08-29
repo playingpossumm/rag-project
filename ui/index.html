@@ -51,7 +51,11 @@
      answer are the same drawing at the same size. Width-driven: the vh term it
      used to carry was there to keep the question field above the fold, and
      that is no longer a constraint the layout is trying to satisfy. */
-  --map-h:clamp(240px,26vw,420px);
+  /* The drawing is height-limited, not width-limited: an isometric run of
+     seven stages descends as it travels, so the fit solves against height and
+     every plate came out about forty-five pixels wide. A scatter, a set of
+     bands and a grate are the same picture at forty-five pixels. */
+  --map-h:clamp(320px,34vw,540px);
   --r:14px;
   --max:1120px;
   /* The floor was 1rem, so on a window a little narrower than --max the

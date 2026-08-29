@@ -88,15 +88,15 @@ const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
 const SPEC = [
   { id: "corpus", layers: 6,   n: "01", step: 0, lift: 0,   w: 13,  cells: null,   lead: 1,
     label: "Index",              term: c => `${c.total.toLocaleString()} passages · ${c.docs} documents` },
-  { id: "dense", layers: 4,    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1,
+  { id: "dense", layers: 4,    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1, shape: "field",
     label: "Dense retrieval",    term: () => "embedding similarity" },
-  { id: "sparse", layers: 4,   n: "03", step: 1, lift: -15, w: 6.5, cells: [5, 4], lead: -1,
+  { id: "sparse", layers: 4,   n: "03", step: 1, lift: -15, w: 6.5, cells: [5, 4], lead: -1, shape: "bars",
     label: "BM25",               term: () => "lexical match" },
-  { id: "fused", layers: 3,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1,
+  { id: "fused", layers: 3,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1, shape: "merge",
     label: "Rank fusion",        term: () => "both rankings combined" },
-  { id: "reranked", layers: 3, n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1,
+  { id: "reranked", layers: 3, n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1, shape: "sort",
     label: "Cross-encoder",      term: () => "query and passage scored together" },
-  { id: "selected", layers: 2, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1,
+  { id: "selected", layers: 2, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1, shape: "gate",
     label: "Diversity cap",      term: () => "max 2 per document" },
   // Wider than the stages before it, and a single row rather than a column:
   // five balls in a column at this scale overlap into one blob, and the
@@ -313,9 +313,11 @@ export function buildRun(trace, city, ink, variant = "flat") {
     byTarget.get(b).push(link);
   };
 
-  // The index feeds both retrievers. Only survivors are drawn out of the index
-  // field -- one line per candidate would be 40 lines out of a speckled plane
-  // and would bury the plane it starts from.
+  // The index feeds both retrievers, and every candidate is drawn leaving it.
+  // Drawing only the survivors made the widest leg of the pipeline the
+  // thinnest part of the drawing: three lines where 864 passages become 20,
+  // against twenty lines on legs that change nothing about the count. The
+  // non-survivors are near-invisible, so the plane underneath still reads.
   const litAt = new Map();
   for (const [id, hit] of lit) {
     const m = city.chunkAt.get(id);
@@ -324,7 +326,7 @@ export function buildRun(trace, city, ink, variant = "flat") {
   for (const name of ["dense", "sparse"]) {
     for (const m of placed.get(name) || []) {
       const src = litAt.get(m.chunk_id);
-      if (src && m.lives) push(name, { a: src, b: m, lives: true, colour: m.colour });
+      if (src) push(name, { a: src, b: m, lives: m.lives, colour: m.colour });
     }
   }
 
@@ -408,7 +410,10 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
     // ghost of itself; a layer of a network is not less real for being behind
     // the one in front of it, and the stack has to read as one solid object.
     const depth = 1 - (i / layers) * 0.22;
-    if (cellsIn > 0 && plate.cells) {
+    // Only the stages that ARE a matrix carry one on their back sheets. A
+    // scatter or a set of bars drawn over three lattices is still a lattice,
+    // which is why the first attempt at this changed nothing on screen.
+    if (cellsIn > 0 && plate.cells && !plate.shape) {
       const [cols, rows] = plate.cells;
       for (let n = 0; n < cols * rows; n++) {
         drawCell(ctx, T, plate, cellAt(plate, n, k),
@@ -443,21 +448,63 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
     }
   }
 
-  // The empty matrix. Every slot the stage can hold is drawn, so a stage that
-  // filled four of twenty looks different from one that filled twenty -- with a
-  // mesh they looked identical. Cells arrive after the outline closes: an empty
-  // frame reads as a plate, loose cells read as debris.
+  // The empty stage, drawn as the operation it performs. Every one of these
+  // used to be the same lattice of cells, which said "a stage happened here"
+  // and nothing about which stage. `cells` still governs where a passage sits;
+  // only the empty structure changes.
   const cellF = clamp01((f - 0.4) / 0.6);
   if (cellF > 0 && plate.cells) {
     const [cols, rows] = plate.cells;
-    // Staggered by column so the matrix fills the way the flow runs, left to
-    // right, rather than materialising all at once.
-    for (let i = 0; i < cols * rows; i++) {
-      const col = i % cols;
-      const s = clamp01((cellF - (col / cols) * 0.35) / 0.65);
-      if (s <= 0) continue;
-      drawCell(ctx, T, plate, cellAt(plate, i),
-               null, ink.other, a * s * (dim ? 0.14 : 0.26), 0.6);
+    const base = a * (dim ? 0.14 : 0.26);
+
+    if (plate.shape === "field") {
+      // Dense retrieval compares position in a continuous space. A lattice
+      // implies discrete slots it does not have, so this is a scatter --
+      // deterministic, so it never shimmers between frames.
+      ctx.globalAlpha = base * cellF * 2.4;
+      ctx.fillStyle = ink.other;
+      for (let n = 0; n < 70; n++) {
+        const j = k => ((Math.sin(n * 12.9898 + k * 78.233) * 43758.5) % 1 + 1) % 1;
+        const w = ptAt(plate, (j(1) * 2 - 1) * plate.w * 0.92,
+                       (j(2) * 2 - 1) * plate.h * 0.92, plate.front);
+        const p = T(w.u, w.v, w.z);
+        ctx.beginPath(); ctx.arc(p.x, p.y, 1.1, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    } else if (plate.shape === "bars") {
+      // BM25 matches whole words, so its unit is a band across the plate
+      // rather than a point on it. Drawn as rows, which is also the shape of
+      // the word-match grid in the Detail panel.
+      for (let r = 0; r < rows; r++) {
+        const t = plate.h - ((plate.h * 2) / rows) * (r + 0.5);
+        const A = ptAt(plate, -plate.w * 0.88, t, plate.front);
+        const B = ptAt(plate, plate.w * 0.88, t, plate.front);
+        const p = T(A.u, A.v, A.z), q = T(B.u, B.v, B.z);
+        ctx.globalAlpha = base * cellF * 2.2;
+        ctx.strokeStyle = ink.other; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    } else if (plate.shape === "gate") {
+      // The cap is the one stage whose job is refusing, so its face is a
+      // grate: bars across it, with gaps only where something gets through.
+      for (let r = 0; r < rows; r++) {
+        const t = plate.h - ((plate.h * 2) / rows) * (r + 0.5);
+        const A = ptAt(plate, -plate.w * 0.95, t, plate.front + 0.35);
+        const B = ptAt(plate, plate.w * 0.95, t, plate.front + 0.35);
+        const p = T(A.u, A.v, A.z), q = T(B.u, B.v, B.z);
+        ctx.globalAlpha = a * (dim ? 0.3 : 0.85);
+        ctx.strokeStyle = ink.faint; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    } else {
+      for (let i = 0; i < cols * rows; i++) {
+        const col = i % cols;
+        const st = clamp01((cellF - (col / cols) * 0.35) / 0.65);
+        if (st <= 0) continue;
+        drawCell(ctx, T, plate, cellAt(plate, i), null, ink.other, base * st, 0.6);
+      }
     }
   }
 
@@ -545,9 +592,13 @@ function inflight(ctx, T, link, ink, a, t) {
   const bx = lerp(p1.x, p2.x, held), by = lerp(p1.y, p2.y, held);
 
   ctx.save();
-  ctx.globalAlpha = a * (link.lives ? 0.85 : link.stopped ? 0.3 : 0.18);
+  // 0.18 made forty lines out of the index add up to nothing, so the widest
+  // leg of the pipeline read as the emptiest. The funnel is the point of the
+  // drawing: forty leave the index, twenty cross fusion and the reranker, five
+  // reach the answer, and that has to be visible without reading a label.
+  ctx.globalAlpha = a * (link.lives ? 0.85 : link.stopped ? 0.42 : 0.34);
   ctx.strokeStyle = link.lives ? link.colour : link.stopped ? STOPPED : ink.other;
-  ctx.lineWidth = link.lives ? 1.1 : 0.6;
+  ctx.lineWidth = link.lives ? 1.2 : 0.75;
   if (!link.lives) ctx.setLineDash([1.5, 3]);
   ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(bx, by); ctx.stroke();
   ctx.restore();
@@ -810,7 +861,13 @@ function boundsFor(variant, PL) {
     if (p.y > maxY) maxY = p.y;
   };
   for (const p of PL) {
+    // Front face AND the deepest sheet. A stage is drawn as a block, and
+    // measuring only the face it presents leaves the back of the block outside
+    // the box the fit solves for -- which is why the index was clipped by the
+    // left edge of the frame.
     for (const c of plateCorners(p)) see(project(c.u, c.v, c.z));
+    for (const c of plateCorners(p, layerAt(p, (p.layers || 1) - 1)))
+      see(project(c.u, c.v, c.z));
     const t = leaderTip(p);
     see(project(t.u, t.v, t.z));
   }
