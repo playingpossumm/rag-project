@@ -232,8 +232,8 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
     '<div class="rl-inner">' +
     '<div class="rl-bars"><i></i><i></i><i></i><i></i><i></i></div>' +
     '<p class="rl-title">Loading the recorded traces</p>' +
-    '<p class="rl-sub">Every answer here was computed in advance by the real ' +
-    'pipeline, then written to a file. There is no model behind this page.</p>' +
+    '<p class="rl-sub">The pipeline answered these questions in advance and ' +
+    'wrote each answer to a file. No model runs behind this page.</p>' +
     "</div>";
   const style = document.createElement("style");
   style.textContent = `
@@ -281,8 +281,8 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
   const strip = document.createElement("div");
   strip.id = "recorded-strip";
   strip.innerHTML =
-    '<b>Recorded demo.</b> Every answer here was computed in advance by the ' +
-    'real pipeline and saved — there is no model behind this page, so it ' +
+    '<b>Recorded demo.</b> The pipeline answered these questions in advance ' +
+    'and wrote each answer to a file. No model runs behind this page, so it ' +
     'answers the questions it was given and no others. ' +
     '<a href="https://github.com/ArdellAlfatih/rag-project">Run it locally</a>' +
     ' to search your own documents.';
@@ -397,11 +397,11 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
         .reduce((n, c) => n + (c.questions || 0), 0);
       return json({
         error:
-          "This is the recorded demo. It holds " + total + " questions, each " +
-          "answered in advance by the real pipeline and written to a file — " +
-          "there is no model behind this page, so it cannot answer a new one. " +
-          "Pick a question from the list to see its full retrieval trace, or " +
-          "run the project locally to ask anything you like.",
+          "This demo is a recording: " + total + " questions, each answered " +
+          "in advance and written to a file. No model runs behind this page, " +
+          "so it cannot answer a new one. Pick a question from the list to " +
+          "watch the search that produced it, or run the project locally to " +
+          "ask your own.",
         code: "not-recorded",
       }, 404);
     }

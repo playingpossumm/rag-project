@@ -2073,8 +2073,8 @@ function settingsHTML(opts) {
       ["Off", false, g(e2e["dense, no rerank"], "mrr")]] },
     { h: "Fusion", u: "hit rate", key: "fusion",
       d: `How the two searches are combined. RRF merges them by position, which
-          works because a cosine similarity and a BM25 weight cannot be compared
-          directly; weighted blends the scores anyway; dense drops lexical
+          works because a cosine similarity and a BM25 weight cannot be
+          compared; weighted blends the scores anyway; dense drops lexical
           search entirely. The number is how often the right passage appears
           anywhere in the top five.`,
       opts: [
@@ -2084,8 +2084,8 @@ function settingsHTML(opts) {
     { h: "Diversity cap", u: "source recall", key: "max_per_source",
       d: `A limit on how many passages one document may contribute, so a single
           thorough document cannot fill every slot and hide a second source that
-          also answers. The number is the share of the documents that should
-          have been cited which actually were.`,
+          also answers. The number is how many of the documents that answer a
+          question were returned.`,
       opts: [
       ["2/src", 2, g(e2e["+ diversity 2/src"], "src_recall")],
       ["1/src", 1, g(e2e["+ diversity 1/src"], "src_recall")],

@@ -251,7 +251,7 @@ a{color:inherit}
             the passage <em>together</em> and answers "does this passage answer
             this question".
             <span class="why">The first stage compared two summaries made
-            independently. This one actually reads both at once — far more
+            independently. This one reads both at once — far more
             accurate, far too slow to run over a whole corpus, which is why it
             only sees a shortlist.</span></p>
         </li>
@@ -260,7 +260,7 @@ a{color:inherit}
           <p>The diversity cap.
             <span class="why">Measured as a genuine trade rather than a free
             win: it costs a little hit rate and buys the answer more of the
-            documents that actually contain it. A question answered by four
+            documents that contain it. A question answered by four
             papers should not return four passages from one.</span></p>
         </li>
         <li>
@@ -269,7 +269,8 @@ a{color:inherit}
             declines instead of answering.
             <span class="why">Nearest-neighbour search always returns something.
             Ask an ornithology corpus about tax law and it will hand back its
-            five least-unrelated passages, at scores that look ordinary. The
+            five closest passages, none of them about tax, at scores that look
+            ordinary. The
             threshold is calibrated per corpus against questions the documents
             genuinely cannot answer.</span></p>
         </li>
@@ -426,7 +427,7 @@ a{color:inherit}
           <span class="aka">normalised discounted cumulative gain</span></dd>
 
         <dt>Source recall</dt>
-        <dd>How many of the documents that answer a question were actually
+        <dd>How many of the documents that answer a question were
           returned. The metric hit rate cannot express: returning one of four
           answering papers scores a perfect hit rate while missing three
           quarters of the answer.</dd>

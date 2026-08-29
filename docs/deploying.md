@@ -90,12 +90,11 @@ Wikipedia at build time and makes the build non-reproducible.
 
 **Which corpora go into a deployment is a licensing decision, not a technical
 one.** The ornithology set is Wikipedia under CC BY-SA and redistributable with
-attribution, so it can go anywhere. The two arXiv sets are shipped in the
-recorded build as short attributed excerpts — see `ATTRIBUTION.md` for what that
-amounts to, measured, and the reasoning — but the source documents are not in
-this repository and a live deployment of them would be a different question,
-because a live server will quote any passage anyone can elicit rather than the
-2,700 that were recorded.
+attribution, so it can go anywhere. The recorded build ships the two arXiv
+sets as short attributed excerpts; `ATTRIBUTION.md` measures what that amounts
+to and argues the case. The source documents are not in this repository, and
+deploying them *live* is a different question again: a live server will quote
+any passage a visitor can reach, not the 2,700 that were recorded.
 
 `--corpus birds` records one set only, which is the conservative build.
 
@@ -133,6 +132,6 @@ the corpus itself, which is already public.
 
 ## Cost
 
-Free tiers are sufficient. The container is ~2 GB with models baked in, holds
+Free tiers are enough. The container is ~2 GB with models baked in, holds
 ~700 MB resident, and answers in about 100 ms warm and 900 ms cold — the front
 page's own questions are pre-warmed at startup, so the first click is fast.

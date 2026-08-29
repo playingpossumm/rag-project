@@ -23,9 +23,9 @@ article it was built from — `peregrine_falcon.pdf` is
 
 ## ML & NLP papers, and quantitative finance — arXiv
 
-36 arXiv cs.CL/cs.LG papers and 35 q-fin papers. **Neither set is in this
-repository's current state** — both were untracked on 2026-08-28 — so a clone
-gives you the code and not the corpus. `src/fetch_corpus.py` and
+36 arXiv cs.CL/cs.LG papers and 35 q-fin papers. **Neither set ships with
+this repository** — both were untracked on 2026-08-28 — so a clone gives you
+the code and not the corpus. `src/fetch_corpus.py` and
 `src/fetch_topic.py` rebuild them by downloading from arXiv, so anyone running
 this locally gets the papers from the people who published them.
 
@@ -39,7 +39,7 @@ these papers are CC-BY, and a research repository carrying the papers it was
 measured against is ordinary practice. The full reasoning is in
 `docs/engineering-log.md` under 2026-08-28.
 
-### What the recorded demo does publish, and the reasoning
+### What the recorded demo publishes, and why
 
 The [recorded demo](https://rag-retrieval-visualized.vercel.app) answers all 157
 evaluation questions, which means it carries the passages those answers stand
@@ -56,13 +56,11 @@ averaging 257 characters each — about a quarter of a typical paper's body text
 in retrieval-rank order, with no figures, tables or reference lists, and every
 excerpt labelled with its source file and page.
 
-This is published as **quotation with attribution**, not as redistribution of
-the papers. arXiv's own terms permit reading and quotation of submissions
-whatever licence an individual author chose; what they do not permit is
-republishing a paper, and a page that shows forty short fragments out of order,
-each captioned with where it came from, is not a copy of one. It is closer to
-what a search engine's result snippets are, which is the function it is
-literally performing.
+The demo publishes **quotation with attribution**, not the papers. arXiv's
+terms allow anyone to read and quote a submission, whatever licence its author
+chose. They do not allow republishing one — and a page showing forty short
+fragments out of order, each captioned with where it came from, is not a copy
+of a paper. It is a page of search results, which is what it is.
 
 An earlier version of this file said both arXiv corpora were absent from the
 demo as well as from the repository. That was the intention when it was written
