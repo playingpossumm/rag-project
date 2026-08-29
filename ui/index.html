@@ -660,6 +660,25 @@ canvas.city{display:block;width:100%;height:var(--map-h)}
 /* One explanatory line above each pane. The tables were legible and
    meaningless: a reader could see every value and still not know what a
    column was counting. */
+/* A score is easier to compare as a length than as a number, and the shape
+   of the fall-off down the column is what the abstention gate cuts against. */
+.scorecell{position:relative}
+.scorecell{padding-top:8px;padding-bottom:8px}
+.scorecell span{position:relative;display:block}
+.scorecell .sbar{display:block;margin-left:auto;margin-top:5px;height:3px;
+  background:var(--s1);opacity:.75;border-radius:2px;min-width:2px}
+tr.out .scorecell .sbar{background:var(--wire);opacity:.5}
+.mv{white-space:nowrap}
+.mv.up{color:var(--good)}
+.mv.down{color:var(--bad)}
+.stage h4 .count{float:right;font-family:var(--mono);font-size:9.5px;
+  font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  display:flex;align-items:center;gap:8px}
+.stage h4 .count i{display:block;height:5px;min-width:2px;max-width:90px;
+  background:var(--wire);border-radius:2px}
+.stack .cn{display:flex;flex-direction:column;align-items:center;gap:3px}
+.stack .cn i{display:block;width:100%;height:3px;border-radius:1px;opacity:.85}
+.stack .cn.in i{height:5px}
 .pane .pnote{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:var(--mute);
   max-width:78ch}
 .pane .pnote b{color:var(--dim);font-weight:600}
@@ -673,8 +692,9 @@ canvas.city{display:block;width:100%;height:var(--map-h)}
 .scalekey{display:flex;align-items:center;gap:8px;margin:0 0 10px;
   font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--faint)}
-.scalekey .ramp{display:block;width:88px;height:7px;border-radius:2px;
-  background:linear-gradient(90deg,rgba(162,165,167,.3),var(--dim))}
+.scalekey{gap:10px;flex-wrap:wrap}
+.scalekey .ramp{display:block;width:64px;height:7px;border-radius:2px;
+  background:linear-gradient(90deg,rgba(57,135,229,.22),var(--s1))}
 .stage .what{margin:0 0 8px;color:var(--mute);font-size:13px;line-height:1.6;
   max-width:78ch}
 .stage .got{margin:0 0 10px;font-size:12.5px;color:var(--dim);
@@ -1964,6 +1984,12 @@ function renderTurn(turn, question, data, opts) {
           const perDoc = new Map();
           for (const x of sel) perDoc.set(x.source, (perDoc.get(x.source) || 0) + 1);
           const CAP = opts.max_per_source ?? 2;
+          // A bar behind each score, scaled to this run's own range. Twenty
+          // numbers in a column are twenty numbers; the shape of the fall-off
+          // is the thing worth seeing, and it is what the gate cuts against.
+          const nums = ranked.map(x => x.score).filter(n => typeof n === "number");
+          const lo = Math.min(...nums, 0), hi = Math.max(...nums, 0);
+          const span = (hi - lo) || 1;
           return ranked.map(i => {
           const kept = sel.some(x => x.chunk_id === i.chunk_id);
           // Two different reasons a passage is missing from the answer, and
@@ -1980,8 +2006,12 @@ function renderTurn(turn, question, data, opts) {
             <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(docName(i.source))}</div>
                 <div class="loc">${esc(i.locator)}</div></td>
             <td><div class="snip">${esc(clean(i.text))}</div></td>
-            <td class="r num">${typeof i.score === "number" ? sig(i.score) : ""}</td>
-            <td class="r num">${i.delta > 0 ? "+" + i.delta : i.delta < 0 ? i.delta : "·"}</td>
+            <td class="r num scorecell">${
+              typeof i.score === "number" ? `<span>${sig(i.score)}</span>
+                <i class="sbar" style="width:${
+                  (100 * (i.score - lo) / span).toFixed(1)}%"></i>` : ""}</td>
+            <td class="r num mv ${i.delta > 0 ? "up" : i.delta < 0 ? "down" : ""}">${
+              i.delta > 0 ? "↑ " + i.delta : i.delta < 0 ? "↓ " + Math.abs(i.delta) : "·"}</td>
             <td>${outcome}</td>
           </tr>`; }).join("");
         })()}</tbody></table></div></div></div>
@@ -1990,8 +2020,13 @@ function renderTurn(turn, question, data, opts) {
         <p class="pnote">The same run again, one stage at a time. Each block
         says what the stage does, what it produced on this question, and the
         first few passages as they stood when it finished.</p>
-        ${data.stages.map((s, n) => `
-        <div class="stage"><h4>${n + 1}. ${esc(s.title)}</h4>
+        ${(() => {
+          const widest = Math.max(...data.stages.map(x => x.items.length), 1);
+          return data.stages.map((s, n) => `
+        <div class="stage"><h4>${n + 1}. ${esc(s.title)}
+          <span class="count"><i style="width:${
+            (100 * s.items.length / widest).toFixed(1)}%"></i>${
+            s.items.length} passages</span></h4>
           <p class="what">${esc(s.detail)}</p>
           <p class="got"><span class="k">On this question</span>
             ${esc(s.skipped || s.note)}</p>
@@ -2004,7 +2039,8 @@ function renderTurn(turn, question, data, opts) {
                 <td><div class="snip">${esc(clean(i.text))}</div></td>
                 <td class="r num">${typeof i.score === "number" ? i.score : ""}</td></tr>`).join("")}
             </tbody></table></div>` : ""}
-        </div>`).join("")}</div></div>
+        </div>`).join("");
+        })()}</div></div>
     </details>
 `;
 
@@ -2065,17 +2101,30 @@ function renderStack(turn, data, colour, sig) {
   const cols = att.chunk_ids;
   const max = Math.max(...att.matrix.flat(), 0.0001);
 
+  // The final five, so a column that reached the answer can be marked.
+  const kept = new Set((byName.get("selected")?.items || []).map(i => i.chunk_id));
+
   const out = [`<div class="rl"></div>`];
-  cols.forEach((_, i) => out.push(
-    `<div class="cn">${String(i + 1).padStart(2, "0")}</div>`));
+  cols.forEach((id, i) => {
+    const it = src.get(id);
+    const hue = it ? colour(it.source) : "var(--wire)";
+    out.push(`<div class="cn${kept.has(id) ? " in" : ""}"
+      title="${esc(docName(it?.source || "unknown"))}${
+        kept.has(id) ? " — in the answer" : ""}">
+      <i style="background:${hue}"></i>${String(i + 1).padStart(2, "0")}</div>`);
+  });
   att.terms.forEach((t, r) => {
     out.push(`<div class="rl">${esc(t)}</div>`);
     att.matrix[r].forEach((v, ci) => {
       const it = src.get(cols[ci]);
+      // The document's own colour, at a strength that is the word's share of
+      // that passage's score. Grey said "some number here"; this says which
+      // document, and how much of its score this word paid for.
+      const hue = it ? colour(it.source) : "var(--wire)";
       out.push(v <= 0
         ? `<div class="cell"></div>`
-        : `<div class="cell has" style="background:var(--dim);opacity:${
-             (0.3 + (v / max) * 0.7).toFixed(2)}"
+        : `<div class="cell has" style="background:${hue};opacity:${
+             (0.22 + (v / max) * 0.78).toFixed(2)}"
              title="&quot;${esc(t)}&quot; contributed ${v.toFixed(2)} to ${
                esc(docName(it?.source || ""))}"></div>`);
     });
@@ -2094,7 +2143,8 @@ function renderStack(turn, data, colour, sig) {
       `<i>${esc(d)}</i>`).join(", ")}.` : ""}
     This covers the BM25 half of the search only. Dense retrieval compares whole
     meanings and has no per-word equivalent to show.</p>
-    <div class="scalekey"><span>less</span><i class="ramp"></i><span>more</span></div>
+    <div class="scalekey"><span>colour: which document</span>
+      <i class="ramp"></i><span>strength: how much of its score this word paid for</span></div>
     <div class="grid" style="grid-template-columns:118px repeat(${cols.length}, minmax(0, 1fr))">
       ${out.join("")}</div>`;
 }
