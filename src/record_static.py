@@ -146,7 +146,7 @@ def write_site(out: Path, manifest: dict) -> None:
         html = page.read_text(encoding="utf-8")
         if "offline.js" in html:
             continue
-        tag = '<script src="/offline.js"></script>'
+        tag = '<script src="offline.js"></script>'
         if "<head>" in html:
             html = html.replace("<head>", "<head>\n" + tag, 1)
         else:
@@ -173,6 +173,19 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
 // in step, and this project has spent a lot of effort on exactly that class of
 // bug -- two code paths that agree until one is edited.
 (function () {
+  // Where the recordings are, resolved from this script's own URL rather than
+  // written as "/recorded/...". Absolute paths only work when the site is the
+  // root of a domain: opened from disk with file:// they resolve to the
+  // filesystem root, and under a project subpath (GitHub Pages serves at
+  // /<repo>/) they resolve above the site. Both fail the same way -- the page
+  // loads, every data fetch 404s, and the interface reports "Server
+  // unreachable", which sends a reader off to start a server that this build
+  // exists specifically to avoid needing.
+  const HERE = new URL("./", document.currentScript
+    ? document.currentScript.src
+    : location.href).href;
+  const at = (p) => HERE + p.replace(/^\//, "");
+
   const KEY = (q) => {
     // Must match src/record_static.py's key(): sha256 of the trimmed,
     // lowercased question, first 16 hex characters.
@@ -185,7 +198,7 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
   };
 
   let corpus = null;
-  const base = () => `/recorded/${corpus || MANIFEST.default}`;
+  const base = () => at(`recorded/${corpus || MANIFEST.default}`);
 
   // A loading state, because the first paint waits on a fetch. Injected from
   // here rather than added to the page: the live interface has a server that
@@ -240,7 +253,7 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
   };
 
   let MANIFEST = { default: null, corpora: {} };
-  const ready = fetch("/recorded/manifest.json")
+  const ready = fetch(at("recorded/manifest.json"))
     .then((r) => r.json())
     .then((m) => {
       MANIFEST = m;
@@ -267,7 +280,7 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
       LOCATIONS = {};
       await Promise.all(
         Object.keys(MANIFEST.corpora).map((c) =>
-          real(`/recorded/${c}/index.json`)
+          real(at(`recorded/${c}/index.json`))
             .then((r) => (r.ok ? r.json() : []))
             .then((rows) => {
               for (const row of rows) {
@@ -296,8 +309,8 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
     if (path === "/api/corpus") return real(`${base()}/corpus.json`);
     if (path === "/api/corpora") return real(`${base()}/corpora.json`);
     if (path === "/api/chunks") return real(`${base()}/chunks.json`);
-    if (path === "/api/analytics") return real("/recorded/analytics.json");
-    if (path === "/api/eval") return real("/recorded/eval.json");
+    if (path === "/api/analytics") return real(at("recorded/analytics.json"));
+    if (path === "/api/eval") return real(at("recorded/eval.json"));
 
     if (path === "/api/corpus/select") {
       const body = JSON.parse((init && init.body) || "{}");
@@ -316,7 +329,7 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
         // types a question from the bird set while the papers are selected
         // means the question, not the corpus.
         if (home !== corpus) corpus = home;
-        return real(`/recorded/${home}/${k}.json`);
+        return real(at(`recorded/${home}/${k}.json`));
       }
       // The honest failure. A recorded demo cannot answer a question nobody
       // recorded, and saying so is better than an empty result that reads as
