@@ -249,10 +249,12 @@ Other hard-won corrections worth not repeating:
 
 ### Rewritten 2026-08-26 — the front page as it now stands
 
-`retrieval visualized/`. Header carries two links only: **Analytics** and
-**Previous version** (`/archive`, the pre-rebuild front page served live beside
-the current one, with its own copy of the drawing code so the two can be
-clicked through). The name is a **home button** that clears the thread.
+`retrieval visualized/`. Header carries **About**, **Analytics** and
+**Source**. The name is a **home button** that clears the thread. A third link
+to `/archive` — the pre-rebuild front page, served live beside the current one
+— was removed on 2026-08-29: the rebuild it existed to compare against is
+finished, and a visitor has no use for a frozen copy of the page they are
+already reading. The snapshot stays in `archive/`.
 
 Flow: headline → what RAG is → the pipeline diagram → **pick a document set**
 (dropdown, each with an isometric mark, counts and formats) → ask. Clicking the
@@ -444,12 +446,15 @@ It is in git history if it is ever wanted back.
   served and no document mentioned — nobody tests what nobody has written down.
 
   **Pages** — `/` the app · `/about` why the project exists, a guide to the
-  pipeline and a glossary · `/quality` the retrieval-quality dashboard ·
-  `/archive` the pre-rebuild front page, served live beside the current one.
+  pipeline and a glossary · `/quality` the retrieval-quality dashboard.
+
+  The archive route, which served the pre-rebuild front page beside the current
+  one, was removed on 2026-08-29: the rebuild it existed to compare against is
+  finished. The snapshot stays in `archive/`.
 
   **Assets** — `/pipeline-map.js` the diagram · `/answer-mark.js` the logic
   that decides which words of a passage are set bold ·
-  `/archive/pipeline-map.js` the archived page's own copy · `/fonts/*`.
+  `/fonts/*`.
 
   **Asking** — `POST /api/chat` is what the interface calls for every question:
   answer and trace in one round trip, so the two cannot disagree.
@@ -484,10 +489,11 @@ deliberate default.
 78 MB of third-party papers and the same text again inside `metadata.json`.
 They remain in the *history* deliberately: this repository's prose cites
 **fourteen** of its own commit SHAs — `HANDOFF.md` §5 cites `f2ab5de` and
-`f1ea450`, `serve.py` embeds `d1f8c71` in the archive banner a visitor reads,
-and `docs/angle-sweep.html` stamps one on every entry — so a rewrite would
-dangle all fourteen, silently, because a dead SHA in a sentence reads exactly
-like a live one. `src/check_docs.py` now counts and resolves them rather than
+`f1ea450`, and `docs/angle-sweep.html` stamps one on every entry — so a
+rewrite would dangle them, silently, because a dead SHA in a sentence reads
+exactly like a live one. (`serve.py` embedded `d1f8c71` in the archive banner
+until that route was removed on 2026-08-29; the count `check_docs.py` reports
+is the live one.) `src/check_docs.py` now counts and resolves them rather than
 leaving that as a number in a paragraph. See `docs/engineering-log.md`,
 2026-08-28. Rebuild the corpora with
 `src/fetch_corpus.py`, `src/fetch_topic.py` and `src/ingest.py`.

@@ -140,7 +140,7 @@ def scenario(gold=None, pc=None, res=None, an=None, after=None):
                 "threshold": -3.0, "calibrated": True,
                 "n_answerable": n_ans, "n_adversarial": n_adv,
                 "examples": [{"q": c["question"], "adversarial": bool(c.get("unanswerable")),
-                              "label": "one figure in one place"} for c in g["cases"]],
+                              "label": "answered in one place"} for c in g["cases"]],
             }],
         }
         if an:
