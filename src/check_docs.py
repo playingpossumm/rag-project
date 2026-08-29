@@ -420,6 +420,75 @@ def served_routes() -> set[str]:
     return {r for r in found if r.startswith("/")}
 
 
+def check_commits(problems: list[str], notes: list[str]) -> bool:
+    """Every commit these documents name still has to exist.
+
+    The decision not to rewrite this repository's history rests on the fact that
+    its own prose cites its own SHAs -- HANDOFF §5, the engineering log, the
+    banner `serve.py` prints over the archived front page, and every entry in
+    the rendered changelog. A rewrite would break all of them, and it would
+    break them silently: a dangling SHA in a sentence reads exactly like a live
+    one.
+
+    So the risk that argued against the rewrite is now checked instead of
+    described. It also catches the ordinary version of the same mistake --
+    quoting a SHA from a branch that was never merged, or mistyping one.
+    """
+    import subprocess
+
+    root = Path(__file__).resolve().parent.parent
+    try:
+        listed = subprocess.run(["git", "ls-files", "*.md", "*.py", "*.html"],
+                                cwd=root, capture_output=True, text=True,
+                                check=True).stdout.split()
+    except (OSError, subprocess.CalledProcessError):
+        notes.append("  commit references (no git here -- not checked)")
+        return True
+
+    # Seven to eight lowercase hex characters, standing alone. Longer runs are
+    # digests, not abbreviated SHAs, and this project has plenty of those.
+    pattern = re.compile(r"(?<![0-9a-zA-Z])[0-9a-f]{7,8}(?![0-9a-zA-Z])")
+    # A UUID's first block looks exactly like a short SHA, and §8 writes the
+    # published artifacts' ids bare and in backticks the same way it writes
+    # commits. What separates them is that the full uuid is in the same file:
+    # if `c8fef8f2` also appears as `c8fef8f2-2060-...`, it is an artifact.
+    uuid_head = re.compile(r"\b([0-9a-f]{8})-[0-9a-f]{4}-")
+    cited: dict[str, str] = {}
+    for name in listed:
+        path = root / name
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        ids = set(uuid_head.findall(text))
+        for sha in pattern.findall(text):
+            if sha in ids:
+                continue
+            cited.setdefault(sha, name)
+
+    # Only the ones git recognises as a commit are claims about this history.
+    # A hex run that happens to be seven characters long is not a reference,
+    # and asking git is cheaper than trying to tell them apart by eye.
+    live, dead = 0, []
+    for sha, where in sorted(cited.items()):
+        found = subprocess.run(["git", "cat-file", "-e", f"{sha}^{{commit}}"],
+                               cwd=root, capture_output=True)
+        if found.returncode == 0:
+            live += 1
+        elif re.search(rf"`{sha}`|commit `?{sha}", (root / where).read_text(
+                encoding="utf-8", errors="ignore")):
+            # Backticked or introduced by the word "commit": prose meant it as
+            # a reference, and it does not resolve.
+            dead.append((sha, where))
+
+    for sha, where in dead:
+        problems.append(f"{where} cites commit {sha}, which this repository "
+                        f"does not contain -- a rewritten history or a typo, "
+                        f"and both read identically in a sentence")
+    notes.append(f"  {live} commit reference(s) in prose, all resolving")
+    return True
+
+
 def check_routes(problems: list[str], notes: list[str]) -> bool:
     """HANDOFF §6's route list against the dispatch itself.
 
@@ -461,7 +530,10 @@ def check_routes(problems: list[str], notes: list[str]) -> bool:
             continue
         problems.append(f"HANDOFF.md §6 lists {route}, which serve.py does not "
                         f"dispatch on")
-    notes.append(f"  §6 routes ({len(served)} served, {len(documented)} documented)")
+    wild = sum(1 for r in documented if r.endswith("/*"))
+    notes.append(f"  §6 routes ({len(served)} served, "
+                 f"{len(documented) - wild} documented"
+                 + (f" + {wild} wildcard" if wild else "") + ")")
     return True
 
 
@@ -605,6 +677,7 @@ def main() -> int:
     ok = check_defaults(problems, notes) and ok
     ok = check_notes(measured, problems, notes) and ok
     ok = check_routes(problems, notes) and ok
+    ok = check_commits(problems, notes) and ok
 
     if not args.quiet and notes:
         print("checked:")
