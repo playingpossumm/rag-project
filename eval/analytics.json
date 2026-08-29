@@ -319,19 +319,19 @@
    "examples": [
     {
      "q": "Does the adaptation method add inference latency?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What problem does normalizing layer inputs address?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What load balancing loss is used for expert routing?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
@@ -648,19 +648,19 @@
    "examples": [
     {
      "q": "What organ do birds use to produce song?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What is the fused collarbone of a bird called?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which wing measurement compares span against width?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
@@ -983,19 +983,19 @@
    "examples": [
     {
      "q": "Can the CVaR threshold be restricted to a bounded range?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "How many news tags does the news-pricing taxonomy define?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What peak Sharpe ratio does the photonic approach report?",
-     "label": "one figure in one place",
+     "label": "answered in one place",
      "adversarial": false,
      "expect": "should be answered"
     },

@@ -83,23 +83,15 @@ button,input,textarea{font:inherit;color:inherit}
 .brand span{color:var(--faint)}
 .top nav{margin-left:auto;display:flex;gap:20px;align-items:center}
 .top nav a{white-space:nowrap}
-/* Declared BEFORE the narrow-screen block below: at equal specificity the last
-   rule wins, and having this after it meant the short label never appeared and
-   the archive link vanished from a phone header entirely. */
-.top nav a.archive .short{display:none}
-
-/* A phone header. The name and two links do not fit at 13px on a 375px
-   screen: the brand broke after "retrieval" and the archive link wrapped to
-   "PREVIOUS / VERSION", taking the header to two rows. Both step down, and
-   the archive link uses its short name. */
+/* A phone header. The name and the links do not fit at 13px on a 375px
+   screen: the brand broke after "retrieval" and the header went to two rows.
+   Both step down. */
 @media (max-width:560px){
   :root{--map-h:300px}
   .top-in{padding:0 14px}
   .brand{font-size:11.5px}
   .top nav{gap:14px}
   .top nav a{font-size:9.5px;letter-spacing:.09em}
-  .top nav a.archive .long{display:none}
-  .top nav a.archive .short{display:inline}
 }
 .top a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.13em;
   text-transform:uppercase;color:var(--faint);text-decoration:none;
@@ -775,12 +767,6 @@ tr.out td{color:var(--faint)}
   <nav>
     <a href="/about">About</a>
     <a href="/quality">Analytics</a>
-    <!-- The front page as it stood before the rebuild, served from this same
-         server against the same live API. It is a sub-page like Analytics, so
-         it belongs here -- it was reachable only from inside the settings tray,
-         which is a collapsed tab on the right edge and not a place anyone
-         looks for a second version of the site. -->
-    <a class="archive" href="/archive"><span class="long">Previous version</span><span class="short">Archive</span></a>
     <!-- Every stage this page draws is a function in that repository, and the
          documents each corpus was built from are listed there too. It is the
          answer to both questions a reader has after watching this work: how,

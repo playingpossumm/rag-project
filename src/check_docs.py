@@ -424,9 +424,9 @@ def check_commits(problems: list[str], notes: list[str]) -> bool:
     """Every commit these documents name still has to exist.
 
     The decision not to rewrite this repository's history rests on the fact that
-    its own prose cites its own SHAs -- HANDOFF §5, the engineering log, the
-    banner `serve.py` prints over the archived front page, and every entry in
-    the rendered changelog. A rewrite would break all of them, and it would
+    its own prose cites its own SHAs -- HANDOFF §5, the engineering log, and
+    every entry in the rendered changelog. A rewrite would break all of them,
+    and it would
     break them silently: a dangling SHA in a sentence reads exactly like a live
     one.
 

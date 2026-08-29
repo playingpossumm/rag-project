@@ -403,14 +403,16 @@ harness.
   candidates that are faster are worse, and the one that separates best is
   dramatically slower and ranks worse. What remains is a fine-tune on 157
   labelled cases, which is probably too few.
-- **No real model has been benchmarked writing answers.** Generation runs — the
-  path executes end to end against a local Ollama — but no measurement of answer
-  *quality* exists, only of retrieval. A 3B local model is also brittle: changing
-  one word of the prompt from "Context:" to "Excerpts:" is the difference
-  between a citation with no prose and a correct answer.
-- **Native Google Docs cannot be read.** A `.gdoc` is a URL pointer with no
-  content; ingestion says so explicitly rather than indexing emptiness.
-- **No permissions model.** Fine for one user; not for a team.
+- **Answer quality is measured, but on nine cases and one small model.**
+  `src/evaluate_answers.py` scores the generated prose without an LLM judge:
+  zero invented citations across nine answers, 2 of 3 adversarial questions
+  refused, and no answerable question refused wrongly. Correctness is 3 of 6,
+  which is a floor rather than a rate — it is a substring test and cannot
+  credit a correct paraphrase. Groundedness is a lexical-overlap proxy at
+  0.602, not a verdict. The generator is a 3B local model and is brittle:
+  changing one word of the prompt from "Context:" to "Excerpts:" is the
+  difference between a citation with no prose and a correct answer. Nine cases
+  on one corpus is too few to conclude much. → [`eval/answer-quality.json`](eval/answer-quality.json)
 - **157 cases across three corpora is still small.** On the 26-case bird set each
   answerable question is worth ~3.8 points, so a one-question difference looks
   like a result and is not. Treat small differences as noise: a 23-case set

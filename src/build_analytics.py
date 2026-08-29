@@ -65,7 +65,7 @@ def sweep(ans: list[float], adv: list[float], lo=-8.0, hi=4.0, step=0.5):
 # the labeller's concern. A reader picking a question wants to know what kind of
 # retrieval it will exercise.
 KIND_LABEL = {
-    "fact": "one figure in one place",
+    "fact": "answered in one place",
     "multi": "spread over several documents",
     "cross-doc": "decoys that look right",
 }

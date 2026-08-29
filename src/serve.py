@@ -258,9 +258,9 @@ INDEX_RUN = IndexRun()
 # with no eval run yet has to offer, and it is about the ML papers because that
 # is the corpus a fresh clone ships with.
 EXAMPLES = [
-    {"label": "one figure in one place",
+    {"label": "answered in one place",
      "q": "What BLEU score did the Transformer achieve on WMT 2014 English-to-German?"},
-    {"label": "one figure in one place",
+    {"label": "answered in one place",
      "q": "How are normalization statistics computed across features rather than examples?"},
     {"label": "spread over several documents",
      "q": "What learning rate schedule and optimizer settings were used for training?"},
@@ -564,37 +564,12 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, UI_FILE.read_bytes(), "text/html; charset=utf-8")
 
-        elif route in ("/archive", "/archive/pipeline-map.js"):
-            # The previous front page, served next to the current one so the two
-            # can be compared in a browser rather than in a diff. It is a
-            # snapshot: it talks to the same live API, so the answers are real,
-            # but the page itself is frozen at the commit named in its README.
-            #
-            # Its import of /pipeline-map.js is rewritten to the archived copy.
-            # Without that it would load the CURRENT drawing code and the
-            # comparison would be of two pages sharing one diagram, which is
-            # the one thing it exists to show the difference in.
-            snap = ROOT / "archive" / "2026-08-23-pre-refinement"
-            name = "pipeline-map.js" if route.endswith(".js") else "index.html"
-            f = snap / name
-            if not f.exists():
-                self._send(404, {"error": f"archive/{name} is missing"})
-                return
-            if name == "index.html":
-                html = f.read_text(encoding="utf-8").replace(
-                    '"/pipeline-map.js"', '"/archive/pipeline-map.js"')
-                html = html.replace(
-                    "<body>",
-                    '<body>' +
-                    '<div style="position:fixed;top:0;left:0;right:0;z-index:999;'
-                    'background:#d95926;color:#fff;font:500 12px/1.6 ui-monospace,monospace;'
-                    'letter-spacing:.08em;text-align:center;padding:5px">'
-                    'ARCHIVED FRONT PAGE &mdash; 23 AUG 2026, COMMIT d1f8c71 &nbsp;·&nbsp; '
-                    '<a href="/" style="color:#fff">back to current</a></div>', 1)
-                self._raw(200, html.encode("utf-8"), "text/html; charset=utf-8")
-            else:
-                self._raw(200, f.read_bytes(),
-                          "text/javascript; charset=utf-8")
+        # The archived pre-rebuild front page used to be served here, beside
+        # the current one, so the two could be compared in a browser. The
+        # rebuild is done and the comparison has been made; a visitor has no
+        # use for a frozen copy of the page they are already on. The snapshot
+        # stays in archive/ and in git, which is where a superseded version
+        # belongs.
 
         elif route == "/about":
             # Why the project exists, how the pipeline works, and a glossary of

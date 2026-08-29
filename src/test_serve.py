@@ -82,7 +82,7 @@ try:
     serve.EVAL_DIR = tmp
     (tmp / "analytics.json").write_text(json.dumps({"corpora": [
         {"name": "birds", "examples": [
-            {"q": "What organ produces song?", "label": "one figure in one place"}]},
+            {"q": "What organ produces song?", "label": "answered in one place"}]},
         {"name": "empty", "examples": []},
     ]}), encoding="utf-8")
 

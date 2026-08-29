@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAG process — two directions</title>
+
+<!-- ============================================================ prototype
+     ISOLATED. Nothing here is wired into the running interface, and
+     production code is untouched: this exists so two drawings of the same
+     pipeline can be compared side by side before either one is built for
+     real. Delete it once a direction is chosen.
+
+     Both variants answer the same brief:
+       - every stage visible from the first frame, never assembling
+       - motion is a passage TRAVELLING, not a plate forming
+       - the colour of a moving passage is the colour of its document, so a
+         line and the thing it carries can never disagree
+       - each stage is a different device, because the stages do different
+         things -- the old drawing gave dense retrieval and BM25 identical
+         geometry while they are opposites
+       - the diversity cap visibly blocks passages rather than reporting a
+         number afterwards
+       - the answer is a ball, not another square
+
+     They diverge on ONE axis: whether the pipeline is one machine or seven.
+     A: one belt, seven stations, no gaps. The subject is the flow.
+     B: seven framed machines handing work across. The subject is the stages.
+-->
+
+<style>
+@font-face{font-family:Inter;src:url("fonts/Inter-400_700.woff2") format("woff2");
+  font-weight:400 700;font-display:swap}
+@font-face{font-family:"DM Mono";src:url("fonts/DMMono-500.woff2") format("woff2");
+  font-weight:500;font-display:swap}
+
+:root{
+  --ground:#0e0e0f; --card:#171819; --nest:#1f2022; --hair:#292b2d; --edge:#35383a;
+  --ink:#f2f2f0; --dim:#a2a5a7; --mute:#7c8082; --faint:#5a5e60; --wire:#43474a;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --good:#3fb950; --bad:#f0685f;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,Consolas,monospace;
+  --max:1160px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--max);margin:0 auto;padding:26px clamp(16px,4vw,32px) 90px}
+
+h1{font-size:19px;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--dim);font-size:13.5px;margin:0 0 22px;max-width:62ch}
+
+/* -------------------------------------------------------------- picker */
+.picker{display:flex;gap:6px;background:var(--card);border:1px solid var(--hair);
+  border-radius:11px;padding:5px;position:sticky;top:12px;z-index:20;
+  width:max-content;margin-bottom:18px}
+.picker button{font:500 12px/1 var(--sans);letter-spacing:.01em;color:var(--dim);
+  background:none;border:0;border-radius:7px;padding:9px 14px;cursor:pointer;
+  transition:background 140ms ease-out,color 140ms ease-out}
+.picker button:hover{color:var(--ink)}
+.picker button[aria-pressed="true"]{background:var(--nest);color:var(--ink)}
+
+.variant{display:none}
+.variant.on{display:block}
+
+.vhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+.vhead h2{font-size:15.5px;margin:0;letter-spacing:-.01em}
+.axis{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint)}
+.vnote{color:var(--dim);font-size:13px;margin:0 0 14px;max-width:70ch}
+
+.stage-wrap{background:var(--card);border:1px solid var(--hair);
+  border-radius:14px;padding:16px 16px 12px}
+.cvhead{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px}
+.cvhead .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint)}
+canvas{display:block;width:100%;height:clamp(340px,34vw,460px)}
+.controls{display:flex;align-items:center;gap:12px;margin-top:10px}
+.controls input[type=range]{flex:1;accent-color:var(--s1);height:3px}
+.controls button{font:500 11.5px/1 var(--sans);color:var(--dim);background:var(--nest);
+  border:1px solid var(--hair);border-radius:8px;padding:8px 13px;cursor:pointer;
+  transition:color 140ms ease-out,border-color 140ms ease-out}
+.controls button:hover{color:var(--ink);border-color:var(--edge)}
+.cap{font-size:12.5px;color:var(--dim);min-height:2.9em;margin:10px 2px 0;
+  max-width:78ch}
+.cap b{color:var(--ink);font-weight:600}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;
+  font-size:11.5px;color:var(--mute)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.legend .blocked{width:11px;height:2px;border-radius:0;background:var(--bad)}
+
+@media (prefers-reduced-motion:reduce){
+  .picker button{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>The RAG process — two directions</h1>
+<p class="sub">Same question, same trace, same colours. They differ on one
+thing: whether this is <b>one machine</b> you watch work, or <b>seven machines</b>
+handing work along. Drag the slider to move through the run, or press Play.</p>
+
+<div class="picker" role="group" aria-label="Direction">
+  <button type="button" data-v="a" aria-pressed="true">A · One machine</button>
+  <button type="button" data-v="b" aria-pressed="false">B · Seven machines</button>
+</div>
+
+<section class="variant on" data-v="a">
+  <div class="vhead"><h2>One belt, seven stations</h2>
+    <span class="axis">axis: the flow is the subject</span></div>
+  <p class="vnote">Nothing is framed off. A passage enters at the left as a dot
+  in the index and leaves at the right as a ball in the answer, and you can
+  follow one the whole way. The stations sit on a shared baseline so the eye
+  reads a single path rather than seven pictures.</p>
+  <div class="stage-wrap">
+    <div class="cvhead"><span class="lab">The RAG process</span>
+      <span class="lab" id="qa"></span></div>
+    <canvas id="ca"></canvas>
+    <div class="controls">
+      <button type="button" data-play="a">Play</button>
+      <input type="range" min="0" max="1000" value="1000" data-scrub="a"
+             aria-label="Position in the run">
+    </div>
+    <p class="cap" id="capa"></p>
+    <div class="legend" id="lega"></div>
+  </div>
+</section>
+
+<section class="variant" data-v="b">
+  <div class="vhead"><h2>Seven machines in a row</h2>
+    <span class="axis">axis: the stages are the subject</span></div>
+  <p class="vnote">Each stage is its own apparatus in its own frame, with its
+  own count and its own label, and passages are handed across the gaps between
+  them. Easier to point at one stage and say what it does; harder to feel the
+  run as one continuous thing.</p>
+  <div class="stage-wrap">
+    <div class="cvhead"><span class="lab">The RAG process</span>
+      <span class="lab" id="qb"></span></div>
+    <canvas id="cb"></canvas>
+    <div class="controls">
+      <button type="button" data-play="b">Play</button>
+      <input type="range" min="0" max="1000" value="1000" data-scrub="b"
+             aria-label="Position in the run">
+    </div>
+    <p class="cap" id="capb"></p>
+    <div class="legend" id="legb"></div>
+  </div>
+</section>
+
+</div>
+
+<script type="module">
+/* ==================================================================== data
+   A real recorded run, embedded so this page is standalone. Bird migration,
+   because it exercises every mechanism worth drawing: six passages found by
+   both retrievers, a +14 place move at the cross-encoder, thirteen passages
+   displaced by the diversity cap, and three documents in the final answer. */
+const TRACE = await fetch("prototype-trace.json").then(r => r.json());
+
+const STAGES = Object.fromEntries(TRACE.stages.map(s => [s.name, s]));
+const SEL = STAGES.selected.items;
+const RANKED = (STAGES.reranked || STAGES.fused).items;
+
+/* Colour is identity. Three documents get the validated hues, everything else
+   is wire -- so a coloured line always means "this passage reached the answer"
+   and never anything else. This is the fix for lines whose colour disagreed
+   with what they carried. */
+const HUES = ["#3987e5", "#d95926", "#199e70"];
+const WIRE = "#43474a";
+const SOURCES = [...new Set(SEL.map(i => i.source))];
+const colourOf = (src) => {
+  const i = SOURCES.indexOf(src);
+  return i >= 0 && i < 3 ? HUES[i] : WIRE;
+};
+const lives = new Set(SEL.map(i => i.chunk_id));
+const shortDoc = (s) => s.replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ");
+// Two of these documents are the same Wikipedia article rendered as a PDF and
+// as a spreadsheet, so the stem alone names both. The format disambiguates.
+const legendName = (s) => {
+  const stem = shortDoc(s);
+  const ext = (s.split(".").pop() || "").toUpperCase();
+  const clash = SOURCES.filter(o => shortDoc(o) === stem).length > 1;
+  return clash ? `${stem} (${ext})` : stem;
+};
+
+/* Counts read off the trace, never typed in. */
+const N = {
+  passages: 864,
+  docs: 45,
+  dense: STAGES.dense.items.length,
+  sparse: STAGES.sparse ? STAGES.sparse.items.length : 0,
+  fused: STAGES.fused.items.length,
+  both: (() => {
+    const d = new Set(STAGES.dense.items.map(i => i.chunk_id));
+    return STAGES.sparse
+      ? STAGES.sparse.items.filter(i => d.has(i.chunk_id)).length : 0;
+  })(),
+  reranked: RANKED.length,
+  selected: SEL.length,
+  blocked: (() => {
+    const m = /(\d+)\s+passage/.exec(STAGES.selected.note || "");
+    return m ? +m[1] : 0;
+  })(),
+  biggestMove: (() => {
+    let best = null;
+    for (const i of RANKED) {
+      if (typeof i.delta === "number" && (!best || Math.abs(i.delta) > Math.abs(best.delta)))
+        best = i;
+    }
+    return best;
+  })(),
+};
+
+/* ============================================================== the model
+   Twelve travellers, because a dot per passage is a smear and a dot per
+   candidate is a crowd. Nine of them die somewhere; three reach the answer.
+   Each one carries where it came from, so the drawing never has to invent a
+   colour for a line. */
+const TRAVELLERS = (() => {
+  const out = [];
+  const survivors = SEL.slice(0, 3);
+  for (const it of survivors) {
+    out.push({ colour: colourOf(it.source), source: it.source,
+               diesAt: null, both: false, moved: it.delta || 0 });
+  }
+  // Passages the cap threw out: same colour as a survivor, which is the whole
+  // point of the cap -- it is cutting a THIRD passage from a document that
+  // already has two.
+  for (let i = 0; i < 2; i++) {
+    out.push({ colour: colourOf(SOURCES[0]), source: SOURCES[0],
+               diesAt: "cap", both: false, moved: 0 });
+  }
+  // Passages the cross-encoder demoted out of contention.
+  for (let i = 0; i < 3; i++) {
+    out.push({ colour: WIRE, source: null, diesAt: "rerank", both: false, moved: -6 });
+  }
+  // Passages one retriever found and fusion did not rank high enough.
+  for (let i = 0; i < 4; i++) {
+    out.push({ colour: WIRE, source: null, diesAt: "fuse", both: i < 1, moved: 0 });
+  }
+  return out;
+})();
+
+/* ============================================================== plumbing */
+const SIZES = new WeakMap();
+function fit(cv, ctx) {
+  let r = SIZES.get(cv);
+  if (!r) {
+    const b = cv.getBoundingClientRect();
+    if (!b.width || !b.height) return null;
+    r = { width: b.width, height: b.height };
+    SIZES.set(cv, r);
+    new ResizeObserver(() => SIZES.delete(cv)).observe(cv);
+  }
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return r;
+}
+const clamp01 = (t) => t < 0 ? 0 : t > 1 ? 1 : t;
+const ease = (t) => 1 - Math.pow(1 - t, 3);
+const lerp = (a, b, t) => a + (b - a) * t;
+const STILL = matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+function label(ctx, x, y, title, sub, align = "center") {
+  ctx.textAlign = align;
+  ctx.fillStyle = "#f2f2f0";
+  ctx.font = "600 12px Inter, system-ui, sans-serif";
+  ctx.fillText(title, x, y);
+  if (sub) {
+    ctx.fillStyle = "#7c8082";
+    ctx.font = "500 9.5px 'DM Mono', ui-monospace, monospace";
+    ctx.fillText(sub.toUpperCase(), x, y + 13);
+  }
+}
+
+/* ========================================================= the stations
+   Seven devices, each shaped like the thing it does. The old drawing gave
+   every stage the same rectangle, which meant the picture said "seven steps
+   happened" and nothing else. */
+
+// 01 A field of passages: a dense scatter, deterministic so it never shimmers.
+function drawIndex(ctx, x, y, w, h, lit) {
+  ctx.strokeStyle = "#292b2d"; ctx.lineWidth = 1;
+  round(ctx, x, y - h / 2, w, h, 6); ctx.stroke();
+  const cols = 15, rows = 9;
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      const jitter = (Math.sin(i * 127.1 + j * 311.7) * 43758.5453 % 1 + 1) % 1 - 0.5;
+      const px = x + 7 + (w - 14) * (i / (cols - 1)) + jitter * 3;
+      const py = y - h / 2 + 8 + (h - 16) * (j / (rows - 1)) + jitter * 3;
+      ctx.beginPath(); ctx.arc(px, py, 1.05, 0, 7);
+      ctx.fillStyle = "#43474a"; ctx.globalAlpha = 0.75; ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+  if (lit) {
+    for (const [i, t] of TRAVELLERS.entries()) {
+      const px = x + 9 + (w - 18) * ((i * 7 % 13) / 12);
+      const py = y - h / 2 + 10 + (h - 20) * ((i * 5 % 9) / 8);
+      ctx.beginPath(); ctx.arc(px, py, 2.1, 0, 7);
+      ctx.fillStyle = t.colour; ctx.globalAlpha = 0.9 * lit; ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+}
+
+// 02 Dense retrieval: a lens. It gathers by proximity in meaning, so it is
+// drawn as a curved scoop pulling from a spread.
+function drawLens(ctx, x, y, w, h, t) {
+  ctx.strokeStyle = "#43474a"; ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  ctx.moveTo(x, y - h / 2);
+  ctx.quadraticCurveTo(x + w * 0.85, y, x, y + h / 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x, y - h / 2);
+  ctx.quadraticCurveTo(x - w * 0.15, y, x, y + h / 2);
+  ctx.stroke();
+  // The catch: a soft arc sweeping through, tied to progress.
+  if (t > 0) {
+    ctx.save();
+    ctx.strokeStyle = "#3987e5"; ctx.globalAlpha = 0.55 * (1 - Math.abs(t - .5) * 2);
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    const sweep = y - h / 2 + h * t;
+    ctx.moveTo(x - 3, sweep);
+    ctx.quadraticCurveTo(x + w * 0.5, sweep, x + w * 0.9, sweep);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+// 03 BM25: a comb. It catches by exact token, so it is teeth, not a curve --
+// the opposite shape from the lens, because it is the opposite method.
+function drawComb(ctx, x, y, w, h, t) {
+  ctx.strokeStyle = "#43474a"; ctx.lineWidth = 1.3;
+  ctx.beginPath(); ctx.moveTo(x, y - h / 2); ctx.lineTo(x, y + h / 2); ctx.stroke();
+  const teeth = 7;
+  for (let i = 0; i < teeth; i++) {
+    const ty = y - h / 2 + (h * (i + 0.5)) / teeth;
+    ctx.beginPath();
+    ctx.moveTo(x, ty); ctx.lineTo(x + w * 0.8, ty);
+    ctx.strokeStyle = i % 2 && t > 0.3 ? "#d95926" : "#43474a";
+    ctx.globalAlpha = i % 2 && t > 0.3 ? 0.75 : 1;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// 04 Fusion: two streams converging into one ordered column. A passage both
+// retrievers found gets a ring, which is the only thing fusion rewards.
+function drawMerge(ctx, x, y, w, h, t) {
+  ctx.strokeStyle = "#43474a"; ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(x, y - h / 2); ctx.quadraticCurveTo(x + w * .55, y - h / 4, x + w, y);
+  ctx.moveTo(x, y + h / 2); ctx.quadraticCurveTo(x + w * .55, y + h / 4, x + w, y);
+  ctx.stroke();
+  const slots = 6;
+  for (let i = 0; i < slots; i++) {
+    const sy = y - h / 2 + 6 + ((h - 12) * i) / (slots - 1);
+    ctx.beginPath(); ctx.moveTo(x + w, sy); ctx.lineTo(x + w + 9, sy);
+    ctx.strokeStyle = "#292b2d"; ctx.lineWidth = 1; ctx.stroke();
+  }
+}
+
+// 05 Cross-encoder: a re-sort. Lines cross, because that IS the stage -- it
+// changes the order and nothing else.
+function drawCross(ctx, x, y, w, h, t) {
+  const n = 5;
+  const order = [3, 0, 4, 1, 2];
+  for (let i = 0; i < n; i++) {
+    const y0 = y - h / 2 + 6 + ((h - 12) * i) / (n - 1);
+    const y1 = y - h / 2 + 6 + ((h - 12) * order[i]) / (n - 1);
+    const moved = i !== order[i];
+    ctx.beginPath();
+    ctx.moveTo(x, y0);
+    ctx.bezierCurveTo(x + w * .45, y0, x + w * .55, y1, x + w, y1);
+    ctx.strokeStyle = moved && t > .35 ? "#f2f2f0" : "#3a3e40";
+    ctx.globalAlpha = moved && t > .35 ? .5 : 1;
+    ctx.lineWidth = moved ? 1.3 : 1;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// 06 The diversity cap: a gate with a bar across it. This is the one stage
+// whose job you can only show by showing something NOT get through.
+function drawGate(ctx, x, y, w, h, t) {
+  ctx.strokeStyle = "#43474a"; ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  ctx.moveTo(x, y - h / 2); ctx.lineTo(x, y - h / 6);
+  ctx.moveTo(x, y + h / 6); ctx.lineTo(x, y + h / 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x + w, y - h / 2); ctx.lineTo(x + w, y - h / 6);
+  ctx.moveTo(x + w, y + h / 6); ctx.lineTo(x + w, y + h / 2);
+  ctx.stroke();
+  // The bar. Two slots open, everything else stopped.
+  ctx.strokeStyle = t > .5 ? "#f0685f" : "#3a3e40";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x - 2, y - h / 6); ctx.lineTo(x + w + 2, y - h / 6);
+  ctx.moveTo(x - 2, y + h / 6); ctx.lineTo(x + w + 2, y + h / 6);
+  ctx.stroke();
+}
+
+// 07 The answer: balls. Filled, larger, at rest -- the only round solid shapes
+// on the drawing, so "arrived" is a shape and not a caption.
+function drawAnswer(ctx, x, y, w, h, t) {
+  ctx.strokeStyle = "#292b2d"; ctx.lineWidth = 1;
+  round(ctx, x, y - h / 2, w, h, 8); ctx.stroke();
+}
+
+function round(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/* ============================================================== captions */
+const CAPS = [
+  { at: 0.00, title: "The index",
+    text: `${N.docs} documents, cut into ${N.passages.toLocaleString()} overlapping passages. Each one was turned into a vector before you asked anything.` },
+  { at: 0.16, title: "Two searches at once",
+    text: `Dense retrieval gathers by meaning and takes ${N.dense}. BM25 catches exact words and takes ${N.sparse}. They fail in opposite directions, which is why both run.` },
+  { at: 0.38, title: "Fusion",
+    text: `The two lists merge by position, not score. ${N.both} passages were found by both searches, and those rise.` },
+  { at: 0.56, title: "The cross-encoder re-reads",
+    text: N.biggestMove
+      ? `A second model reads the question and each passage together and reorders them. Biggest move: ${shortDoc(N.biggestMove.source)} went ${N.biggestMove.delta > 0 ? "up" : "down"} ${Math.abs(N.biggestMove.delta)} places.`
+      : `A second model reads the question and each passage together and reorders them.` },
+  { at: 0.76, title: "The cap blocks the rest",
+    text: `At most two passages from any one document. ${N.blocked} were blocked here, so one thorough document cannot fill every slot and hide a second source that also answers.` },
+  { at: 0.92, title: "The answer",
+    text: `${N.selected} passages, from ${SOURCES.length} documents. Everything the answer says comes from these and nothing else.` },
+];
+function capFor(t) {
+  let c = CAPS[0];
+  for (const k of CAPS) if (t >= k.at) c = k;
+  return c;
+}
+
+/* ======================================================== variant A: belt */
+function drawA(ctx, W, H, t) {
+  ctx.clearRect(0, 0, W, H);
+  const midY = H * 0.48;
+  const pad = 14;
+  const usable = W - pad * 2;
+  // Seven stations on one baseline.
+  const X = (f) => pad + usable * f;
+  const bh = Math.min(H * 0.60, 210);
+
+  // The belt itself, drawn first and always whole -- the run has a shape
+  // before anything travels down it.
+  ctx.strokeStyle = "#232527"; ctx.lineWidth = 1;
+  ctx.setLineDash([2, 4]);
+  ctx.beginPath(); ctx.moveTo(X(0.10), midY); ctx.lineTo(X(0.97), midY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  drawIndex(ctx, X(0), midY, usable * 0.11, bh, clamp01(t * 6));
+  label(ctx, X(0.055), midY + bh / 2 + 20, "Index",
+        `${N.passages.toLocaleString()} passages`);
+
+  drawLens(ctx, X(0.19), midY - bh * 0.26, usable * 0.065, bh * 0.46,
+           clamp01((t - .08) * 4));
+  label(ctx, X(0.225), midY - bh * 0.28 - bh * 0.30, "Dense", `${N.dense} found`);
+
+  drawComb(ctx, X(0.19), midY + bh * 0.26, usable * 0.065, bh * 0.46,
+           clamp01((t - .08) * 4));
+  label(ctx, X(0.225), midY + bh * 0.28 + bh * 0.34, "BM25", `${N.sparse} found`);
+
+  drawMerge(ctx, X(0.36), midY, usable * 0.06, bh * 0.72, clamp01((t - .30) * 4));
+  label(ctx, X(0.39), midY + bh / 2 + 20, "Fusion", `${N.both} in both`);
+
+  drawCross(ctx, X(0.53), midY, usable * 0.08, bh * 0.66, clamp01((t - .48) * 4));
+  label(ctx, X(0.57), midY + bh / 2 + 20, "Cross-encoder", `${N.reranked} re-read`);
+
+  drawGate(ctx, X(0.72), midY, usable * 0.035, bh * 0.78, clamp01((t - .66) * 4));
+  label(ctx, X(0.7375), midY + bh / 2 + 20, "Diversity cap", `${N.blocked} blocked`);
+
+  drawAnswer(ctx, X(0.88), midY, usable * 0.10, bh * 0.5, t);
+  label(ctx, X(0.93), midY + bh * 0.25 + 20, "Answer", `${N.selected} passages`);
+
+  drawTravellers(ctx, X, midY, bh, t, "belt");
+}
+
+/* ==================================================== variant B: machines */
+function drawB(ctx, W, H, t) {
+  ctx.clearRect(0, 0, W, H);
+  const midY = H * 0.47;
+  const pad = 10;
+  const cells = 6;
+  const gap = 12;
+  const cw = (W - pad * 2 - gap * (cells - 1)) / cells;
+  const bh = Math.min(H * 0.62, 210);
+  const cx = (i) => pad + i * (cw + gap);
+
+  const frames = [
+    ["Index", `${N.passages.toLocaleString()} passages`],
+    ["Two searches", `${N.dense} + ${N.sparse}`],
+    ["Fusion", `${N.both} in both`],
+    ["Cross-encoder", `${N.reranked} re-read`],
+    ["Diversity cap", `${N.blocked} blocked`],
+    ["Answer", `${N.selected} passages`],
+  ];
+
+  frames.forEach(([title, sub], i) => {
+    const x = cx(i);
+    // Every frame present from the first frame, at full strength. The old
+    // drawing faded stages in, which meant the first second of every run was
+    // a picture of an incomplete system.
+    ctx.strokeStyle = "#232527"; ctx.lineWidth = 1;
+    round(ctx, x, midY - bh / 2 - 10, cw, bh + 20, 10); ctx.stroke();
+    label(ctx, x + cw / 2, midY + bh / 2 + 28, title, sub);
+    // Hand-off between machines: a short dotted bridge, so the gap reads as
+    // deliberate rather than as the drawing running out.
+    if (i < frames.length - 1) {
+      ctx.strokeStyle = "#232527";
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x + cw, midY); ctx.lineTo(x + cw + gap, midY); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  });
+
+  drawIndex(ctx, cx(0) + 8, midY, cw - 16, bh * 0.86, clamp01(t * 6));
+  drawLens(ctx, cx(1) + cw * 0.22, midY - bh * 0.22, cw * 0.34, bh * 0.36,
+           clamp01((t - .08) * 4));
+  drawComb(ctx, cx(1) + cw * 0.22, midY + bh * 0.22, cw * 0.34, bh * 0.36,
+           clamp01((t - .08) * 4));
+  drawMerge(ctx, cx(2) + cw * 0.16, midY, cw * 0.5, bh * 0.7, clamp01((t - .30) * 4));
+  drawCross(ctx, cx(3) + cw * 0.14, midY, cw * 0.72, bh * 0.66, clamp01((t - .48) * 4));
+  drawGate(ctx, cx(4) + cw * 0.34, midY, cw * 0.32, bh * 0.78, clamp01((t - .66) * 4));
+  drawAnswer(ctx, cx(5) + 10, midY, cw - 20, bh * 0.5, t);
+
+  drawTravellers(ctx, (f) => pad + f * (W - pad * 2), midY, bh, t, "cells", cx, cw);
+}
+
+/* ================================================ the passages themselves
+   One pass, one dot. A traveller carries its document's colour the whole way,
+   so a line and the thing it carries can never disagree -- which is the bug
+   in the current drawing.  */
+function drawTravellers(ctx, X, midY, bh, t, mode, cx, cw) {
+  const STOPS = mode === "belt"
+    ? [0.055, 0.225, 0.39, 0.57, 0.7375, 0.93]
+    : [0, 1, 2, 3, 4, 5].map(i => (cx(i) + cw / 2));
+  const px = (i) => mode === "belt" ? X(STOPS[i]) : STOPS[i];
+
+  const LEG = [[0, .14], [.14, .34], [.34, .52], [.52, .70], [.70, .88], [.88, 1]];
+  const DIE = { fuse: 2, rerank: 3, cap: 4 };
+
+  // The spread narrows stage by stage, because the pipeline narrows stage by
+  // stage: 864 passages, then 20, then 5. The drawing should get tighter for
+  // the same reason the numbers do.
+  const SPREAD = [1.00, 0.86, 0.70, 0.54, 0.34, 0.16];
+  const H = bh * 0.62;
+  const laneY = (n, leg) => {
+    const lane = (n / (TRAVELLERS.length - 1)) * 2 - 1;   // -1 .. +1
+    return midY + lane * H * SPREAD[Math.min(leg, 5)];
+  };
+
+  TRAVELLERS.forEach((tr, n) => {
+    const dieLeg = tr.diesAt ? DIE[tr.diesAt] : 99;
+    const solid = tr.colour !== WIRE;
+
+    for (let leg = 0; leg < LEG.length - 1; leg++) {
+      const [a, b] = LEG[leg];
+      const local = clamp01((t - a) / (b - a));
+      if (local <= 0) continue;
+      if (leg > dieLeg) break;
+
+      const x0 = px(leg), x1 = px(leg + 1);
+      const y0 = laneY(n, leg), y1 = laneY(n, leg + 1);
+      const e = ease(local);
+
+      // Blocked: the dot reaches the bar, stops dead, and falls. Nothing else
+      // on the drawing moves downward, so falling means "did not get through"
+      // without needing a word.
+      const blocked = leg === dieLeg && tr.diesAt;
+      const reach = blocked ? Math.min(e, 0.55) : e;
+      const drop = blocked && e > 0.55 ? (e - 0.55) * (e - 0.55) * bh * 2.4 : 0;
+      const hx = lerp(x0, x1, reach);
+      const hy = lerp(y0, y1, reach) + drop;
+
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.bezierCurveTo(lerp(x0, x1, .45), y0, lerp(x0, x1, .55), y1, hx, hy);
+      ctx.strokeStyle = tr.colour;
+      ctx.globalAlpha = solid ? 0.55 : 0.2;
+      ctx.lineWidth = solid ? 1.4 : 0.9;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      if (local < 1) {
+        ctx.beginPath(); ctx.arc(hx, hy, solid ? 3 : 1.8, 0, 7);
+        ctx.fillStyle = tr.colour; ctx.fill();
+      }
+    }
+
+    // At rest. Survivors are balls in the answer; everything stopped stays on
+    // the page where it was stopped, because a stage that removes things has
+    // to be able to show what it removed.
+    if (t >= 1) {
+      if (!tr.diesAt) {
+        const x = px(5), y = laneY(n, 5);
+        ctx.beginPath(); ctx.arc(x, y, 5.2, 0, 7);
+        ctx.fillStyle = tr.colour; ctx.fill();
+        ctx.beginPath(); ctx.arc(x, y, 8.6, 0, 7);
+        ctx.strokeStyle = tr.colour; ctx.globalAlpha = .26; ctx.lineWidth = 1.2;
+        ctx.stroke(); ctx.globalAlpha = 1;
+      } else {
+        const leg = dieLeg;
+        const x = lerp(px(leg), px(leg + 1), 0.55);
+        const y = laneY(n, leg) + bh * 0.48;
+        ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7);
+        ctx.fillStyle = tr.diesAt === "cap" ? "#f0685f" : WIRE;
+        ctx.globalAlpha = tr.diesAt === "cap" ? .8 : .45;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        if (tr.diesAt === "cap") {
+          // A short fall line back up to the bar, so a stopped passage is
+          // legibly a passage that was going somewhere.
+          ctx.beginPath();
+          ctx.moveTo(x, laneY(n, leg) + 6); ctx.lineTo(x, y - 4);
+          ctx.strokeStyle = "#f0685f"; ctx.globalAlpha = .22;
+          ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+          ctx.stroke();
+          ctx.setLineDash([]); ctx.globalAlpha = 1;
+        }
+      }
+    }
+  });
+}
+
+/* ================================================================ wiring */
+function mount(key, drawFn) {
+  const cv = document.getElementById("c" + key);
+  const ctx = cv.getContext("2d");
+  const scrub = document.querySelector(`[data-scrub="${key}"]`);
+  const play = document.querySelector(`[data-play="${key}"]`);
+  const cap = document.getElementById("cap" + key);
+  document.getElementById("q" + key).textContent = TRACE.query;
+
+  document.getElementById("leg" + key).innerHTML =
+    SOURCES.slice(0, 3).map((s, i) =>
+      `<span><i style="background:${HUES[i]}"></i>${legendName(s)}</span>`).join("") +
+    `<span><i style="background:${WIRE}"></i>did not reach the answer</span>` +
+    `<span><i class="blocked"></i>blocked by the cap</span>`;
+
+  let raf = 0, playing = false;
+  const render = () => {
+    const r = fit(cv, ctx);
+    if (!r) return;
+    const t = +scrub.value / 1000;
+    drawFn(ctx, r.width, r.height, t);
+    const c = capFor(t);
+    cap.innerHTML = `<b>${c.title}.</b> ${c.text}`;
+  };
+  const stop = () => { playing = false; cancelAnimationFrame(raf); play.textContent = "Play"; };
+  const run = () => {
+    stop();
+    if (STILL) { scrub.value = 1000; render(); return; }
+    playing = true; play.textContent = "Playing";
+    const t0 = performance.now();
+    const step = (now) => {
+      if (!playing) return;
+      const t = Math.min(1, (now - t0) / 7000);
+      scrub.value = Math.round(t * 1000);
+      render();
+      if (t < 1) raf = requestAnimationFrame(step); else stop();
+    };
+    raf = requestAnimationFrame(step);
+  };
+  scrub.oninput = () => { stop(); render(); };
+  play.onclick = run;
+  new ResizeObserver(render).observe(cv);
+  if (document.fonts) document.fonts.ready.then(render);
+  render();
+  return { render, run };
+}
+
+const A = mount("a", drawA);
+const B = mount("b", drawB);
+
+document.querySelectorAll(".picker button").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".picker button").forEach(o =>
+      o.setAttribute("aria-pressed", String(o === b)));
+    document.querySelectorAll(".variant").forEach(v =>
+      v.classList.toggle("on", v.dataset.v === b.dataset.v));
+    (b.dataset.v === "a" ? A : B).render();
+  };
+});
+
+A.run();
+</script>
+</body></html>
