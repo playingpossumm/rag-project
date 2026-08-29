@@ -644,6 +644,31 @@ canvas.city{display:block;width:100%;height:var(--map-h)}
 
 /* Alternates. Quiet by default -- the top passage is still the answer, and
    this is the reader's recourse when it looks wrong. */
+/* One explanatory line above each pane. The tables were legible and
+   meaningless: a reader could see every value and still not know what a
+   column was counting. */
+.pane .pnote{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:var(--mute);
+  max-width:78ch}
+.pane .pnote b{color:var(--dim);font-weight:600}
+.pane .pnote i{font-style:normal;font-family:var(--mono);font-size:11.5px;
+  color:var(--dim)}
+/* The fate of a row, in words, before its numbers. */
+.oc{font-size:11.5px;white-space:nowrap}
+.oc.in{color:var(--good)}
+.oc.cut{color:var(--bad)}
+.oc.out{color:var(--faint)}
+.scalekey{display:flex;align-items:center;gap:8px;margin:0 0 10px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint)}
+.scalekey .ramp{display:block;width:88px;height:7px;border-radius:2px;
+  background:linear-gradient(90deg,rgba(162,165,167,.3),var(--dim))}
+.stage .what{margin:0 0 8px;color:var(--mute);font-size:13px;line-height:1.6;
+  max-width:78ch}
+.stage .got{margin:0 0 10px;font-size:12.5px;color:var(--dim);
+  display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.stage .got .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);flex:none}
+
 .also{margin-top:14px;border-top:1px solid var(--hair);padding-top:4px}
 .also > summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;
   gap:10px;padding:8px 0;transition:opacity 160ms var(--ease)}
@@ -701,7 +726,8 @@ table{width:100%;border-collapse:collapse;font-size:12.5px}
 th{text-align:left;font-family:var(--mono);font-size:9px;font-weight:500;
   text-transform:uppercase;letter-spacing:.13em;color:var(--faint);
   padding:0 12px 9px 0;border-bottom:1px solid var(--hair);white-space:nowrap}
-th.r,td.r{text-align:right;padding-left:16px;padding-right:0}
+th.r,td.r{text-align:right;padding-left:16px;padding-right:14px}
+th.r:last-child,td.r:last-child{padding-right:0}
 td{padding:10px 12px 10px 0;border-bottom:1px solid var(--hair);vertical-align:top;
   color:var(--dim)}
 tr:last-child td{border-bottom:0}
@@ -1901,29 +1927,57 @@ function renderTurn(turn, question, data, opts) {
 
       <div class="tabs" role="tablist">
         <button type="button" role="tab" data-pane="cands" aria-selected="true">Candidates</button>
-        <button type="button" role="tab" data-pane="words" aria-selected="false">Words matched</button>
-        <button type="button" role="tab" data-pane="steps" aria-selected="false">Each step</button>
+        <button type="button" role="tab" data-pane="words" aria-selected="false">Word matches</button>
+        <button type="button" role="tab" data-pane="steps" aria-selected="false">Stages</button>
       </div>
 
-      <div class="pane" data-pane="cands"><div class="inner"><div class="scroll"><table>
-        <thead><tr><th class="r"></th><th>Document</th><th>Passage</th>
-          <th class="r">Score</th><th class="r">Move</th></tr></thead>
-        <tbody>${ranked.map(i => `
-          <tr class="${sel.some(s => s.chunk_id === i.chunk_id) ? "" : "out"}">
+      <div class="pane" data-pane="cands"><div class="inner">
+        <p class="pnote">Every passage the search considered, in the order the
+        cross-encoder finally put them in. <b>Score</b> is that model's
+        relevance judgement, running roughly −11 to +11. <b>Move</b> is how many
+        places the passage shifted when the cross-encoder re-read it, against
+        where fusion had ranked it. <b>Outcome</b> says whether it reached the
+        answer, and if not, which stage removed it.</p>
+        <div class="scroll"><table>
+        <thead><tr><th class="r">Rank</th><th>Document</th><th>Passage</th>
+          <th class="r">Score</th><th class="r">Move</th><th>Outcome</th></tr></thead>
+        <tbody>${(() => {
+          const perDoc = new Map();
+          for (const x of sel) perDoc.set(x.source, (perDoc.get(x.source) || 0) + 1);
+          const CAP = opts.max_per_source ?? 2;
+          return ranked.map(i => {
+          const kept = sel.some(x => x.chunk_id === i.chunk_id);
+          // Two different reasons a passage is missing from the answer, and
+          // they are not the same fact about it. A passage the cap removed was
+          // ranked high enough; it lost to a quota. One that was outranked
+          // simply did not score well enough.
+          const capped = !kept && (perDoc.get(i.source) || 0) >= CAP;
+          const outcome = kept ? `<span class="oc in">In the answer</span>`
+            : capped ? `<span class="oc cut">Cut by the cap</span>`
+                     : `<span class="oc out">Outranked</span>`;
+          return `
+          <tr class="${kept ? "" : "out"}">
             <td class="r num">${i.rank}</td>
             <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(docName(i.source))}</div>
                 <div class="loc">${esc(i.locator)}</div></td>
             <td><div class="snip">${esc(clean(i.text))}</div></td>
             <td class="r num">${typeof i.score === "number" ? sig(i.score) : ""}</td>
             <td class="r num">${i.delta > 0 ? "+" + i.delta : i.delta < 0 ? i.delta : "·"}</td>
-          </tr>`).join("")}</tbody></table></div></div></div>
+            <td>${outcome}</td>
+          </tr>`; }).join("");
+        })()}</tbody></table></div></div></div>
       <div class="pane" data-pane="words" hidden><div class="stack"></div></div>
-      <div class="pane" data-pane="steps" hidden><div class="inner">${data.stages.map((s, n) => `
-        <div class="stage"><h4>${String(n + 1).padStart(2, "0")} · ${esc(s.title)}</h4>
-          <span class="lab">${esc(s.skipped || s.note)}</span>
-          <p>${esc(s.detail)}</p>
+      <div class="pane" data-pane="steps" hidden><div class="inner">
+        <p class="pnote">The same run again, one stage at a time. Each block
+        says what the stage does, what it produced on this question, and the
+        first few passages as they stood when it finished.</p>
+        ${data.stages.map((s, n) => `
+        <div class="stage"><h4>${n + 1}. ${esc(s.title)}</h4>
+          <p class="what">${esc(s.detail)}</p>
+          <p class="got"><span class="k">On this question</span>
+            ${esc(s.skipped || s.note)}</p>
           ${s.items.length ? `<div class="scroll"><table>
-            <thead><tr><th class="r">#</th><th>Document</th><th>Passage</th><th class="r">Score</th></tr></thead>
+            <thead><tr><th class="r">Rank</th><th>Document</th><th>Passage</th><th class="r">Score</th></tr></thead>
             <tbody>${s.items.slice(0, 6).map(i => `
               <tr><td class="r num">${i.rank}</td>
                 <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(docName(i.source))}</div>
@@ -2008,9 +2062,20 @@ function renderStack(turn, data, colour, sig) {
     });
   });
 
+  const dropped = (att.dropped || []).filter(Boolean);
   host.innerHTML = `
-    <div class="hd"><span class="k">BM25 only. Dense retrieval has no
-      per-word equivalent.</span></div>
+    <p class="pnote">BM25 scores a passage by which of your words it contains,
+    counting rare words for much more than common ones. <b>Each row is one word
+    from your question. Each column is one candidate passage.</b> A darker cell
+    means that word supplied more of that passage's score, and an empty cell
+    means the word does not appear in it. Hover a cell for the document it
+    belongs to.${dropped.length ? ` ${dropped.length === 1 ? "One word was" :
+      `${dropped.length} words were`} too common to be worth scoring and
+      ${dropped.length === 1 ? "was" : "were"} dropped: ${dropped.map(d =>
+      `<i>${esc(d)}</i>`).join(", ")}.` : ""}
+    This covers the BM25 half of the search only. Dense retrieval compares whole
+    meanings and has no per-word equivalent to show.</p>
+    <div class="scalekey"><span>less</span><i class="ramp"></i><span>more</span></div>
     <div class="grid" style="grid-template-columns:118px repeat(${cols.length}, minmax(0, 1fr))">
       ${out.join("")}</div>`;
 }

@@ -149,7 +149,7 @@ def trace_pipeline(
     stages.append(Stage(
         "dense", "Dense retrieval",
         "Embeds the query and finds the nearest chunk vectors by cosine "
-        "similarity. Matches meaning, so it survives paraphrase -- and misses "
+        "similarity. It matches meaning, so it survives paraphrase, and it misses "
         "rare tokens that carry meaning by identity, like model numbers.",
         [{**_identity(c), "rank": i, "score": round(c["score"], 4),
           "also_found_by": sparse_rank.get(c["chunk_id"])}
@@ -162,8 +162,8 @@ def trace_pipeline(
             "dense2", "Second dense retrieval",
             "A different embedding model over the same chunks. It is here "
             "because two embedders that score the same on average disagree "
-            "case by case -- measured on this corpus, one finds passages the "
-            "other misses and the reverse -- so fusing them recovers questions "
+            "case by case. Measured on this corpus, each finds passages the "
+            "other misses, so fusing them recovers questions "
             "neither reaches alone.",
             [{**_identity(c), "rank": i, "score": round(c["score"], 4),
               "also_found_by": dense_rank.get(c["chunk_id"])}
@@ -225,7 +225,7 @@ def trace_pipeline(
     arm_count = 3 if second else 2
     both = sum(1 for c in fused_list if len(c["contrib"]) == arm_count)
     stages.append(Stage(
-        "fused", {"none": "Fusion (off -- dense only)",
+        "fused", {"none": "Fusion (off, dense only)",
                   "rrf": "Reciprocal rank fusion",
                   "weighted": f"Weighted fusion (alpha {alpha:g})"}[fusion],
         "Combines the two rankings using only position, never raw score: each "
@@ -275,7 +275,7 @@ def trace_pipeline(
         "Re-scores every candidate by reading the query and the passage together "
         "in one pass, so it can weigh how they relate rather than comparing two "
         "independently-made vectors. Far more accurate, and impossible to "
-        "precompute -- which is why it only runs on the shortlist.",
+        "precompute, which is why it only runs on the shortlist.",
         moves if use_reranker else [],
         note=((f"largest move: {biggest['source']} {biggest['delta']:+d} places"
                if biggest and biggest["delta"] else "ranking largely unchanged")
@@ -326,7 +326,7 @@ def trace_pipeline(
         "selected", "Per-document diversity cap" if cap else "Selection (no cap)",
         (f"Takes at most {cap} passages from any one document. Rerankers score "
          "each passage independently, so a single strong document takes every "
-         "slot -- which ranking metrics score as perfect, and which is wrong when "
+         "slot. Ranking metrics score that as perfect, and it is wrong when "
          "the goal is to compile every relevant source rather than find one.")
         if cap else
         "The cap is off, so selection is the top k of the ranking as it stands. "
@@ -338,7 +338,7 @@ def trace_pipeline(
               if cap else f"top {len(final)}, no cap applied"),
         skipped="" if cap or use_reranker else
                 "The cap trims a reranked pool, so retrieve() does not apply it "
-                "on the no-rerank path at all -- the shortlist of k is the "
+                "on the no-rerank path at all, because the shortlist of k is the "
                 "result. Setting a cap here changes nothing until reranking is "
                 "back on.",
     ))
@@ -363,14 +363,14 @@ def trace_pipeline(
             f"Top passage scores {top:+.2f} against a threshold of "
             f"{threshold:+.2f}. "
             + ("Answering." if confident else
-               "Below threshold -- the corpus likely does not contain this, "
+               "Below threshold. The corpus likely does not contain this, "
                "so the honest response is to say so rather than return the "
                "closest topical match.")
         )
     else:
         explanation = (
             "No gate. The abstention threshold is calibrated on cross-encoder "
-            "scores, and with reranking off none were computed -- the top score "
+            "scores, and with reranking off none were computed, so the top score "
             f"here is a fusion score ({top:.5f}), which is a different quantity "
             "on a different scale. Comparing it to the threshold would pass "
             "every query, including the ones that should be refused."
