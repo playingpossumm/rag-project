@@ -864,6 +864,7 @@ all three exit non-zero rather than printing a warning nobody reads:
 python src/check_freshness.py   # golden set -> per_case -> analytics -> front page
 python src/check_golden.py      # does each golden set still describe its corpus?
 python src/check_docs.py        # do HANDOFF §2 and the README match the measurements?
+python src/build_corpus_manifest.py --check   # does the document list match the indexes?
 ```
 
 ---
@@ -962,6 +963,8 @@ disclaim current work.
 | `src/record_static.py` | records every answer to files, for a deployment with no models behind it |
 | `docs/deploying.md` | how the recorded build is made and where it is hosted |
 | `docs/angle-sweep.html` | every version of the front page in order, the wrong turns included |
+| `docs/corpus-manifest.md` | every document in every corpus — the answer to "what files is this?" |
+| `src/build_corpus_manifest.py` | writes that list from the indexes; `--check` fails when it has drifted |
 | `src/retitle.py` | recomputes stored titles in a built index without re-embedding it |
 | `src/test_analytics.py` | the analytics the quality page plots, against the per-case file |
 | `git log` | why each decision was made, including the reversals |

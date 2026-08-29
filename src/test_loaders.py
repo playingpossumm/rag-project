@@ -27,7 +27,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from loaders import load_document
+from loaders import _unhash, load_document
 from make_documents import write_docx, write_pptx, write_xlsx
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -191,6 +191,27 @@ def main() -> int:
              "", "", "**Mehdi Azarafza**", "Department of Computer Science"], 2)
         check("title / joins a half whose affiliation sits below it",
               got.endswith("Autonomous Driving"))
+
+        # A heading run stranded mid-line. Both real cases are mid-word, which
+        # is why the default is to close the gap rather than leave a space.
+        check("title / a mid-word heading run closes up",
+              _unhash("LORA: LOW-RANK ADAPTATION OF LARGE LAN### GUAGE MODELS")
+              == "LORA: LOW-RANK ADAPTATION OF LARGE LANGUAGE MODELS")
+        check("title / and the other one in this corpus",
+              _unhash("FORMALTCS: BENCHMARKING END-TO-END FRON### TIER FORMAL "
+                      "THEORETICAL COMPUTER SCIENCE")
+              == "FORMALTCS: BENCHMARKING END-TO-END FRONTIER FORMAL "
+                 "THEORETICAL COMPUTER SCIENCE")
+        check("title / a run between two words leaves one space",
+              _unhash("Attention Is All ### You Need")
+              == "Attention Is All You Need")
+        check("title / a title with no run is untouched",
+              _unhash("Deep Residual Learning for Image Recognition")
+              == "Deep Residual Learning for Image Recognition")
+        # A single hash is not a stranded heading marker -- C# is a language,
+        # and "#1" is an ordinal. Only a run of two or more is one.
+        check("title / a lone hash is left alone",
+              _unhash("Benchmarking C# Compilers") == "Benchmarking C# Compilers")
 
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

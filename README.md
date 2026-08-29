@@ -52,6 +52,11 @@ The system ships with three corpora, deliberately unlike each other:
 | Ornithology | 45 | 864 | DOCX, PPTX, XLSX, PDF | −5.5 |
 | Quantitative finance | 35 | 6,184 | PDF | −4.0 |
 
+Every document in each set — filename, title, format, passage count — is listed
+in [`docs/corpus-manifest.md`](docs/corpus-manifest.md), generated from the
+indexes themselves. The files are not in this repository;
+[`ATTRIBUTION.md`](ATTRIBUTION.md) says why and how to rebuild each set.
+
 The abstention threshold — the score below which the system declines to answer
 — had been a module constant for most of this project's life, with a comment
 guessing it was "a property of the data, not of the model". Measured across all
@@ -286,7 +291,7 @@ python src/build_analytics.py  # what the pages plot -> eval/analytics.json
 python src/hard_cases.py       # only the cases nothing gets right, in ~20s
 ```
 
-**Four guards, each exiting non-zero rather than printing a warning nobody
+**Five guards, each exiting non-zero rather than printing a warning nobody
 reads.** They exist because a generated file has gone stale silently three
 times, and once the front page spent four days offering questions that had been
 deleted from the golden set for being unanswerable:
@@ -296,6 +301,7 @@ python src/check_freshness.py     # golden set -> per_case -> analytics -> front
 python src/check_golden.py        # do the labels still describe the corpus?
 python src/check_docs.py          # do the documents match the measurements?
 python src/build_results_doc.py --check
+python src/build_corpus_manifest.py --check   # does the document list match the indexes?
 ```
 
 **Experiments**, kept because a refuted one is worth as much as a shipped one:

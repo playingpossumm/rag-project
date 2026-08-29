@@ -1,5 +1,6 @@
 {
   "corpus": {
+    "ensemble": null,
     "chunks": 5459,
     "documents": 36,
     "answerable_cases": 67,
@@ -171,7 +172,7 @@
     },
     "index": {
       "path": "vector_store/metadata.json",
-      "digest": "sha256:c13aeb41e405a8eb",
+      "digest": "sha256:15b5bacc60a7323b",
       "chunks": 5459
     }
   }

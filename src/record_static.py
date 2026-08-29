@@ -452,6 +452,21 @@ def main() -> int:
                 "recorded": time.strftime("%Y-%m-%d"),
                 "generation": None, "corpora": {}}
 
+    # Recording one corpus must not evict the others. Their files are still on
+    # disk; without this the manifest stops naming them, the page never learns
+    # they exist, and nothing anywhere reports a problem -- the demo simply
+    # comes back smaller. Entries for corpora this run does not touch are
+    # carried forward, and any whose folder has since gone are dropped.
+    existing = args.out / "manifest.json"
+    if existing.exists():
+        try:
+            prior = json.loads(existing.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            prior = {}
+        for name, entry in (prior.get("corpora") or {}).items():
+            if (args.out / name / "index.json").exists():
+                manifest["corpora"][name] = entry
+
     if args.generate:
         import generate_local
         if not generate_local.available():
@@ -519,6 +534,11 @@ def main() -> int:
         return 1
 
     args.out.mkdir(parents=True, exist_ok=True)
+    # Registry order, not "whichever was recorded most recently". The default
+    # corpus is what a visitor lands on, and that should not depend on which
+    # one someone happened to re-record last.
+    manifest["corpora"] = {name: manifest["corpora"][name]
+                           for name in reg if name in manifest["corpora"]}
     manifest["default"] = next(iter(manifest["corpora"]), None)
     (args.out / "manifest.json").write_text(
         json.dumps(manifest, indent=1), encoding="utf-8")

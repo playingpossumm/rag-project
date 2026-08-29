@@ -175,6 +175,25 @@ def _rejoin_wrapped(text: str, following: list[str], depth: int = 0) -> str:
     return text
 
 
+def _unhash(text: str) -> str:
+    """Remove a heading run stranded inside a line.
+
+    A title that wraps mid-word on a PDF cover comes back from the converter as
+    one line with the marker still in it:
+
+        ## LORA: LOW-RANK ADAPTATION OF LARGE LAN### GUAGE MODELS
+
+    `lstrip("#")` only reaches the front, so the run survived into the stored
+    title and out onto the page. A title cannot contain one, so it goes.
+
+    Closed without a space where the character before the run is part of a word,
+    because that is what the run interrupted -- LAN + GUAGE is LANGUAGE, not two
+    words. Where a space is already there, one space is what is left behind.
+    """
+    text = re.sub(r"(?<=\w)#{2,}\s*(?=\w)", "", text)
+    return re.sub(r"\s*#{2,}\s*", " ", text).strip()
+
+
 def extract_title(units: list[dict], path: Path) -> str:
     """Best available human title for a document.
 
@@ -195,7 +214,7 @@ def extract_title(units: list[dict], path: Path) -> str:
             if not stripped.startswith("#"):
                 continue
             depth = len(stripped) - len(stripped.lstrip("#"))
-            text = stripped.lstrip("#").strip()
+            text = _unhash(stripped.lstrip("#").strip())
 
             # A long title on a PDF cover wraps, and only the first line keeps
             # the heading marker -- the rest is a plain line underneath it. The
