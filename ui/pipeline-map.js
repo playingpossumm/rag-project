@@ -98,7 +98,10 @@ const SPEC = [
     label: "Cross-encoder",      term: () => "query and passage scored together" },
   { id: "selected", layers: 2, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1,
     label: "Diversity cap",      term: () => "max 2 per document" },
-  { id: "answer", layers: 1,   n: "07", step: 5, lift: 0,   w: 5,   cells: [1, 5], lead: -1,
+  // Wider than the stages before it, and a single row rather than a column:
+  // five balls in a column at this scale overlap into one blob, and the
+  // answer is the one place on the drawing where the COUNT has to read.
+  { id: "answer", layers: 1,   n: "07", step: 5, lift: 0,   w: 7,   cells: [5, 1], lead: -1,
     label: "Answer",             term: () => "cited passages" },
 ];
 
@@ -332,6 +335,27 @@ export function buildRun(trace, city, ink, variant = "flat") {
     }
   }
 
+  // The passages the cap threw out. Ranked highly enough by the cross-encoder
+  // to be in contention, and then stopped because their document already had
+  // two -- which is the entire mechanism, and the drawing had no way to show
+  // it. They travel to the cap's face and stop against it.
+  const kept = new Set((placed.get("selected") || []).map(m => m.chunk_id));
+  const capPlate = platesFor(variant).find(p => p.id === "selected");
+  const rejected = (placed.get("reranked") || []).filter(m => !kept.has(m.chunk_id));
+  // Five, fanned across the plate's face. Thirteen lines converging on one
+  // point is a red hatch, not thirteen stopped passages, and the count that
+  // matters is already on the label under the plate.
+  const shown = rejected.slice(0, 5);
+  shown.forEach((m, i) => {
+    const spread = (i - (shown.length - 1) / 2) * (capPlate.w * 0.42);
+    push("selected", {
+      a: m,
+      b: { u: capPlate.u + spread * 0.5, v: capPlate.v - spread * 0.5,
+           z: capPlate.z },
+      lives: false, colour: null, stopped: true,
+    });
+  });
+
   const rer = placed.get("reranked") || [];
   const biggest = rer.reduce((best, m) =>
     (Math.abs(m.delta ?? 0) > Math.abs(best?.delta ?? 0) ? m : best), null);
@@ -509,19 +533,50 @@ function inflight(ctx, T, link, ink, a, t) {
   const e = easeInOut(clamp01(t));
   const hx = lerp(p1.x, p2.x, e), hy = lerp(p1.y, p2.y, e);
 
+  // A blocked passage stops short of the plate it was heading for, and the
+  // last thing drawn on its path is the thing that stopped it.
+  const STOPPED = "#f0685f";
+  const wall = link.stopped ? 0.72 : 1;
+  const held = Math.min(e, wall);
+  const bx = lerp(p1.x, p2.x, held), by = lerp(p1.y, p2.y, held);
+
   ctx.save();
-  ctx.globalAlpha = a * (link.lives ? 0.9 : 0.22);
-  ctx.strokeStyle = link.lives ? link.colour : ink.other;
+  ctx.globalAlpha = a * (link.lives ? 0.85 : link.stopped ? 0.3 : 0.18);
+  ctx.strokeStyle = link.lives ? link.colour : link.stopped ? STOPPED : ink.other;
   ctx.lineWidth = link.lives ? 1.1 : 0.6;
   if (!link.lives) ctx.setLineDash([1.5, 3]);
-  ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(hx, hy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(bx, by); ctx.stroke();
   ctx.restore();
 
-  // The head is only worth drawing while it is actually moving; once it lands,
-  // the mark on the destination plate is the same passage and drawing both
-  // doubles it.
+  if (link.stopped) {
+    // A short bar across the path, at the point it did not get past.
+    if (e >= wall) {
+      const dx = p2.x - p1.x, dy = p2.y - p1.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len * 3.4, ny = dx / len * 3.4;
+      ctx.save();
+      ctx.globalAlpha = a * 0.7;
+      ctx.strokeStyle = STOPPED; ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(bx + nx, by + ny); ctx.lineTo(bx - nx, by - ny);
+      ctx.stroke();
+      ctx.restore();
+    }
+    return;
+  }
+
+  // The head, while it is moving: a ball, which is the only round solid on the
+  // drawing and therefore the only thing that reads as travelling. It used to
+  // be the same 3-unit mark the plates are covered in.
   if (e < 0.995 && link.lives) {
-    mark(ctx, { x: hx, y: hy }, 3.0, link.colour, null, a);
+    ctx.save();
+    ctx.globalAlpha = a * 0.22;
+    ctx.beginPath(); ctx.arc(hx, hy, 6.4, 0, Math.PI * 2);
+    ctx.fillStyle = link.colour; ctx.fill();
+    ctx.globalAlpha = a;
+    ctx.beginPath(); ctx.arc(hx, hy, 3.4, 0, Math.PI * 2);
+    ctx.fillStyle = link.colour; ctx.fill();
+    ctx.restore();
   }
 }
 
@@ -791,13 +846,18 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
   const oy = H / 2 - ((minY + maxY) / 2) * s;
   const T = (u, v, z) => { const p = project(u, v, z); return { x: ox + p.x * s, y: oy + p.y * s }; };
 
-  // Timing is keyed on step, not on array position, so dense and BM25 -- which
-  // run at the same moment -- form at the same moment.
-  const formation = step => {
-    if (progress >= 1) return 1;
-    const t0 = arrive(step) - FORM_LEAD * SPAN;
-    return easeOut(clamp01((progress - t0) / ((FORM_LEAD + FORM_HOLD) * SPAN)));
-  };
+  // Every stage is drawn in full, from the first frame, always.
+  //
+  // These plates used to assemble in sequence, which meant that half way
+  // through a replay the drawing showed one stage and six empty spaces -- a
+  // picture of a pipeline that does not exist. The structure is not what
+  // happens when you ask a question; it was built before you asked. What
+  // happens is that passages travel through it, and that is what `flight`
+  // below animates.
+  //
+  // Kept as a function rather than deleted because the plate loop reads it per
+  // stage and a future stage may want to fade for a reason that is real.
+  const formation = () => 1;
   const flight = step => {
     if (progress >= 1) return 1;
     const t1 = arrive(step);
@@ -812,8 +872,7 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
   // Strict flow order: the passages arriving at a plate, then the plate they
   // land on. Nothing is ever drawn on top of a connector already on screen.
   PL.forEach(plate => {
-    const f = formation(plate.step);
-    if (f <= 0) return;
+    const f = formation();
     const dim = run?.skipped.has(plate.id);
     const ft = flight(plate.step);
 
@@ -864,6 +923,21 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
           ctx.drawImage(
             sheetLayer(W, H, sheetDpr(ctx), key, (c) => paintSheets(c, 1)),
             0, 0, W, H);
+        }
+      } else if (plate.id === "answer" && ft >= 0.995) {
+        // The end of the pipeline, drawn as the only balls that come to rest.
+        // Five cells here were indistinguishable from five cells on the five
+        // plates before them, so the drawing ended without saying so.
+        for (const m of run?.placed.get("answer") || []) {
+          const p = T(m.u, m.v, m.z + 0.6);
+          ctx.save();
+          ctx.globalAlpha = ma * 0.20;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 6.6, 0, Math.PI * 2);
+          ctx.fillStyle = m.colour || ink.faint; ctx.fill();
+          ctx.globalAlpha = ma;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 3.2, 0, Math.PI * 2);
+          ctx.fillStyle = m.colour || ink.faint; ctx.fill();
+          ctx.restore();
         }
       } else if (ft >= 0.995) {
         // Occupied cells, filled. Brightness is RANK -- one unit that means the
