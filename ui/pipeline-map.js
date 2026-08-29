@@ -88,15 +88,15 @@ const at = (step, lift) => ({ step, u: step * FLOW, v: -step * FLOW, z: lift });
 const SPEC = [
   { id: "corpus", layers: 6,   n: "01", step: 0, lift: 0,   w: 13,  cells: null,   lead: 1,
     label: "Index",              term: c => `${c.total.toLocaleString()} passages · ${c.docs} documents` },
-  { id: "dense", layers: 4,    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1, shape: "field",
+  { id: "dense", layers: 1,    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1, shape: "field",
     label: "Dense retrieval",    term: () => "embedding similarity" },
-  { id: "sparse", layers: 4,   n: "03", step: 1, lift: -15, w: 6.5, cells: [5, 4], lead: -1, shape: "bars",
+  { id: "sparse", layers: 1,   n: "03", step: 1, lift: -15, w: 6.5, cells: [1, 6], lead: -1, shape: "bars",
     label: "BM25",               term: () => "lexical match" },
-  { id: "fused", layers: 3,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1, shape: "merge",
+  { id: "fused", layers: 2,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1, shape: "merge",
     label: "Rank fusion",        term: () => "both rankings combined" },
-  { id: "reranked", layers: 3, n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1, shape: "sort",
+  { id: "reranked", layers: 1, n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1, shape: "sort",
     label: "Cross-encoder",      term: () => "scored as a pair" },
-  { id: "selected", layers: 2, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1, shape: "gate",
+  { id: "selected", layers: 1, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1, shape: "gate",
     label: "Diversity cap",      term: () => "max 2 per document" },
   // Wider than the stages before it, and a single row rather than a column:
   // five balls in a column at this scale overlap into one blob, and the
@@ -388,40 +388,15 @@ const corners = w => [{ u: -w, v: -w }, { u: w, v: -w }, { u: w, v: w }, { u: -w
 /* A plate assembles rather than fades: the outline draws itself corner to
    corner, then the mesh fills in behind it. `f` is 0..1 formation. */
 function plane(ctx, T, plate, ink, a, dim, f = 1) {
-  const pts = plateCorners(plate).map(c => T(c.u, c.v, c.z));
-  ctx.save();
+  const alpha = a * (dim ? 0.35 : 1);
 
-  // The panels behind the front face. A stage is a block of them rather than a
-  // single sheet -- which is what a layer of a network looks like, and it also
-  // gives the drawing depth that a lone quad at a shallow angle does not have.
-  // They are frames only: the matrix belongs to the face you are looking at,
-  // and repeating it on every panel would read as five stages, not one.
+  // The index is a stack, because 5,459 passages is a volume and not a page.
+  // Outlines only: filling every sheet with a lattice is what made this a
+  // solid box that no treatment drawn on top of it could compete with.
   const layers = plate.layers || 1;
-  const back = clamp01((f - 0.25) / 0.5);
-  const cellsIn = clamp01((f - 0.4) / 0.6);
-
-  // The sheets behind the face, drawn back to front so nearer ones overlap.
-  // Each carries its stage's matrix: an empty frame behind a filled face reads
-  // as a picture frame around the real thing, where a filled sheet reads as a
-  // volume of data, which is what a stage is.
   for (let i = layers - 1; i >= 1; i--) {
-    const k = layerAt(plate, i);
-    // Only a little dimmer with depth. Fading them out turned the block into a
-    // ghost of itself; a layer of a network is not less real for being behind
-    // the one in front of it, and the stack has to read as one solid object.
-    const depth = 1 - (i / layers) * 0.22;
-    // Only the stages that ARE a matrix carry one on their back sheets. A
-    // scatter or a set of bars drawn over three lattices is still a lattice,
-    // which is why the first attempt at this changed nothing on screen.
-    if (cellsIn > 0 && plate.cells && !plate.shape) {
-      const [cols, rows] = plate.cells;
-      for (let n = 0; n < cols * rows; n++) {
-        drawCell(ctx, T, plate, cellAt(plate, n, k),
-                 null, ink.other, a * cellsIn * depth * (dim ? 0.16 : 0.34), 0.55);
-      }
-    }
-    const q = plateCorners(plate, k).map(c => T(c.u, c.v, c.z));
-    ctx.globalAlpha = a * back * depth * (dim ? 0.26 : 0.5);
+    const q = plateCorners(plate, layerAt(plate, i)).map(c => T(c.u, c.v, c.z));
+    ctx.globalAlpha = alpha * 0.4 * (1 - (i / layers) * 0.45);
     ctx.strokeStyle = ink.other;
     ctx.lineWidth = 0.7;
     ctx.beginPath();
@@ -431,109 +406,128 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
     ctx.stroke();
   }
 
-  // The four edges joining the back sheet to the front one. Without them the
-  // sheets are separate quads that happen to line up; with them the stage is a
-  // single extruded block, which is what makes the depth read at a glance.
-  if (layers > 1) {
-    const bk = plateCorners(plate, layerAt(plate, layers - 1))
-      .map(c => T(c.u, c.v, c.z));
-    ctx.globalAlpha = a * back * (dim ? 0.2 : 0.42);
-    ctx.strokeStyle = ink.other;
-    ctx.lineWidth = 0.7;
-    for (let e = 0; e < 4; e++) {
-      ctx.beginPath();
-      ctx.moveTo(bk[e].x, bk[e].y);
-      ctx.lineTo(pts[e].x, pts[e].y);
-      ctx.stroke();
-    }
-  }
-
-  // The empty stage, drawn as the operation it performs. Every one of these
-  // used to be the same lattice of cells, which said "a stage happened here"
-  // and nothing about which stage. `cells` still governs where a passage sits;
-  // only the empty structure changes.
-  const cellF = clamp01((f - 0.4) / 0.6);
-  if (cellF > 0 && plate.cells) {
-    const [cols, rows] = plate.cells;
-    const base = a * (dim ? 0.14 : 0.26);
-
-    if (plate.shape === "field") {
-      // Dense retrieval compares position in a continuous space. A lattice
-      // implies discrete slots it does not have, so this is a scatter --
-      // deterministic, so it never shimmers between frames.
-      ctx.globalAlpha = base * cellF * 2.4;
-      ctx.fillStyle = ink.other;
-      for (let n = 0; n < 70; n++) {
-        const j = k => ((Math.sin(n * 12.9898 + k * 78.233) * 43758.5) % 1 + 1) % 1;
-        const w = ptAt(plate, (j(1) * 2 - 1) * plate.w * 0.92,
-                       (j(2) * 2 - 1) * plate.h * 0.92, plate.front);
-        const p = T(w.u, w.v, w.z);
-        ctx.beginPath(); ctx.arc(p.x, p.y, 1.1, 0, Math.PI * 2); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    } else if (plate.shape === "bars") {
-      // BM25 matches whole words, so its unit is a band across the plate
-      // rather than a point on it. Drawn as rows, which is also the shape of
-      // the word-match grid in the Detail panel.
-      for (let r = 0; r < rows; r++) {
-        const t = plate.h - ((plate.h * 2) / rows) * (r + 0.5);
-        const A = ptAt(plate, -plate.w * 0.88, t, plate.front);
-        const B = ptAt(plate, plate.w * 0.88, t, plate.front);
-        const p = T(A.u, A.v, A.z), q = T(B.u, B.v, B.z);
-        ctx.globalAlpha = base * cellF * 2.2;
-        ctx.strokeStyle = ink.other; ctx.lineWidth = 2.4;
-        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-    } else if (plate.shape === "gate") {
-      // The cap is the one stage whose job is refusing, so its face is a
-      // grate: bars across it, with gaps only where something gets through.
-      for (let r = 0; r < rows; r++) {
-        const t = plate.h - ((plate.h * 2) / rows) * (r + 0.5);
-        const A = ptAt(plate, -plate.w * 0.95, t, plate.front + 0.35);
-        const B = ptAt(plate, plate.w * 0.95, t, plate.front + 0.35);
-        const p = T(A.u, A.v, A.z), q = T(B.u, B.v, B.z);
-        ctx.globalAlpha = a * (dim ? 0.3 : 0.85);
-        ctx.strokeStyle = ink.faint; ctx.lineWidth = 2.2;
-        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-    } else {
-      for (let i = 0; i < cols * rows; i++) {
-        const col = i % cols;
-        const st = clamp01((cellF - (col / cols) * 0.35) / 0.65);
-        if (st <= 0) continue;
-        drawCell(ctx, T, plate, cellAt(plate, i), null, ink.other, base * st, 0.6);
-      }
-    }
-  }
-
-  // outline, drawn as a growing path around the four edges
-  ctx.globalAlpha = a * (dim ? 0.35 : 1);
+  // The face. Dense retrieval's is dashed, because it has no slots to hold
+  // anything: it is a region, not a rack.
+  const pts = plateCorners(plate).map(c => T(c.u, c.v, c.z));
+  ctx.globalAlpha = alpha * (plate.shape === "field" ? 0.5 : 0.85);
   ctx.strokeStyle = ink.faint;
   ctx.lineWidth = 0.9;
-  const drawn = clamp01(f / 0.5) * 4;
+  if (plate.shape === "field") ctx.setLineDash([2, 3]);
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
-  for (let e = 0; e < 4; e++) {
-    const seg = clamp01(drawn - e);
-    if (seg <= 0) break;
-    const p = pts[e], q = pts[(e + 1) % 4];
-    ctx.lineTo(lerp(p.x, q.x, seg), lerp(p.y, q.y, seg));
-  }
+  for (let e = 1; e < 4; e++) ctx.lineTo(pts[e].x, pts[e].y);
+  ctx.closePath();
   ctx.stroke();
+  ctx.setLineDash([]);
 
-  // Corner vertex marks. The reference pins every plane at its corners, and
-  // they are what makes the drawing read as a measured projection rather than
-  // a floating quadrilateral.
-  if (f > 0.55) {
-    const va = a * clamp01((f - 0.55) / 0.45) * (dim ? 0.4 : 1);
-    ctx.globalAlpha = va;
-    ctx.fillStyle = ink.faint;
-    for (const p of pts) ctx.fillRect(p.x - 1.4, p.y - 1.4, 2.8, 2.8);
+  // The empty slots, for the stages that have slots at all. Kept faint: this
+  // is the tray, not what is on it.
+  if (plate.cells && !plate.shape) {
+    const [cols, rows] = plate.cells;
+    for (let i = 0; i < cols * rows; i++) {
+      drawCell(ctx, T, plate, cellAt(plate, i), null, ink.other,
+               alpha * 0.22, 0.6);
+    }
   }
-  ctx.restore();
-  return pts;
+  if (plate.shape === "bars" || plate.shape === "gate") {
+    const [, rows] = plate.cells;
+    for (let r = 0; r < rows; r++) {
+      drawCell(ctx, T, plate, cellAt(plate, r), null, ink.other,
+               alpha * 0.2, 0.6);
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* What a stage holds, drawn as the thing that stage does. Every stage used to
+   draw cells, which is why seven different operations looked like one
+   operation repeated seven times. */
+function stageContents(ctx, T, plate, run, city, ink, a, variant) {
+  const items = run?.placed.get(plate.id) || [];
+  const shade = m => m.lives ? m.colour : ink.other;
+
+  if (plate.shape === "field") {
+    // Dots where the candidates sit, no lattice under them.
+    for (const m of items) {
+      const p = T(m.u, m.v, m.z + 0.3);
+      ctx.globalAlpha = a * (m.lives ? 1 : 0.5);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, m.lives ? 3.4 : 1.7, 0, Math.PI * 2);
+      ctx.fillStyle = shade(m);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    return;
+  }
+
+  if (plate.shape === "bars" || plate.shape === "gate") {
+    const [, rows] = plate.cells;
+    const gate = plate.shape === "gate";
+    for (let r = 0; r < rows; r++) {
+      const m = items[r];
+      const cell = cellAt(plate, r);
+      if (m && (!gate || m.lives)) {
+        // A surviving passage is the subject; the rest are the tray it sits
+        // on. Eight bars at 0.55 stacked into a solid block and buried it.
+        drawCell(ctx, T, plate, cell, shade(m), null, a * (m.lives ? 1 : 0.10));
+      } else if (gate && run) {
+        // A slot the cap refused. Outlined rather than filled, because nothing
+        // came through it. Only during a run: with no question asked there is
+        // nothing to refuse, and drawing every slot red said the opposite.
+        drawCell(ctx, T, plate, cell, null, "#f0685f", a * 0.75, 1.3);
+      }
+    }
+    return;
+  }
+
+  if (plate.shape === "sort" && !run) {
+    const [, rows] = plate.cells;
+    for (let r = 0; r < rows; r++) {
+      const A = cellAt(plate, r * (plate.cells[0] || 1));
+      const B = cellAt(plate, ((rows - 1 - r)) * (plate.cells[0] || 1));
+      const aPt = T(A.u, A.v, A.z + 0.4), bPt = T(B.u, B.v, B.z + 0.4);
+      const bow = Math.max(8, Math.abs(bPt.y - aPt.y) * 0.5);
+      ctx.beginPath();
+      ctx.moveTo(aPt.x, aPt.y);
+      ctx.bezierCurveTo(aPt.x + bow, aPt.y, bPt.x - bow, bPt.y, bPt.x, bPt.y);
+      ctx.strokeStyle = ink.other; ctx.globalAlpha = a * 0.3; ctx.lineWidth = 1;
+      ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    return;
+  }
+
+  if (plate.shape === "sort") {
+    // The reorder. Each surviving passage runs from the height fusion ranked
+    // it at to the height the cross-encoder moved it to, so a promotion is a
+    // line climbing across the others rather than a number in a caption.
+    const [, rows] = plate.cells;
+    for (const m of items) {
+      if (!m.lives) continue;
+      const from = Math.min(rows - 1, Math.max(0, ((m.was ?? m.rank) - 1) % rows));
+      const to = Math.min(rows - 1, Math.max(0, (m.rank - 1) % rows));
+      // Both ends stay on the plate. Offsetting the control points in world
+      // units threw the curve outside the stage it describes.
+      const A = cellAt(plate, from * (plate.cells[0] || 1));
+      const B = cellAt(plate, to * (plate.cells[0] || 1));
+      const aPt = T(A.u, A.v, A.z + 0.4);
+      const bPt = T(B.u, B.v, B.z + 0.4);
+      ctx.beginPath();
+      ctx.moveTo(aPt.x, aPt.y);
+      const bow = Math.max(10, Math.abs(bPt.y - aPt.y) * 0.5);
+      ctx.bezierCurveTo(aPt.x + bow, aPt.y, bPt.x - bow, bPt.y, bPt.x, bPt.y);
+      ctx.strokeStyle = m.colour || ink.other;
+      ctx.globalAlpha = a * 0.9;
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Cells, for the stages that really are a rack of them.
+  for (const m of items) {
+    const k = 1 - ((m.rank - 1) / Math.max(items.length, 1)) * 0.7;
+    drawCell(ctx, T, plate, m, shade(m), null, a * (m.lives ? k : k * 0.4));
+  }
 }
 
 /* Lifted plates get a dotted drop line and a ghost of their own footprint on
@@ -948,12 +942,11 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
     const ma = clamp01((f - 0.6) / 0.4);
     if (ma > 0) {
       if (plate.id === "corpus") {
-        // Every sheet of the index carries the field, not just the front
-        // one. 5,459 passages is the one quantity on this drawing that is
-        // genuinely large, and a stack of dense sheets is what that looks
-        // like. Only the front sheet lights up: a passage is one passage, and
-        // repeating its colour six times would claim six.
-        //
+        // Every sheet of the index carries the field, not just the front one.
+        // 5,459 passages is the one quantity on this drawing that is genuinely
+        // large, and a stack of dense sheets is what that looks like. Only the
+        // front sheet lights up: a passage is one passage, and repeating its
+        // colour six times would claim six.
         const sheets = plate.layers || 1;
         const paintSheets = (c, alpha) => {
           for (let i = sheets - 1; i >= 0; i--) {
@@ -968,14 +961,6 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
             }
           }
         };
-        // Cached only once the plate has finished forming. While `ma` is ramping
-        // it is a different picture every frame, and keying the cache on it
-        // allocated a full-size canvas per frame -- slower than drawing
-        // straight to the target, which is what the ramp does instead.
-        //
-        // Everything the resting picture depends on is in the key: the geometry
-        // (fixed by the size and the variant), the two inks, and the run that
-        // decides what is lit.
         if (ma < 1) {
           paintSheets(ctx, ma);
         } else {
@@ -986,9 +971,6 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
             0, 0, W, H);
         }
       } else if (plate.id === "answer" && ft >= 0.995) {
-        // The end of the pipeline, drawn as the only balls that come to rest.
-        // Five cells here were indistinguishable from five cells on the five
-        // plates before them, so the drawing ended without saying so.
         for (const m of run?.placed.get("answer") || []) {
           const p = T(m.u, m.v, m.z + 0.6);
           ctx.save();
@@ -1001,16 +983,7 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
           ctx.restore();
         }
       } else if (ft >= 0.995) {
-        // Occupied cells, filled. Brightness is RANK -- one unit that means the
-        // same thing on every plate, so a passage getting brighter between two
-        // stages is a real promotion. The scores underneath are in four
-        // different units and would not compare.
-        const items = run?.placed.get(plate.id) || [];
-        for (const m of items) {
-          const k = 1 - ((m.rank - 1) / Math.max(items.length, 1)) * 0.7;
-          drawCell(ctx, T, plate, m, m.lives ? m.colour : ink.other, null,
-                   ma * (m.lives ? k : k * 0.4));
-        }
+        stageContents(ctx, T, plate, run, city, ink, ma, variant);
       }
     }
 
