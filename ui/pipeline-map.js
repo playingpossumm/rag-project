@@ -95,7 +95,7 @@ const SPEC = [
   { id: "fused", layers: 3,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1, shape: "merge",
     label: "Rank fusion",        term: () => "both rankings combined" },
   { id: "reranked", layers: 3, n: "05", step: 3, lift: 0,   w: 7.5, cells: [5, 4], lead: -1, shape: "sort",
-    label: "Cross-encoder",      term: () => "query and passage scored together" },
+    label: "Cross-encoder",      term: () => "scored as a pair" },
   { id: "selected", layers: 2, n: "06", step: 4, lift: 0,   w: 6,   cells: [1, 5], lead: 1, shape: "gate",
     label: "Diversity cap",      term: () => "max 2 per document" },
   // Wider than the stages before it, and a single row rather than a column:

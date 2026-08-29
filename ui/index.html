@@ -254,7 +254,10 @@ body:not(.asked) .tray{display:none}
 .hero h1{font-weight:700;font-size:clamp(30px,min(5vw,6.2vh),54px);line-height:1.03;
   letter-spacing:-.042em;margin:0;max-width:19ch;text-wrap:balance}
 .hero h1 em{font-style:normal;color:var(--mute)}
-.hero p{color:var(--dim);font-size:clamp(14px,1.7vh,16px);max-width:58ch;margin:0}
+.hero p{color:var(--dim);font-size:clamp(14px,1.7vh,16px);max-width:74ch;margin:0}
+.hero h1 .slash{color:var(--faint)}
+.heroSub{font-size:clamp(15px,2vw,19px);font-weight:500;letter-spacing:-.012em;
+  color:var(--mute);margin:2px 0 0}
 
 /* On a short screen the hero's fixed parts -- headline, blurb, the set picker,
    the question field and four gaps -- do not leave room for a diagram worth
@@ -838,7 +841,8 @@ tr.out td{color:var(--faint)}
 
 <div class="wrap">
   <section class="hero" id="hero">
-    <h1>RAG in Motion</h1>
+    <h1>retrieval visualized<span class="slash">/</span></h1>
+    <p class="heroSub">RAG in Motion</p>
     <p>Retrieval-augmented generation answers a question by searching a set of
       documents and quoting what it finds, rather than recalling it from
       training. Every sentence traces back to a named document and a page, so
@@ -1703,6 +1707,11 @@ function submit() {
   const q = ta.value.trim();
   if (!q || BUSY || !CITY) return;
   ta.value = ""; grow();
+  // One question on screen at a time. An answer here is a drawing, a result
+  // panel and three tables, so keeping the previous one above meant a reader
+  // scrolling up from a new answer landed in the middle of an old one with no
+  // way to tell which question it belonged to.
+  if (N) { $("#thread").innerHTML = ""; N = 0; BASELINE = null; LAST = null; }
   // The field starts centred on an empty screen because it is the only thing
   // to do; once a thread exists it belongs at the bottom, where the next
   // question goes.
