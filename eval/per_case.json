@@ -4,6 +4,7 @@
   "k": 5,
   "candidate_k": 16,
   "rerank_blend": 0.0,
+  "ensemble": null,
   "use_reranker": true,
   "fusion": "rrf",
   "max_per_source": 2
@@ -22,7 +23,7 @@
   },
   "index": {
    "path": "vector_store/metadata.json",
-   "digest": "sha256:c13aeb41e405a8eb",
+   "digest": "sha256:15b5bacc60a7323b",
    "chunks": 5459
   }
  },

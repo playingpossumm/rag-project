@@ -1,5 +1,11 @@
 # Attribution
 
+**Every document in all three sets is listed in
+[`docs/corpus-manifest.md`](docs/corpus-manifest.md)** — filename, title, format
+and passage count, generated from the built indexes. The demo cites its sources
+by filename, and a citation you cannot look up is a dead end; a bibliography is
+metadata, not redistribution.
+
 ## Ornithology — English Wikipedia
 
 Built from English Wikipedia articles, converted into four file formats
