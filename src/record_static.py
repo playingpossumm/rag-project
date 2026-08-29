@@ -288,21 +288,19 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
     ' to search your own documents.';
   const stripStyle = document.createElement("style");
   stripStyle.textContent = `
-    #recorded-strip{font:400 12.5px/1.5 var(--sans,system-ui,sans-serif);
-      padding:7px 16px;text-align:center;
+    #recorded-strip{font:400 12.5px/1.55 var(--sans,system-ui,sans-serif);
+      padding:16px 20px 22px;text-align:center;
       color:var(--dim,#a2a5a7);background:var(--card,#171819);
-      border-bottom:1px solid var(--hair,#292b2d)}
+      border-top:1px solid var(--hair,#292b2d)}
     #recorded-strip b{color:var(--ink,#f2f2f0);font-weight:600}
     #recorded-strip a{color:inherit;text-decoration:underline;
       text-underline-offset:2px}
     #recorded-strip a:hover{color:var(--ink,#f2f2f0)}
-    /* The header below this is sticky at top:0. The strip is not, so it
-       scrolls away and the header takes the edge -- the notice is for arrival,
-       not a permanent band across the reading. */
-    @media (max-width:640px){#recorded-strip{padding:7px 12px;font-size:11.5px}}`;
+    @media (max-width:640px){#recorded-strip{padding:14px 14px 20px;
+      font-size:11.5px}}`;
   const banner = () => {
     document.head.appendChild(stripStyle);
-    document.body.insertBefore(strip, document.body.firstChild);
+    document.body.appendChild(strip);
   };
   if (document.body) banner();
   else document.addEventListener("DOMContentLoaded", banner);
