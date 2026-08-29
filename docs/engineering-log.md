@@ -1427,6 +1427,76 @@ stage.
 
 ---
 
+## 2026-08-29 — The interface was slow on any machine but this one
+
+**The report was "the website is very laggy" and the first three measurements
+disagreed with it.** Headless Chromium on the development desktop: 240 ms to
+first paint, 60 fps on the hero, 667 ms for a question. The deployed build was
+no worse — four cold loads settled between 276 and 494 ms. Nothing to fix.
+
+That is the wrong instrument. A machine that holds 60 fps whatever the page
+does cannot tell a cheap frame from an expensive one; it reports the frame
+budget, not the frame. Throttling the CPU 6x through CDP — a proxy for a
+mid-range laptop — made the difference visible immediately:
+
+    idle hero                20 fps
+    three answers on screen  11 fps, worst frame 283 ms
+    long tasks               129, totalling 14.9 s
+
+**Four causes, all of them work whose result could not change.**
+
+1. `canvas.width = ...` reallocates and clears the backing store whether or not
+   the value changed. Both draw loops assigned it every frame, so a 2400x1400
+   bitmap was being thrown away and rebuilt sixty times a second to paint the
+   size it already was — preceded by a `getBoundingClientRect` that forces
+   layout to obtain the number it was about to ignore. Now behind a
+   `ResizeObserver`, which reports the only event that matters.
+
+2. Every answered turn started a seven-second replay and none of them stopped.
+   Three questions in a row meant three full-canvas animations at once, two of
+   them scrolled off the screen. An `IntersectionObserver` plays a drawing when
+   it is on screen and stops it when it leaves, showing the finished state
+   rather than a frozen half-drawn one.
+
+3. `captions(run)` — six objects and their prose — was rebuilt inside every
+   frame of the replay, and `cap.innerHTML` was rewritten every frame to show
+   the same six captions. Roughly 2,500 strings and 420 HTML reparses per
+   answer, for six changes.
+
+4. The index plate draws a mark per sampled passage on each of its six sheets.
+   A CPU profile put over half the time in raster and named `mark`, `stroke`
+   and `save` beneath it — and that block is identical in every frame, since
+   the sheets do not move and only the front one lights up. It is now painted
+   once into an offscreen canvas and stamped, keyed on the run so a different
+   answer gets a different layer. Only while the plate is still forming does it
+   draw directly: the first version keyed the cache on the fade too, which
+   allocated a full-size canvas per frame of the fade and was slower than what
+   it replaced.
+
+The bounds probe at the top of `drawScene` was also memoised. It is a pure
+function of a layout that was already memoised next door, and it ran per frame.
+
+**After, at the same 6x:**
+
+    idle hero                60 fps   (was 20)
+    three answers on screen  30 fps   (was 11), worst frame 167 ms (was 283)
+    first answer             1,702 ms (was 2,990)
+    long tasks               32 totalling 3.3 s   (was 129 / 14.9 s)
+
+At 4x — a more ordinary laptop — everything is 60 fps and ten long tasks remain.
+
+**The drawing is unchanged, and that was checked rather than assumed.** Both
+canvases were screenshotted before and after under `prefers-reduced-motion`,
+which removes the pulse and the replay and leaves a deterministic frame: zero
+pixels differ past a threshold of 8, on a maximum channel delta of 3.
+
+The lesson is the one this project keeps relearning in new clothes. The rule
+has been "run the thing"; the amendment is that running it on the machine that
+built it is not running it. Every number in the first three measurements was
+correct and all of them were about the wrong computer.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

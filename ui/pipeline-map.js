@@ -534,7 +534,7 @@ const LABEL_PX = 52;
 
 /* A leader line out of the plate to its label -- the reference's annotation
    device, and the reason labels never collide with the next plate. */
-function annotate(ctx, T, plate, city, run, ink, a, dim, room) {
+function annotate(ctx, T, plate, city, run, ink, a, dim, room, W) {
   const up = plate.lead === 1;
   const tip = leaderTip(plate);
   const from = T(plate.u, plate.v, plate.z + plate.lead * plate.w);
@@ -598,7 +598,17 @@ function annotate(ctx, T, plate, city, run, ink, a, dim, room) {
   const first = up ? to.y - (shown.length - 1) * LH - 4 : to.y + 6;
   shown.forEach((r, i) => {
     ctx.fillStyle = r.fill; ctx.font = r.font;
-    ctx.fillText(r.text, to.x, first + i * LH);
+    // Nudged back inside the canvas rather than centred off the edge of it.
+    // The first and last stages are half a label wider than the drawing they
+    // sit on, and the reserve at the top of drawScene is a constant while what
+    // has to fit is measured text -- so the index's "5,459 passages · 36
+    // documents" was being clipped to "459 passages · 36 documents", a wrong
+    // number that reads like a right one. The leader line still points at the
+    // plate, so a few pixels of offset costs nothing; a clipped digit costs
+    // the reader a fact.
+    const half = ctx.measureText(r.text).width / 2 + 2;
+    const x = W ? Math.min(Math.max(to.x, half), W - half) : to.x;
+    ctx.fillText(r.text, x, first + i * LH);
   });
   ctx.restore();
 }
@@ -666,6 +676,88 @@ function pulse(ctx, T, ink, clock) {
   ctx.restore();
 }
 
+/* The index plate's sheets, rendered once and stamped from there.
+
+   The plate carries a mark per sampled passage on each of its sheets -- 260 a
+   sheet, six sheets -- and that one block was the most expensive thing the
+   page drew, in a profile where over half the time was raster. It is also the
+   only part of the drawing that is identical in every frame: the sheets do not
+   move, and only the front one ever lights up.
+
+   Which passages are lit does change between answers, so the run is part of
+   the key rather than assumed away. On the hero nothing is lit and the key
+   never changes, so the layer is painted exactly once.
+
+   Stamped in place rather than composited over the top, so the draw order is
+   untouched: the sheets still sit above the plate they lie on and below the
+   annotation that labels it.
+
+   Two entries, because two canvases can be live at once -- the hero and an
+   answer being replayed -- and a single slot would have them evicting each
+   other every frame, which is slower than not caching at all. */
+const SHEETS = new Map();
+const SHEET_CAP = 2;
+
+/* Identity for objects that have no id of their own. Two different runs must
+   not share a cached layer, and the same run across frames must. */
+const IDS = new WeakMap();
+let nextId = 0;
+function idOf(o) {
+  if (!o) return "-";
+  let v = IDS.get(o);
+  if (v === undefined) IDS.set(o, (v = ++nextId));
+  return v;
+}
+
+function sheetLayer(W, H, dpr, key, paint) {
+  const hit = SHEETS.get(key);
+  if (hit && hit.w === W && hit.h === H && hit.dpr === dpr) return hit.cv;
+
+  const cv = document.createElement("canvas");
+  cv.width = Math.round(W * dpr);
+  cv.height = Math.round(H * dpr);
+  const c = cv.getContext("2d");
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  c.lineJoin = "round";
+  c.lineCap = "round";
+  paint(c);
+
+  SHEETS.delete(key);
+  SHEETS.set(key, { cv, w: W, h: H, dpr });
+  while (SHEETS.size > SHEET_CAP) SHEETS.delete(SHEETS.keys().next().value);
+  return cv;
+}
+
+// The device ratio the caller already put into the transform. Reading it back
+// rather than asking devicePixelRatio again keeps the layer at exactly the
+// resolution of the canvas it will be stamped onto -- guessing would resample
+// it, and this plate is nothing but one-pixel marks.
+function sheetDpr(ctx) {
+  const t = typeof ctx.getTransform === "function" ? ctx.getTransform() : null;
+  return t && t.a ? t.a : Math.min(devicePixelRatio || 1, 2);
+}
+
+/* The extent of the drawing in projected units, memoised per variant. It is a
+   pure function of the layout, and the layout is itself memoised, so computing
+   it per frame was work whose answer could not change. */
+const BOUNDS = {};
+function boundsFor(variant, PL) {
+  if (BOUNDS[variant]) return BOUNDS[variant];
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  const see = (p) => {
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  };
+  for (const p of PL) {
+    for (const c of plateCorners(p)) see(project(c.u, c.v, c.z));
+    const t = leaderTip(p);
+    see(project(t.u, t.v, t.z));
+  }
+  return (BOUNDS[variant] = { minX, maxX, minY, maxY });
+}
+
 export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
                           variant = "flat") {
   ctx.clearRect(0, 0, W, H);
@@ -679,15 +771,7 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
   // for ink that is never drawn, the solver shrank everything to fit it, and
   // the slack showed up as an empty band above the plates.
   const PL = platesFor(variant);
-  const probe = [];
-  for (const p of PL) {
-    for (const c of plateCorners(p)) probe.push(project(c.u, c.v, c.z));
-    const t = leaderTip(p);
-    probe.push(project(t.u, t.v, t.z));
-  }
-  const xs = probe.map(p => p.x), ys = probe.map(p => p.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const { minX, maxX, minY, maxY } = boundsFor(variant, PL);
 
   // Labels are centred on their plate, so the first and last ones hang off the
   // ends of the drawing by roughly half their own width. Eighteen pixels was
@@ -749,17 +833,37 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
         // genuinely large, and a stack of dense sheets is what that looks
         // like. Only the front sheet lights up: a passage is one passage, and
         // repeating its colour six times would claim six.
+        //
         const sheets = plate.layers || 1;
-        for (let i = sheets - 1; i >= 0; i--) {
-          const k = layerAt(plate, i);
-          const depth = i === 0 ? 1 : 1 - (i / sheets) * 0.25;
-          for (const m of city.marks) {
-            const w = ptAt(plate, m.u, m.v, k);
-            const p = T(w.u, w.v, w.z);
-            const hit = i === 0 ? run?.lit.get(m.id) : null;
-            if (hit) mark(ctx, p, 2.2, hit.colour || ink.faint, null, ma);
-            else mark(ctx, p, 1.1, null, ink.other, ma * 0.62 * depth);
+        const paintSheets = (c, alpha) => {
+          for (let i = sheets - 1; i >= 0; i--) {
+            const k = layerAt(plate, i);
+            const depth = i === 0 ? 1 : 1 - (i / sheets) * 0.25;
+            for (const m of city.marks) {
+              const w = ptAt(plate, m.u, m.v, k);
+              const p = T(w.u, w.v, w.z);
+              const hit = i === 0 ? run?.lit.get(m.id) : null;
+              if (hit) mark(c, p, 2.2, hit.colour || ink.faint, null, alpha);
+              else mark(c, p, 1.1, null, ink.other, alpha * 0.62 * depth);
+            }
           }
+        };
+        // Cached only once the plate has finished forming. While `ma` is ramping
+        // it is a different picture every frame, and keying the cache on it
+        // allocated a full-size canvas per frame -- slower than drawing
+        // straight to the target, which is what the ramp does instead.
+        //
+        // Everything the resting picture depends on is in the key: the geometry
+        // (fixed by the size and the variant), the two inks, and the run that
+        // decides what is lit.
+        if (ma < 1) {
+          paintSheets(ctx, ma);
+        } else {
+          const key = [variant, idOf(city), idOf(run), ink.other, ink.faint]
+            .join("|");
+          ctx.drawImage(
+            sheetLayer(W, H, sheetDpr(ctx), key, (c) => paintSheets(c, 1)),
+            0, 0, W, H);
         }
       } else if (ft >= 0.995) {
         // Occupied cells, filled. Brightness is RANK -- one unit that means the
@@ -778,7 +882,8 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
     // The horizontal room a stage's label has is the gap to the next stage.
     // Dense and BM25 share a step and are separated vertically, so they each
     // get the full gap rather than half of it.
-    annotate(ctx, T, plate, city, run, ink, f, dim, 2 * FLOW * SPREAD * s * 0.98);
+    annotate(ctx, T, plate, city, run, ink, f, dim,
+             2 * FLOW * SPREAD * s * 0.98, W);
   });
 }
 
