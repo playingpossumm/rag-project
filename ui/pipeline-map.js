@@ -917,14 +917,14 @@ export function captions(run) {
   return [
     { title: "Index",
       text: `${run.city.docs} documents were split into ${run.city.total.toLocaleString()} `
-          + `overlapping passages -- overlapping so a sentence that straddles a `
-          + `boundary survives whole in one of them -- and each was turned into a `
+          + `overlapping passages — overlapping so a sentence that straddles a `
+          + `boundary survives whole in one of them — and each was turned into a `
           + `vector once, before any question was asked. Every stage after this `
-          + `one is narrowing this set down.` },
+          + `one narrows it.` },
 
     { title: "Dense retrieval",
-      text: `The question is turned into a vector the same way the passages were, `
-          + `and the ${c.dense} nearest by cosine similarity are taken. This finds `
+      text: `The question becomes a vector the same way the passages did, and `
+          + `the ${c.dense} nearest by cosine similarity are kept. This finds `
           + `passages that mean the same thing as the question even when they share `
           + `none of its words.` },
 
@@ -932,22 +932,22 @@ export function captions(run) {
       text: c.sparse
         ? `The same index searched a second way, by word overlap, weighting rare `
           + `words far above common ones. ${c.sparse} candidates. It runs alongside `
-          + `dense retrieval rather than after it, and catches the exact terms -- a `
-          + `species name, a symbol -- that an embedding averages away.`
+          + `dense retrieval rather than after it, and catches the exact terms — a `
+          + `species name, a symbol — that an embedding averages away.`
         : `No word in the question appears in the index, so lexical search returned `
           + `nothing and the result rests on dense retrieval alone.` },
 
     { title: "Rank fusion",
       text: `The two lists are merged by POSITION rather than score, because a `
           + `cosine similarity and a BM25 weight are different units and cannot be `
-          + `compared directly. A passage both methods rank highly rises above one `
+          + `compared. A passage both methods rank highly rises above one `
           + `only a single method liked. ${c.both} of them appeared in both lists.` },
 
     { title: "Cross-encoder",
-      text: `Until now the question and each passage were scored apart and compared. `
-          + `Here they are read together by a second model, one pair at a time -- `
-          + `slower, and much better at telling a passage that mentions the subject `
-          + `from one that answers the question. `
+      text: `Every stage so far compared the question and the passage separately. `
+          + `Here a second model reads them together, one pair at a time — slower, `
+          + `and much better at telling a passage that mentions the subject from one `
+          + `that answers the question. `
           + (big
               ? `Biggest correction: ${shortDoc(big.source)} moved `
                 + `${big.delta > 0 ? "up" : "down"} ${Math.abs(big.delta)} places.`
@@ -963,8 +963,9 @@ export function captions(run) {
       text: run.confident
         ? `The ${c.selected} passages above are what the answer is drawn from and `
           + `what gets cited. Nothing outside them reached the answer.`
-        : `The best passage scored below the point where answers from this set are `
-          + `usually really there, so nothing is returned. The candidates are still `
-          + `listed, so you can see what was considered and judge for yourself.` },
+        : `The best passage scored below this set's cut-off — the score under `
+          + `which passages from these documents usually turn out not to hold the `
+          + `answer. So nothing is returned. The candidates are still listed, so `
+          + `you can see what was considered and judge for yourself.` },
   ];
 }
