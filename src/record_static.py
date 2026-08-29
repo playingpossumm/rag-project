@@ -79,33 +79,49 @@ def questions_for(cfg: dict, every: bool) -> list[dict]:
 
 
 def record_reads(serve, out: Path, name: str) -> None:
-    """The GET endpoints the page calls on load, frozen to files.
+    """The GET endpoints the page calls on load, captured from the real server.
 
-    The interface asks for the corpus, the corpus list, the chunk counts that
-    size the index diagram, and the evaluation summary. None of them depend on
-    the question, so each is one file per corpus and the page needs no server to
-    draw itself.
+    The first version of this rebuilt each payload from `corpora.describe()`,
+    which was wrong in a way that returned HTTP 200: `/api/corpus` really
+    answers with `active`, `sources`, `titles`, `examples` and `data_dir`, and
+    `/api/corpora` answers with `{active, corpora}` rather than a list. The
+    static build served well-formed JSON with the wrong keys, the interface's
+    loader threw, and the page told the reader to start a server -- which is
+    precisely what that build exists to avoid.
+
+    So nothing is reimplemented here. A real server is started on an ephemeral
+    port and the endpoints are fetched over HTTP, exactly as the browser will
+    fetch them. The bytes recorded are the bytes served. This is the same
+    reasoning as `src/test_routes.py`, and it is the rule this project has had
+    to re-learn more than once: exercise the thing rather than model it.
     """
-    import corpora
+    import threading
+    import urllib.request
+    from http.server import ThreadingHTTPServer
 
-    # /api/chunks, computed the same way serve.py computes it: which document
-    # each chunk belongs to, so the index diagram draws one block per document
-    # at its real size rather than an even split that looks right and is wrong.
-    with serve.RES.lock:
-        sources = sorted({c["source"] for c in serve.RES.metadata})
-        order = {src: i for i, src in enumerate(sources)}
-        doc = [order[c["source"]] for c in serve.RES.metadata]
+    httpd = ThreadingHTTPServer(("127.0.0.1", 0), serve.Handler)
+    port = httpd.server_address[1]
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    base = f"http://127.0.0.1:{port}"
 
-    reads = {
-        "corpus": corpora.describe(serve.RES.corpus),
-        "corpora": [corpora.describe(c) for c in corpora.available().values()],
-        "chunks": {"n": len(doc), "sources": sources, "doc": doc},
-    }
-    for filename, payload in reads.items():
-        if payload is None:
-            continue
-        (out / f"{filename}.json").write_text(
-            json.dumps(payload, indent=1), encoding="utf-8")
+    try:
+        # The corpus has to be the one being recorded, because these endpoints
+        # answer for whichever is active.
+        urllib.request.urlopen(urllib.request.Request(
+            f"{base}/api/corpus/select",
+            data=json.dumps({"name": name}).encode(),
+            headers={"Content-Type": "application/json"}), timeout=120).read()
+
+        for endpoint, filename in (("/api/corpus", "corpus.json"),
+                                   ("/api/corpora", "corpora.json"),
+                                   ("/api/chunks", "chunks.json"),
+                                   ("/api/eval", "eval.json")):
+            body = urllib.request.urlopen(base + endpoint, timeout=180).read()
+            (out / filename).write_bytes(body)
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
 
 
 def write_site(out: Path, manifest: dict) -> None:
@@ -310,7 +326,7 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
     if (path === "/api/corpora") return real(`${base()}/corpora.json`);
     if (path === "/api/chunks") return real(`${base()}/chunks.json`);
     if (path === "/api/analytics") return real(at("recorded/analytics.json"));
-    if (path === "/api/eval") return real(at("recorded/eval.json"));
+    if (path === "/api/eval") return real(`${base()}/eval.json`);
 
     if (path === "/api/corpus/select") {
       const body = JSON.parse((init && init.body) || "{}");
@@ -452,8 +468,7 @@ def main() -> int:
 
     # The evaluation figures the quality page draws, copied rather than
     # regenerated so the static build shows the same numbers as the live one.
-    for src_name, dest in (("analytics.json", "analytics.json"),
-                           ("results.json", "eval.json")):
+    for src_name, dest in (("analytics.json", "analytics.json"),):
         src_path = ROOT / "eval" / src_name
         if src_path.exists():
             (args.out / dest).write_text(
