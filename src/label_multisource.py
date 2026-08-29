@@ -17,7 +17,6 @@ judgement about whether the text genuinely answers the question.
 import json
 import re
 import sys
-from collections import defaultdict
 from pathlib import Path
 
 from hybrid import bm25_search, build_bm25

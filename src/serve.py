@@ -522,7 +522,12 @@ def chat(question: str, payload: dict) -> dict:
             generation = {"state": "unavailable", "text": None,
                           "reason": f"{type(exc).__name__}: {exc}"}
 
-    return {**trace, "generation": generation}
+    # Which document set answered. RES is process-wide, so the corpus can
+    # differ from the one the caller last selected -- another tab switching it
+    # is enough -- and a trace that does not say which documents it searched
+    # cannot be checked against them.
+    return {**trace, "generation": generation,
+            "corpus": RES.corpus["name"] if RES.corpus else None}
 
 
 class Handler(BaseHTTPRequestHandler):

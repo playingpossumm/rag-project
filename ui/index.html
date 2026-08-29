@@ -47,9 +47,6 @@
   --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
   --ease:cubic-bezier(.23,1,.32,1);
-  /* One height for every pipeline drawing on the page. Tracks viewport height
-     as well as width: five things stack up in the hero and the question field,
-     the only one you can act on, has to stay above the fold on a short screen. */
   /* One height for every pipeline drawing on the page, so the hero and the
      answer are the same drawing at the same size. Width-driven: the vh term it
      used to carry was there to keep the question field above the fold, and
@@ -1323,12 +1320,65 @@ async function loadCorpus() {
 }
 
 Promise.all([loadCorpus(), loadPicker()]).then(() => {
-  addEventListener("resize", () => drawIdle());
+  // No resize listener: the ResizeObserver in fit() already redraws when the
+  // canvas changes size, and that is narrower and more accurate than the
+  // window event -- a sidebar opening resizes the canvas without a resize
+  // event, and a window resize on a fixed-width canvas fires one for nothing.
 }).catch(() => {
-  $("#setgrid").textContent = "Server unreachable.";
-  $("#hero").insertAdjacentHTML("beforeend",
-    `<p class="err">Start the server: <span class="num">.venv\\Scripts\\python.exe src\\serve.py</span></p>`);
+  // Two builds, two causes, two different things to do about it. This string
+  // was written when there was only one way to run the interface, and the
+  // recorded build inherited it -- so the one page that needs no server was
+  // the page telling people to go and start one.
+  const recorded = window.RECORDED_BUILD;
+  $("#setgrid").textContent = recorded
+    ? "The recorded traces did not load."
+    : "Server unreachable.";
+  $("#hero").insertAdjacentHTML("beforeend", recorded
+    ? `<p class="err">The recorded traces did not load — reloading usually fixes it.</p>`
+    : `<p class="err">Start the server: <span class="num">.venv\\Scripts\\python.exe src\\serve.py</span></p>`);
 });
+
+/* Size the backing store, and say whether there is anything to draw into.
+
+   Assigning canvas.width or canvas.height reallocates the backing store and
+   clears it, whether or not the number changed -- so both draw loops were
+   throwing away and rebuilding a 2400x1400 bitmap sixty times a second to
+   paint the same size they already were. The measurement it takes to notice
+   also costs: getBoundingClientRect forces layout, and it was being asked
+   inside the frame it would then invalidate. Both now happen only when the
+   element's size actually changes, which a ResizeObserver reports.
+
+   The returned rect is in CSS pixels because that is the space drawScene
+   composes in; the transform below is what carries the device ratio. */
+const SIZES = new WeakMap();
+const REDRAW = new WeakMap();
+const sizeWatch = new ResizeObserver(entries => {
+  for (const e of entries) {
+    // An observer keeps what it observes alive. Clearing the thread throws
+    // away every turn and its canvas at once, and without this the observer
+    // would be the one thing still holding them.
+    if (!e.target.isConnected) { sizeWatch.unobserve(e.target); continue; }
+    SIZES.delete(e.target);
+    const again = REDRAW.get(e.target);
+    if (again) again();
+  }
+});
+function fit(cv, ctx, redraw) {
+  if (redraw) REDRAW.set(cv, redraw);
+  let r = SIZES.get(cv);
+  if (!r) {
+    const box = cv.getBoundingClientRect();
+    if (!box.width || !box.height) return null;
+    r = { width: box.width, height: box.height };
+    SIZES.set(cv, r);
+    sizeWatch.observe(cv);
+  }
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return r;
+}
 
 /* The corpus at rest: every block and road already there, nothing lit. Passing
    a null run draws the city with no query, which is exactly the state the
@@ -1340,11 +1390,8 @@ function drawIdle(clock = 0) {
     cancelAnimationFrame(idleRaf); idleRaf = 0; return;
   }
   const ctx = cv.getContext("2d");
-  const dpr = Math.min(devicePixelRatio || 1, 2);
-  const r = cv.getBoundingClientRect();
-  if (!r.width) return;
-  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const r = fit(cv, ctx, () => drawIdle());
+  if (!r) return;
   // Brighter wire here than inside an answer: on the hero this drawing IS the
   // subject, whereas in a card it is the quiet ground that lets the coloured
   // survivors read.
@@ -1356,9 +1403,25 @@ function drawIdle(clock = 0) {
    than leaving it looking like a diagram of a dead system. Reduced-motion gets
    the same drawing with the pulse omitted, not a different drawing. */
 const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// The pulse is only worth its frames while someone can see it. Scrolling past
+// the hero to read the page below used to leave a full-scene redraw running
+// every frame behind the top of the window -- and on the page that matters,
+// the one with answers on it, that is exactly where the hero is.
+let onScreen = true;
+let idleWatch = null;
 function idleLoop() {
   cancelAnimationFrame(idleRaf);
-  if (STILL) { drawIdle(); return; }
+  idleRaf = 0;
+  if (!idleWatch) {
+    idleWatch = new IntersectionObserver(([e]) => {
+      onScreen = e.isIntersecting;
+      if (onScreen) idleLoop(); else { cancelAnimationFrame(idleRaf); idleRaf = 0; }
+    });
+    const cv = $("#idle");
+    if (cv) idleWatch.observe(cv);
+  }
+  if (STILL || !onScreen) { drawIdle(); return; }
   const t0 = performance.now();
   const step = now => {
     drawIdle(now - t0);
@@ -1606,7 +1669,19 @@ async function ask(question, opts = OPTS, into = null) {
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || r.statusText);
+    // Stopped here, before anything else is fetched: this is what the card
+    // reports as the time the search took, and reloading the corpus below is
+    // not part of the search.
     data.ms = performance.now() - t0;
+    // The reply says which documents it searched, and that is not always the
+    // set this page last selected: the server holds one corpus for every
+    // client, so a second tab switching it moves this one too, and the
+    // recorded build follows a question into whichever corpus recorded it.
+    // Drawing the old index over the new answer would put every passage in the
+    // wrong building -- a picture that is confidently, silently wrong.
+    if (data.corpus && ACTIVE && data.corpus !== ACTIVE.name) {
+      await Promise.all([loadCorpus(), loadPicker()]);
+    }
     if (fresh) BASELINE = data;
     INK = readInk();
     // Re-running rebuilds the card, which would snap every disclosure shut --
@@ -1915,12 +1990,15 @@ function wireCity(turn, run, data) {
   const cap = turn.querySelector(".cap");
   let raf = 0, playing = false;
 
+  // Once per turn. captions() builds six objects and their prose from the run,
+  // and it was being rebuilt inside every frame of a seven-second replay --
+  // roughly 2,500 strings thrown away per answer, for six that never change.
+  const caps = captions(run);
+  let shown = -1;
+
   const render = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    const r = cv.getBoundingClientRect();
-    if (!r.width) return;
-    cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const r = fit(cv, ctx, render);
+    if (!r) return;
     drawScene(ctx, CITY, run, INK, r.width, r.height, Number(scrub.value) / 100,
               null, MAP);
   };
@@ -1928,10 +2006,14 @@ function wireCity(turn, run, data) {
     t = Math.max(0, Math.min(1, t));
     if (move) scrub.value = Math.round(t * 100);
     render();
-    const caps = captions(run);
     if (!caps.length) return;
-    const c = caps[Math.max(0, Math.min(caps.length - 1, Math.floor(t * caps.length)))];
-    cap.innerHTML = `<b>${esc(c.title)}.</b> ${esc(c.text)}`;
+    const i = Math.max(0, Math.min(caps.length - 1, Math.floor(t * caps.length)));
+    // The caption changes six times in seven seconds. Writing innerHTML on
+    // every frame instead reparsed a paragraph of HTML 420 times to show the
+    // same six.
+    if (i === shown) return;
+    shown = i;
+    cap.innerHTML = `<b>${esc(caps[i].title)}.</b> ${esc(caps[i].text)}`;
   };
   const stop = () => { playing = false; cancelAnimationFrame(raf); btn.textContent = "Replay"; };
   const play = () => {
@@ -1949,10 +2031,25 @@ function wireCity(turn, run, data) {
   };
   btn.onclick = play;
   scrub.oninput = e => { stop(); at(Number(e.target.value) / 100, false); };
-  addEventListener("resize", render);
   if (document.fonts) document.fonts.ready.then(render);
   at(1);
-  play();
+
+  // A replay is seven seconds long and every turn started one. Ask three
+  // questions in a row and three of these run at once, two of them scrolled off
+  // the screen, each clearing and repainting a full-size bitmap every frame for
+  // an audience of nobody. That is where the page went from 60fps to 11.
+  //
+  // So: play when the drawing is on screen, stop when it leaves. Leaving shows
+  // the finished state rather than a frozen half-drawn one, because at(1) above
+  // has already drawn it and stop() does not erase.
+  let seen = false;
+  new IntersectionObserver(([e]) => {
+    if (e.isIntersecting) {
+      if (!seen) { seen = true; play(); }
+    } else if (playing) {
+      stop(); at(1);
+    }
+  }, { threshold: 0.15 }).observe(cv);
 }
 
 /* ------------------------------------------------------------- settings */

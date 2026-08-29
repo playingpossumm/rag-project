@@ -88,7 +88,7 @@ def write_docx(art: dict, dest: Path) -> Path:
 # ------------------------------------------------------------------ pptx --
 def write_pptx(art: dict, dest: Path) -> Path:
     from pptx import Presentation
-    from pptx.util import Inches, Pt
+    from pptx.util import Inches
 
     prs = Presentation()
     title_slide = prs.slides.add_slide(prs.slide_layouts[0])

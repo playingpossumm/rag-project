@@ -9,7 +9,6 @@ distinguish between genuinely similar sources, which is the realistic case.
 Several are about the machinery this project is built on (FAISS, Sentence-BERT,
 ColBERT, DPR, RAG), which makes for unusually good test queries.
 """
-import sys
 import time
 import urllib.request
 from pathlib import Path

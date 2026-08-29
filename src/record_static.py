@@ -58,7 +58,6 @@ def key(question: str) -> str:
 
 def questions_for(cfg: dict, every: bool) -> list[dict]:
     """The questions to record: the offered ones, or the whole golden set."""
-    from check_freshness import artefact_suffix
     from evaluate import load_cases
 
     if every:
@@ -202,6 +201,13 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
     : location.href).href;
   const at = (p) => HERE + p.replace(/^\//, "");
 
+  // The interface reads this to know which of the two builds it is running in.
+  // It is set before anything else so that a failure during the manifest fetch
+  // still finds it -- the page's own error path is one of its readers, and the
+  // thing that path most needs to know is whether telling someone to start a
+  // server is sensible advice.
+  window.RECORDED_BUILD = true;
+
   const KEY = (q) => {
     // Must match src/record_static.py's key(): sha256 of the trimmed,
     // lowercased question, first 16 hex characters.
@@ -232,7 +238,7 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
   const style = document.createElement("style");
   style.textContent = `
     #recorded-loading{position:fixed;inset:0;z-index:9999;display:grid;
-      place-items:center;background:var(--bg,#0b0b0c);
+      place-items:center;background:var(--ground,#0e0e0f);
       transition:opacity .45s cubic-bezier(.23,1,.32,1)}
     #recorded-loading.gone{opacity:0;pointer-events:none}
     #recorded-loading .rl-inner{text-align:center;max-width:34rem;padding:0 1.5rem}
@@ -267,6 +273,39 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
     veil.classList.add("gone");
     setTimeout(() => veil.remove(), 500);
   };
+
+  // A visitor who is not told otherwise will reasonably assume the search runs
+  // when they press the button. It does not: it ran months ago on a laptop and
+  // the result was written to a file. The strip says so once, at the top of
+  // every page, and points at the version that does run.
+  const strip = document.createElement("div");
+  strip.id = "recorded-strip";
+  strip.innerHTML =
+    '<b>Recorded demo.</b> Every answer here was computed in advance by the ' +
+    'real pipeline and saved — there is no model behind this page, so it ' +
+    'answers the questions it was given and no others. ' +
+    '<a href="https://github.com/ArdellAlfatih/rag-project">Run it locally</a>' +
+    ' to search your own documents.';
+  const stripStyle = document.createElement("style");
+  stripStyle.textContent = `
+    #recorded-strip{font:400 12.5px/1.5 var(--sans,system-ui,sans-serif);
+      padding:7px 16px;text-align:center;
+      color:var(--dim,#a2a5a7);background:var(--card,#171819);
+      border-bottom:1px solid var(--hair,#292b2d)}
+    #recorded-strip b{color:var(--ink,#f2f2f0);font-weight:600}
+    #recorded-strip a{color:inherit;text-decoration:underline;
+      text-underline-offset:2px}
+    #recorded-strip a:hover{color:var(--ink,#f2f2f0)}
+    /* The header below this is sticky at top:0. The strip is not, so it
+       scrolls away and the header takes the edge -- the notice is for arrival,
+       not a permanent band across the reading. */
+    @media (max-width:640px){#recorded-strip{padding:7px 12px;font-size:11.5px}}`;
+  const banner = () => {
+    document.head.appendChild(stripStyle);
+    document.body.insertBefore(strip, document.body.firstChild);
+  };
+  if (document.body) banner();
+  else document.addEventListener("DOMContentLoaded", banner);
 
   let MANIFEST = { default: null, corpora: {} };
   const ready = fetch(at("recorded/manifest.json"))
@@ -385,8 +424,26 @@ def main() -> int:
                     help="every golden-set question, not just the offered ten")
     ap.add_argument("--generate", action="store_true",
                     help="also record prose from the local model")
+    ap.add_argument("--site-only", action="store_true",
+                    help="rebuild the page from ui/ around existing recordings; "
+                         "no models are loaded and nothing is re-recorded")
     ap.add_argument("--out", type=Path, default=OUT)
     args = ap.parse_args()
+
+    # Before `import serve`, which loads the index and both models. A rebuild
+    # of the page needs neither, and this is the whole point of the flag.
+    if args.site_only:
+        manifest_path = args.out / "manifest.json"
+        if not manifest_path.exists():
+            print(f"--site-only needs recordings in {args.out}/ — "
+                  f"no manifest.json there. Record once first.")
+            return 2
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        write_site(args.out, manifest)
+        total = sum(c["questions"] for c in manifest["corpora"].values())
+        print(f"  page rebuilt from ui/ around {total} recorded question(s), "
+              f"recorded {manifest.get('recorded', 'unknown')}")
+        return 0
 
     import serve
 
