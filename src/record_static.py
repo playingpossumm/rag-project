@@ -138,13 +138,20 @@ def write_site(out: Path, manifest: dict) -> None:
 
     (site / "offline.js").write_text(OFFLINE_JS, encoding="utf-8")
 
-    index = site / "index.html"
-    html = index.read_text(encoding="utf-8")
-    if "offline.js" not in html:
-        html = html.replace("<head>", '<head>\n<script src="/offline.js"></script>', 1)
-        if 'src="/offline.js"' not in html:      # no <head> to hook
-            html = '<script src="/offline.js"></script>\n' + html
-        index.write_text(html, encoding="utf-8")
+    # EVERY page, not just the front one. The quality dashboard and the about
+    # page call /api/ too, and injecting into index.html alone left them making
+    # real requests to a server that is not there -- which showed up as a 404
+    # in the console of two of the three pages and nowhere else.
+    for page in sorted(site.glob("*.html")):
+        html = page.read_text(encoding="utf-8")
+        if "offline.js" in html:
+            continue
+        tag = '<script src="/offline.js"></script>'
+        if "<head>" in html:
+            html = html.replace("<head>", "<head>\n" + tag, 1)
+        else:
+            html = tag + "\n" + html
+        page.write_text(html, encoding="utf-8")
 
     (out / "vercel.json").write_text(json.dumps({
         "$schema": "https://openapi.vercel.sh/vercel.json",
@@ -249,6 +256,29 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
       else document.addEventListener("DOMContentLoaded", dismiss);
     });
 
+  // Which corpus holds which question, read from the index each corpus already
+  // ships. The first version probed instead -- fetching /recorded/<corpus>/<k>
+  // for each corpus until one hit -- which worked and logged a 404 to the
+  // console for every miss. A console error on a working page is how a reader
+  // decides not to trust the rest of it.
+  let LOCATIONS = null;
+  async function locate(k) {
+    if (!LOCATIONS) {
+      LOCATIONS = {};
+      await Promise.all(
+        Object.keys(MANIFEST.corpora).map((c) =>
+          real(`/recorded/${c}/index.json`)
+            .then((r) => (r.ok ? r.json() : []))
+            .then((rows) => {
+              for (const row of rows) {
+                if (!(row.key in LOCATIONS)) LOCATIONS[row.key] = c;
+              }
+            })
+            .catch(() => {})));
+    }
+    return LOCATIONS[k] || null;
+  }
+
   const json = (data, status = 200) =>
     new Response(JSON.stringify(data), {
       status,
@@ -280,19 +310,13 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
       const question = (body.question || "").trim();
       if (!question) return json({ error: "field 'question' is required" }, 400);
       const k = await KEY(question);
-
-      // The selected corpus first, then the others. A visitor who types a
-      // question from the bird set while the papers are selected means the
-      // question, not the corpus -- and every corpus is recorded here, so
-      // refusing on a technicality would be pedantry rather than fidelity.
-      const order = [corpus, ...Object.keys(MANIFEST.corpora)].filter(
-        (c, i, a) => c && a.indexOf(c) === i);
-      for (const c of order) {
-        const hit = await real(`/recorded/${c}/${k}.json`);
-        if (hit.ok) {
-          if (c !== corpus) corpus = c;   // follow the question
-          return hit;
-        }
+      const home = await locate(k);
+      if (home) {
+        // Follow the question into whichever corpus recorded it. Someone who
+        // types a question from the bird set while the papers are selected
+        // means the question, not the corpus.
+        if (home !== corpus) corpus = home;
+        return real(`/recorded/${home}/${k}.json`);
       }
       // The honest failure. A recorded demo cannot answer a question nobody
       // recorded, and saying so is better than an empty result that reads as

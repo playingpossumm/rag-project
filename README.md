@@ -1,5 +1,12 @@
 # retrieval visualized
 
+
+**[See it running →](https://rag-retrieval-visualized.vercel.app)** — a recorded
+demo: all 157 evaluation questions across three corpora, each answered in advance
+by the real pipeline and written to a file. Every retrieval stage is shown, with
+scores. There is no model behind that page, so it cannot answer a new question —
+clone this repository for the version that can.
+
 A retrieval-augmented generation system you can watch work. Ask a question of a
 set of documents and the interface draws the whole search — what dense retrieval
 and BM25 each found, what fusion and the cross-encoder did to the ranking, what
