@@ -1,10 +1,10 @@
 # Attribution
 
-## The demo corpus
+## Ornithology — English Wikipedia
 
-The public demo serves an **ornithology** corpus built from English Wikipedia
-articles, converted into four file formats (`.docx`, `.pptx`, `.xlsx`, `.pdf`)
-so the system's format handling is exercised by something other than PDFs.
+Built from English Wikipedia articles, converted into four file formats
+(`.docx`, `.pptx`, `.xlsx`, `.pdf`) so the system's format handling is
+exercised by something other than PDFs.
 
 Those articles are published under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), which permits
@@ -15,24 +15,63 @@ article it was built from — `peregrine_falcon.pdf` is
 
 `src/fetch_topic.py` records how each file was produced.
 
-## Corpora that are *not* published
+## ML & NLP papers, and quantitative finance — arXiv
 
-Two other corpora exist in development and are deliberately absent from both
-this repository and the deployed demo:
+36 arXiv cs.CL/cs.LG papers and 35 q-fin papers. **Neither set is in this
+repository's current state** — both were untracked on 2026-08-28 — so a clone
+gives you the code and not the corpus. `src/fetch_corpus.py` and
+`src/fetch_topic.py` rebuild them by downloading from arXiv, so anyone running
+this locally gets the papers from the people who published them.
 
-| corpus | source | why it is not published |
-|---|---|---|
-| ML & NLP papers | 36 arXiv papers | arXiv submissions carry varied licences; many permit reading but not redistribution |
-| Quantitative finance | 35 arXiv q-fin papers | the same |
+**They are still in the git history, and that is a deliberate choice rather than
+an oversight.** Removing them means rewriting history, which changes every
+commit SHA; this repository cites fourteen of its own SHAs in prose, and one of
+them is printed on screen by the server. All fourteen would dangle, and nothing
+checks that a commit named in a document still resolves. Weighed against that,
+arXiv's submission licence grants a non-exclusive right to distribute, many of
+these papers are CC-BY, and a research repository carrying the papers it was
+measured against is ordinary practice. The full reasoning is in
+`docs/engineering-log.md` under 2026-08-28.
 
-They were removed from git history on 2026-08-28 for this reason, not for size.
-Both are rebuildable locally with `python src/fetch_corpus.py` and
-`python src/fetch_topic.py`, which download from the original sources rather
-than from here.
+### What the recorded demo does publish, and the reasoning
+
+The [recorded demo](https://rag-retrieval-visualized.vercel.app) answers all 157
+evaluation questions, which means it carries the passages those answers stand
+on. Measured on the current build:
+
+| corpus | distinct passages shown | characters | documents |
+|---|---|---|---|
+| Ornithology | 549 | 141k | 43 |
+| ML & NLP papers | 1,493 | 385k | 36 |
+| Quantitative finance | 1,211 | 312k | 35 |
+
+For the arXiv sets that is roughly 40 non-contiguous excerpts per paper,
+averaging 257 characters each — about a quarter of a typical paper's body text,
+in retrieval-rank order, with no figures, tables or reference lists, and every
+excerpt labelled with its source file and page.
+
+This is published as **quotation with attribution**, not as redistribution of
+the papers. arXiv's own terms permit reading and quotation of submissions
+whatever licence an individual author chose; what they do not permit is
+republishing a paper, and a page that shows forty short fragments out of order,
+each captioned with where it came from, is not a copy of one. It is closer to
+what a search engine's result snippets are, which is the function it is
+literally performing.
+
+An earlier version of this file said both arXiv corpora were absent from the
+demo as well as from the repository. That was the intention when it was written
+and it stopped being true when the demo grew from ten bird questions to all 157;
+the sentence is corrected here rather than quietly deleted, because a licensing
+claim that was wrong for a while is worth leaving a record of.
+
+**If you are an author of one of these papers and would rather not be in the
+demo, open an issue and it comes out.** Rebuilding without a corpus is one
+command — `python src/record_static.py --corpus birds --all`.
 
 This distinction matters more for a retrieval system than for most software: a
-RAG interface exists to show you passage text verbatim, so publishing one
-publishes its corpus, whatever the repository contains.
+RAG interface exists to show you passage text verbatim, so deploying one
+publishes some of its corpus whatever the repository contains. That is worth
+deciding deliberately rather than discovering.
 
 ## Models
 

@@ -73,10 +73,10 @@ there.
 
 ## Before you deploy
 
-The repository contains **no documents and no index** — they were removed from
-git history because publishing them would redistribute other people's work (see
-`ATTRIBUTION.md`). So the corpus has to be built once, locally, before the
-image can be built:
+The repository contains **no documents and no index** in HEAD — they are
+untracked, so a clone gives you the code and not the corpus (they are still in
+the history; `ATTRIBUTION.md` says why). So the corpus has to be built once,
+locally, before the image can be built:
 
 ```bash
 python src/fetch_topic.py --topic birds        # Wikipedia -> data-birds/
@@ -88,10 +88,16 @@ That produces `data-birds/` and `store-birds/`, which the `Dockerfile` copies in
 Building the index inside the image instead would work, but it downloads from
 Wikipedia at build time and makes the build non-reproducible.
 
-**Only the ornithology corpus is deployable.** It is Wikipedia under CC BY-SA
-and redistributable with attribution. The two arXiv corpora are not, and a RAG
-interface publishes its corpus by design — it exists to show passage text
-verbatim.
+**Which corpora go into a deployment is a licensing decision, not a technical
+one.** The ornithology set is Wikipedia under CC BY-SA and redistributable with
+attribution, so it can go anywhere. The two arXiv sets are shipped in the
+recorded build as short attributed excerpts — see `ATTRIBUTION.md` for what that
+amounts to, measured, and the reasoning — but the source documents are not in
+this repository and a live deployment of them would be a different question,
+because a live server will quote any passage anyone can elicit rather than the
+2,700 that were recorded.
+
+`--corpus birds` records one set only, which is the conservative build.
 
 ## Build and run
 

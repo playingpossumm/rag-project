@@ -482,10 +482,14 @@ deliberate default.
 
 **`data/`, `store-birds/` and `store-quant/` are untracked** as of 2026-08-28 —
 78 MB of third-party papers and the same text again inside `metadata.json`.
-They remain in the *history* deliberately: `HANDOFF.md` §5 cites `f2ab5de` and
-`f1ea450`, and `serve.py` embeds `d1f8c71` in the archive banner a visitor
-reads, so a rewrite would silently dangle three live references. See
-`docs/engineering-log.md`, 2026-08-28. Rebuild the corpora with
+They remain in the *history* deliberately: this repository's prose cites
+**fourteen** of its own commit SHAs — `HANDOFF.md` §5 cites `f2ab5de` and
+`f1ea450`, `serve.py` embeds `d1f8c71` in the archive banner a visitor reads,
+and `docs/angle-sweep.html` stamps one on every entry — so a rewrite would
+dangle all fourteen, silently, because a dead SHA in a sentence reads exactly
+like a live one. `src/check_docs.py` now counts and resolves them rather than
+leaving that as a number in a paragraph. See `docs/engineering-log.md`,
+2026-08-28. Rebuild the corpora with
 `src/fetch_corpus.py`, `src/fetch_topic.py` and `src/ingest.py`.
 
 **Git identity is repo-local**: `playingpossumm <the owner's address, removed 2026-09-07>`. The owner
@@ -848,7 +852,7 @@ reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
 Test counts, as of 2026-08-27: **324 checks + the route suite** — 22 metrics, 28 loaders, 80
-trace, 8 OCR, 32 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
+trace, 8 OCR, 33 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
 9 ingest cache, 19 generate, 24 local generation, 25 serve, 16 analytics,
 plus 20 answer-highlight
 checks under `node ui/test-answer-mark.mjs`.
@@ -943,4 +947,21 @@ disclaim current work.
 | `ui/answer-mark.js` | which words of a passage are set bold, and the bounds on that |
 | `src/test_freshness.py` | stages each known way that chain has gone stale and asserts it is caught |
 | `docs/phase-1-field-notes.html` | mechanism-level explanation, Phases 1–3 (published artifact) |
+| `src/evaluate_answers.py` | the generated prose, not the passages: invented citations, refusals, groundedness |
+| `src/build_ensemble_index.py` | adds a second dense index to a store without touching the first |
+| `src/uniform_baseline.py` | all three corpora under one untuned configuration — the fairness check |
+| `src/cli.py` | the third shell over `api.ask`, so library, HTTP and CLI cannot drift |
+| `src/hard_cases.py` | only the cases nothing gets right, in about twenty seconds |
+| `src/dump_top_passages.py` | every golden question's top passage, as the page receives it |
+| `src/verify_candidates.py` | answer strings checked before they are allowed into a golden set |
+| `src/check_answers.py` | answer strings checked against the corpus **as parsed**, not as the PDF renders |
+| `src/label_multisource.py` | proposes every document that answers a case, not one |
+| `src/diagnose_crossdoc.py` | cross-document confusion measured instead of argued from one example |
+| `src/eval_probe.py` | single-stage retrieval beside retrieval + reranking, before there were labels |
+| `src/build_guide_figures.py` | the data figures in `docs/understanding-rag.html`, drawn from the measurements |
+| `src/record_static.py` | records every answer to files, for a deployment with no models behind it |
+| `docs/deploying.md` | how the recorded build is made and where it is hosted |
+| `docs/angle-sweep.html` | every version of the front page in order, the wrong turns included |
+| `src/retitle.py` | recomputes stored titles in a built index without re-embedding it |
+| `src/test_analytics.py` | the analytics the quality page plots, against the per-case file |
 | `git log` | why each decision was made, including the reversals |
