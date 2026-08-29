@@ -43,6 +43,9 @@ a{color:inherit}
 .folio a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;
   text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
 .folio a:hover{color:var(--ink)}
+.ghlink{display:inline-flex;align-items:center;line-height:0;opacity:.62;
+  transition:opacity 140ms ease-out}
+.ghlink:hover{opacity:1}
 .folio a.here{color:var(--ink)}
 
 .wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 110px}
@@ -81,6 +84,12 @@ a{color:inherit}
 @media(max-width:720px){.versus{grid-template-columns:1fr}}
 
 /* The pipeline walk-through: a numbered rail, because the order is the point. */
+.callout ul{margin:10px 0 12px;padding:0;list-style:none}
+.callout li{position:relative;padding:0 0 8px 18px;color:var(--muted);
+  font-size:13.5px;line-height:1.6}
+.callout li::before{content:"";position:absolute;left:2px;top:9px;
+  width:5px;height:5px;border-radius:50%;background:var(--faint)}
+.callout li:last-child{padding-bottom:0}
 .steps{counter-reset:s;margin:0;padding:0;list-style:none}
 .steps li{counter-increment:s;position:relative;padding:0 0 20px 46px;
   border-left:1px solid var(--rule);margin-left:12px}
@@ -131,34 +140,37 @@ a{color:inherit}
   <a class="here" href="/about">About</a>
   <a href="/quality">Analytics</a>
   <a href="/">Ask</a>
-  <a href="https://github.com/ArdellAlfatih/rag-project" target="_blank" rel="noopener">Source</a>
+  <a class="ghlink" href="https://github.com/ArdellAlfatih/rag-project"
+     target="_blank" rel="noopener" title="Source on GitHub"
+     aria-label="Source on GitHub"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
 </div></header>
 
 <main class="wrap">
 
   <section class="hero">
-    <h1>Why this exists.</h1>
-    <div class="sub">A retrieval system built by hand, to find out what the parts actually do.</div>
-    <p>Most retrieval-augmented generation is assembled from a framework in an
-       afternoon: four imports, a vector store, a prompt. It works, and you learn
-       almost nothing, because every decision that matters was made for you and
-       none of them are visible. This one is built from parts, with no
-       framework, and every default in it had to earn its place against a
-       measurement.</p>
+    <h1>How this works.</h1>
+    <div class="sub">A retrieval system built by hand, with every stage on screen.</div>
+    <p>Retrieval-augmented generation answers a question by searching a set of
+       documents and quoting what it finds. A framework will build one in an
+       afternoon. It works, and it hides every decision inside it.</p>
+    <p>This system is built from parts instead. Each stage is drawn as it runs,
+       each setting can be changed and the question re-run, and each default
+       was chosen by measuring the alternatives. This page explains what the
+       stages are.</p>
   </section>
 
   <!-- ---------------------------------------------------------------- why -->
   <section class="panel">
-    <div class="phead"><span class="lab">The argument</span>
-      <span class="lab right">What this can offer that a product cannot</span></div>
+    <div class="phead"><span class="lab">Compared with a closed product</span>
+      <span class="lab right">Five questions about the middle</span></div>
     <div class="pbody">
       <div class="prose">
-        <p>This will not beat NotebookLM or Glean on answer quality. They have
-           better models, more compute and teams of people. That is not a
-           weakness to apologise for. It is the reason to build something else.
-           A closed product is a <b>destination</b>: you put a question in and
-           get an answer out, and the middle is not yours to see. The questions
-           below are the ones that middle makes unanswerable.</p>
+        <p>NotebookLM, Glean and the enterprise search tools sold to companies
+           will answer better than this. They have larger models and far more
+           compute. They also answer from a closed middle. You put a question
+           in, an answer comes out, and what happened in between is not shown.
+           Here are five questions about that middle, and what each version can
+           say.</p>
       </div>
 
       <div class="versus" style="margin-top:18px">
@@ -184,15 +196,18 @@ a{color:inherit}
       </div>
 
       <div class="callout">
-        <p>Five times, a measurement overturned a plan that had sounded
-           obviously right. Prefixing every chunk with its document title was
-           built, measured, and then reverted, because it cost source recall.
-           An eight-times-larger reranker fixed the same two questions the
-           small one fixed, and took ten times as long. Quantising the
-           cross-encoder ran 1.5× faster and left the rankings almost
-           unchanged, while quietly making the system refuse questions it
-           could answer. All of them are in the engineering log with their
-           numbers.</p>
+        <p>Five changes that sounded obviously right were measured and dropped.
+           Three of them:</p>
+        <ul>
+          <li>Adding each document's title to every passage cost source recall.
+            It was built, measured and reverted.</li>
+          <li>A reranker eight times larger fixed the same two questions the
+            small one fixed. It took ten times as long.</li>
+          <li>Compressing the cross-encoder ran 1.5× faster and barely moved
+            the rankings. It also made the system refuse questions it could
+            answer.</li>
+        </ul>
+        <p>The engineering log has all five, with their numbers.</p>
       </div>
     </div>
   </section>

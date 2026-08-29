@@ -90,7 +90,7 @@ const SPEC = [
     label: "Index",              term: c => `${c.total.toLocaleString()} passages · ${c.docs} documents` },
   { id: "dense", layers: 1,    n: "02", step: 1, lift: 15,  w: 6.5, cells: [5, 4], lead: 1, shape: "field",
     label: "Dense retrieval",    term: () => "embedding similarity" },
-  { id: "sparse", layers: 1,   n: "03", step: 1, lift: -15, w: 6.5, cells: [1, 6], lead: -1, shape: "bars",
+  { id: "sparse", layers: 1,   n: "03", step: 1, lift: -15, w: 6.5, cells: [1, 10], lead: -1, shape: "bars",
     label: "BM25",               term: () => "lexical match" },
   { id: "fused", layers: 2,    n: "04", step: 2, lift: 0,   w: 7.5, cells: [5, 4], lead: 1, shape: "merge",
     label: "Rank fusion",        term: () => "both rankings combined" },
@@ -409,7 +409,7 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
   // The face. Dense retrieval's is dashed, because it has no slots to hold
   // anything: it is a region, not a rack.
   const pts = plateCorners(plate).map(c => T(c.u, c.v, c.z));
-  ctx.globalAlpha = alpha * (plate.shape === "field" ? 0.5 : 0.85);
+  ctx.globalAlpha = alpha * (plate.shape === "field" ? 0.75 : 0.85);
   ctx.strokeStyle = ink.faint;
   ctx.lineWidth = 0.9;
   if (plate.shape === "field") ctx.setLineDash([2, 3]);
@@ -432,8 +432,14 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
   if (plate.shape === "bars" || plate.shape === "gate") {
     const [, rows] = plate.cells;
     for (let r = 0; r < rows; r++) {
-      drawCell(ctx, T, plate, cellAt(plate, r), null, ink.other,
-               alpha * 0.2, 0.6);
+      const t = plate.h - ((plate.h * 2) / rows) * (r + 0.5);
+      const A = ptAt(plate, -plate.w * 0.86, t, plate.front);
+      const B = ptAt(plate, plate.w * 0.86, t, plate.front);
+      const p1 = T(A.u, A.v, A.z), p2 = T(B.u, B.v, B.z);
+      ctx.globalAlpha = alpha * 0.3;
+      ctx.strokeStyle = ink.other;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
     }
   }
   ctx.globalAlpha = 1;
@@ -450,9 +456,9 @@ function stageContents(ctx, T, plate, run, city, ink, a, variant) {
     // Dots where the candidates sit, no lattice under them.
     for (const m of items) {
       const p = T(m.u, m.v, m.z + 0.3);
-      ctx.globalAlpha = a * (m.lives ? 1 : 0.5);
+      ctx.globalAlpha = a * (m.lives ? 1 : 0.8);
       ctx.beginPath();
-      ctx.arc(p.x, p.y, m.lives ? 3.4 : 1.7, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, m.lives ? 3.6 : 2.3, 0, Math.PI * 2);
       ctx.fillStyle = shade(m);
       ctx.fill();
     }
@@ -466,10 +472,11 @@ function stageContents(ctx, T, plate, run, city, ink, a, variant) {
     for (let r = 0; r < rows; r++) {
       const m = items[r];
       const cell = cellAt(plate, r);
-      if (m && (!gate || m.lives)) {
-        // A surviving passage is the subject; the rest are the tray it sits
-        // on. Eight bars at 0.55 stacked into a solid block and buried it.
-        drawCell(ctx, T, plate, cell, shade(m), null, a * (m.lives ? 1 : 0.10));
+      if (m && m.lives) {
+        // Only the survivors are filled. Filling the rest at any alpha turns
+        // ten adjacent bars into one solid rectangle, which is what this stage
+        // kept coming out as; the empty slots are already drawn by plane().
+        drawCell(ctx, T, plate, cell, shade(m), null, a);
       } else if (gate && run) {
         // A slot the cap refused. Outlined rather than filled, because nothing
         // came through it. Only during a run: with no question asked there is
@@ -486,10 +493,15 @@ function stageContents(ctx, T, plate, run, city, ink, a, variant) {
       const A = cellAt(plate, r * (plate.cells[0] || 1));
       const B = cellAt(plate, ((rows - 1 - r)) * (plate.cells[0] || 1));
       const aPt = T(A.u, A.v, A.z + 0.4), bPt = T(B.u, B.v, B.z + 0.4);
-      const bow = Math.max(8, Math.abs(bPt.y - aPt.y) * 0.5);
+      const dx = bPt.x - aPt.x, dy = bPt.y - aPt.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const bow = Math.min(18, len * 0.3);
+      const nx = -dy / len * bow, ny = dx / len * bow;
       ctx.beginPath();
       ctx.moveTo(aPt.x, aPt.y);
-      ctx.bezierCurveTo(aPt.x + bow, aPt.y, bPt.x - bow, bPt.y, bPt.x, bPt.y);
+      ctx.bezierCurveTo(aPt.x + dx / 3 + nx, aPt.y + dy / 3 + ny,
+                        aPt.x + dx * 2 / 3 + nx, aPt.y + dy * 2 / 3 + ny,
+                        bPt.x, bPt.y);
       ctx.strokeStyle = ink.other; ctx.globalAlpha = a * 0.3; ctx.lineWidth = 1;
       ctx.stroke(); ctx.globalAlpha = 1;
     }
@@ -503,18 +515,27 @@ function stageContents(ctx, T, plate, run, city, ink, a, variant) {
     const [, rows] = plate.cells;
     for (const m of items) {
       if (!m.lives) continue;
-      const from = Math.min(rows - 1, Math.max(0, ((m.was ?? m.rank) - 1) % rows));
-      const to = Math.min(rows - 1, Math.max(0, (m.rank - 1) % rows));
+      const total = Math.max(items.length, 1);
+      const row = r => Math.min(rows - 1, Math.max(0,
+        Math.floor(((r - 1) / total) * rows)));
+      const from = row(m.was ?? m.rank);
+      const to = row(m.rank);
+      if (from === to) continue;   // it did not move; there is no arc to draw
       // Both ends stay on the plate. Offsetting the control points in world
       // units threw the curve outside the stage it describes.
       const A = cellAt(plate, from * (plate.cells[0] || 1));
       const B = cellAt(plate, to * (plate.cells[0] || 1));
       const aPt = T(A.u, A.v, A.z + 0.4);
       const bPt = T(B.u, B.v, B.z + 0.4);
+      const dx = bPt.x - aPt.x, dy = bPt.y - aPt.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const bow = Math.min(22, len * 0.34);
+      const nx = -dy / len * bow, ny = dx / len * bow;
       ctx.beginPath();
       ctx.moveTo(aPt.x, aPt.y);
-      const bow = Math.max(10, Math.abs(bPt.y - aPt.y) * 0.5);
-      ctx.bezierCurveTo(aPt.x + bow, aPt.y, bPt.x - bow, bPt.y, bPt.x, bPt.y);
+      ctx.bezierCurveTo(aPt.x + dx / 3 + nx, aPt.y + dy / 3 + ny,
+                        aPt.x + dx * 2 / 3 + nx, aPt.y + dy * 2 / 3 + ny,
+                        bPt.x, bPt.y);
       ctx.strokeStyle = m.colour || ink.other;
       ctx.globalAlpha = a * 0.9;
       ctx.lineWidth = 1.8;
@@ -535,7 +556,7 @@ function stageContents(ctx, T, plate, run, city, ink, a, variant) {
    like they are further along the flow rather than above and below it. */
 function dropline(ctx, T, plate, ink, a, f) {
   if (!plate.z || f < 0.6) return;
-  const k = a * clamp01((f - 0.6) / 0.4) * 0.45;
+  const k = a * clamp01((f - 0.6) / 0.4) * 0.26;
   ctx.save();
   ctx.globalAlpha = k;
   ctx.strokeStyle = ink.other;
@@ -581,7 +602,11 @@ function inflight(ctx, T, link, ink, a, t) {
   // A blocked passage stops short of the plate it was heading for, and the
   // last thing drawn on its path is the thing that stopped it.
   const STOPPED = "#f0685f";
-  const wall = link.stopped ? 0.72 : 1;
+  // A surviving passage is drawn onto the cell it lands in. One that does not
+  // survive stops short: twenty of them arriving at one small plate hatch it
+  // into a solid block, which is what BM25 kept rendering as. They still carry
+  // the volume of the leg they are on, which is the reason they are drawn.
+  const wall = link.stopped ? 0.72 : link.lives ? 1 : 0.66;
   const held = Math.min(e, wall);
   const bx = lerp(p1.x, p2.x, held), by = lerp(p1.y, p2.y, held);
 
@@ -590,7 +615,7 @@ function inflight(ctx, T, link, ink, a, t) {
   // leg of the pipeline read as the emptiest. The funnel is the point of the
   // drawing: forty leave the index, twenty cross fusion and the reranker, five
   // reach the answer, and that has to be visible without reading a label.
-  ctx.globalAlpha = a * (link.lives ? 0.85 : link.stopped ? 0.42 : 0.34);
+  ctx.globalAlpha = a * (link.lives ? 0.85 : link.stopped ? 0.42 : 0.22);
   ctx.strokeStyle = link.lives ? link.colour : link.stopped ? STOPPED : ink.other;
   ctx.lineWidth = link.lives ? 1.2 : 0.75;
   if (!link.lives) ctx.setLineDash([1.5, 3]);
