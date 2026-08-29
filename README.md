@@ -1,28 +1,19 @@
 # retrieval visualized
 
 
-**[See it running →](https://rag-retrieval-visualized.vercel.app)** — a recorded
-demo: all 157 evaluation questions across three corpora, each answered in advance
-by the real pipeline and written to a file. Every retrieval stage is shown, with
-scores. There is no model behind that page, so it cannot answer a new question —
-clone this repository for the version that can.
+A retrieval-augmented generation pipeline in Python, with no framework. Hybrid
+dense and BM25 retrieval, reciprocal rank fusion, cross-encoder reranking, a
+per-document diversity cap, and a calibrated abstention threshold. Every stage
+emits a trace, and the bundled web interface draws it.
 
-A retrieval-augmented generation system you can watch work. Ask a question of a
-set of documents and the interface draws the whole search — what dense retrieval
-and BM25 each found, what fusion and the cross-encoder did to the ranking, what
-the diversity cap cut, and which passages the answer actually stands on, cited
-down to the page, slide or spreadsheet row.
+**[Recorded demo](https://rag-retrieval-visualized.vercel.app)**. All 157
+evaluation questions across three corpora, answered in advance and written to
+files. No model runs behind that page, so it answers only those 157. Clone this
+repository to ask your own.
 
-**The point of this repository is not that it implements RAG. It is that every
-design decision in it was measured — and several conclusions that had already
-been written up as results turned out to be wrong.**
-
-New here? Run it and open **`/about`**, which explains why the project exists,
-walks the pipeline stage by stage, and defines every term the interface uses.
-If you would rather read than run: [what was measured and what it
-overturned](#why-this-exists) is the short version, and
-[`docs/engineering-log.md`](docs/engineering-log.md) is the long one, including
-the experiments that failed.
+Every default here was chosen by measuring the alternatives on a labelled
+question set. `docs/engineering-log.md` records each experiment, including the
+ones that were reverted.
 
 ```
                        any-hit@5    MRR    NDCG   source recall
@@ -32,17 +23,17 @@ the experiments that failed.
   + diversity cap (2/src)  0.851  0.739   0.755           0.761
 ```
 
-36 arXiv ML/NLP papers, 5,459 passages, 84 labelled cases — 67 answerable and
-17 adversarial. Reproduce with `python src/evaluate.py`, which writes
+36 arXiv ML/NLP papers, 5,459 passages, and 84 labelled cases: 67 answerable
+and 17 adversarial. Reproduce with `python src/evaluate.py`, which writes
 [`eval/results.json`](eval/results.json); `python src/build_results_doc.py`
 regenerates the tables in [`eval/RESULTS.md`](eval/RESULTS.md) from it, and
 `--check` fails when they have drifted.
 
 Note the last row: the diversity cap **trades** hit rate for source recall rather
 than adding one for free. An earlier, smaller golden set said it was free. It was
-wrong — see finding 6.
+wrong. See finding 6.
 
-## Three sets of documents, and a threshold that does not transfer
+## Three sets of documents, and one threshold per set
 
 The system ships with three corpora, deliberately unlike each other:
 
@@ -52,13 +43,13 @@ The system ships with three corpora, deliberately unlike each other:
 | Ornithology | 45 | 864 | DOCX, PPTX, XLSX, PDF | −5.5 |
 | Quantitative finance | 35 | 6,184 | PDF | −4.0 |
 
-Every document in each set — filename, title, format, passage count — is listed
-in [`docs/corpus-manifest.md`](docs/corpus-manifest.md), generated from the
+Every document in each set is listed with its filename, title, format and
+passage count in [`docs/corpus-manifest.md`](docs/corpus-manifest.md), generated from the
 indexes themselves. The files are not in this repository;
 [`ATTRIBUTION.md`](ATTRIBUTION.md) says why and how to rebuild each set.
 
-The abstention threshold — the score below which the system declines to answer
-— had been a module constant for most of this project's life, with a comment
+The abstention threshold is the score below which the system declines to
+answer. It was a module constant for most of this project's life, with a comment
 guessing it was "a property of the data, not of the model". Measured across all
 three, that guess is right, and the size of it is the finding:
 
@@ -76,13 +67,13 @@ Each set now carries its own calibrated threshold in
 with no calibration says so rather than silently borrowing another's.
 
 One question makes it concrete. *"Which ratio of body mass to wing area governs
-flight performance?"* scores **−0.99** — refused under the ML threshold,
-answered under the ornithology one, and correct either way for the corpus being
-asked.
+flight performance?"* scores **−0.99**. That is refused under the ML
+threshold and answered under the ornithology one, and it is correct either way
+for the corpus being asked.
 
 ---
 
-## Why this exists
+## What the measurements changed
 
 Most RAG tutorials produce a pipeline and stop. There is no way to tell whether
 any individual piece helps, so techniques accumulate on faith. This project
@@ -96,15 +87,15 @@ That discipline produced findings that would otherwise have shipped silently.
 The embedding model caps input at **256 tokens** and truncates the rest with no
 error. Chunks were sized in *words* (500), so the median chunk ran to 626 tokens
 and **15 of 22 lost roughly 60% of their content** before being embedded. That
-text was stored, returned, and citable — but could never influence whether its own
-chunk was retrieved.
+text was stored, returned and citable. It could never influence whether its
+own chunk was retrieved.
 
 Fixed by chunking on the tokenizer, plus an assertion that refuses to build an
 index if any chunk exceeds the ceiling. → [`src/ingest.py`](src/ingest.py)
 
 ### 2. A conclusion measured on a small corpus was backwards
 
-On one document, hybrid search looked useless — dense, RRF, and weighted fusion
+On one document, hybrid search looked useless. Dense, RRF and weighted fusion
 all tied at a perfect score. But a 20-candidate pool was **31% of that corpus**,
 so recall was trivially perfect for any method.
 
@@ -120,8 +111,8 @@ backwards.**
 For a question five papers answer, the system returned **all five passages from
 one paper**. MRR scored it **1.000**; source recall scored it **0.200**.
 
-Ranking metrics call that perfect — by their definition it is. It is the wrong
-definition when the goal is to compile every relevant source. A per-document cap
+Ranking metrics call that perfect, and by their definition it is. That is the
+wrong definition when the goal is to compile every relevant source. A per-document cap
 lifts source recall from 0.742 to 0.773. → [`src/diversify.py`](src/diversify.py)
 
 ### 4. The evaluation tool had a bug in it
@@ -137,7 +128,7 @@ metric with no known bounds would have shipped wrong and stayed wrong.**
 
 Chunks carry no document identity, so passages from similar papers look alike.
 Prefixing each chunk with its document title should fix that, and it was reported
-as a small improvement — **that report was wrong.** The prefix arrived alongside a
+as a small improvement. **That report was wrong.** The prefix arrived alongside a
 chunk-size change, and the two could not be attributed separately.
 
 Re-measured with one variable *(on the 23-case golden set; superseded by
@@ -151,13 +142,14 @@ finding 6, but the direction held under review)*:
 
 No ranking benefit; source recall five points worse. Every chunk in a document
 received the *same* prefix, making them more similar to each other and clustering
-retrieval harder onto one document — the opposite of the goal. Reverted.
+retrieval harder onto one document, which is the opposite of the goal.
+Reverted.
 → [commit `d4ea4ab`](../../commit/d4ea4ab)
 
 ### 6. Three "settled" conclusions were noise from too small a test set
 
 The golden set began at 23 answerable cases, mostly drawn from one paper. Growing
-it to **67 cases covering all 36 documents** — a strictly harder test — reversed
+it to **67 cases covering all 36 documents**, a strictly harder test, reversed
 three findings that had already been written up as results:
 
 | claim, on 23 cases | on the full set |
@@ -166,7 +158,7 @@ three findings that had already been written up as results:
 | Window expansion is **strictly dominated** by page expansion | Window reaches 0.833 context recall for **half the tokens** (2,371 vs 4,828) |
 | Reranking improves hit rate | It improves **MRR only** (0.601→0.710); any-hit is flat at 0.788 |
 
-The abstention threshold moved too — for the third time. A gap that looked clean
+The abstention threshold moved too, for the third time. A gap that looked clean
 between the two score distributions closed once there were enough cases to see
 it, and the constant went 0.0 → 1.5 → back to 0.0.
 
@@ -174,7 +166,7 @@ it, and the constant went 0.0 → 1.5 → back to 0.0.
 performed, on a sample too small to support the conclusion drawn from it. With 23
 cases each one is worth 4.3 points, so differences that looked decisive were
 inside the noise. That is the failure mode a test set produces when it is trusted
-more than it deserves — and it is far harder to notice than a crash.
+more than it deserves, and it is far harder to notice than a crash.
 
 ---
 
@@ -225,32 +217,32 @@ in the other's metrics, so the harness reports both.
 | [`web_fallback.py`](src/web_fallback.py) | Optional web search when the corpus declines — off |
 | [`pipeline_trace.py`](src/pipeline_trace.py) | Re-runs retrieval keeping every intermediate ranking |
 
-Three interfaces — Python, HTTP, CLI — are all thin shells over one `ask()`
+Three interfaces (Python, HTTP and CLI) are thin shells over one `ask()`
 function, so behaviour cannot drift between them.
 
 ---
 
-## Design decisions worth defending
+## Design decisions
 
 **Citations are locators, not page numbers.** A page number means nothing for a
 spreadsheet. PDFs cite pages, PowerPoint cites slides, Excel cites sheet and row
-range, Word cites *sections* — because `.docx` pagination is computed by the
+range, Word cites *sections*. `.docx` pagination is computed by the
 renderer and shifts with fonts and margins, so any page number would be wrong on
 the reader's copy.
 
 **A per-document cap, not MMR.** MMR diversifies on embedding distance, conflating
-two kinds of redundancy — similar wording and same source — and needs a `lambda`
-tuned per corpus. Here the unit of redundancy is known exactly: the document.
+two kinds of redundancy, similar wording and same source, and needs a
+`lambda` tuned per corpus. Here the unit of redundancy is known exactly: the document.
 
 **RRF over weighted fusion by default.** A cosine similarity and a BM25 score are
 not commensurable, so weighted fusion needs per-query normalisation, which is
-*relative* — a query where every candidate is mediocre still yields a top score of
-1.0. RRF uses only rank, so it is scale-free with nothing to tune.
+*relative*. A query where every candidate is mediocre still yields a top
+score of 1.0. RRF uses only rank, so it is scale-free with nothing to tune.
 
 **Golden set labels are derived, not written.** Each case declares a distinctive
 answer string; every location containing it *becomes* gold. Labels therefore
 cannot drift from the corpus. When the corpus grew from 1 to 20 documents, 12 of
-16 hand-written adversarial cases had silently become answerable — and nothing
+16 hand-written adversarial cases had silently become answerable, and nothing
 errored. → [`src/build_golden_set.py`](src/build_golden_set.py)
 
 **Retrieval-only by default.** Returning source passages verbatim costs nothing
@@ -270,7 +262,7 @@ python src/ingest.py           # build the index
 python src/serve.py            # then open http://127.0.0.1:8000
 ```
 
-The other two sets are built by topic rather than by a list of paper IDs — a
+The other two sets are built by topic rather than by a list of paper IDs. A
 wrong ID downloads a real paper under a confidently wrong filename, so the
 fetcher queries the arXiv and Wikipedia APIs instead:
 
@@ -329,8 +321,8 @@ node  ui/test-answer-mark.mjs     # which words of a passage are set bold
 
 **Writing prose from the passages is optional and off by default.** What the
 interface shows is the retrieved text, verbatim. To have a model write the
-answer instead, point it at a local one — no API key, no account, no data
-leaving the machine:
+answer instead, point it at a local one. No API key, no account, and no data
+leaves the machine:
 
 ```bash
 ollama serve && ollama pull llama3.2
@@ -345,12 +337,12 @@ The server binds to 127.0.0.1 on purpose and makes no external request: the
 documents may be private, and the interface's fonts are bundled rather than
 pulled from a CDN for the same reason.
 
-Set `RAG_DATA_DIR` to point at any folder — including a Google Drive for Desktop
-mount. The UI does the same thing without an environment variable: the **Local
+Set `RAG_DATA_DIR` to point at any folder, including a Google Drive for
+Desktop mount. The UI does the same thing without an environment variable: the **Local
 folder** tab takes a pasted path, reports what it would index and what it would
 skip, and then indexes it. A browser cannot read a filesystem path out of a file
-picker, so pasting it is not a lesser version of a folder picker — it is the
-only version there is.
+picker, so pasting a path is the only version of a folder picker available
+here.
 
 ---
 
@@ -367,14 +359,14 @@ out of a spreadsheet is shown as the table it came from rather than as a
 paragraph with the column headers left in the middle of the sentence.
 
 Underneath it, the retrieval result: the score, read in the units it is actually
-in — a cross-encoder logit running roughly −11 to +11, not a probability —
-along with which documents were drawn on, how much document text was read, and
+in. That is a cross-encoder logit running roughly −11 to +11, not a
+probability. The panel also shows which documents were drawn on, how much document text was read, and
 how long it took.
 
 Below that the search is drawn as a schematic: seven stages, each a block of
 sheets whose depth tracks how many candidates are still in play, so the funnel
 from 5,459 passages down to five is the shape of the picture rather than a
-number written under it. Colour means one thing only — this passage is in your
+number written under it. Colour means one thing: this passage is in your
 answer.
 
 Every answer states what it was run with, and the four retrieval settings can be
@@ -392,7 +384,7 @@ harness.
 
 - **Twelve questions fail under every pipeline configuration**, and they are two
   different problems. Seven, on the ML papers, ask about an attribute many
-  papers share — the topic matches a dozen documents and the clause that picks
+  papers share. The topic matches a dozen documents and the clause that picks
   one out is ignored. The other five *describe* a term and ask for its name
   ("which small group of feathers helps prevent a stall at low speed"), so the
   answer word is absent from the question. The first wants query decomposition;
@@ -407,7 +399,7 @@ harness.
   `src/evaluate_answers.py` scores the generated prose without an LLM judge:
   zero invented citations across nine answers, 2 of 3 adversarial questions
   refused, and no answerable question refused wrongly. Correctness is 3 of 6,
-  which is a floor rather than a rate — it is a substring test and cannot
+  which is a floor rather than a rate, since it is a substring test and cannot
   credit a correct paraphrase. Groundedness is a lexical-overlap proxy at
   0.602, not a verdict. The generator is a 3B local model and is brittle:
   changing one word of the prompt from "Context:" to "Excerpts:" is the
@@ -422,8 +414,8 @@ harness.
   deriving them from the corpus and by auditing them structurally
   (`src/check_golden.py`), not eliminated.
 - **Every corpus needs its own tuning.** Five settings have now been measured as
-  per-corpus rather than global — the abstention threshold, the rerank blend, the
-  candidate pool size, the choice of embedder, and whether fusing a second
+  per-corpus rather than global: the abstention threshold, the rerank blend,
+  the candidate pool size, the choice of embedder, and whether fusing a second
   embedder helps at all. Pointing this at your own documents means re-running the
   harness, not just re-indexing.
 
