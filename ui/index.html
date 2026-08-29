@@ -468,7 +468,13 @@ body.switching .sets{opacity:.45;pointer-events:none}
 
 .card{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);
   overflow:hidden}
-.card > .pad{padding:clamp(22px,3.4vw,34px)}
+/* Not `.card > .pad`. The markup is .card > .slot > .pad, so the child
+   combinator never matched and every answer sat flush against the border of
+   its own card. */
+.card .pad{padding:clamp(22px,3.4vw,34px)}
+/* The retrieval result sits outside .pad, below the drawing, so it carries the
+   same inset itself and lines up with the answer above it. */
+.card .result{margin:0 clamp(22px,3.4vw,34px) clamp(22px,3.4vw,34px)}
 
 .head{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
 .state{display:inline-flex;align-items:center;gap:8px;border-radius:999px;
