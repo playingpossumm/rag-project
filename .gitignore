@@ -46,3 +46,4 @@ store-quant/
 # the arXiv corpora it would be passage text again, which is the thing that is
 # deliberately not published here.
 static-demo/
+.vercel

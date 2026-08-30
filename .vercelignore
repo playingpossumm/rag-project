@@ -1,0 +1,34 @@
+# The deployable artifact is static-demo/, and it is deployed from inside that
+# directory. Running `vercel deploy` from the repository root instead builds
+# the Python app as a second Vercel project, which is how a stray `rag-project`
+# deployment came to exist on 2026-08-30.
+#
+# Vercel falls back to .gitignore only when this file is absent, and that
+# fallback did not hold: 826 of 913 files went up, including gitignored
+# directories. So the secret is excluded here explicitly rather than left to a
+# fallback, and first, because it is the line that matters.
+.env
+.env.*
+*.key
+*.pem
+
+# Everything a root deploy has no business uploading.
+.venv/
+node_modules/
+.git/
+__pycache__/
+*.pyc
+
+# The corpora and the built indexes: third-party documents, and the same text
+# again inside metadata.json.
+data/
+data-birds/
+data-quant/
+vector_store/
+store-birds/
+store-quant/
+runs/
+archive/
+
+# The recorded build deploys itself, from its own directory.
+static-demo/
