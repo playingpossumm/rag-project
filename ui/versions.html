@@ -114,6 +114,11 @@ import * as V2 from "./versions/v2-optionC-first.js";
 import * as V3 from "./versions/v3-optionC-refined.js";
 import * as V4 from "./versions/v4-current.js";
 
+// The basis the site actually ships. "flat" lays every plate down like a
+// floor tile, which projects to a shallow horizontal band and is not what any
+// of these four versions looks like in place.
+const MAP = "upright";
+
 const MODULES = {
   "v1-original": V1, "v2-optionC-first": V2,
   "v3-optionC-refined": V3, "v4-current": V4,
@@ -142,7 +147,7 @@ const panes = [...document.querySelectorAll("canvas[data-v]")].map(cv => {
   let city = null, run = null, broken = null;
   try {
     city = M.buildCity(chunks);
-    run = M.buildRun(trace, city, INK, "flat");
+    run = M.buildRun(trace, city, INK, MAP);
   } catch (e) {
     broken = String(e);
   }
@@ -164,7 +169,7 @@ function draw(pane, t) {
     ctx.fillText(broken.slice(0, 90), 12, 24);
     return;
   }
-  M.drawScene(ctx, city, run, INK, r.width, r.height, t, null, "flat");
+  M.drawScene(ctx, city, run, INK, r.width, r.height, t, null, MAP);
 }
 
 const scrub = document.getElementById("scrub");
