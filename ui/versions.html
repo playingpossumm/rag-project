@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hero diagram — every version</title>
+
+<!-- ============================================================ temporary
+     Every version of the pipeline drawing this project has had, drawn side by
+     side from one trace so the comparison is about the drawing and nothing
+     else. Each version is its own module, extracted from the commit that
+     produced it, so each builds its own city and run with its own code rather
+     than being re-implemented here.
+
+     Delete this page, ui/versions/ and the two data files once a direction is
+     chosen.
+-->
+<style>
+@font-face{font-family:Inter;src:url("fonts/Inter-400_700.woff2") format("woff2");
+  font-weight:400 700;font-display:swap}
+@font-face{font-family:"DM Mono";src:url("fonts/DMMono-500.woff2") format("woff2");
+  font-weight:500;font-display:swap}
+:root{
+  --ground:#0e0e0f; --card:#171819; --nest:#1f2022; --hair:#292b2d; --edge:#35383a;
+  --ink:#f2f2f0; --dim:#a2a5a7; --mute:#7c8082; --faint:#5a5e60; --wire:#43474a;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --good:#3fb950; --bad:#f0685f;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:28px clamp(16px,4vw,32px) 100px}
+h1{font-size:19px;margin:0 0 5px;letter-spacing:-.01em}
+.sub{color:var(--dim);font-size:13.5px;margin:0 0 8px;max-width:74ch}
+.q{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);margin:0 0 24px}
+
+.ctl{display:flex;gap:18px;align-items:center;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--hair);border-radius:11px;
+  padding:11px 15px;margin-bottom:22px;position:sticky;top:12px;z-index:20}
+.ctl label{display:flex;align-items:center;gap:8px;font-size:12.5px;
+  color:var(--dim);cursor:pointer}
+.ctl input[type=range]{accent-color:var(--s1);height:3px;width:200px}
+.ctl button{font:500 11.5px/1 var(--sans);color:var(--dim);background:var(--nest);
+  border:1px solid var(--hair);border-radius:8px;padding:8px 14px;cursor:pointer}
+.ctl button:hover{color:var(--ink);border-color:var(--edge)}
+
+section{background:var(--card);border:1px solid var(--hair);border-radius:14px;
+  padding:16px 16px 12px;margin-bottom:20px}
+.hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:3px}
+.hd h2{font-size:14.5px;margin:0;letter-spacing:-.005em}
+.hd .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--faint)}
+.note{color:var(--mute);font-size:12.5px;margin:0 0 12px;max-width:86ch}
+canvas{display:block;width:100%;height:clamp(300px,32vw,440px)}
+.err{color:var(--bad);font-size:12.5px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Hero diagram — every version</h1>
+<p class="sub">All four versions the drawing has been through, from one trace,
+each rendered by the code from the commit that produced it. The slider and the
+Play button drive every canvas at once, so the same moment of the same run is
+being compared.</p>
+<p class="q" id="q"></p>
+
+<div class="ctl">
+  <button type="button" id="play">Play all</button>
+  <label>position
+    <input type="range" id="scrub" min="0" max="1000" value="1000"></label>
+  <label><input type="checkbox" id="still"> hold at the end</label>
+</div>
+
+<section>
+  <div class="hd"><h2>1 — Original</h2><span class="tag">before option C</span></div>
+  <p class="note">Deep plates, every stage the same matrix of cells, stages
+  assembled in sequence rather than being present from the first frame. This is
+  the version you said you preferred over the first attempt at C.</p>
+  <canvas data-v="v1-original"></canvas>
+</section>
+
+<section>
+  <div class="hd"><h2>2 — Option C, first attempt</h2><span class="tag">shapes on top of the old plates</span></div>
+  <p class="note">The per-stage treatments were added, but the plates stayed
+  four to six sheets deep with a lattice on every sheet, so the box drowned
+  them. This is the one that looked worse rather than better.</p>
+  <canvas data-v="v2-optionC-first"></canvas>
+</section>
+
+<section>
+  <div class="hd"><h2>3 — Option C, thin plates</h2><span class="tag">one sheet per stage</span></div>
+  <p class="note">One outline per stage, no side edges, no repeated lattice.
+  Dense is a scatter, BM25 is bands, the cap is a grate, the answer is balls.
+  Still had two faults: one line per sampled mark out of the index, and refused
+  passages stopping in mid-air.</p>
+  <canvas data-v="v3-optionC-refined"></canvas>
+</section>
+
+<section>
+  <div class="hd"><h2>4 — Current</h2><span class="tag">version 3 plus the two fixes</span></div>
+  <p class="note">A line for every surviving passage out of the index, and the
+  cap's refusals drawn on its own face in red instead of hanging in the air
+  before it.</p>
+  <canvas data-v="v4-current"></canvas>
+</section>
+
+</div>
+
+<script type="module">
+import * as V1 from "./versions/v1-original.js";
+import * as V2 from "./versions/v2-optionC-first.js";
+import * as V3 from "./versions/v3-optionC-refined.js";
+import * as V4 from "./versions/v4-current.js";
+
+const MODULES = {
+  "v1-original": V1, "v2-optionC-first": V2,
+  "v3-optionC-refined": V3, "v4-current": V4,
+};
+
+const [trace, chunks] = await Promise.all([
+  fetch("versions/trace.json").then(r => r.json()),
+  fetch("versions/chunks.json").then(r => r.json()),
+]);
+document.getElementById("q").textContent = trace.query;
+
+/* The same ink for all four, read once from the page, so no version gets an
+   advantage from a palette the others do not have. */
+const cs = getComputedStyle(document.body);
+const v = n => cs.getPropertyValue(n).trim();
+const INK = {
+  ink: v("--ink"), muted: v("--mute"), faint: v("--wire"), line: v("--hair"),
+  lineSoft: v("--hair"), panel: v("--ground"), sunk: v("--card"), rule: v("--hair"),
+  s1: v("--s1"), s2: v("--s2"), s3: v("--s3"),
+  other: v("--wire"), good: v("--good"), critical: v("--bad"),
+};
+
+const panes = [...document.querySelectorAll("canvas[data-v]")].map(cv => {
+  const M = MODULES[cv.dataset.v];
+  const ctx = cv.getContext("2d");
+  let city = null, run = null, broken = null;
+  try {
+    city = M.buildCity(chunks);
+    run = M.buildRun(trace, city, INK, "flat");
+  } catch (e) {
+    broken = String(e);
+  }
+  return { cv, ctx, M, city, run, broken, name: cv.dataset.v };
+});
+
+function draw(pane, t) {
+  const { cv, ctx, M, city, run, broken } = pane;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  if (!r.width) return;
+  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, r.width, r.height);
+  if (broken) {
+    ctx.fillStyle = "#f0685f";
+    ctx.font = "12px 'DM Mono', monospace";
+    ctx.fillText(broken.slice(0, 90), 12, 24);
+    return;
+  }
+  M.drawScene(ctx, city, run, INK, r.width, r.height, t, null, "flat");
+}
+
+const scrub = document.getElementById("scrub");
+const play = document.getElementById("play");
+const still = document.getElementById("still");
+const all = () => { const t = +scrub.value / 1000; panes.forEach(p => draw(p, t)); };
+
+let raf = 0, playing = false;
+const stop = () => { playing = false; cancelAnimationFrame(raf); play.textContent = "Play all"; };
+play.onclick = () => {
+  stop();
+  playing = true; play.textContent = "Playing";
+  const t0 = performance.now();
+  const step = now => {
+    if (!playing) return;
+    const t = Math.min(1, (now - t0) / 7000);
+    scrub.value = Math.round(t * 1000);
+    all();
+    if (t < 1) raf = requestAnimationFrame(step); else stop();
+  };
+  raf = requestAnimationFrame(step);
+};
+scrub.oninput = () => { stop(); all(); };
+still.onchange = () => { if (still.checked) { stop(); scrub.value = 1000; all(); } };
+new ResizeObserver(all).observe(document.body);
+if (document.fonts) document.fonts.ready.then(all);
+all();
+
+for (const p of panes) if (p.broken) console.warn(p.name, p.broken);
+</script>
+</body></html>

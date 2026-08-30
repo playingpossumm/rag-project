@@ -144,6 +144,8 @@ svg g.row:hover .bar{opacity:.72}
   border:1px solid var(--rule);border-radius:8px;padding:7px 10px;font-size:12px;
   color:var(--ink);box-shadow:0 12px 30px rgba(0,0,0,.6);max-width:250px}
 .tip[hidden]{display:none}
+.tip b{display:block;font-weight:600;color:var(--ink);margin-bottom:5px}
+.tip .imp{display:block;color:var(--muted);font-size:11.5px;line-height:1.5}
 .tip .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--faint);display:block}
 
@@ -528,22 +530,22 @@ if (!A || !A.corpora?.length) {
     const c = active;
     const shipped = c.ladder.find(r => r.config === "+ diversity 2/src") || c.ladder.at(-1);
     $("#tiles").innerHTML = [
-      ["Passages searched", nf(c.chunks),
+      ["Corpus", nf(c.chunks),
        `${c.documents} documents · ${Object.keys(c.formats).join(" ").toUpperCase()}`,
-       "The documents are cut into short overlapping passages, and this is how many. Every search on this set looks through all of them."],
-      ["Test questions", c.n_answerable + c.n_adversarial,
-       `${c.n_answerable} answerable · ${c.n_adversarial} unanswerable`,
-       "Questions with known answers, used to score the system. The unanswerable ones are planted: the documents do not contain the answer, and the system is supposed to refuse them."],
-      ["Found in top 5", f3(shipped.hit_rate), "of answerable questions",
-       "How often a correct passage appears in the top five results. It tells you the answer was found. It does not tell you how far down the list it was."],
-      ["Documents found", f3(shipped.src_recall), "of the ones that answer",
-       "Some questions are answered by several documents. This is the share of those that came back. A question answered by four papers can score a perfect hit rate while returning only one of them."],
-      ["Refuses below", (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1),
-       c.calibrated ? "measured on this set" : "borrowed, not measured",
-       "The score under which the system declines to answer. Each set of documents gets its own, because one number refuses almost nothing on one set and a third of the answers on another."],
-      ["Refused wrongly", `${c.at_calibrated.refused} / ${c.n_answerable}`,
-       `${c.at_zero.refused} at the old shared 0.0`,
-       "Questions the documents can answer that were turned down anyway. This is what refusing costs, and it is what the threshold is chosen to keep small."],
+       "One set of documents, cut into short overlapping passages.|The number is the passages. Every search on this set looks through all of them."],
+      ["Golden set", c.n_answerable + c.n_adversarial,
+       `${c.n_answerable} answerable · ${c.n_adversarial} adversarial`,
+       "Questions with known answers, used to score the system.|Adversarial ones are planted. The documents cannot answer them and the system should refuse."],
+      ["Hit rate @5", f3(shipped.hit_rate), "a relevant passage returned",
+       "How often a correct passage lands in the top five.|Says the answer was found. Says nothing about how far down it was."],
+      ["Source recall", f3(shipped.src_recall), "of the documents that answer",
+       "Of the documents that answer a question, the share returned.|Hit rate can be perfect while three of four answering documents are missed."],
+      ["Threshold", (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1),
+       c.calibrated ? "calibrated on this corpus" : "borrowed, not calibrated",
+       "The score under which the system declines to answer.|Set per corpus. One number refuses almost nothing here and a third of the answers elsewhere."],
+      ["Wrongly refused", `${c.at_calibrated.refused} / ${c.n_answerable}`,
+       `${c.at_zero.refused} at the old global 0.0`,
+       "Answerable questions the gate turned down anyway.|The cost of refusing. The threshold is chosen to keep it small."],
     ].map(([k, v, s, why]) =>
       `<div class="tile" data-why="${esc(why)}" tabindex="0">
          <div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
@@ -552,9 +554,12 @@ if (!A || !A.corpora?.length) {
     for (const tile of $("#tiles").querySelectorAll(".tile[data-why]")) {
       const why = tile.dataset.why;
       const head = tile.querySelector(".lab").textContent;
-      hover(tile, `<div class="k">${esc(head)}</div>${esc(why)}`);
+      const [def, implies] = why.split("|");
+      const card = `<div class="k">${esc(head)}</div><b>${esc(def)}</b>${
+        implies ? `<span class="imp">${esc(implies)}</span>` : ""}`;
+      hover(tile, card);
       tile.addEventListener("focus", () => {
-        tip.innerHTML = `<div class="k">${esc(head)}</div>${esc(why)}`;
+        tip.innerHTML = card;
         tip.hidden = false;
         const r = tile.getBoundingClientRect();
         tip.style.left = Math.min(r.left, innerWidth - 270) + "px";
