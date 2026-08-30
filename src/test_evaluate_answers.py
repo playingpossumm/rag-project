@@ -71,6 +71,17 @@ REFUSALS = [
     "That detail is not specified in these documents.",
     "The context does not provide the training seed.",
     "No information about the licence appears in these excerpts.",
+    # real, all four: the ML corpus reported 1 of 5 adversarial questions
+    # refused when all five were. An adverb between the negation and the verb,
+    # a verb the list did not hold, and a phrase between the modal and its
+    # object were enough to lose them.
+    "The noise schedule used by the denoising diffusion model is not "
+    "explicitly stated in the provided excerpts.",
+    "The text does not explicitly state how the reward model is trained for "
+    "RLHF.",
+    "The question about the cost to train the model is not answered in the "
+    "provided excerpts.",
+    "I cannot provide an answer based on the provided excerpts.",
 ]
 
 for text in REFUSALS:
@@ -92,6 +103,81 @@ NOT_REFUSALS = [
 for text in NOT_REFUSALS:
     r = judge(text, case("q", unanswerable=True), PASSAGES)
     check(f"not a refusal: {text[:44]!r}", r["refused"], False)
+
+# An answer that hedges and then answers has answered. Broadening the patterns
+# to catch the four misses above turned five of these into "wrongly refused",
+# which is the same error pointing the other way. All four are real.
+HEDGE_THEN_ANSWER = [
+    # real: moe-routing, and the labelled answer is in the second sentence.
+    "The text does not explicitly state the type of load balancing loss used "
+    "for expert routing. However, it does mention that the "
+    "auxiliary-loss-free load balancing strategy is adopted, and that a "
+    "sequence-level load balancing loss is applied.",
+    # real: bleu-ende
+    "The model that achieved 28.4 BLEU on WMT 2014 English-to-German is not "
+    "explicitly stated in the provided excerpts. However, it is mentioned "
+    "that the Transformer model achieves 28.4 BLEU on that translation task.",
+    # real: qf-markowitz
+    "The text does not explicitly mention the name of the individual whose "
+    "portfolio selection theory underpins modern allocation methods. However, "
+    "it does mention Markowitz (1952) as the one who established the "
+    "mean-variance framework.",
+    # real: attn-uses, a partial answer. It answers the first of three points
+    # and says the excerpts do not carry the third.
+    "According to [attention_is_all_you_need.pdf, page 3], multi-head "
+    "attention is used in an encoder-decoder Transformer in three ways:\n"
+    "1. In encoder-decoder attention layers, the queries come from the "
+    "previous decoder layer, and the memory keys and values come from the "
+    "output of the encoder.\n"
+    "The provided excerpts do not mention the third way.",
+]
+
+for text in HEDGE_THEN_ANSWER:
+    r = judge(text, case("q"), PASSAGES)
+    check(f"hedge then answer is not a refusal: {text[:40]!r}",
+          r["refused"], False)
+
+# But a refusal that goes on to describe what the documents *do* hold is still
+# a refusal: it is saying what it does not have, not answering. All three real.
+DECLINE_THEN_DESCRIBE = [
+    # adv-bird-insulin
+    "This question cannot be answered based on the provided context excerpts. "
+    "The context only discusses the physiology and adaptations of various bird "
+    "species, such as the emperor penguin, but does not provide information on "
+    "human physiology or the regulation of blood glucose by insulin.",
+    # adv-bird-consensus
+    "I don't have any information about proof of stake protocols or consensus "
+    "mechanisms from the provided excerpts. The provided excerpts are about "
+    "the classification of bird orders, the origin of birds, and the "
+    "adaptations of the emperor penguin.",
+    # adv-qf-syrinx
+    "I don't have enough information to answer this question. The provided "
+    "excerpts appear to be related to machine learning and natural language "
+    "processing, but they do not mention birds or the production of song.",
+]
+
+for text in DECLINE_THEN_DESCRIBE:
+    check(f"declining then describing the corpus is a refusal: {text[:36]!r}",
+          judge(text, case("adv", unanswerable=True), PASSAGES)["refused"], True)
+
+# And the confabulations that look almost identical but do answer. Both real,
+# and both are genuine gate failures that must not be excused as refusals.
+CONFABULATED = [
+    # adv-rlhf: answers with adjacent material about a different model
+    "The text does not explicitly state how the reward model is trained for "
+    "RLHF. However, it does mention that the initial RL model is trained and "
+    "evaluated without LLM guidance, and then its outputs are analyzed to "
+    "identify potential improvements.",
+    # adv-qf-broker-fee: invents a commission from an unrelated fee term
+    "The text does not explicitly state the commission charged by the broker. "
+    "However, it does mention that the CPM charges a fee proportional to the "
+    "size of the trade, and that one minus that fee is the net percentage of "
+    "the trade after trading costs.",
+]
+
+for text in CONFABULATED:
+    check(f"answering from adjacent material is not a refusal: {text[:36]!r}",
+          judge(text, case("adv", unanswerable=True), PASSAGES)["refused"], False)
 
 # ------------------------------------------------------------ invented cites
 supplied = judge("The syrinx sits at the base of the trachea. [feather.pdf, page 2]",
@@ -116,6 +202,61 @@ check("two sources in one bracket parse as one citation each",
       ["bird_vocalization.pdf"])
 
 check("no citation at all", cited_sources("Brood parasitism."), [])
+
+# ------------------------------------------------- brackets that are not cites
+# The ML papers are full of notation, and the model copies it out of the
+# passages it was given. Before the shape rule these counted as citations, and
+# because they name no supplied document they counted as *invented* ones: 20
+# fabrications reported across 12 answers, none of them real. All of these are
+# real strings from that run.
+NOTATION = [
+    # real: mha-def, attention notation
+    "head_i = Attention(QW_i^[Q], KW_i^[K], VW_i^[V])",
+    # real: pos-enc-fn, the d_model subscript
+    "PE(pos, 2i) = sin(pos / 10000^(2i/d_[model]))",
+    # real: warmup, the learning-rate schedule verbatim
+    "lrate = d_[model]^(-0.5) * min(step_num^(-0.5), step_num * "
+    "warmup_[steps]^(-1.5))",
+    # real: scale-why, a reference number rather than a document
+    "This follows the argument in [3].",
+    "The gate fires when score > [threshold].",
+]
+
+for text in NOTATION:
+    check(f"notation is not a citation: {text[:40]!r}",
+          cited_sources(text, {"attention", "t5", "bert"}), [])
+    r = judge(text, case("q"), PASSAGES)
+    check(f"notation invents nothing: {text[:40]!r}", r["invented"], [])
+
+# A citation still has to be caught when it wears the format it was asked for.
+check("a fabricated document with an extension is still invented",
+      judge("Birds sing. [ornithology_handbook.pdf, page 44]",
+            case("q"), PASSAGES)["invented"], ["ornithology_handbook.pdf"])
+check("a fabricated document with a locator is still invented",
+      judge("Birds sing. [handbook of birds, page 44]",
+            case("q"), PASSAGES)["invented"], ["handbook of birds"])
+# A bare supplied name, with neither extension nor locator, is still a citation.
+check("a bare supplied name counts as a citation",
+      cited_sources("As shown in [feather].", {"feather.pdf", "bird_anatomy.docx"}),
+      ["feather"])
+
+# real: qf-order-flow. One real citation and a formula, against a long
+# filename. Every single character in that formula is a substring of the
+# filename, so before the length floor this counted as six citations to a paper
+# the answer cites once.
+LONG = "multi_level_market_making_with_reinforcement_learning"
+FORMULA = ("_I t_ = e[-][B][(][t][+/t][)] _I-/t + B_ "
+           f"[{LONG}.pdf, page 11]")
+check("notation beside a long filename is one citation, not six",
+      cited_sources(FORMULA, {LONG}), [f"{LONG}.pdf"])
+
+# The floor must not break a genuinely short filename citing itself.
+check("a short filename still matches itself exactly",
+      cited_sources("As shown in [t5].", {"t5", "bert"}), ["t5"])
+
+# And a short token that is not a supplied name is still not a citation.
+check("a one-character bracket group is never a citation",
+      cited_sources("The value [t] rises.", {LONG}), [])
 
 # --------------------------------------------------------------- correctness
 hit = judge("The interlocking structures are barbules.",

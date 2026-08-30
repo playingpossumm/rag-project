@@ -20,13 +20,14 @@ figures. The ones below are a snapshot; the page is generated.
 | Ornithology | 45 | 864 | 0.846 |
 | Quantitative finance | 35 | 6,184 | 0.886 |
 
-**324 checks**, none of which need a network or an API key:
+**384 checks**, none of which need a network or an API key:
 
 ```bash
 python src/test_metrics.py        # the scoring functions, hand-computed
 python src/test_trace.py          # the trace and the serving path agree
 python src/test_routes.py         # every HTTP route answers (starts its own server)
 python src/test_generate_local.py # generation, over a real socket
+python src/test_evaluate_answers.py  # the answer-quality judge, on answers it has scored wrongly
 node  ui/test-answer-mark.mjs     # which words of a passage are set bold
 ```
 

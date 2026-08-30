@@ -1,21 +1,321 @@
 {
  "generated_by": "src/evaluate_answers.py",
- "note": "No LLM judge. Citations and correctness are objective; groundedness is a lexical proxy and not a verdict.",
+ "note": "No LLM judge. Citations and correctness are objective; groundedness is a lexical proxy and not a verdict. `correct` is containment of the labelled answer string, so a right answer in other words counts against it; the cases it rejected are listed in `unmatched` to be read rather than scored.",
  "corpora": {
+  "llm": {
+   "label": "ML & NLP papers",
+   "model": "llama3.2",
+   "summary": {
+    "n": 15,
+    "invented_citations": 0,
+    "answers_with_invented": 0,
+    "correct": 6,
+    "n_answerable": 10,
+    "unmatched": [
+     "warmup",
+     "pos-enc-fn",
+     "attn-uses",
+     "label-smooth"
+    ],
+    "unmatched_sharing_words": [
+     "warmup",
+     "pos-enc-fn",
+     "attn-uses",
+     "label-smooth"
+    ],
+    "refused_wrongly": 0,
+    "refused_rightly": 4,
+    "n_adversarial": 5,
+    "grounded_mean": 0.678,
+    "seconds": 19.9
+   },
+   "cases": [
+    {
+     "id": "mha-def",
+     "unanswerable": false,
+     "citations": 3,
+     "invented": [],
+     "grounded": 0.567,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 1555,
+     "answer": "According to the provided excerpts, multi-head attention is a technique that allows the model to jointly attend to information from different representation subspaces at different positions.\n\nThe excerpt from [attention_is_all_you_need.pdf, page 5] explains that multi-head attention is defined as:\n\nMultiHead(Q, K, V) = Concat(head1, ..., headh)W_O_\n\nwhere headi = Attention(QWi[Q][, KW][K]i, VWi[V]i_ [)]\n\nThe use of multiple heads instead of one is to avoid averaging, which inhibits the model's ability to jointly attend to information from different representation subspaces.\n\nThe excerpt from [attention_is_all_you_need.pdf, page 5] also explains that with a single attention head, averaging inhibits the model's ability to jointly attend to information from different representation subspaces. By using multiple heads, the model can attend to different subspaces simultaneously, which is beneficial for tasks that require the model to consider multiple aspects of the input data.\n\nThe excerpt from [vision_transformer.pdf, page 13] also mentions multi-head attention, stating that the attention weights Aij are based on the pairwise similarity between two elements of the sequence and their respective query q[i] and key k[j] representations.\n\nIn summary, multi-head attention is used to allow the model to jointly attend to information from different representation subspaces at different positions, and using several heads instead of one helps to avoid averaging and allows the model to consider multiple aspects of the input data simultaneously.",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "scale-why",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.85,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 255,
+     "answer": "According to the text, the dot product is scaled by the square root of the key dimension (dk) to counteract the effect of large dot products for large values of dk, which pushes the softmax function into regions where it has extremely small gradients [3].",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "colbert.pdf",
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf"
+     ]
+    },
+    {
+     "id": "warmup",
+     "unanswerable": false,
+     "citations": 3,
+     "invented": [],
+     "grounded": 0.636,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 450,
+     "answer": "The learning rate schedule that increases linearly for the first steps then decays by inverse square root is described in [attention_is_all_you_need.pdf, page 7] as:\n\n_lrate = d[\u2212]model[0][.][5]_ _[\u00b7][ min(][step][_][num][\u2212][0][.][5][, step][_][num][ \u00b7][ warmup][_][steps][\u2212][1][.][5][)]_\n\nThis corresponds to the Warmup-Stable-Decay (WSD) scheduler, which is also mentioned in [let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf, page 5].",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+      "t5.pdf"
+     ]
+    },
+    {
+     "id": "pos-enc-fn",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.8,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 199,
+     "answer": "The sinusoidal function used to compute positional encodings is:\n\n_PE(pos,2i)_ = sin(pos/10000[2][i/d][model])\n\n_PE(pos,2i+1)_ = cos(pos/10000[2][i/d][model])\n\n[attention_is_all_you_need.pdf, page 6]",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "t5.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "pos-enc-why",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.833,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 304,
+     "answer": "According to [attention_is_all_you_need.pdf, page 6], a model with no recurrence and no convolution needs positional encodings because \"in order for the model to make use of the order of the sequence, we must inject some information about the relative or absolute position of the tokens in the sequence.\"",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "moe-routing",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.722,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 270,
+     "answer": "The text does not explicitly state the type of load balancing loss used for expert routing. However, it does mention that the \"auxiliary-loss-free load balancing strategy\" is adopted, and that \"sequence-level load balancing loss\" operates independently on each sequence.",
+     "sources": [
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf"
+     ]
+    },
+    {
+     "id": "path-length",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.958,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 314,
+     "answer": "According to the text, the maximum path length between positions in a network composed of different layer types is compared. The text states that a self-attention layer connects all positions with a constant number of sequentially executed operations, whereas a recurrent layer requires O(n) sequential operations.",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "t5.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "bleu-ende",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.682,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 316,
+     "answer": "The model that achieved 28.4 BLEU on WMT 2014 English-to-German is not explicitly stated in the provided excerpts. However, it is mentioned that the Transformer model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles, by over 2 BLEU.",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "seq2seq.pdf",
+      "t5.pdf"
+     ]
+    },
+    {
+     "id": "attn-uses",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.655,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 477,
+     "answer": "According to [attention_is_all_you_need.pdf, page 3], multi-head attention is used in an encoder-decoder Transformer in the following three ways:\n\n1. In \"encoder-decoder attention\" layers, the queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder.\n2. (No specific method mentioned in the provided excerpts)\n3. (No specific method mentioned in the provided excerpts)\n\nThe provided excerpts do not mention the third way.",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "t5.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "label-smooth",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 1.0,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 88,
+     "answer": "According to the text, the label smoothing value used during training is \u03f5ls = 0.1 [36].",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "gpt3.pdf",
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "adv-diffusion",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.375,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 107,
+     "answer": "The noise schedule used by the denoising diffusion model is not explicitly stated in the provided excerpts.",
+     "sources": [
+      "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+      "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+      "t5.pdf",
+      "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf"
+     ]
+    },
+    {
+     "id": "adv-rlhf",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.724,
+     "refused": false,
+     "correct": null,
+     "near": null,
+     "chars": 397,
+     "answer": "The text does not explicitly state how the reward model is trained for RLHF. However, it does mention that the initial RL model is trained and evaluated without LLM guidance, and then its outputs are analyzed by GPT-5.2 to identify potential improvements. This suggests that the reward model is refined through a process of iterative refinement, but the specific training process is not described.",
+     "sources": [
+      "g_carl_grounded_checklist_aligned_reward_learning_for_pati.pdf",
+      "multi_agent_orchestration_with_the_common_sense_reasoning.pdf",
+      "phantom_gains_auditing_self_improvement_against_a_measured.pdf"
+     ]
+    },
+    {
+     "id": "adv-mamba",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.545,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 108,
+     "answer": "The text does not provide information on how the state space model handles long sequences without attention.",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "layer_normalization.pdf"
+     ]
+    },
+    {
+     "id": "adv-price",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.571,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 88,
+     "answer": "The question about the cost to train the model is not answered in the provided excerpts.",
+     "sources": [
+      "chain_of_thought.pdf",
+      "gpt3.pdf",
+      "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+      "t5.pdf"
+     ]
+    },
+    {
+     "id": "adv-energy",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.25,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 58,
+     "answer": "I cannot provide an answer based on the provided excerpts.",
+     "sources": [
+      "chain_of_thought.pdf",
+      "gpt3.pdf",
+      "t5.pdf"
+     ]
+    }
+   ]
+  },
   "birds": {
    "label": "Ornithology",
    "model": "llama3.2",
    "summary": {
-    "n": 9,
+    "n": 15,
     "invented_citations": 0,
     "answers_with_invented": 0,
-    "correct": 3,
-    "n_answerable": 6,
-    "refused_wrongly": 0,
-    "refused_rightly": 2,
-    "n_adversarial": 3,
-    "grounded_mean": 0.602,
-    "seconds": 501.6
+    "correct": 6,
+    "n_answerable": 10,
+    "unmatched": [
+     "bird-keel",
+     "bird-barbules",
+     "bird-airsacs",
+     "bird-precocial"
+    ],
+    "unmatched_sharing_words": [
+     "bird-keel",
+     "bird-airsacs"
+    ],
+    "refused_wrongly": 1,
+    "refused_rightly": 5,
+    "n_adversarial": 5,
+    "grounded_mean": 0.525,
+    "seconds": 17.4
    },
    "cases": [
     {
@@ -26,8 +326,14 @@
      "grounded": 0.684,
      "refused": false,
      "correct": true,
+     "near": null,
      "chars": 212,
-     "answer": "The organ that birds use to produce song is called the syrinx, which is a bony structure located at the base of the trachea. [bird_vocalization.pdf, page 2; bird_vocalization.docx, section Anatomy and physiology]"
+     "answer": "The organ that birds use to produce song is called the syrinx, which is a bony structure located at the base of the trachea. [bird_vocalization.pdf, page 2; bird_vocalization.docx, section Anatomy and physiology]",
+     "sources": [
+      "bird_vocalization.docx",
+      "bird_vocalization.pdf",
+      "parrot.xlsx"
+     ]
     },
     {
      "id": "bird-keel",
@@ -37,8 +343,14 @@
      "grounded": 0.818,
      "refused": false,
      "correct": false,
+     "near": true,
      "chars": 104,
-     "answer": "The keel on their breastbone anchors the muscles needed for wing movement. [flightless_bird.pdf, page 2]"
+     "answer": "The keel on their breastbone anchors the muscles needed for wing movement. [flightless_bird.pdf, page 2]",
+     "sources": [
+      "bird.docx",
+      "flightless_bird.pdf",
+      "ruby_throated_hummingbird.docx"
+     ]
     },
     {
      "id": "bird-barbules",
@@ -48,8 +360,14 @@
      "grounded": 0.444,
      "refused": false,
      "correct": false,
+     "near": false,
      "chars": 105,
-     "answer": "The interlocking structures that hold the vane of a feather together are barbicels. [feather.pdf, page 2]"
+     "answer": "The interlocking structures that hold the vane of a feather together are barbicels. [feather.pdf, page 2]",
+     "sources": [
+      "archaeopteryx.docx",
+      "feather.pdf",
+      "feather.xlsx"
+     ]
     },
     {
      "id": "bird-down",
@@ -59,8 +377,14 @@
      "grounded": 0.769,
      "refused": false,
      "correct": true,
+     "near": null,
      "chars": 298,
-     "answer": "According to [feather.pdf, page 2], down feathers provide insulation rather than flight surface. This is stated in the sentence: \"Down feathers are fluffy because they lack barbicels, so the barbules float free of each other, allowing the down to trap air and provide excellent thermal insulation.\""
+     "answer": "According to [feather.pdf, page 2], down feathers provide insulation rather than flight surface. This is stated in the sentence: \"Down feathers are fluffy because they lack barbicels, so the barbules float free of each other, allowing the down to trap air and provide excellent thermal insulation.\"",
+     "sources": [
+      "emperor_penguin.pptx",
+      "feather.pdf",
+      "feather.xlsx"
+     ]
     },
     {
      "id": "bird-airsacs",
@@ -70,8 +394,15 @@
      "grounded": 0.92,
      "refused": false,
      "correct": false,
+     "near": true,
      "chars": 250,
-     "answer": "According to [peregrine_falcon.pdf, page 5], small bony tubercles on a falcon's nostrils are theorized to guide the powerful airflow away from the nostrils, enabling the bird to breathe more easily while diving by reducing the change in air pressure."
+     "answer": "According to [peregrine_falcon.pdf, page 5], small bony tubercles on a falcon's nostrils are theorized to guide the powerful airflow away from the nostrils, enabling the bird to breathe more easily while diving by reducing the change in air pressure.",
+     "sources": [
+      "bird_anatomy.docx",
+      "bird_anatomy.pptx",
+      "bird_flight.xlsx",
+      "peregrine_falcon.pdf"
+     ]
     },
     {
      "id": "bird-brood-parasite",
@@ -81,8 +412,86 @@
      "grounded": 0.545,
      "refused": false,
      "correct": true,
+     "near": null,
      "chars": 122,
-     "answer": "According to the excerpts, the phenomenon of a bird laying its eggs in another species' nest is called \"brood parasitism\"."
+     "answer": "According to the excerpts, the phenomenon of a bird laying its eggs in another species' nest is called \"brood parasitism\".",
+     "sources": [
+      "bird_egg.pptx",
+      "bird_egg.xlsx",
+      "bird_nest.docx",
+      "bird_nest.pptx"
+     ]
+    },
+    {
+     "id": "bird-altricial",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.5,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 122,
+     "answer": "The term \"altricial\" describes chicks that hatch helpless and wholly dependent on their parents. [passerine.pptx, slide 6]",
+     "sources": [
+      "budgerigar.pdf",
+      "eurasian_magpie.docx",
+      "passerine.pptx",
+      "peregrine_falcon.pdf"
+     ]
+    },
+    {
+     "id": "bird-precocial",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.0,
+     "refused": true,
+     "correct": false,
+     "near": false,
+     "chars": 52,
+     "answer": "I couldn't find the answer in the provided excerpts.",
+     "sources": [
+      "budgerigar.pdf",
+      "eurasian_magpie.docx",
+      "peregrine_falcon.pdf"
+     ]
+    },
+    {
+     "id": "bird-furcula",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.6,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 98,
+     "answer": "The fused collarbone of a bird is called the furcula (\"wishbone\"). [origin_of_birds.pptx, slide 4]",
+     "sources": [
+      "beak.docx",
+      "bird_anatomy.docx",
+      "feather.pdf",
+      "origin_of_birds.pptx"
+     ]
+    },
+    {
+     "id": "bird-uropygial",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.643,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 144,
+     "answer": "The uropygial gland, informally referred to as the \"preen\" or \"oil\" gland, supplies the oil a bird spreads while preening. [feather.pdf, page 3]",
+     "sources": [
+      "beak.docx",
+      "emperor_penguin.pptx",
+      "feather.pdf",
+      "owl.pptx"
+     ]
     },
     {
      "id": "adv-bird-transformer",
@@ -92,8 +501,15 @@
      "grounded": 0.333,
      "refused": true,
      "correct": null,
+     "near": null,
      "chars": 104,
-     "answer": "There is no mention of the transformer architecture or its attention mechanism in the provided excerpts."
+     "answer": "There is no mention of the transformer architecture or its attention mechanism in the provided excerpts.",
+     "sources": [
+      "beak.docx",
+      "beak.pdf",
+      "mallard.pdf",
+      "owl.pptx"
+     ]
     },
     {
      "id": "adv-bird-insulin",
@@ -103,8 +519,15 @@
      "grounded": 0.348,
      "refused": true,
      "correct": null,
+     "near": null,
      "chars": 320,
-     "answer": "This question cannot be answered based on the provided context excerpts. The context only discusses the physiology and adaptations of various bird species, such as the emperor penguin, owl, and ruby-throated hummingbird, but does not provide information on human physiology or the regulation of blood glucose by insulin."
+     "answer": "This question cannot be answered based on the provided context excerpts. The context only discusses the physiology and adaptations of various bird species, such as the emperor penguin, owl, and ruby-throated hummingbird, but does not provide information on human physiology or the regulation of blood glucose by insulin.",
+     "sources": [
+      "arctic_tern.xlsx",
+      "emperor_penguin.pptx",
+      "owl.pptx",
+      "ruby_throated_hummingbird.docx"
+     ]
     },
     {
      "id": "adv-bird-consensus",
@@ -112,10 +535,346 @@
      "citations": 0,
      "invented": [],
      "grounded": 0.556,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 243,
+     "answer": "I don't have any information about proof of stake protocols or consensus mechanisms from the provided excerpts. The provided excerpts are about the classification of bird orders, the origin of birds, and the adaptations of the emperor penguin.",
+     "sources": [
+      "bird.docx",
+      "bird_vocalization.docx",
+      "emperor_penguin.pptx",
+      "origin_of_birds.pptx"
+     ]
+    },
+    {
+     "id": "adv-bird-price",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.286,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 83,
+     "answer": "The provided excerpts do not mention the sale price of a trained falcon at auction.",
+     "sources": [
+      "bird_intelligence.docx",
+      "bird_intelligence.pptx",
+      "parrot.xlsx",
+      "peregrine_falcon.pdf"
+     ]
+    },
+    {
+     "id": "adv-bird-author",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.429,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 285,
+     "answer": "Unfortunately, the provided excerpts do not contain the answer to the question. The text only mentions that the article \"The Life of Birds\" was written by David Attenborough and published by BBC, but it does not provide information on who wrote the article or when it was last revised.",
+     "sources": [
+      "bird_egg.xlsx",
+      "bird_migration.pdf",
+      "origin_of_birds.pptx"
+     ]
+    }
+   ]
+  },
+  "quant": {
+   "label": "Quantitative finance",
+   "model": "llama3.2",
+   "summary": {
+    "n": 15,
+    "invented_citations": 0,
+    "answers_with_invented": 0,
+    "correct": 4,
+    "n_answerable": 10,
+    "unmatched": [
+     "qf-garch",
+     "qf-var",
+     "qf-mean-variance",
+     "qf-risk-parity",
+     "qf-order-flow",
+     "qf-market-making"
+    ],
+    "unmatched_sharing_words": [
+     "qf-var",
+     "qf-market-making"
+    ],
+    "refused_wrongly": 1,
+    "refused_rightly": 4,
+    "n_adversarial": 5,
+    "grounded_mean": 0.566,
+    "seconds": 21.5
+   },
+   "cases": [
+    {
+     "id": "qf-garch",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.821,
+     "refused": false,
+     "correct": false,
+     "near": false,
+     "chars": 330,
+     "answer": "The text does not explicitly state which model family captures time-varying conditional variance in returns. However, it mentions that the VAR and BVAR models incorporate prior distribution assumptions to improve stability when working with limited datasets, and that the CIR process is used to represent time-varying variability.",
+     "sources": [
+      "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+      "regime_gated_residual_mixture_of_experts_for_cross_section.pdf"
+     ]
+    },
+    {
+     "id": "qf-var",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.9,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 106,
+     "answer": "The risk measure that reports the loss threshold exceeded with a given probability is Value-at-Risk (VaR).",
+     "sources": [
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+      "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+      "simulating_stress_laws_under_extremal_dependence_character.pdf"
+     ]
+    },
+    {
+     "id": "qf-max-drawdown",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 1.0,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 162,
+     "answer": "The Calmar ratio compares the selected return measure with the worst peak-to-trough decline, i.e., maximum drawdown (MDD), capturing path-dependent downside risk.",
+     "sources": [
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+      "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+      "zlend_a_dual_scope_cash_flow_reconstruction_framework_for.pdf"
+     ]
+    },
+    {
+     "id": "qf-sortino",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.6,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 192,
+     "answer": "The Sortino Ratio, which replaces total volatility with downside deviation computed exclusively over negative returns. [photonic_quantum_computing_vs_classical_solvers_in_constra.pdf, page 11]",
+     "sources": [
+      "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+      "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf"
+     ]
+    },
+    {
+     "id": "qf-mean-variance",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.8,
+     "refused": false,
+     "correct": false,
+     "near": false,
+     "chars": 147,
+     "answer": "The Markowitz framework trades expected return against portfolio variance. [entropic_value_at_risk_portfolio_optimization_for_tempered.pdf, page 1]",
+     "sources": [
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "large_language_model_driven_small_capitalization_trading_i.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf"
+     ]
+    },
+    {
+     "id": "qf-markowitz",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.571,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 294,
+     "answer": "The text does not explicitly mention the name of the individual whose portfolio selection theory underpins modern allocation methods. However, it does mention Markowitz (1952) as the one who established the mean-variance framework, which is a foundational concept in portfolio selection theory.",
+     "sources": [
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "large_language_model_driven_small_capitalization_trading_i.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+      "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf"
+     ]
+    },
+    {
+     "id": "qf-risk-parity",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.0,
+     "refused": true,
+     "correct": false,
+     "near": false,
+     "chars": 61,
+     "answer": "The answer is not explicitly stated in the provided excerpts.",
+     "sources": [
+      "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "large_language_model_driven_small_capitalization_trading_i.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf"
+     ]
+    },
+    {
+     "id": "qf-lob",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.923,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 108,
+     "answer": "The data structure that records outstanding buy and sell orders at each price is the limit order book (LOB).",
+     "sources": [
+      "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+      "multi_level_market_making_with_reinforcement_learning.pdf"
+     ]
+    },
+    {
+     "id": "qf-order-flow",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.55,
+     "refused": false,
+     "correct": false,
+     "near": false,
+     "chars": 324,
+     "answer": "The signal that captures the imbalance of buying against selling pressure is the exponentially weighted volume imbalance signal, defined by equation (17) as:\n\n_I\u00aft_ = e[\u2212][\u03b2][(][t][+\u2206][t][)] _I\u2212\u2206t + \u03b2_\n\n\n_\u2212\u2206t_\n\n\n_e[\u2212][\u03b2][(][t][\u2212][s][)]_ _Is ds,_ _t \u2265\u2212\u2206t,_ [multi_level_market_making_with_reinforcement_learning.pdf, page 11]",
+     "sources": [
+      "multi_level_market_making_with_reinforcement_learning.pdf",
+      "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+      "the_price_of_permission_classification_uncertainty_in_cons.pdf"
+     ]
+    },
+    {
+     "id": "qf-market-making",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "grounded": 0.511,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 795,
+     "answer": "According to [multi_level_market_making_with_reinforcement_learning.pdf, page 20], the activity that involves quoting both sides of the book to earn the spread is not explicitly stated, but it is mentioned that the algorithm observes general market states and the levels, queue positions, and sizes of resting limit orders, which implies that the algorithm is trying to optimize the quoting strategy to earn the spread. However, the exact activity is not specified.\n\nHowever, based on the context, it can be inferred that the activity that involves quoting both sides of the book to earn the spread is likely \"quoting on both sides while keeping its inventory centered at zero\", which is mentioned in the same page as the activity that involves quoting both sides of the book to earn the spread.",
+     "sources": [
+      "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+      "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+      "multi_level_market_making_with_reinforcement_learning.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-syrinx",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.294,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 209,
+     "answer": "I don't have enough information to answer this question. The provided excerpts appear to be related to machine learning and natural language processing, but they do not mention birds or the production of song.",
+     "sources": [
+      "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
+      "communicating_credit_risk_with_large_language_models_evalu.pdf",
+      "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+      "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-photosynth",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.294,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 254,
+     "answer": "I don't have any information about the Calvin cycle or photosynthesis from the provided excerpts. The excerpts appear to be related to machine learning models, optimization, and finance, but do not contain any information about biology or photosynthesis.",
+     "sources": [
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+      "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+      "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+      "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-mortgage-rate",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.333,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 95,
+     "answer": "The provided excerpts do not contain information about the current 30-year fixed mortgage rate.",
+     "sources": [
+      "communicating_credit_risk_with_large_language_models_evalu.pdf",
+      "governing_agentic_ai_in_fintech.pdf",
+      "pricing_temperature_index_insurance_under_long_memory_and.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-broker-fee",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.6,
      "refused": false,
      "correct": null,
-     "chars": 243,
-     "answer": "I don't have any information about proof of stake protocols or consensus mechanisms from the provided excerpts. The provided excerpts are about the classification of bird orders, the origin of birds, and the adaptations of the emperor penguin."
+     "near": null,
+     "chars": 267,
+     "answer": "The text does not explicitly state the commission charged by the broker. However, it does mention that the CPM (Central Limiting Process) charges a fee, \ud835\udf0f, proportional to the size of the trade, and that 1 \u2212 \ud835\udf0f is the net percentage of the trade after the trading fee.",
+     "sources": [
+      "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+      "governing_agentic_ai_in_fintech.pdf",
+      "multi_level_market_making_with_reinforcement_learning.pdf",
+      "the_market_s_conditioning_representation_equilibrium_crowd.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-author-pay",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "grounded": 0.286,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 110,
+     "answer": "There is no information in the provided excerpts about which fund employed the authors or what they were paid.",
+     "sources": [
+      "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "large_language_model_driven_small_capitalization_trading_i.pdf",
+      "the_price_of_permission_classification_uncertainty_in_cons.pdf"
+     ]
     }
    ]
   }

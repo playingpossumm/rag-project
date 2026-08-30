@@ -75,8 +75,50 @@ STOP = {
     "using", "use", "according", "text", "based", "provided", "context",
 }
 
-# How a citation is written, per generate.SYSTEM_PROMPT: [source, page X].
-CITATION = re.compile(r"\[([^\]]+?)(?:,\s*(?:page|slide|sheet|section)\s*[^\]]*)?\]")
+# Everything inside a pair of square brackets. The whole content, not just the
+# name: whether a bracket group is a citation is decided partly by the locator
+# after the comma, so a pattern that consumed the locator could not be asked
+# about it. Per generate.SYSTEM_PROMPT the format is [source, page X].
+CITATION = re.compile(r"\[([^\]]+)\]")
+
+# What a bracket group has to look like before it counts as a citation at all.
+#
+# Without this the measure counted mathematics. On the ML papers it reported 20
+# invented citations across 12 answers and every one was notation the model had
+# copied out of the passages: [Q], [K], [3], and the learning-rate schedule
+# arriving as [min(], [num], [warmup], [steps]. A measure that leads with "a
+# fabricated citation is worse than no answer" cannot fire on a model that
+# fabricated nothing, least of all on the most technical corpus.
+EXTENSIONS = (".pdf", ".docx", ".pptx", ".xlsx", ".md", ".txt", ".htm", ".html")
+# How much of a filename a bracket group has to carry before a substring match
+# counts as naming that document.
+MIN_STEM_MATCH = 4
+LOCATOR = re.compile(r"\b(?:page|slide|sheet|section|para|paragraph)\b", re.I)
+
+
+def citation_shaped(raw: str, supplied_stems: set[str]) -> bool:
+    """Does this bracket group claim to name a document?
+
+    A citation names a file or carries a locator. Notation does neither, and
+    the difference has to be decided on shape, because by the time a citation
+    is wrong there is nothing else left to decide it on.
+    """
+    low = raw.lower()
+    if any(ext in low for ext in EXTENSIONS):
+        return True
+    if LOCATOR.search(low):
+        return True
+    lead = low.split(",")[0].strip()
+    if not lead:
+        return False
+    # Substring either way, because models truncate long filenames, but only
+    # once the token is long enough for the match to mean anything. A single
+    # character is inside almost every filename: "[t]" matched
+    # multi_level_market_making_with_reinforcement_learning and turned one
+    # formula into five citations.
+    return any(lead == st or (len(lead) >= MIN_STEM_MATCH
+                              and (lead in st or st in lead))
+               for st in supplied_stems)
 
 # How a refusal is worded. Matched loosely because the instruction is "say so
 # plainly" rather than a fixed form, and a model that invents its own wording
@@ -92,25 +134,41 @@ CITATION = re.compile(r"\[([^\]]+?)(?:,\s*(?:page|slide|sheet|section)\s*[^\]]*)
 # Split in two, because the second group is only a refusal when it is talking
 # about the source material. "Air sacs are not found in mammals" is a claim
 # about biology and was scored as a refusal by an earlier version of this list.
+# Verbs a refusal turns on: saying, containing, answering.
+_SAY = (r"contain|provide|include|specify|mention|say|discuss|state|answer|"
+        r"address|describe|indicate|list|cover|detail|report|give")
+_SAID = (r"contained|provided|included|specified|mentioned|said|discussed|"
+         r"stated|answered|addressed|described|indicated|listed|covered|"
+         r"detailed|reported|given|available|present|found")
+# "not *explicitly* stated": an adverb between the negation and the verb.
+_ADV = r"(?:\w+ly\s+)?"
+_NT = r"n[o\u2019']?t"
+
+# Refusals that need no support from context.
 REFUSAL_PLAIN = tuple(re.compile(p) for p in (
-    r"do\s?n[o']t\s+have\s+(?:any\s+)?(?:information|details|data|mention)",
-    r"(?:do|did|does)\s?n[o']t\s+have\s+(?:enough|sufficient)\s+information",
+    rf"\b(?:can|could|would)\s?{_NT}\s+(?:\w+\s+){{0,3}}"
+    rf"(?:answer|determine|tell|say)\b",
+    r"\bcannot\s+be\s+answered\b",
+    rf"\bunable\s+to\s+(?:\w+\s+){{0,3}}(?:answer|determine|find|say)\b",
+    rf"\bdo(?:es)?\s?{_NT}\s+have\s+(?:any\s+|enough\s+|sufficient\s+)?"
+    r"(?:information|details|data|mention)\b",
     r"\bno\s+(?:information|mention|reference|indication)\b",
-    r"(?:can|could|cann)o?t\s+(?:be\s+)?(?:answer|determine)",
-    r"\bcan[''`]?t\s+(?:answer|determine)",
-    r"unable\s+to\s+(?:answer|determine|find)",
-    r"not\s+enough\s+information",
-    r"cannot\s+be\s+answered",
+    r"\bnot\s+enough\s+information\b",
+    # "does not provide information on X" is an absence statement wherever
+    # it sits, so it needs no source noun beside it. Without this, a refusal
+    # that went on to describe what the corpus *does* hold read as an
+    # answer, because the noun naming the corpus was 111 characters from the
+    # negation and the scope window is 60.
+    rf"\b(?:do|does|did)\s?{_NT}\s+{_ADV}"
+    r"(?:provide|contain|include|offer|give)\s+(?:any\s+)?"
+    r"(?:information|details|data)\b",
 ))
 
-# The same negations, but they have to be about the documents to count.
+# The same negations, but they have to be about the documents to count. Without
+# the scope, "air sacs are not found in mammals" is a refusal.
 REFUSAL_SCOPED = tuple(re.compile(p) for p in (
-    r"does\s?n[o']t\s+(?:contain|provide|include|specify|mention|say|discuss)",
-    r"do\s?n[o']t\s+(?:contain|provide|include|specify|mention|say|discuss)",
-    r"(?:is|are|was|were)\s+(?:no|not)\s+(?:any\s+)?"
-    r"(?:information|mention|reference|details|indication)",
-    r"\bnot\s+(?:contain|mentioned|provided|available|present|found|specified"
-    r"|discussed|included|addressed|given)",
+    rf"\b(?:is|are|was|were|do|does|did)\s?{_NT}\s+{_ADV}(?:{_SAY})\b",
+    rf"\bnot\s+{_ADV}(?:{_SAID})\b",
     r"\bno\s+(?:details|record)\b",
 ))
 
@@ -123,6 +181,63 @@ SOURCE_NOUN = re.compile(
 # clause, roughly: long enough for "not mentioned anywhere in the provided
 # excerpts", short enough that a later unrelated sentence cannot rescue it.
 SCOPE = 60
+
+
+# A sentence, roughly. Newlines matter as much as full stops here, because
+# these answers arrive as numbered lists as often as as prose.
+SENTENCE = re.compile(r"(?<=[.!?])\s+|\n+")
+
+# How many content words a sentence needs before it counts as a claim rather
+# than a connective. Low, because the alternative error is worse: treating a
+# short real answer as no answer at all.
+CLAIM_WORDS = 5
+
+# A sentence whose subject is the source material talks about the documents
+# rather than about the question. "The provided excerpts are about the
+# classification of bird orders" is what a model says *instead of* answering,
+# and counting it as an answer turned two refusals into confabulations.
+#
+# Deliberately anchored at the start of the sentence: naming a document in the
+# middle of a real claim is ordinary, and only the subject position means the
+# sentence is about the corpus.
+META = re.compile(
+    r"^\W*(?:the|these|those|its|their)?\s*"
+    r"(?:provided|supplied|given|available|relevant)?\s*"
+    r"(?:excerpts?|passages?|contexts?|documents?|texts?|sources?|materials?|"
+    r"corpus|information)\b", re.I)
+
+
+def declines(sentence: str) -> bool:
+    """Does this one sentence decline to answer?"""
+    low = normalize(sentence)
+    if any(p.search(low) for p in REFUSAL_PLAIN):
+        return True
+    for p in REFUSAL_SCOPED:
+        m = p.search(low)
+        if m and SOURCE_NOUN.search(low[max(0, m.start() - SCOPE):m.end() + SCOPE]):
+            return True
+    return False
+
+
+def is_refusal(answer: str) -> bool:
+    """Did the answer decline, taken as a whole?
+
+    A negation somewhere is not a refusal. "It is not stated. However, it does
+    mention X" answers the question, and so does an answer that covers two of
+    three points and says the third is absent. The test is whether any claim
+    survives once the declining sentences are set aside.
+    """
+    parts = [p for p in SENTENCE.split(answer or "") if p.strip()]
+    if not parts:
+        return False
+    declining = [p for p in parts if declines(p)]
+    if not declining:
+        return False
+    answering = [p for p in parts
+                 if p not in declining
+                 and not META.match(p.strip())
+                 and len(words(p)) >= CLAIM_WORDS]
+    return not answering
 
 
 def words(text: str) -> set[str]:
@@ -144,10 +259,17 @@ def stem(word: str) -> str:
     return word
 
 
-def cited_sources(answer: str) -> list[str]:
-    """Whatever the answer put in square brackets, as source-ish strings."""
+def cited_sources(answer: str, supplied_stems: set[str] | None = None) -> list[str]:
+    """The bracket groups that claim to name a document, as source strings.
+
+    `supplied_stems` lets a bare document name count even without an extension
+    or a locator. Omitted, only shape decides.
+    """
+    stems = supplied_stems or set()
     out = []
     for raw in CITATION.findall(answer):
+        if not citation_shaped(raw, stems):
+            continue
         name = raw.split(",")[0].strip()
         if name:
             out.append(name)
@@ -159,14 +281,16 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
     supplied = {p["source"] for p in passages}
     supplied_stems = {Path(s).stem.lower() for s in supplied}
 
-    cites = cited_sources(answer)
+    cites = cited_sources(answer, supplied_stems)
     invented = []
     for c in cites:
         cited = Path(c).stem.lower()
         # A citation counts as supplied if it names a document that was given,
         # allowing for the model dropping or mangling the extension. Substring
         # both ways, because models truncate long filenames.
-        if not any(cited == s or cited in s or s in cited for s in supplied_stems):
+        if not any(cited == s or (len(cited) >= MIN_STEM_MATCH
+                                  and (cited in s or s in cited))
+                   for s in supplied_stems):
             invented.append(c)
 
     answer_words = words(answer)
@@ -176,15 +300,7 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
     grounded = (len(answer_words & passage_words) / len(answer_words)
                 if answer_words else 0.0)
 
-    lowered = normalize(answer)
-    refused = any(p.search(lowered) for p in REFUSAL_PLAIN)
-    if not refused:
-        for p in REFUSAL_SCOPED:
-            m = p.search(lowered)
-            if m and SOURCE_NOUN.search(
-                    lowered[max(0, m.start() - SCOPE):m.end() + SCOPE]):
-                refused = True
-                break
+    refused = is_refusal(answer)
 
     # `correct` is containment of the labelled string and nothing looser. On
     # the first real run it called `bird-keel` wrong for answering "the keel on
@@ -196,7 +312,7 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
     wanted = case.get("answer_contains")
     correct, near = None, None
     if wanted and not case.get("unanswerable"):
-        correct = normalize(wanted) in lowered
+        correct = normalize(wanted) in normalize(answer)
         if not correct:
             want_stems = {stem(w) for w in words(wanted)}
             have_stems = {stem(w) for w in words(answer)}
@@ -217,12 +333,24 @@ def main() -> int:
     ap.add_argument("--adversarial", type=int, default=4,
                     help="unanswerable cases per corpus")
     ap.add_argument("--all", action="store_true", help="every case, no sampling")
+    ap.add_argument("--rescore", action="store_true",
+                    help="re-judge the answers already in --emit instead of "
+                         "generating new ones. Retrieval re-runs (the judge "
+                         "needs the passages); the model is never called.")
     ap.add_argument("--emit", type=Path, default=OUT)
     args = ap.parse_args()
 
     import generate_local
 
-    if not generate_local.available():
+    stored: dict = {}
+    if args.rescore:
+        if not args.emit.exists():
+            print(f"--rescore needs {args.emit}, and it does not exist")
+            return 2
+        stored = json.loads(args.emit.read_text(encoding="utf-8"))["corpora"]
+        print(f"  rescoring {sum(len(c['cases']) for c in stored.values())} "
+              f"stored answers. The model is not called.")
+    elif not generate_local.available():
         print(f"no Ollama at {generate_local.HOST}. Start it with "
               f"`ollama serve` and `ollama pull {generate_local.MODEL}`.")
         return 2
@@ -237,31 +365,56 @@ def main() -> int:
         if not cfg or not cfg["indexed"] or not cfg["golden"]:
             continue
         answerable, adversarial = load_cases(cfg["golden"])
-        if not args.all:
-            answerable = answerable[:args.limit]
-            adversarial = adversarial[:args.adversarial]
-        cases = answerable + adversarial
+        if args.rescore:
+            # Exactly the cases the stored file holds, in its order, so a
+            # rescore compares like with like rather than resampling.
+            if name not in stored:
+                continue
+            want = [r["id"] for r in stored[name]["cases"]]
+            answers = {r["id"]: r["answer"] for r in stored[name]["cases"]}
+            by_id = {c["id"]: c for c in answerable + adversarial}
+            cases = [by_id[i] for i in want if i in by_id]
+            if len(cases) != len(want):
+                print(f"    {len(want) - len(cases)} stored case(s) are no "
+                      f"longer in the golden set and were dropped")
+        else:
+            if not args.all:
+                answerable = answerable[:args.limit]
+                adversarial = adversarial[:args.adversarial]
+            cases = answerable + adversarial
 
         index, metadata = load_index(cfg["store"])
         bm25 = build_bm25(metadata)
         ensemble = load_ensemble(cfg["store"]) if cfg.get("ensemble_model") else None
         rr.RERANK_BLEND = cfg["rerank_blend"]
 
-        print(f"\n  {cfg['label']}  ({len(answerable)} answerable + "
-              f"{len(adversarial)} adversarial, {generate_local.MODEL})")
+        shown = ("rescoring stored answers" if args.rescore
+                 else f"{len(answerable)} answerable + {len(adversarial)} adversarial")
+        print(f"\n  {cfg['label']}  ({shown}, {generate_local.MODEL})")
         rows, started = [], time.perf_counter()
         for case in cases:
             results = retrieve(case["question"], index, metadata, model,
                                k=TOP_K, candidate_k=cfg["candidate_k"],
                                use_reranker=True, bm25=bm25,
                                max_per_source=2, ensemble=ensemble)
-            try:
-                answer = generate_local.synthesize(case["question"], results)
-            except Exception as exc:                            # noqa: BLE001
-                print(f"    {case['id']}: generation failed: {exc}")
-                continue
+            if args.rescore:
+                if not results:
+                    print(f"    {case['id']}: retrieval returns nothing now, "
+                          f"not rescored")
+                    continue
+                answer = answers[case["id"]]
+            else:
+                try:
+                    answer = generate_local.synthesize(case["question"], results)
+                except Exception as exc:                        # noqa: BLE001
+                    print(f"    {case['id']}: generation failed: {exc}")
+                    continue
             row = {"id": case["id"], "unanswerable": bool(case.get("unanswerable")),
-                   **judge(answer, case, results), "answer": answer}
+                   **judge(answer, case, results), "answer": answer,
+                   # The documents this answer was actually given. Kept so a
+                   # change to the judge can be re-scored against answers that
+                   # already exist rather than regenerating them.
+                   "sources": sorted({p["source"] for p in results})}
             rows.append(row)
             flag = ("INVENTED" if row["invented"] else
                     "refused" if row["refused"] else
@@ -303,7 +456,9 @@ def main() -> int:
               f"{summary['n_adversarial']}   and when it should not: "
               f"{summary['refused_wrongly']}/{summary['n_answerable']}")
         print(f"    groundedness (proxy) {summary['grounded_mean']:.3f}")
-        report[name] = {"label": cfg["label"], "model": generate_local.MODEL,
+        model_used = (stored[name].get("model", generate_local.MODEL)
+                      if args.rescore else generate_local.MODEL)
+        report[name] = {"label": cfg["label"], "model": model_used,
                         "summary": summary, "cases": rows}
         # After each corpus, so an interrupted run keeps what it has measured.
         write(args.emit, report)
