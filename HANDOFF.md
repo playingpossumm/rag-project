@@ -866,11 +866,16 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **324 checks plus the route suite**: 22 metrics,
+Test counts, as of 2026-08-30: **384 checks plus the route suite**: 22 metrics,
 28 loaders, 80 trace, 8 OCR, 33 freshness, 10 reranker cache, 17 golden-set
 audit, 13 api, 9 ingest cache, 19 generate, 24 local generation, 25 serve, 16
-analytics, plus 20 answer-highlight checks under
+analytics, 60 answer-quality judge, plus 20 answer-highlight checks under
 `node ui/test-answer-mark.mjs`.
+
+The 60 on the judge are worth their own sentence, because that module is the
+only measurement here whose input is prose, and prose is where a string test
+goes wrong quietly. Most of those checks are answers this repository has
+already scored wrongly, kept verbatim.
 
 Six guards now cover the things that have gone wrong silently before, and all
 six exit non-zero rather than printing a warning nobody reads. The count in

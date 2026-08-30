@@ -397,16 +397,37 @@ harness.
   candidates that are faster are worse, and the one that separates best is
   dramatically slower and ranks worse. What remains is a fine-tune on 157
   labelled cases, which is probably too few.
-- **Answer quality is measured, but on nine cases and one small model.**
-  `src/evaluate_answers.py` scores the generated prose without an LLM judge:
-  zero invented citations across nine answers, 2 of 3 adversarial questions
-  refused, and no answerable question refused wrongly. Correctness is 3 of 6,
-  which is a floor rather than a rate, since it is a substring test and cannot
-  credit a correct paraphrase. Groundedness is a lexical-overlap proxy at
-  0.602, not a verdict. The generator is a 3B local model and is brittle:
-  changing one word of the prompt from "Context:" to "Excerpts:" is the
-  difference between a citation with no prose and a correct answer. Nine cases
-  on one corpus is too few to conclude much. → [`eval/answer-quality.json`](eval/answer-quality.json)
+- **Answer quality is measured, on 45 answers across all three corpora, with a
+  3B local model.** `src/evaluate_answers.py` scores the generated prose
+  without an LLM judge, on the argument that a judge model is a second system
+  whose own failures are invisible.
+
+  | | ML papers | Ornithology | Quant |
+  |---|---|---|---|
+  | invented citations | 0 | 0 | 0 |
+  | refused when it should | 4/5 | 5/5 | 4/5 |
+  | refused when it should not | 0/10 | 1/10 | 1/10 |
+  | contains the labelled answer | 6/10 | 6/10 | 4/10 |
+  | groundedness (proxy) | 0.678 | 0.525 | 0.566 |
+
+  **Zero invented citations across 45 answers** is the result that matters
+  most, since a fabricated citation is worse than no answer. Correctness is a
+  floor rather than a rate: it is a substring test, so a right answer in other
+  words counts against it, and the 14 answers it rejected are listed in
+  `unmatched` to be read rather than scored. Groundedness is lexical overlap,
+  reported because it is cheap and directional, not as a verdict.
+
+  The judge itself was wrong four times before these numbers settled, each one
+  found by reading the answers rather than the code: a plain refusal scored as
+  an answer, mathematics scored as fabricated citations, a hedge-then-answer
+  scored as a refusal, and a model describing the corpus instead of answering
+  scored as answering. `src/test_evaluate_answers.py` holds it to 60 checks,
+  most of them real answers this repository has already scored wrongly.
+
+  The generator is brittle at this size: changing one word of the prompt from
+  "Context:" to "Excerpts:" is the difference between a citation with no prose
+  and a correct answer. Ten answerable cases per corpus is still too few to
+  conclude much. → [`eval/answer-quality.json`](eval/answer-quality.json)
 - **157 cases across three corpora is still small.** On the 26-case bird set each
   answerable question is worth ~3.8 points, so a one-question difference looks
   like a result and is not. Treat small differences as noise: a 23-case set
