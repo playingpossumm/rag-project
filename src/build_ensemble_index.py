@@ -64,8 +64,13 @@ def prefix_for(model_name: str, cfg: dict) -> str:
     What it can no longer do is supply an empty prefix by saying nothing for a
     model that needs one.
     """
+    # `corpora.registry()` normalises a missing key to "", not None, so an
+    # `is not None` test here never falls through and the model default is
+    # never reached. Testing truthiness instead means a corpus cannot ask for
+    # an empty prefix on a model that has a default; nothing wants that today,
+    # and a corpus that does can name a single space.
     named = cfg.get("ensemble_prefix")
-    if named is not None:
+    if named:
         return named
     return MODEL_PREFIX.get(model_name, "")
 
