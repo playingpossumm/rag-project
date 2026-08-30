@@ -1,13 +1,13 @@
 # UI design brief
 
 > **Superseded in part, 2026-08-20.** This records a design interview and is kept
-> because the reasoning is still worth reading — but the UI was rebuilt after the
+> because the reasoning is still worth reading. The UI was rebuilt after the
 > owner found a reference they preferred (`JearDesuss/compute-debt-obligations`).
 > **Where this file and `HANDOFF.md` §5 disagree, §5 is current.** Specifically
 > dead: *serif headings* (now all-sans Inter), *follow the system theme* (now
 > light only), and *ambient placement undecided* (decided, then orphaned in the
 > rewrite, then **deleted on 2026-08-21** along with `ui/ambient.html` and
-> `ui/ambient-fields.js` — the direction is now to dial the UI back, and an
+> `ui/ambient-fields.js`, since the direction is now to dial the UI back and an
 > animated generative masthead is the opposite of that; the code is in git at
 > `f2ab5de` if it is ever wanted). The direction that survived: layered density,
 > mono data, and refusals made prominent and explained.
@@ -37,8 +37,8 @@ a session restart. These are the user's stated preferences, not inferences.
 **The three aesthetic inputs are in tension and that is the actual design problem.**
 Editorial wants air, prose and serif; instrument wants density, monospace and
 restraint; "easy to follow" wants less on screen than "complex" implies. The
-resolution is layering — an editorial surface that opens into instrument-grade
-detail — not splitting the difference on every element.
+resolution is layering: an editorial surface that opens into instrument-grade
+detail, rather than splitting the difference on every element.
 
 **"A mix of all three" for motion cannot be taken literally.** Ambient generative
 motion and "almost none" are opposites. Read as: motion is welcome, but it must
@@ -47,15 +47,15 @@ since that is what they explicitly asked for.
 
 **Feature choice was delegated.** Recommended priority, highest value first:
 
-1. **Compare pipeline settings live** — toggle reranking, fusion and the diversity
+1. **Compare pipeline settings live.** Toggle reranking, fusion and the diversity
    cap and watch the ranking move. This is the single strongest differentiator:
    it is the thing a closed product structurally cannot offer, and it turns the
    inspector into an experiment bench.
-2. **Read the full passage** — click a result for the whole chunk and its
+2. **Read the full passage.** Click a result for the whole chunk and its
    neighbours. Cheap to build, immediately useful.
-3. **Evaluation view** — the 84-case golden set and how each configuration scores.
+3. **Evaluation view.** The 84-case golden set and how each configuration scores.
    Makes the measurements visible rather than claimed.
-4. **Save/share a trace** — lowest priority; useful only once someone else is looking.
+4. **Save/share a trace.** Lowest priority; useful only once someone else is looking.
 
 ## Constraint discovered during the interview
 
@@ -69,7 +69,7 @@ decision; the constraint stands whenever it is picked up.
 Screenshotting the UI with Playwright caught four things that reading the markup
 did not. Recorded because the lesson generalises: **render it and look at it.**
 
-- Adjacent right-aligned table columns collided (`#60.5416`) — `padding-right:0`
+- Adjacent right-aligned table columns collided (`#60.5416`), because `padding-right:0`
   removed the gap between columns, not just at the table edge.
 - Endpoint labels truncated mid-token (`attention_is_all_you_n`).
 - The bump chart drew a fixed 12 rank rows; real queries only ever filled ~6, so

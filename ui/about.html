@@ -176,8 +176,8 @@ a{color:inherit}
       <div class="prose">
         <p>NotebookLM, Glean and the enterprise search tools sold to companies
            will answer better than this. They have larger models and far more
-           compute. They also answer from a closed middle. You put a question in and an answer comes out. What happened in
-           between is not shown.
+           compute. They also answer from a closed middle: a question goes in,
+           an answer comes out, and what happened in between is not shown.
            Here are five questions about that middle, and what each version can
            say.</p>
       </div>
@@ -188,7 +188,7 @@ a{color:inherit}
         <div class="here-col"><span class="lab tag">Here</span>Every stage is shown, with the score it assigned. Ask a question and the diagram draws what each retriever found, what the cross-encoder moved and what the cap dropped.</div>
 
         <div class="q">Did my change help?</div>
-        <div class="closed"><span class="lab tag">Closed product</span>No numbers exist. You have an impression.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>No numbers exist. Only an impression.</div>
         <div class="here-col"><span class="lab tag">Here</span>Labelled questions across three corpora, scored under every pipeline configuration. A change is accepted or rejected on the measurement, and several were rejected.</div>
 
         <div class="q">What if it does not know?</div>
@@ -200,7 +200,7 @@ a{color:inherit}
         <div class="here-col"><span class="lab tag">Here</span>Passages from other documents are shown alongside. The top result is sometimes the wrong one.</div>
 
         <div class="q">Can I put it in my own tool?</div>
-        <div class="closed"><span class="lab tag">Closed product</span>No. It is a place you visit.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>No. It is a destination, not a component.</div>
         <div class="here-col"><span class="lab tag">Here</span>A Python library with an HTTP wrapper around it. The interface is one caller, not the product.</div>
       </div>
 
@@ -229,9 +229,9 @@ a{color:inherit}
       <div class="prose" style="margin-bottom:20px">
         <p id="corpora"><b>This site is a learning project.</b> It was built to
            understand retrieval by making every part of it visible, rather than
-           to serve documents at scale. What you can search here is three
-           prepared sets: 36 machine-learning papers, 45 ornithology articles,
-           and 35 quantitative-finance papers. They are fixed. Each one had to be indexed, given a set of labelled
+           to serve documents at scale. Three prepared sets are searchable
+           here: 36 machine-learning papers, 45 ornithology articles, and 35
+           quantitative-finance papers. They are fixed. Each one had to be indexed, given a set of labelled
            questions, and calibrated before any number on this site could be
            measured.</p>
         <p>To point it at your own documents, or to have it run the search live
@@ -253,7 +253,7 @@ a{color:inherit}
            listed with its title and format, and <a
            href="https://github.com/ArdellAlfatih/rag-project" target="_blank"
            rel="noopener">the whole system is open source</a>. Every stage
-           drawn on these pages is a function you can read.</p>
+           drawn on these pages is a function in that repository.</p>
       </div>
 
       <ol class="steps">
@@ -455,8 +455,9 @@ a{color:inherit}
           in the five returned. Asks "did it find it at all".</dd>
 
         <dt>MRR</dt>
-        <dd>Mean reciprocal rank. Rewards putting the right passage <em>first</em>
-          It scores 1.0 if it is first, 0.5 if second, and so on.
+        <dd>Mean reciprocal rank. Rewards putting the right passage <em>first</em>:
+          it scores 1.0 if the first passage is correct, 0.5 if the second is,
+          and so on.
           <span class="aka">mean reciprocal rank</span></dd>
 
         <dt>NDCG</dt>

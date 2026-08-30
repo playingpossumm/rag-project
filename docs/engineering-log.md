@@ -4,9 +4,9 @@ Every attempt, including the ones that were wrong. Started 2026-08-26.
 
 `HANDOFF.md` records where the project **is**; this records how it got there,
 and specifically what was tried and refuted. The project's own §4 argues that a
-measurement overturning a plan is worth more than a feature that ships — this is
-where those measurements live in full, rather than compressed to one row of a
-table.
+measurement overturning a plan is worth more than a feature that ships. This
+is where those measurements live in full, rather than compressed to one row of
+a table.
 
 Rules for entries: state the hypothesis before the result, give the number, and
 say what was done about it. An entry whose outcome is "no change" is worth as
@@ -19,8 +19,8 @@ much as one that ships something, and is more likely to be forgotten.
 **Why.** Generated files had gone stale silently three times. The worst was
 `per_case.json` sitting four days out of date, which meant the front page was
 offering questions that had already been deleted from the golden set as
-unanswerable — the system inviting people to ask it things it had itself
-concluded it could not answer. Only `RESULTS.md` had a `--check`.
+unanswerable, so the system was inviting people to ask it things it had
+itself concluded it could not answer. Only `RESULTS.md` had a `--check`.
 
 **Built.** `src/check_freshness.py`, covering
 `golden set → per_case → analytics → the front page`, two ways:
@@ -36,7 +36,7 @@ known failure on a synthetic corpus and asserts it is reported (30 checks).
 
 **What it found on its first run against the real repo.** The trap the project
 names first, in the two scripts that produce every published number.
-`per_case.py` imported `ABSTAIN_THRESHOLD` — the ML papers' `0.0` — and scored
+`per_case.py` imported `ABSTAIN_THRESHOLD`, the ML papers' `0.0`, and scored
 every corpus against it, and never set a rerank blend at all. `evaluate.py` did
 the same with the threshold.
 
@@ -49,13 +49,13 @@ the same with the threshold.
 
 Both scripts now resolve threshold, blend *and index* from `corpora.json` via the
 golden set. Re-running left every retrieval figure in `results*.json` identical
-to three decimals — the evidence that the change measured nothing new, only
-corrected which pipeline was being described.
+to three decimals. That is the evidence that the change measured nothing new
+and only corrected which pipeline was being described.
 
 **Smaller things found on the way.**
 
-- `answerable_median` in `evaluate.py` was `sorted(scores)[len(scores) // 2]` —
-  the upper middle value, not the median. On the 26 even-sized bird cases it
+- `answerable_median` in `evaluate.py` was `sorted(scores)[len(scores) // 2]`,
+  the upper middle value rather than the median. On the 26 even-sized bird cases it
   reported +1.21 where `analytics.json`, using `statistics.median`, said +1.15.
   One quantity, two documents, two values.
 - `build_analytics.py` mapped corpora to eval files with a hardcoded table. A
@@ -68,8 +68,8 @@ corrected which pipeline was being described.
 ## 2026-08-26 — The bird gate was calibrated against a pipeline nobody runs
 
 **Hypothesis.** With the confidences re-measured on the served pipeline, the
-bird threshold `-3.0` might no longer be right — it was derived at rerank blend
-0.00 on a corpus that ships 0.20.
+bird threshold `-3.0` might no longer be right, having been derived at rerank
+blend 0.00 on a corpus that ships 0.20.
 
 **Measured.** It was dominated. Every threshold in `(-6.48, -4.55]` catches the
 same five of six adversarial cases and wrongly refuses **three** of twenty-six
@@ -81,18 +81,19 @@ rather than four.
 | **−5.5 *(now)*** | **3** | 5 |
 | −7.0 | 3 | 4 |
 
-**Shipped −5.5**, the middle of the interval — 0.95 of margin before it refuses
-an answerable question, 0.98 before it stops catching an adversarial one. An
-edge would fit the threshold to a single case. Retrieval untouched: any-hit
-0.846, MRR 0.614.
+**Shipped −5.5**, the middle of the interval, which leaves 0.95 of margin
+before it refuses an answerable question and 0.98 before it stops catching an
+adversarial one. An edge would fit the threshold to a single case. Retrieval
+untouched: any-hit 0.846, MRR 0.614.
 
 **Checked on all three corpora before shipping**, because the trap is tuning to
 the one that prompted the question. ML's `0.0` and quant's `-4.0` are already on
-the frontier — every lowering costs catches. Only birds was dominated.
+the frontier, where every lowering costs catches. Only birds was dominated.
 
 **Tooling flaw this exposed.** `calibrate_threshold.py` had its grid hardcoded to
 `[-4 .. +4]`, which is where the ML papers' scores live and nowhere near the bird
-corpus's — every question deciding that corpus's threshold sits below −4. The
+corpus's, since every question deciding that corpus's threshold sits below
+−4. The
 tool used to calibrate a corpus could not display the region being calibrated.
 The grid is derived from the observed scores now, and it reports the *interval* a
 threshold sits in rather than a grid point, because nothing changes until a cut
@@ -107,14 +108,14 @@ on `(query, chunk text)`. The comment directly above it had always read "scores
 are a pure function of (query, chunk text, model)".
 
 Nothing had ever swapped cross-encoders inside one process, so nothing caught
-it. The first thing that would have is a reranker comparison — and it would have
-reported every candidate model as scoring **exactly** like whichever loaded
-first. That is not an error anyone questions; it looks like a null result.
+it. The first thing that would have is a reranker comparison, and it would
+have reported every candidate model as scoring **exactly** like whichever
+loaded first. That is not an error anyone questions; it looks like a null result.
 
 Fixed by keying on the model name and taking the name as the argument rather
 than an already-constructed model object, whose identity a cache cannot read.
-`src/test_rerank.py` proves it with two stub encoders differing only by name —
-7 checks, and verified to fail 2 when the old two-part key is put back, with the
+`src/test_rerank.py` proves it with two stub encoders differing only by name:
+7 checks, verified to fail 2 when the old two-part key is put back, with the
 telling failure `got 1.0, want -1.0`: the second model served the first's score
 and was never even asked.
 
@@ -123,8 +124,8 @@ and was never even asked.
 ## 2026-08-27 — A better cross-encoder: what the measurement actually said
 
 **Hypothesis.** `ms-marco-MiniLM-L-6-v2` is weak on questions that *describe* a
-term rather than naming it — "the burst of collective singing at first light" —
-and the bird corpus has the headroom to show it: the candidate pool holds the
+term rather than naming it, as in "the burst of collective singing at first
+light", and the bird corpus has the headroom to show it: the candidate pool holds the
 answer 96.2% of the time and the pipeline returns it 84.6%.
 
 **First, the harness had to be rebuilt.** `compare_rerankers.py` was ML-only: it
@@ -135,15 +136,16 @@ document). It could not run on the corpus with the headroom.
 Rewritten to measure **two failures, not one**, because reranking fails in two
 ways and only one of them shows up in any-hit:
 
-- **ordering** — any-hit, MRR, NDCG, source recall
-- **scoring** — the gate reads the cross-encoder's score of the top passage, and
+- **ordering:** any-hit, MRR, NDCG, source recall
+- **scoring:** the gate reads the cross-encoder's score of the top passage, and
   on the bird corpus three of the seven failures are questions whose answer the
   pipeline *found* and then refused to show
 
 Scores from two models are on different scales, so holding a threshold fixed
 across models measures the scale, not the separation. The gate half is therefore
-reported threshold-free as **AUC** — P(a random answerable outscores a random
-adversarial) — plus `unreachable`, the count of answerable questions scoring
+reported threshold-free as **AUC**, the probability that a random answerable
+question outscores a random adversarial one. It is reported alongside
+`unreachable`, the count of answerable questions scoring
 below the third-highest adversarial, which no threshold can save.
 
 **Result on the bird corpus (26 answerable + 6 adversarial):**
@@ -156,21 +158,21 @@ below the third-highest adversarial, which no threshold can save.
 
 **The bigger models rank worse and separate better.** That was not the expected
 shape at all, and it is the finding: the two halves of the reranker's job move in
-opposite directions as the model grows. A straight swap is not available —
-BGE would trade two ranking failures for a perfect gate.
+opposite directions as the model grows. A straight swap is not available: BGE
+would trade two ranking failures for a perfect gate.
 
 **A latency number that was wrong, and how it was caught.** The first run
-reported BGE at 1,576,300 ms/query — 1700× the shipped model, against the
+reported BGE at 1,576,300 ms/query, or 1700× the shipped model, against the
 project's own earlier measurement of 10 s/query on the ML papers. A 150×
-disagreement with a prior measurement is a reason to distrust the new one. Timed
-again with nothing else running: **244 ms/pair against 25 ms/pair, 9.8×**. The
-first figure measured a contended machine — several evaluation runs, a server
-and a browser were competing — not a model. Quality metrics were unaffected,
-being deterministic.
+disagreement with a prior measurement is a reason to distrust the new one.
+Timed again with nothing else running: **244 ms/pair against 25 ms/pair,
+9.8×**. The first figure measured a contended machine rather than a model:
+several evaluation runs, a server and a browser were competing for it. Quality
+metrics were unaffected, being deterministic.
 
 **Hypothesis that followed, and was refuted.** Ranking needs a score for twenty
 candidates; the gate needs one. So let the expensive model do only the half it
-wins at — rank with L6, gate with BGE, at a twentieth of BGE's cost.
+wins at, ranking with L6 and gating with BGE, at a twentieth of BGE's cost.
 
 | configuration | any-hit | AUC | unreachable |
 |---|---|---|---|
@@ -209,17 +211,17 @@ would have been:
    There is no ordering of these models by "better".
 2. **A model's separation while it ranks is not its separation while it gates.**
    BGE scored AUC 0.968 choosing and scoring its own top passage, and 0.827
-   scoring MiniLM's. Part of that 0.968 was self-consistency — a model is
-   confident about its own pick. Anyone comparing rerankers on AUC alone would
+   scoring MiniLM's. Part of that 0.968 was self-consistency, because a model
+   is confident about its own pick. Anyone comparing rerankers on AUC alone would
    have read 0.968 as a reason to swap.
 3. **The "it does not transfer" law now covers the model too**, alongside the
    abstention threshold and the rerank blend. That is three independent
    settings, measured separately, all corpus-specific. It is the strongest form
-   of the project's own thesis and it was not assumed — each one was found by
+   of the project's own thesis and it was not assumed. Each one was found by
    shipping the opposite first.
 
 **So the next move on this stage is not a bigger cross-encoder.** The failure is
-specific — questions that describe a term rather than naming it — and a
+specific, being questions that describe a term rather than naming it, and a
 cross-encoder of any size reads the same words. The fix that addresses the
 mechanism is query decomposition, which needs an LLM, which needs credit. That
 is now measured rather than asserted.
@@ -233,7 +235,8 @@ looked promising. `HANDOFF.md` had said since the second corpus was built that
 fusion is probably per-corpus, on the strength of one number: the bird candidate
 pool holds the answer 96.2% of the time under dense retrieval and 88.5% under
 RRF, so fusing costs that corpus two questions before reranking starts. It was
-never acted on because 26 cases is too few to move a *global* default — sound
+never acted on because 26 cases is too few to move a *global* default. That was
+sound
 about a global default, silent about a per-corpus one, which is what the
 threshold and the blend already are.
 
@@ -242,7 +245,7 @@ threshold and the blend already are.
 only to RRF, so the table every document quotes has no row for "weighted,
 capped" at all. `src/sweep_fusion.py` runs every fusion on every corpus at
 k=5 from 20 candidates, with that corpus's own rerank blend and the 2-per-source
-cap — the pipeline `api.ask()` actually runs.
+cap, which is the pipeline `api.ask()` actually runs.
 
 **The result reverses the premise.**
 
@@ -254,7 +257,8 @@ cap — the pipeline `api.ask()` actually runs.
 
 Dense retrieval finds the answer most often and produces the *worst* final
 result. A candidate pool is not a set, it is an **ordering handed to the
-cross-encoder**, and dense hands over one the reranker cannot exploit — the same
+cross-encoder**, and dense hands over one the reranker cannot exploit. That is
+the same
 weakness the rerank blend exists to hedge. Reading pool recall as a proxy for
 pipeline quality is the error, and this project's own handoff had been making it
 for a week.
@@ -264,10 +268,10 @@ for a week.
 - birds, `weighted a=0.5`: wins one question (`bird-dialects`) and loses MRR
   0.614 → 0.587 and NDCG 0.671 → 0.662. Identical in shape to the trade the
   rerank blend was judged on, and this corpus's own note already settles how to
-  read it — on 26 cases, an any-hit gain of one question is thinner evidence
+  read it: on 26 cases, an any-hit gain of one question is thinner evidence
   than MRR. **Rejected by the project's own stated principle**, which is the
   best kind of rejection: the rule existed before the result.
-- quant, `weighted a=0.7`: weakly dominant — MRR 0.714 → 0.727, NDCG +0.006,
+- quant, `weighted a=0.7`: weakly dominant, at MRR 0.714 → 0.727, NDCG +0.006,
   source recall +0.006, any-hit unchanged. But the missed set is *identical*, so
   no question changes hands; it buys a fraction of a rank position. Shipping it
   would also require recalibrating that corpus's threshold, because changing
@@ -286,7 +290,7 @@ pool row.
 **Why.** The interface sets the answering words bold inside a passage shown at
 normal weight. That logic lived inline in a two-thousand-line HTML file, so
 nothing could run it without a browser, and nothing ever had. Every claim about
-it — "only the answering words", "at most a sentence" — described code no test
+it, "only the answering words" and "at most a sentence", described code no test
 had executed.
 
 **Moved** to `ui/answer-mark.js` (with `clean` and `fragment`, the page's own
@@ -302,11 +306,12 @@ text tidying, so a test sees exactly the string the page marks), served at
 **Two real defects, both found by measuring rather than reading.**
 
 *An unbounded path.* When the chosen sentence contained no question word,
-`answerSpan` marked the **entire sentence** — the one case with the least
+`answerSpan` marked the **entire sentence**, which is the one case with the least
 justification for marking anything. Now it marks nothing.
 
 *A word bound is not a length bound.* Swept over the real top passage for every
-question in all three golden sets — 450 passages, 157 questions — one mark
+question in all three golden sets, which is 450 passages over 157 questions:
+one mark
 covered **82.7%** of its passage while satisfying "at most twelve words". The
 passage was a bibliography entry and the mark was a markdown link: four words,
 359 characters. Added `MAX_MARK_CHARS` (180) and applied it to the
@@ -324,7 +329,8 @@ The median did not move, which is the point: the fix touched the tail and left
 the ordinary case alone.
 
 **One more, found while writing the test.** `splitSentences` treated
-"Vaswani et al. (2017) introduced…" as two sentences — terminator, whitespace,
+"Vaswani et al. (2017) introduced…" as two sentences, since terminator,
+whitespace,
 capital. A false boundary is the mirror image of a missed one and much harder to
 notice: it does not run the mark into the next sentence, it cuts the answer in
 half. It went unseen on a corpus of academic papers, which is exactly where
@@ -341,10 +347,11 @@ when the parser changed, or whose `answer_contains` string is nowhere near the
 passage the label names. It produces a number either way, and that number is
 what the documents quote.
 
-`src/audit_golden_set.py` already asked the *semantic* question — has the corpus
-grown into an adversarial case's subject, has an answerable question become
-ambiguous — but it is ML-only, with a hand-written table of which words would
-make each adversarial case answerable. `src/check_golden.py` asks the
+`src/audit_golden_set.py` already asked the *semantic* question, which is
+whether the corpus has grown into an adversarial case's subject or an
+answerable question has become ambiguous. It is ML-only, with a hand-written
+table of which words would make each adversarial case answerable.
+`src/check_golden.py` asks the
 *structural* one and needs no per-case knowledge, so it runs on every corpus
 including ones that do not exist yet.
 
@@ -355,17 +362,18 @@ same document. As written, `(bird_anatomy.docx, section, "1")` matched no chunk
 in the corpus and contributed nothing, while looking exactly like a label.
 
 **And it did not change the score, which is worth saying plainly.** The pipeline
-returns none of the three places carrying "hollow bones" — it returns slide 4,
-`section Axial skeleton`, `section Overview`, slide 2 — so the case misses
-either way. A broken label that happens to sit on a genuine miss. Fixing it left
+returns none of the three places carrying "hollow bones". It returns slide 4,
+`section Axial skeleton`, `section Overview` and slide 2, so the case misses
+either way. The broken label sits on a genuine miss. Fixing it left
 any-hit at 0.846 and MRR at 0.614, and the temptation to present the fix as a
 recovered question is exactly the kind of thing this log exists to prevent.
 
 `src/test_golden.py` stages each failure class on a synthetic two-document
-corpus and asserts the audit reports it — 15 checks, hermetic, milliseconds.
+corpus and asserts the audit reports it: 15 checks, hermetic, running in
+milliseconds.
 
 **A gap in my own work, found by using it.** Fixing that one locator changed no
-case count, no corpus size and no metric — and `check_freshness` still reported
+case count, no corpus size and no metric, and `check_freshness` still reported
 `results-birds.json` as current. `per_case.json` had recorded a digest of its
 golden set since the day the check was written; `results.json` never had. The
 digest half exists precisely for the edit that moves no count, and it was
@@ -379,19 +387,19 @@ more cases in `test_freshness.py` (30 → 32).
 **The failure this closes** is this repo's most-repeated one. The README once
 claimed "84 evaluation cases" directly above figures measured on 23.
 `eval/RESULTS.md` said 20 papers and 2,768 chunks long after the corpus reached
-36 and 5,459 — under a header promising that if the two disagreed, the document
+36 and 5,459, under a header promising that if the two disagreed the document
 was stale. It was true, and nobody noticed, because nothing checked it.
 
 `build_results_doc.py --check` closed that for RESULTS.md by *generating* its
 tables. `check_freshness.py` closed the generated chain feeding the interface.
-Neither covered **HANDOFF.md §2 and the README** — the two documents a new
-session and a visitor read first.
+Neither covered **HANDOFF.md §2 and the README**, which are the two documents
+a new session and a visitor read first.
 
 Generating them would be the wrong fix: the argument around each number is
 judgement and cannot come from a JSON file. So `src/check_docs.py` leaves them
-hand-written and checks them — 14 quantities, each naming where its truth lives,
-and a table it cannot find is a *failure* rather than a skip, because a checker
-that quietly matches nothing reports success.
+hand-written and checks them: 14 quantities, each naming where its truth
+lives. A table it cannot find is a *failure* rather than a skip, because a
+checker that quietly matches nothing reports success.
 
 **Verified to have teeth** by perturbing two numbers and confirming both were
 caught, one of them the exact `900 passages` error that was really in the README
@@ -400,7 +408,7 @@ earlier the same day.
 One subtlety that would have made it useless: compare at the precision the
 document *writes*, not the precision the measurement carries. `+4.93` against
 `4.934403419494629` is a document rounding correctly, and reporting that as
-drift trains a reader to ignore the checker — which is how a check stops being
+drift trains a reader to ignore the checker, which is how a check stops being
 read.
 
 ---
@@ -409,7 +417,8 @@ read.
 
 **The rule this project already learned.** "Re-indexing is slow because the
 index is rebuilt" was a well-formed plan until rebuilding the FAISS index
-measured at 0.01 s — 0% of runtime — and the task had to be redefined. So
+measured at 0.01 s, which is 0% of runtime, and the task had to be redefined.
+So
 `src/profile_query.py` times each stage separately before anything is touched,
 warm, on real questions from each corpus's own golden set.
 
@@ -426,12 +435,12 @@ warm, on real questions from each corpus's own golden set.
 
 **Reranking is 92–95% of a query.** Everything else together is about 80 ms.
 There is exactly one stage worth optimising, and the interface's single
-"search, scoring and reranking — 1164 ms" had been hiding which one.
+"search, scoring and reranking, 1164 ms" had been hiding which one.
 
 **Two ways to make it cheaper, both measured.**
 
-*Faster execution, same work.* Threads are already at the machine's best — torch
-defaults to 10 of 12 cores, and 4, 2 and 1 are all slower. Padding waste inside
+*Faster execution, same work.* Threads are already at the machine's best:
+torch defaults to 10 of 12 cores, and 4, 2 and 1 are all slower. Padding waste inside
 the batch is 3% on ML and 17% on birds, so length bucketing could buy at most a
 sixth of one stage on one corpus in exchange for reordering logic in the hot
 path. A faster *model* was already ruled out: the quicker candidates are worse
@@ -451,7 +460,7 @@ latency. `src/sweep_candidates.py` measures quality and milliseconds together.
 | 28 | −1.5 / −1.4 | +0.0 / −2.4 | +0.0 / −0.6 | +42 to +49% |
 
 **28 candidates is worse than 20 on all three corpora, while the pool ceiling
-rises on all three** — 0.925 → 0.955 on ML, 0.885 → 0.962 on birds,
+rises on all three**, at 0.925 → 0.955 on ML, 0.885 → 0.962 on birds and
 0.943 → 0.971 on quant. More candidates means the answer is available more
 often and returned less often. **The reranker's precision degrades faster than
 the first stage's recall improves**, which is the third time today the same
@@ -469,8 +478,8 @@ latency heading.
 
 **One thing was fixed rather than measured.** `rerank._score_cache` grows for
 the life of the process and nothing outside a test had ever called
-`clear_cache()`. That was free for its original caller — an evaluation run
-scores a few hundred questions and exits — but `serve.py` imports the same
+`clear_cache()`. That was free for its original caller, since an evaluation
+run scores a few hundred questions and exits, but `serve.py` imports the same
 module and does not exit, adding `candidate_k` entries per distinct question
 forever, each keyed on a tuple holding the whole chunk text. Bounded at 20,000
 entries with insertion-ordered eviction, trimmed *before* the current query is
@@ -486,9 +495,9 @@ returns all of them.
 
 **Why.** Every discussion of the abstention gate quotes "catches 9 of 17" on the
 ML corpus. Nobody had read the eight it does not catch. The obvious hypothesis
-is that the corpus has grown into them — it holds papers that did not exist when
-those questions were written — in which case the labels are wrong and the
-threshold is being blamed for a golden-set problem. That is exactly what
+is that the corpus has grown into them, since it holds papers that did not
+exist when those questions were written. In that case the labels are wrong and
+the threshold is being blamed for a golden-set problem. That is exactly what
 happened to the quant corpus, which went from 0.543 to 0.886 on a rewritten
 golden set with retrieval untouched.
 
@@ -502,8 +511,8 @@ golden set with retrieval untouched.
 | `adv-quantize-4bit` "how is the model quantized to 4-bit" | +2.26 | memory footprint and thread scaling |
 
 **All four are correctly labelled.** Every passage is topically adjacent and
-answers nothing — "reward", "training details", "context", "memory" are doing
-the work. So the eight are **genuine gate failures, not mislabelled cases**, and
+answers nothing: "reward", "training details", "context" and "memory" are
+doing the work. So the eight are **genuine gate failures, not mislabelled cases**, and
 the hypothesis that motivated the check is refuted. Worth recording precisely
 because the plausible story was the wrong one and only reading the passages
 settled it.
@@ -518,14 +527,14 @@ others = found_in - {case.get("source")}      # cases have gold[].source
 
 A case carries `gold: [{"source": ...}]` and no top-level `source`, so this
 subtracted `{None}`, removed nothing, and matched every case against its own
-gold document — which is the definition of a *correct* label. Fixed to subtract
+gold document, which is the definition of a *correct* label. Fixed to subtract
 the gold sources, the real figure is **0 of 67**: every answer string appears
 only in the documents its label names.
 
 That number had been sitting in the output as a wall of false positives for as
 long as the check existed, hiding a clean result. It is the same trap
-`HANDOFF.md` already records once — "a measurement returning zero deserves as
-much suspicion as a surprise" — with the sign flipped. 100% deserves it too.
+`HANDOFF.md` already records once, "a measurement returning zero deserves as
+much suspicion as a surprise", with the sign flipped. 100% deserves it too.
 
 **And the term list does not predict the gate.** Seven of the eight cases
 retrieval answers anyway were not flagged by the hand-written subject-term
@@ -539,7 +548,7 @@ case answerable is a guess; running the retriever is a measurement.
 
 HANDOFF §3 lists eleven constants under "Defaults, all justified by measurement
 in eval/RESULTS.md". That opening makes each of them a claim about the code, and
-nothing checked it — change `TOP_K` in `retrieve.py` and the document goes on
+nothing checked it. Change `TOP_K` in `retrieve.py` and the document goes on
 describing a system that no longer exists, in a place nobody thinks to look
 because it reads as prose rather than as a number.
 
@@ -548,21 +557,22 @@ Twenty-six quantities in total across §2, §3 and the README. Verified to have
 teeth by setting `TOP_K = 7` and confirming it was caught.
 
 It also found something the list itself hides: **`RRF_K` is defined twice**, in
-`hybrid.py` and `rerank.py`. They agree at 60 today and nothing makes them —
-fusion damping and the rerank blend's damping are the same constant by intention
-and a copy in practice. The checker asserts the two agree and reports what would
-break if they stopped: "fusion and the rerank blend would damp differently".
+`hybrid.py` and `rerank.py`. They agree at 60 today and nothing makes them
+agree: fusion damping and the rerank blend's damping are the same constant by
+intention and a copy in practice. The checker asserts the two agree and reports
+what would break if they stopped: "fusion and the rerank blend would damp
+differently".
 
 Four constants are environment-overridable. When the variable is set the check
 says so and skips, rather than reading an overridden value and calling the
-document wrong — which would be the checker lying.
+document wrong, which would be the checker lying.
 
 **And the ambiguity question, asked of all three corpora.** With
 `audit_golden_set.py`'s version corrected, the check needs no per-case knowledge,
-so it moved into `check_golden.py` where every corpus gets it — as a *note*, not
-a failure, since a second document carrying the answer string is a judgement
-rather than a structural error. Mixing the two would make the exit code mean
-"something to read" instead of "something is wrong".
+so it moved into `check_golden.py` where every corpus gets it. It reports a
+*note* rather than a failure, since a second document carrying the answer string
+is a judgement rather than a structural error. Mixing the two would make the
+exit code mean "something to read" instead of "something is wrong".
 
 Across all 157 cases in three corpora: **no ambiguity at all**. Every answer
 string appears only in the documents its label names. Two tests assert the note
@@ -582,8 +592,8 @@ describes; and this session changed the abstention threshold, the rerank blend
 resolution and one label. A "structural" classification that moves when the
 config moves was never structural.
 
-**Six `per_case.py` configurations** — default, no-rerank, dense-only, weighted
-fusion, no cap, cap 1/src — fed to `src/failure_overlap.py`.
+**Six `per_case.py` configurations**, being default, no-rerank, dense-only,
+weighted fusion, no cap and cap 1/src, fed to `src/failure_overlap.py`.
 
 | | 2026-08-21 | 2026-08-27 |
 |---|---|---|
@@ -593,8 +603,8 @@ fusion, no cap, cap 1/src — fed to `src/failure_overlap.py`.
 
 **And they are the same seven ids**: `adam-bias`, `dropout-rate`,
 `gpt3-fewshot`, `gpt3-params`, `roberta-nsp-drop`, `t5-text2text`, `wmt14`.
-Not seven again by coincidence — set-identical, with nothing entering or
-leaving. The classification survived everything this session changed, which is
+Not seven again by coincidence: the sets are identical, with nothing entering
+or leaving. The classification survived everything this session changed, which is
 the strongest evidence yet that it is a property of the questions rather than of
 the settings, and that scoring query decomposition against it will mean
 something.
@@ -604,7 +614,7 @@ gate lets through on the ML corpus, **seven are answered under every gated
 configuration** and only `adv-diffusion` (+0.43, the weakest of them) moves.
 Those seven are the gate's own fixture, and they are exactly the cases whose
 passages were read earlier today and found to be correctly labelled. Two
-independent routes — reading the text, and varying the pipeline — agreeing that
+independent routes, reading the text and varying the pipeline, agree that
 these are gate failures rather than label failures.
 
 `norerank` is excluded from that count and the tool says why: with no reranking
@@ -612,9 +622,9 @@ there is no calibrated score, so the gate never runs and all 17 adversarial
 cases are answered by construction. An absent gate, not a failing one.
 
 **One incidental number.** `nocap` has the lowest failure rate of the six at
-14.9%, against the shipped 16.4% — the diversity cap costing a case, which is
-the trade §2 already documents as deliberate (it buys source recall). Consistent
-rather than new, and worth noting that it reproduced.
+14.9%, against the shipped 16.4%. That is the diversity cap costing a case,
+which is the trade §2 already documents as deliberate (it buys source recall).
+Consistent rather than new, and worth noting that it reproduced.
 
 ---
 
@@ -622,8 +632,9 @@ rather than new, and worth noting that it reproduced.
 
 **Why.** The structural-versus-contested split had only ever been computed for
 the ML corpus, so "stress-test all the golden sets" was two-thirds unmet. Six
-configurations each for birds and quant — default, no-rerank, dense-only,
-weighted fusion, no cap, cap 1/src — through `src/failure_overlap.py`.
+configurations each for birds and quant, being default, no-rerank,
+dense-only, weighted fusion, no cap and cap 1/src, through
+`src/failure_overlap.py`.
 
 | | ML papers | Ornithology | Quant |
 |---|---|---|---|
@@ -633,20 +644,20 @@ weighted fusion, no cap, cap 1/src — through `src/failure_overlap.py`.
 | lowest-failing configuration | nocap 14.9% | **weighted 19.2%** | default/nocap/weighted 14.3% |
 
 The "~11% floor" HANDOFF §7 records for the ML corpus reproduces almost exactly
-on birds — 10.4% against 11.5% — on a corpus of Wikipedia pages in four file
+on birds, at 10.4% against 11.5%, on a corpus of Wikipedia pages in four file
 formats rather than arXiv PDFs. Quant is **5.7%**, about half, so the floor is
 not universal and should not be quoted as if it were.
 
 **Then read the twelve structural questions together, and they split in two.**
 
-*ML — all seven ask about an attribute many papers share:*
+*ML, all seven, ask about an attribute many papers share:*
 "How does the optimizer correct for bias in its moment estimates", "what dropout
 rate was applied", "how many parameters does the largest autoregressive model
 have", "which translation dataset". The topic matches a dozen documents and the
 clause that picks one out is ignored. This is the cross-document confusion the
 project already names.
 
-*Birds and quant — all five describe a term and ask for its name:*
+*Birds and quant, all five, describe a term and ask for its name:*
 "Which small group of feathers helps prevent a stall at low speed" (alula),
 "which skeletal adaptation reduces a bird's weight" (hollow bones), "what term
 describes chicks able to move and feed themselves soon after hatching"
@@ -656,12 +667,12 @@ continuing to outperform" (momentum). **The answer word never appears in the
 question at all.**
 
 **These are different problems and they want different fixes.** Query
-decomposition — the planned fix, blocked on credit — splits a question into its
-constraints, which is exactly right for "normalisation across features *rather
-than examples*". It does nothing obvious for "which small group of feathers
-prevents a stall", where nothing needs splitting and the target vocabulary is
-simply absent. That is a vocabulary-mismatch problem, and `src/query_expansion.py`
-already exists in the repo unmeasured against it.
+decomposition, the planned fix and the one blocked on credit, splits a question
+into its constraints, which is exactly right for "normalisation across features
+*rather than examples*". It does nothing obvious for "which small group of
+feathers prevents a stall", where nothing needs splitting and the target
+vocabulary is simply absent. That is a vocabulary-mismatch problem, and
+`src/query_expansion.py` already exists in the repo unmeasured against it.
 
 So the roadmap item "the ~11% floor needs query decomposition" was **one plan for
 two problems**, and it covers seven of the twelve cases rather than all of them.
@@ -671,7 +682,7 @@ next thing this suggests, and it is not blocked on credit.
 **Three confirmations that came free.**
 
 - `bird-hollow-bones`, whose broken locator was fixed earlier today, is
-  **structural** — it fails under all six configurations. That independently
+  **structural**, failing under all six configurations. That independently
   confirms what was said at the time: the broken label was not masking a hit.
 - `bird-dawn-chorus` and `bird-imprinting` are contested and work **only under
   `norerank`**. With reranking off there is no calibrated score and no gate, so
@@ -687,15 +698,15 @@ Fixtures written to `eval/hard_cases-birds.json` and `eval/hard_cases-quant.json
 ## 2026-08-27 — Query expansion against the description-style cases: refuted twice
 
 **The hypothesis, from the previous entry.** The twelve structural cases split
-in two, and the five on birds and quant describe a term without naming it —
-vocabulary mismatch rather than cross-document confusion. Query decomposition
+in two, and the five on birds and quant describe a term without naming it,
+which is vocabulary mismatch rather than cross-document confusion. Query decomposition
 needs credit; `src/query_expansion.py` implements RM3 pseudo-relevance feedback,
 needs nothing, and had been sitting in the repo unmeasured. It is the classical
 answer to exactly this failure.
 
 **The way it could fail was written down before the run**, in the harness's own
 docstring: feedback terms come from the top results of the *original* query, so
-if the answer word is absent from those, expansion cannot invent it — it can
+if the answer word is absent from those, expansion cannot invent it. It can
 only sharpen a query already pointed at the wrong passages.
 
 **That is what happened.**
@@ -729,17 +740,17 @@ word is not in the material being harvested.
 **A second defect fell out, and fixing it made things worse.** Look at the
 `qf-mean-reversion` row: `the`, `and`, `our`. The module's docstring says
 "a term must be both common among the top results and rare across the corpus.
-Frequency alone selects 'the'" — and 'the' is being selected. The arithmetic:
+Frequency alone selects 'the'", and 'the' is being selected. The arithmetic:
 feedback frequency is capped at the number of feedback documents, so it spans
 one order of magnitude, while BM25's idf for a common word is small but not
-small enough. On quant, `the` scores 1.788 against `momentum` at 5.341 — a
+small enough. On quant, `the` scores 1.788 against `momentum` at 5.341, a
 factor of three that ten-in-ten beats easily.
 
 Thresholding on mean idf was rejected by measurement first: the distribution is
 skewed towards rare terms (mean 7.15, max 8.32 on quant), so "above the mean"
 would also discard `momentum` at 5.341 and `precocial` at 5.253. A document
-frequency cut separates them properly — `the` is in ~17% of quant chunks,
-`momentum` in ~0.5% — so terms appearing in more than 5% of the corpus were
+frequency cut separates them properly, since `the` is in ~17% of quant chunks
+and `momentum` in ~0.5%, so terms appearing in more than 5% of the corpus were
 excluded, with the threshold derived from BM25's own idf formula so it means the
 same thing on 900 chunks and 6,000.
 
@@ -761,7 +772,7 @@ further from its intent. **Reverted**, alongside `USE_TITLE_PREFIX` and the
 rerank swaps.
 
 **Two things to carry forward.** PRF is not the fix for the description-style
-cases and is not worth turning on for the MRR — it is off by default and stays
+cases and is not worth turning on for the MRR. It is off by default and stays
 off. And an obvious-looking defect ("it selects 'the'!") was doing less damage
 than its obvious-looking fix, which is the entire argument for measuring before
 believing, applied to a change that took four lines.
@@ -771,7 +782,7 @@ believing, applied to a change that took four lines.
 ## 2026-08-27 — The most persuasive place for a wrong number
 
 **Where nothing was looking.** `corpora.json` carries a `note` per corpus,
-arguing why that corpus ships the threshold it does — "at 0.0 the gate wrongly
+arguing why that corpus ships the threshold it does: "at 0.0 the gate wrongly
 refuses 1 of 66 answerable questions (1.5%) and catches 9 of 18 adversarial".
 Those are measurements, hand-written, sitting next to the setting they justify.
 That is the most persuasive place in the repo for a number to be wrong, because
@@ -779,7 +790,7 @@ it is not read as a number: it is read as the reason for a decision.
 
 **It had drifted.** The ML note said **1 of 66** and **9 of 18**. The golden set
 holds **67** answerable and **17** adversarial. The counts moved when the set
-grew and the sentence explaining the shipped threshold was never revisited —
+grew and the sentence explaining the shipped threshold was never revisited,
 which is exactly the failure mode of every other stale number found today,
 except that this one argues for a config value rather than describing an
 outcome.
@@ -795,7 +806,7 @@ The quant note deliberately quotes a superseded figure: "The earlier note
 claimed 0.0 refused nineteen of thirty-five; that was measured against a golden
 set asking textbook definitional questions this corpus never answers." That
 sentence is an accurate statement *about a wrong number*, and a checker matching
-numerators would flag it as drift — misreading history as error, and training a
+numerators would flag it as drift, misreading history as error and training a
 reader to ignore the checker.
 
 So only the **denominator** is compared. The corpus size in that sentence is
@@ -808,12 +819,13 @@ check reads the part of the claim that cannot be deliberately historical.
 
 **Found by rendering the app**, which this project's §4 says to do and which had
 not been done since `rerank.py` changed. The page itself was clean at every
-viewport with no console errors, and the highlight was inside its bounds — 8, 12
-and 3 words. Then a probe of the HTTP API selected the bird corpus, asked a bird
+viewport with no console errors, and the highlight was inside its bounds at 8,
+12 and 3 words. Then a probe of the HTTP API selected the bird corpus, asked a bird
 question, and got back `t5.pdf`.
 
 **The defect.** `/api/trace` and `/api/chat` both take the live resources from
-`RES` — index, metadata, BM25, the corpus's threshold, its rerank blend.
+`RES`: the index, the metadata, BM25, the corpus's threshold and its rerank
+blend.
 `POST /ask` called `api.ask()` bare. That function loads its own index through
 an `lru_cache` over the process, which is right for a library entry point and
 wrong for a server that can switch corpora. So `/ask` served:
@@ -828,8 +840,9 @@ searched. `retrieve.py`'s own comment names this exact failure as the reason the
 store and the index must move together.
 
 **Why it survived.** The interface talks to `/api/chat`, which was corpus-aware
-all along. `/ask` is the documented HTTP API — HANDOFF §6 lists it, the README
-calls it the wrapper around the library — and **nothing in the repo calls it**.
+all along. `/ask` is the documented HTTP API, listed in HANDOFF §6 and called
+the wrapper around the library by the README, and **nothing in the repo calls
+it**.
 A route can be in every document and exercised by nothing.
 
 **The fix** gives `ask()` optional `resources` and `rerank_blend`, and has
@@ -839,14 +852,14 @@ because loading a corpus by itself is what the library entry point is for.
 **Verified end to end, and it confirmed two other things at once.** With the ML
 corpus selected the bird question is declined at -11.11 out of ML papers, which
 is correct. With Ornithology selected it is **answered at -4.55 out of
-`peregrine_falcon.pdf`** — the same confidence the harness measured for
+`peregrine_falcon.pdf`**, which is the same confidence the harness measured for
 `bird-incubation`, answered under the new -5.5 where the old -3.0 refused. One
 call confirming the corpus switch, the threshold recalibration, and that the
 server and the harness agree.
 
 `src/test_api.py` stubs retrieval and asserts the resources handed in are the
 ones searched, that the blend is forwarded, and that the gate uses the value it
-was given — 13 checks, and it fails against the unfixed code.
+was given: 13 checks, and it fails against the unfixed code.
 
 ---
 
@@ -855,7 +868,7 @@ was given — 13 checks, and it fails against the unfixed code.
 **Generalising the previous finding.** `POST /ask` served the wrong corpus for
 its whole life because nothing exercised it. The general shape of that is not
 "one route was broken", it is **a route the code serves and no document
-mentions** — nobody tests what nobody has written down.
+mentions**. Nobody tests what nobody has written down.
 
 So `check_docs.py` now reads the dispatch out of `serve.py` with `ast` and
 compares it against HANDOFF §6 in both directions. A regex was the obvious tool
@@ -873,13 +886,13 @@ strings happen to sit nearby.
 | `/archive`, `/archive/pipeline-map.js` | the pre-rebuild front page, served live beside the current one |
 | `/answer-mark.js` | the highlight module, added earlier today |
 
-None of them broken — but `/ask` was not broken *visibly* either. `/api/chat`,
+None of them were broken, but `/ask` was not broken *visibly* either. `/api/chat`,
 the endpoint the interface calls for every question, was itself listed nowhere
 until this morning's `/ask` entry mentioned it in passing.
 
-§6's route list is now grouped by what each route is for — pages, assets,
-asking, corpus, measurements — rather than being a flat run of paths, since a
-list nobody can read is a list nobody checks either.
+§6's route list is now grouped by what each route is for, under pages,
+assets, asking, corpus and measurements, rather than being a flat run of paths.
+A list nobody can read is a list nobody checks either.
 
 **Three of the checker's first complaints were its own bugs**, and they are worth
 recording because each is a way this kind of check quietly lies:
@@ -890,11 +903,12 @@ recording because each is a way this kind of check quietly lies:
 - `/api/index/inspect` and its siblings reported as not served, because a
   documented wildcard `/api/index/*` was being used to *remove* served routes
   rather than to excuse undocumented ones. A wildcard must only ever forgive.
-- `/api/index/inspect\`` — a trailing backtick captured into the route name.
+- `/api/index/inspect\``, from a trailing backtick captured into the route
+  name.
 
 **And one of its complaints was real, immediately.** Rewriting §6 changed the
 heading from `- Routes:` to `- Routes.`, and the checker said "the route list is
-gone -- this checker looks for a line starting '- Routes:'" rather than matching
+gone: this checker looks for a line starting '- Routes:'" rather than matching
 nothing and reporting success. That is the behaviour every check here is
 supposed to have, caught in the act.
 
@@ -913,9 +927,10 @@ proves a route is documented and dispatched; neither proves it answers, and
 `src/smoke_routes.py` reads the route list **out of `serve.py`'s dispatch**
 rather than repeating it, so a route added tomorrow is exercised tomorrow
 without anyone remembering. Typing the list here would reproduce the exact gap
-it exists to close. The bar is deliberately low — not a 5xx, and a body that
-parses as whatever the content type claims — because a route can return the
-wrong corpus with a perfectly good 200. It is a floor, not a verdict.
+it exists to close. The bar is deliberately low, requiring only that the
+response is not a 5xx and that the body parses as whatever the content type
+claims, because a route can return the wrong corpus with a perfectly good 200.
+It is a floor, not a verdict.
 
 All 21 routes answer. Two things came back that were not 200, and only one of
 them was the server's fault.
@@ -932,16 +947,16 @@ name = (payload.get("name") or "").strip()
                                    ^^^^^ 'dict' object has no attribute 'strip'
 ```
 
-The probe sent `{"name": {...}}` — its own bug, from reading the corpus name out
-of a response without checking its type. But JSON carries types and any caller
-can send an object where a string belongs, and the answer should be a sentence
-saying so. The route has `except ValueError` and a bare `except Exception`
-around the work; the `.strip()` runs *before* the try, so the wrong-typed field
-escaped both and dropped the socket. A dropped connection is indistinguishable
-from the server having died, which is a worse thing to tell a caller than "that
-field must be text".
+The probe sent `{"name": {...}}`, which was its own bug, from reading the
+corpus name out of a response without checking its type. But JSON carries types
+and any caller can send an object where a string belongs, and the answer should
+be a sentence saying so. The route has `except ValueError` and a bare
+`except Exception` around the work; the `.strip()` call runs *before* the try, so the
+wrong-typed field escaped both and dropped the socket. A dropped connection is
+indistinguishable from the server having died, which is a worse thing to tell a
+caller than "that field must be text".
 
-**The same line shape was at four routes** — `/api/corpus/select`,
+**The same line shape was at four routes**: `/api/corpus/select`,
 `/api/index/inspect`, `/api/chat`, and the `/ask` + `/api/trace` pair. All four
 now go through one helper that answers 400 with the field name and the type it
 got. The smoke test asks every POST route with a wrong-typed field and requires
@@ -970,8 +985,8 @@ HANDOFF §2 quotes three timings that depend entirely on caches: full cold build
 432 s, **re-index nothing changed 0.76 s**, add one document 18.8 s.
 
 `ParseCache()` and `embed_with_cache()` were both called with no directory, so
-both defaulted to a module constant pointing at `vector_store/` — the ML
-corpus's store — whatever corpus was being indexed. Both caches are
+both defaulted to a module constant pointing at `vector_store/`, the ML
+corpus's store, whatever corpus was being indexed. Both caches are
 content-addressed, so sharing them is safe on its own. `prune()` is what made it
 unsafe:
 
@@ -984,8 +999,8 @@ documents of the corpus in hand. **So indexing the birds deleted the parse cache
 for the ML papers and for quant.**
 
 **Measured before touching anything**, which is what turned a reading of the
-code into a finding: `vector_store/parse_cache` held 90 entries — 45 bird
-documents under two key forms — and **nothing at all** for the 36 ML documents
+code into a finding: `vector_store/parse_cache` held 90 entries, being 45 bird
+documents under two key forms, and **nothing at all** for the 36 ML documents
 or the 35 quant ones. The last ingest run in this repo's history was the bird
 corpus, and it had taken both other corpora's caches with it. Re-indexing the ML
 papers today would have re-parsed all 36 PDFs, and the documented 0.76 s holds
@@ -996,17 +1011,17 @@ only if no other corpus has been indexed in between. This repo has three.
 corpus and everything derived from it travel together. For the ML papers
 `store_dir` *is* `vector_store`, so its caches keep working untouched; birds and
 quant start empty caches in their own stores and pay one re-parse each on their
-next ingest — which they were paying every time under the old behaviour.
+next ingest, which they were paying every time under the old behaviour.
 
 `src/test_ingest_cache.py` runs the real `build_index` over two throwaway
 corpora, because the defect is entirely about which directory each cache
 chooses, and a stub would have to decide that itself and would therefore assert
 its own opinion. Nine checks. Against the old code five of them fail, including
 the one that matters most: *"re-indexing an unchanged corpus parses nothing
-again — got 2, want 0"*, which is the documented claim breaking in the test.
+again: got 2, want 0"*, which is the documented claim breaking in the test.
 
 **One detour worth recording.** The first fixture was a heading and one
-sentence, and `build_index` stopped after parsing — headings are not indexed as
+sentence, and `build_index` stopped after parsing. Headings are not indexed as
 passages, so the document produced no chunks and there was nothing to embed. The
 stages emitted were `scan, parse, done`, no cache event at all, which surfaced
 as four mysterious assertion failures rather than as "your test corpus is
@@ -1017,7 +1032,7 @@ empty". The fixture is twelve paragraphs now, and the docstring says why.
 ## 2026-08-27 — The third test this repo said it had and did not
 
 **HANDOFF §5b, before today:** "What is now tested is everything up to the
-network boundary — `src/test_trace.py`'s sibling check in the session log
+network boundary. `src/test_trace.py`'s sibling check in the session log
 stubbed the client and confirmed the model is handed exactly the passages the
 answer cites."
 
@@ -1026,7 +1041,7 @@ answer cites."
 
 That is the **third** claimed-but-absent test here, after
 `test_trace_matches_pipeline` and the four hand-computed NDCG cases. All three
-were found the same way — reading a confident sentence and then looking — and
+were found the same way, by reading a confident sentence and then looking, and
 all three mattered. A check that was performed and not committed is
 indistinguishable, six days later, from one that never happened.
 
@@ -1034,7 +1049,7 @@ indistinguishable, six days later, from one that never happened.
 completed a real call, because the account has no credit. Nothing had executed
 it end to end, ever. Three defects were already found in it by reading it
 against the data it receives, including `build_context()` reading
-`chunk["page"]` when chunks carry `locator` — which would have killed *every*
+`chunk["page"]` when chunks carry `locator`, which would have killed *every*
 call with a KeyError.
 
 `src/test_generate.py` stubs the client and tests all of it except the HTTP
@@ -1046,15 +1061,15 @@ response raising rather than returning a blank answer, and a thinking block not
 leaking into the text.
 
 **Teeth, demonstrated:** put `chunk["page"]` back and the suite dies on the
-first assertion with `KeyError: 'page'` — exactly how every real call would have
-died. Put `max_tokens = 1024` back and that assertion fails too.
+first assertion with `KeyError: 'page'`, which is exactly how every real call
+would have died. Put `max_tokens = 1024` back and that assertion fails too.
 
 **And the rule this belongs to**, now written into §4. Every defect found in the
 last five sessions was in code that had tests *around* it and nothing *running*
 it: `/ask` ignoring its corpus argument, a wrong-typed field dropping the
 connection, indexing one corpus deleting another's cache, six undocumented
 routes, and a module that had never been invoked. Each was read, reviewed and
-described correctly — and never called. The rule is not "write more tests", it
+described correctly, and never called. The rule is not "write more tests"; it
 is **run the thing**.
 
 ---
@@ -1068,8 +1083,8 @@ transitively closed, against every module in `src/`.
 
 **22 modules reachable. 32 never imported by any test.**
 
-Most of the 32 are one-off scripts run by hand and recently — the sweeps,
-`profile_query`, `fetch_topic`, `retitle`. "Nothing runs them" is false for
+Most of the 32 are one-off scripts run by hand and recently: the sweeps,
+`profile_query`, `fetch_topic` and `retitle`. "Nothing runs them" is false for
 those; they are run, just not automatically. But the list also held **`serve.py`,
 the largest module in the project**, and the claim was wrong.
 
@@ -1080,17 +1095,17 @@ arriving and retrieval starting had no automated coverage at all.
 `src/test_serve.py` covers the three parts that have actually gone wrong, without
 starting a server:
 
-- **`_text()`** — the wrong-typed-field validation added earlier today. Until now
+- **`_text()`**, the wrong-typed-field validation added earlier today. Until now
   only the live smoke test proved it, which meant it was proved only when
   somebody remembered to run a server. Reverting the fix now kills the suite with
   the same `AttributeError: 'dict' object has no attribute 'strip'` that dropped
   the connection.
-- **`examples_for()`** — the questions the front page offers, which is the end of
+- **`examples_for()`**, the questions the front page offers, which is the end of
   the chain that went stale and spent four days suggesting questions deleted from
   the golden set. Covered: a known corpus gets its own, and an unknown corpus, an
   empty list, a corrupt `analytics.json` and a missing one all fall back rather
   than raising or offering nothing.
-- **`inspect_folder()`** — indexing REPLACES the vector store, so a pasted path
+- **`inspect_folder()`**. Indexing *replaces* the vector store, so a pasted path
   that quietly resolves to an empty directory would destroy a working index and
   report success. Covered: empty string, missing path, a file rather than a
   folder, a folder with nothing indexable, and a Windows "copy as path" string
@@ -1116,17 +1131,17 @@ But timing the endpoint the interface actually calls said something else:
   /ask               61-70 ms      same questions, same server
 ```
 
-Twenty times apart on the same warm process. Timing the two halves of
-`chat()` in-process found `trace_pipeline` at 88-100 ms and attribution at
-90-98 ms — about 190 ms, nowhere near 1,400. The gap was the **rerank cache**:
-`/ask` had been asked those questions before and `/api/chat` had not. Re-measured
-warm, `/api/chat` is **113 ms**.
+Twenty times apart on the same warm process. Timing the two halves of `chat()`
+in-process found `trace_pipeline` at 88-100 ms and attribution at 90-98 ms, or
+about 190 ms together, nowhere near 1,400. The gap was the **rerank cache**:
+`/ask` had been asked those questions before and `/api/chat` had not.
+Re-measured warm, `/api/chat` is **113 ms**.
 
 So the real shape is: **a cold question costs ~1,400 ms and a repeat costs
 ~113 ms**, and the lag a visitor feels is entirely the cold path.
 
 **What shipped, and why it is not a quality change.** The questions the front
-page offers are known before anyone asks them — they come from
+page offers are known before anyone asks them, since they come from
 `eval/analytics.json`. `serve.py` now scores them in a background thread once
 the index is loaded, warming exactly the cache entries the same call would have
 computed. Clicking an offered question went from ~1,400 ms to **102-178 ms**.
@@ -1149,7 +1164,7 @@ the way the sweep's own docstring predicted before it ran:
 | Quant | **-0.029** any-hit, **-0.055** MRR | 3 -> 4 wrongly refused | 1.58x |
 
 Every corpus shifts by a systematic **-0.22** in the mean. Ordering survives
-almost perfectly — which is all a normal rerank comparison would have checked —
+almost perfectly, which is all a normal rerank comparison would have checked,
 and this project's abstention gate reads the score as an **absolute** against a
 calibrated threshold. A change that preserves every ranking and moves every
 score down by a fifth of a point silently starts refusing answerable questions.
@@ -1171,9 +1186,9 @@ removed from the common path is the wrong trade today.
 ## 2026-08-27 — The structural fixture is relative to the first stage
 
 **The stage nobody had varied.** Of the twelve cases that fail under every
-pipeline configuration, five describe a term and ask for its name -- "which small
-group of feathers helps prevent a stall at low speed" for the alula -- and the
-answer word is absent from the question. Reranking cannot fix that
+pipeline configuration, five describe a term and ask for its name, as in
+"which small group of feathers helps prevent a stall at low speed" for the
+alula, and the answer word is absent from the question. Reranking cannot fix that
 (`compare_rerankers.py` found nothing better) and pseudo-relevance feedback
 cannot either (`sweep_query_expansion.py`: 0 of 12, because the feedback
 documents do not contain the missing word). Every one of those experiments
@@ -1183,7 +1198,7 @@ varied a stage *after* retrieval.
 similar sentences near each other. Description-to-term is **asymmetric**: a long
 question and a short passage sharing almost no vocabulary. So
 `src/compare_embedders.py` measures pool recall under models trained for that,
-without re-indexing -- each embeds the corpus in memory once.
+without re-indexing, since each embeds the corpus in memory once.
 
 | Ornithology, pool of 20 | pool recall | structural found |
 |---|---|---|
@@ -1212,7 +1227,7 @@ DOES put it in the pool. The pipeline loses it after retrieval, which makes it a
 reranker failure wearing a retrieval failure's label.
 
 **But `bird-alula` is one of the twelve.** It was called structural because no
-fusion, rerank or cap change reached it -- and a different first stage reaches
+fusion, rerank or cap change reached it, and a different first stage reaches
 it immediately. So the fixture is **not a property of the questions**, as the
 2026-08-27 entry claimed on the strength of six configurations. It is a property
 of the questions *given this embedder*. Six configurations that all shared one
@@ -1225,8 +1240,8 @@ cases, at least one is reachable by changing the embedder alone.
 
 **What this suggests, and it is measurable without credit:** the two models find
 *different* cases at the same aggregate. That is the exact condition under which
-fusing them helps -- the same argument that already justifies fusing dense with
-BM25, applied to two dense retrievers. A dense ensemble is the next experiment,
+fusing them helps. It is the same argument that already justifies fusing dense
+with BM25, applied to two dense retrievers. A dense ensemble is the next experiment,
 and unlike everything else on the structural list it needs no LLM.
 
 ---
@@ -1249,23 +1264,23 @@ Pool recall, and the structural cases each pool contains:
 | fused: shipped + multi-qa | 0.881 · **4/7** | **1.000** · **3/3** | 0.857 ✗ |
 | **fused: shipped + bge** | **0.881** · 3/7 | **1.000** · **3/3** | **0.914** · 1/2 |
 
-**Fusing the shipped model with `bge-small` is weakly dominant** — +0.015 on the
-ML papers, +0.038 on birds, and exactly level on quant. That is the first
+**Fusing the shipped model with `bge-small` is weakly dominant**, at +0.015 on
+the ML papers, +0.038 on birds and exactly level on quant. That is the first
 retrieval change in this project to be better-or-equal on all three corpora
 rather than a trade.
 
-**And it moves the fixture.** `bird-alula` — "which small group of feathers
-helps prevent a stall at low speed" — was one of the twelve cases that fail
-under every pipeline configuration. Fused, it is in the pool. Bird pool recall
+**And it moves the fixture.** `bird-alula`, which asks "which small group of
+feathers helps prevent a stall at low speed", was one of the twelve cases that
+fail under every pipeline configuration. Fused, it is in the pool. Bird pool recall
 reaches **1.000**: every answerable question in that corpus now reaches the
 reranker. With the `multi-qa` pairing the ML fixture moves too, `gpt3-params`
-and `cot-prompt` both entering the pool — and that pairing costs quant 0.057, so
+and `cot-prompt` both entering the pool, but that pairing costs quant 0.057, so
 it is the wrong one to ship.
 
 **Two things the aggregate hides, and both matter.**
 
 `bge-small` **alone** is the best single first stage on the ML papers by a
-distance — 0.910 against the shipped 0.866 — and worse on both other corpora.
+distance, at 0.910 against the shipped 0.866, and worse on both other corpora.
 The fifth setting in a row that does not transfer, and a reminder that "which
 embedder" is a per-corpus question exactly like the threshold, the blend, the
 fusion and the candidate pool.
@@ -1293,8 +1308,8 @@ doing.
 `src/test_generate.py` covers everything up to the network boundary by stubbing
 the client, which leaves the one part that involves a network permanently unrun.
 
-The contract is not Anthropic-specific — passages in, cited prose out, a named
-error when the model declines, a named error when nothing comes back. So
+The contract is not Anthropic-specific: passages in, cited prose out, a named
+error when the model declines and a named error when nothing comes back. So
 `src/generate_local.py` speaks it to a local **Ollama**, selected by
 `RAG_GENERATOR=ollama`, with the same `synthesize(question, chunks)` signature
 and the same raising behaviour, so `api.ask` and `serve.chat` can call either
@@ -1307,9 +1322,9 @@ at it. The request is built, sent over a socket, answered, parsed, and returned.
 Nothing is monkeypatched except the host.
 
 That makes it the first test here in which the generation path actually
-executes end to end. The model is a fake that echoes its prompt — which is
+executes end to end. The model is a fake that echoes its prompt, which is
 exactly what lets the test assert that the passages reaching the model are the
-ones the answer will cite — but the transport, the JSON shapes and every error
+ones the answer will cite, and the transport, the JSON shapes and every error
 branch are real. Eighteen checks: the happy path, the citation format per
 locator kind, deterministic sampling because this path gets measured, an empty
 answer raising rather than rendering blank, a model that is not pulled saying
@@ -1325,7 +1340,7 @@ One detour worth recording: the first teardown called `server_close()` while a
 thread was still inside `serve_forever()`, which printed a traceback from a
 daemon thread *after* the results and read like a failure that was not one. And
 the "nothing listening" check first pointed at the shut-down server rather than a
-dead port — `shutdown()` stops serving but leaves the socket bound, so the
+dead port. `shutdown()` stops serving but leaves the socket bound, so the
 connection is accepted and never answered, which is a hang rather than the
 refusal being asserted.
 
@@ -1343,7 +1358,7 @@ benefit.
 second half of that was the real decision.
 
 `data/` is 36 arXiv PDFs and the two topic stores hold the same text again,
-verbatim, inside `metadata.json` — 78 MB of other people's work. Adding them to
+verbatim, inside `metadata.json`, for 78 MB of other people's work. Adding them to
 `.gitignore` does not untrack them, so all 44 files were still in HEAD; they are
 out now, and rebuildable with `fetch_corpus.py`, `fetch_topic.py` and
 `ingest.py`.
@@ -1357,7 +1372,7 @@ prepared, with a backup branch, a tag and a copy of the files.
 **It was not run, and the deciding reason is specific rather than general.**
 This project's documents cite its own commit SHAs. `HANDOFF.md` §5 points at
 `f2ab5de` and `f1ea450` for the deleted ambient-field work, and `serve.py`
-embeds `d1f8c71` in the banner it serves over the archived front page — a
+embeds `d1f8c71` in the banner it serves over the archived front page, where a
 visitor reads that SHA on screen. All three resolve today. A rewrite changes
 every SHA in the repository, so all three would become dangling references, and
 they would fail silently: nothing in the test suite or the four guards checks
@@ -1370,7 +1385,7 @@ measured against is ordinary practice. 67 MB is unremarkable for GitHub.
 
 So: history preserved, HEAD clean, and the reasoning written down rather than
 left as an unexplained absence. If the redistribution question is ever revisited,
-the rewrite is one command — and the three SHA references have to be fixed in
+the rewrite is one command, and the three SHA references have to be fixed in
 the same change, which is the part that is easy to miss.
 
 ---
@@ -1380,8 +1395,8 @@ the same change, which is the part that is easy to miss.
 **The challenge, and it was right.** Four things are tuned per corpus now: the
 abstention threshold, the rerank blend, the candidate pool size, and whether a
 second embedder is fused. The numbers this project quotes for working across
-unlike document sets — 0.851, 0.846, 0.886 — are each produced under that
-corpus's own settings. Quoting them as evidence that the *pipeline* generalises
+unlike document sets, being 0.851, 0.846 and 0.886, are each produced under
+that corpus's own settings. Quoting them as evidence that the *pipeline* generalises
 overstates the case, and it had been true since well before the ensemble.
 
 Two different questions were being answered with one set of numbers:
@@ -1390,8 +1405,8 @@ Two different questions were being answered with one set of numbers:
     what does each corpus need?      each corpus's own configuration
 
 `src/uniform_baseline.py` measures the first, which nothing had. The ranking
-metrics are threshold-independent — any-hit, MRR, NDCG and source recall come
-from the ordering alone — so a single shared configuration is directly
+metrics are threshold-independent, since any-hit, MRR, NDCG and source recall
+come from the ordering alone, so a single shared configuration is directly
 comparable in a way the gate never can be. The uniform configuration is the
 *untuned* one, the defaults a corpus gets before anybody measures anything,
 because a compromise chosen after seeing the results would be tuning with extra
@@ -1404,9 +1419,9 @@ steps.
 | Quantitative finance | 0.886 | 0.714 | 0.749 | 0.741 | +0.000 / **+0.064** |
 
 **The answer strengthens the claim rather than weakening it.** Across three
-corpora that share no format, subject or provenance — arXiv PDFs, Wikipedia
-pages in four file formats, quantitative-finance papers — one untuned
-configuration spans **0.808 to 0.886** on any-hit. A spread of 0.078.
+corpora that share no format, subject or provenance, being arXiv PDFs,
+Wikipedia pages in four file formats and quantitative-finance papers, one
+untuned configuration spans **0.808 to 0.886** on any-hit. A spread of 0.078.
 
 And the corpus the pipeline was *developed on* gains **nothing** from its own
 tuning: +0.000 any-hit, +0.001 MRR. So the tuning is not propping up three
@@ -1420,7 +1435,7 @@ both tables rather than one. `eval/uniform-baseline.json` is regenerated by the
 script and holds the spread.
 
 **A caveat that belongs with it:** MRR spans 0.570 to 0.738 under the uniform
-configuration — a spread of 0.168, more than twice the any-hit spread. Finding
+configuration, a spread of 0.168 and more than twice the any-hit spread. Finding
 the answer generalises better than ranking it first does, which is consistent
 with everything else measured here about the cross-encoder being the weakest
 stage.
@@ -1432,12 +1447,12 @@ stage.
 **The report was "the website is very laggy" and the first three measurements
 disagreed with it.** Headless Chromium on the development desktop: 240 ms to
 first paint, 60 fps on the hero, 667 ms for a question. The deployed build was
-no worse — four cold loads settled between 276 and 494 ms. Nothing to fix.
+no worse: four cold loads settled between 276 and 494 ms. Nothing to fix.
 
 That is the wrong instrument. A machine that holds 60 fps whatever the page
 does cannot tell a cheap frame from an expensive one; it reports the frame
-budget, not the frame. Throttling the CPU 6x through CDP — a proxy for a
-mid-range laptop — made the difference visible immediately:
+budget, not the frame. Throttling the CPU 6x through CDP, as a proxy for a
+mid-range laptop, made the difference visible immediately:
 
     idle hero                20 fps
     three answers on screen  11 fps, worst frame 283 ms
@@ -1448,7 +1463,7 @@ mid-range laptop — made the difference visible immediately:
 1. `canvas.width = ...` reallocates and clears the backing store whether or not
    the value changed. Both draw loops assigned it every frame, so a 2400x1400
    bitmap was being thrown away and rebuilt sixty times a second to paint the
-   size it already was — preceded by a `getBoundingClientRect` that forces
+   size it already was, preceded by a `getBoundingClientRect` that forces
    layout to obtain the number it was about to ignore. Now behind a
    `ResizeObserver`, which reports the only event that matters.
 
@@ -1458,14 +1473,14 @@ mid-range laptop — made the difference visible immediately:
    it is on screen and stops it when it leaves, showing the finished state
    rather than a frozen half-drawn one.
 
-3. `captions(run)` — six objects and their prose — was rebuilt inside every
-   frame of the replay, and `cap.innerHTML` was rewritten every frame to show
+3. `captions(run)`, which builds six objects and their prose, was rebuilt
+   inside every frame of the replay, and `cap.innerHTML` was rewritten every frame to show
    the same six captions. Roughly 2,500 strings and 420 HTML reparses per
    answer, for six changes.
 
 4. The index plate draws a mark per sampled passage on each of its six sheets.
    A CPU profile put over half the time in raster and named `mark`, `stroke`
-   and `save` beneath it — and that block is identical in every frame, since
+   and `save` beneath it, and that block is identical in every frame, since
    the sheets do not move and only the front one lights up. It is now painted
    once into an offscreen canvas and stamped, keyed on the run so a different
    answer gets a different layer. Only while the plate is still forming does it
@@ -1483,7 +1498,7 @@ function of a layout that was already memoised next door, and it ran per frame.
     first answer             1,702 ms (was 2,990)
     long tasks               32 totalling 3.3 s   (was 129 / 14.9 s)
 
-At 4x — a more ordinary laptop — everything is 60 fps and ten long tasks remain.
+At 4x, a more ordinary laptop, everything is 60 fps and ten long tasks remain.
 
 **The drawing is unchanged, and that was checked rather than assumed.** Both
 canvases were screenshotted before and after under `prefers-reduced-motion`,
@@ -1506,7 +1521,7 @@ correct and all of them were about the wrong computer.
   run containing `ϵ`. The console is cp1252; `sys.stdout.reconfigure` is
   required in anything that prints corpus text, and the handoff says so.
 - The first bird-corpus screenshot of this session asked a bird question against
-  the ML corpus. It refused, at −10.86, and said so plainly. Not a defect — the
-  gate doing its job, caught on camera.
+  the ML corpus. It refused, at −10.86, and said so plainly. That is the gate
+  doing its job rather than a defect, caught on camera.
 
 ---
