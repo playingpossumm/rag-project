@@ -686,6 +686,16 @@ tr.out .scorecell .sbar{background:var(--wire);opacity:.5}
 .stack .cn{display:flex;flex-direction:column;align-items:center;gap:3px}
 .stack .cn i{display:block;width:100%;height:3px;border-radius:1px;opacity:.85}
 .stack .cn.in i{height:5px}
+.bump{position:relative;margin:0 0 20px}
+.bump svg{display:block;width:100%;height:clamp(170px,22vw,300px)}
+.bump .bumpx{display:flex;justify-content:space-between;margin-top:2px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint)}
+.bump .bumpx span:first-child{text-align:left}
+.bump .bumpx span:last-child{text-align:right}
+.bump path{transition:opacity 120ms ease-out}
+.bump svg:hover path{opacity:.2}
+.bump svg path:hover{opacity:1;stroke-width:2.4}
 .pane .pnote{margin:0 0 14px;font-size:12.5px;line-height:1.6;color:var(--mute);
   max-width:78ch}
 .pane .pnote b{color:var(--dim);font-weight:600}
@@ -1983,6 +1993,13 @@ function renderTurn(turn, question, data, opts) {
       </div>
 
       <div class="pane" data-pane="cands"><div class="inner">
+        <p class="pnote"><b>Every passage the search considered, and where it
+        stood at each stage.</b> Rank 1 is the top of the chart, so a line that
+        climbs was promoted and a line that falls was pushed down. A line that
+        stops early is a passage that stage removed. Colour is the document it
+        came from; grey passages never reached the answer. Hover a line to see
+        which passage it is.</p>
+        <div class="bump"></div>
         <p class="pnote">Every passage the search considered, in the order the
         cross-encoder finally put them in. <b>Score</b> is that model's
         relevance judgement, running roughly −11 to +11. <b>Move</b> is how many
@@ -2060,6 +2077,7 @@ function renderTurn(turn, question, data, opts) {
   // The document-level handler that closes the panel on an outside click sees
   // this one too, and closed it in the same tick it opened.
   if (tweak) tweak.onclick = e => { e.stopPropagation(); openSet(); };
+  renderBump(turn, data, colour);
   renderStack(turn, data, colour, sig);
   wireTabs(turn);
   wireCity(turn, run, data);
@@ -2159,6 +2177,83 @@ function renderStack(turn, data, colour, sig) {
       <i class="ramp"></i><span>strength: how much of its score this word paid for</span></div>
     <div class="grid" style="grid-template-columns:118px repeat(${cols.length}, minmax(0, 1fr))">
       ${out.join("")}</div>`;
+}
+
+/* ------------------------------------------------------------ rank chart
+   The shape of a run: five columns, one line per passage, height is rank.
+   SVG rather than canvas because every line here is a thing a reader may want
+   to point at, and because it stays crisp at any zoom without a dpr dance. */
+const BUMP_STAGES = [
+  ["dense", "Dense"], ["sparse", "BM25"], ["fused", "Fusion"],
+  ["reranked", "Cross-encoder"], ["selected", "Answer"],
+];
+
+function renderBump(turn, data, colour) {
+  const host = turn.querySelector(".bump");
+  if (!host) return;
+  const byName = new Map(data.stages.map(s => [s.name, s]));
+  const cols = BUMP_STAGES.filter(([k]) => byName.get(k)?.items?.length);
+  if (cols.length < 2) { host.hidden = true; return; }
+
+  // Rank per passage per stage, and the deepest rank anywhere, which sets the
+  // scale so the columns are comparable rather than each stretched to itself.
+  const seen = new Map();
+  let deepest = 1;
+  cols.forEach(([key], ci) => {
+    for (const it of byName.get(key).items) {
+      deepest = Math.max(deepest, it.rank);
+      if (!seen.has(it.chunk_id)) {
+        seen.set(it.chunk_id, { source: it.source, at: new Map(), item: it });
+      }
+      seen.get(it.chunk_id).at.set(ci, it.rank);
+    }
+  });
+
+  const kept = new Set((byName.get("selected")?.items || []).map(i => i.chunk_id));
+  const W = 100, H = Math.min(320, Math.max(150, deepest * 13));
+  const PAD_L = 4, PAD_R = 4, PAD_T = 8, PAD_B = 22;
+  const x = ci => PAD_L + ((W - PAD_L - PAD_R) * ci) / Math.max(cols.length - 1, 1);
+  const y = rank => PAD_T + ((H - PAD_T - PAD_B) * (rank - 1)) / Math.max(deepest - 1, 1);
+
+  const lines = [];
+  // Grey first, so a surviving passage is never drawn under one that failed.
+  for (const pass of [false, true]) {
+    for (const [id, p] of seen) {
+      if (kept.has(id) !== pass) continue;
+      const pts = [...p.at.entries()].sort((a, b) => a[0] - b[0]);
+      if (!pts.length) continue;
+      const d = pts.map(([ci, r], n) =>
+        `${n ? "L" : "M"}${x(ci).toFixed(2)},${y(r).toFixed(2)}`).join("");
+      const hue = pass ? colour(p.source) : "var(--wire)";
+      const last = pts[pts.length - 1];
+      lines.push(
+        `<path d="${d}" fill="none" stroke="${hue}"
+           stroke-width="${pass ? 1.5 : 0.8}" stroke-linejoin="round"
+           stroke-linecap="round" opacity="${pass ? 0.95 : 0.35}"><title>${
+             esc(docName(p.source))} · ${esc(p.item.locator || "")}${
+             pass ? " · in the answer" : ""}</title></path>` +
+        // Where a passage left. Nothing after this column holds it.
+        (last[0] < cols.length - 1
+          ? `<circle cx="${x(last[0]).toFixed(2)}" cy="${y(last[1]).toFixed(2)}"
+               r="1.6" fill="${hue}" opacity="${pass ? 0.9 : 0.4}"/>` : "") +
+        (pass && last[0] === cols.length - 1
+          ? `<circle cx="${x(last[0]).toFixed(2)}" cy="${y(last[1]).toFixed(2)}"
+               r="2.4" fill="${hue}"/>` : ""));
+    }
+  }
+
+  host.hidden = false;
+  host.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
+         role="img" aria-label="Rank of every candidate passage at each stage">
+      ${cols.map(([, label], ci) => `
+        <line x1="${x(ci)}" y1="${PAD_T - 4}" x2="${x(ci)}" y2="${H - PAD_B + 3}"
+              stroke="var(--hair)" stroke-width="0.3"/>`).join("")}
+      ${lines.join("")}
+    </svg>
+    <div class="bumpx">${cols.map(([, label]) =>
+      `<span>${esc(label)}</span>`).join("")}</div>
+`;
 }
 
 /* ---------------------------------------------------------- the picture */
