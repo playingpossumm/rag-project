@@ -168,14 +168,32 @@ def write_site(out: Path, manifest: dict) -> None:
             html = tag + "\n" + html
         page.write_text(html, encoding="utf-8")
 
+    # `immutable` is a promise that the bytes at this URL will never change, so
+    # it belongs only to the content-addressed payloads: an answer file is named
+    # for a hash of its question, so a changed answer is a changed URL.
+    #
+    # analytics.json and manifest.json live in the same directory under fixed
+    # names and are rewritten on every build. They were covered by the same rule
+    # until 2026-08-30, which pinned a returning visitor to the figures they
+    # first downloaded, for a year, while the HTML around them revalidated. The
+    # page then shipped new markup against old data, and nothing on screen said
+    # so. Scoped to the corpus directories, named from the manifest so a fourth
+    # corpus does not quietly fall outside the rule.
+    recorded = "|".join(sorted(manifest.get("corpora") or {})) or "[^/]+"
     (out / "vercel.json").write_text(json.dumps({
         "$schema": "https://openapi.vercel.sh/vercel.json",
         "outputDirectory": "site",
         "cleanUrls": True,
         "headers": [{
-            "source": "/recorded/(.*)",
+            "source": f"/recorded/({recorded})/(.*)",
             "headers": [{"key": "Cache-Control",
                          "value": "public, max-age=31536000, immutable"}],
+        }, {
+            # Rewritten every build under a fixed name, so it has to be
+            # revalidated or the page and its numbers drift apart.
+            "source": "/recorded/(analytics|manifest).json",
+            "headers": [{"key": "Cache-Control",
+                         "value": "public, max-age=0, must-revalidate"}],
         }],
     }, indent=1), encoding="utf-8")
 
