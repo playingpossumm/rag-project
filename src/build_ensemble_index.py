@@ -40,6 +40,36 @@ INDEX_FILE = "index-ensemble.faiss"
 MANIFEST = "ensemble.json"
 
 
+# What each model wants on the query side. This belongs to the model, not to
+# the corpus: BGE retrieval models are trained with the query prefixed and land
+# in a different part of the space without it.
+#
+# It used to be read only from corpora.json, so `--model` changed the model and
+# left the prefix behind. Overriding the model on a corpus that had never named
+# one built an index with an empty prefix, and nothing failed: right size, right
+# row count, well-formed manifest, quietly worse retrieval.
+MODEL_PREFIX = {
+    "BAAI/bge-small-en-v1.5": "Represent this sentence for searching relevant passages: ",
+    "BAAI/bge-base-en-v1.5": "Represent this sentence for searching relevant passages: ",
+    "BAAI/bge-large-en-v1.5": "Represent this sentence for searching relevant passages: ",
+    "intfloat/e5-small-v2": "query: ",
+    "intfloat/e5-base-v2": "query: ",
+}
+
+
+def prefix_for(model_name: str, cfg: dict) -> str:
+    """The query prefix for this model, unless the corpus names its own.
+
+    corpora.json still wins when it says something, so a corpus can override.
+    What it can no longer do is supply an empty prefix by saying nothing for a
+    model that needs one.
+    """
+    named = cfg.get("ensemble_prefix")
+    if named is not None:
+        return named
+    return MODEL_PREFIX.get(model_name, "")
+
+
 def build(cfg: dict, model_name: str, prefix: str, batch: int = 64) -> dict:
     from sentence_transformers import SentenceTransformer
 
@@ -99,7 +129,10 @@ def main() -> int:
             continue
 
         print(f"  {cfg['label']}: embedding with {model_name}...")
-        m = build(cfg, model_name, cfg.get("ensemble_prefix", ""))
+        prefix = prefix_for(model_name, cfg)
+        if prefix:
+            print(f"    query prefix: {prefix!r}")
+        m = build(cfg, model_name, prefix)
         print(f"    {m['chunks']:,} chunks, {m['dim']} dimensions, "
               f"{m['seconds']}s -> {cfg['store'].name}/{INDEX_FILE}")
         built += 1

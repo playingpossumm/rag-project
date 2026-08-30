@@ -82,7 +82,65 @@ def _client():
     return anthropic.Anthropic()
 
 
+def _ask_ollama(system: str, user: str) -> str | None:
+    """The same question, to a model running on this machine.
+
+    Deterministic, because this path gets measured: a sampled rewrite would
+    make two runs of the same question disagree for reasons that have nothing
+    to do with retrieval.
+    """
+    import json as _json
+    import urllib.error
+    import urllib.request
+
+    host = os.environ.get("RAG_OLLAMA_HOST", "http://localhost:11434").rstrip("/")
+    model = os.environ.get("RAG_OLLAMA_MODEL", "llama3.2")
+    payload = {
+        "model": model,
+        "stream": False,
+        "messages": [{"role": "system", "content": system},
+                     {"role": "user", "content": user}],
+        "options": {"temperature": 0.0, "seed": 0, "num_predict": MAX_TOKENS},
+    }
+    req = urllib.request.Request(
+        f"{host}/api/chat", method="POST",
+        data=_json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            body = _json.loads(r.read().decode("utf-8"))
+    except Exception as exc:                                    # noqa: BLE001
+        # Same contract as the Anthropic path: a rewrite is an optimisation,
+        # so losing it costs the improvement and never the query.
+        print(f"  query rewrite unavailable ({type(exc).__name__}); "
+              f"using the original query", file=sys.stderr)
+        return None
+    return ((body.get("message") or {}).get("content") or "").strip() or None
+
+
+def _backend() -> str:
+    """Which model answers. Shares RAG_GENERATOR with the generation path, so
+    one variable turns both on."""
+    return os.environ.get("RAG_GENERATOR", "").strip().lower()
+
+
+def available() -> bool:
+    """Is a model reachable? Reports state; never gates."""
+    if _backend() in ("ollama", "local"):
+        import urllib.request
+        host = os.environ.get("RAG_OLLAMA_HOST",
+                              "http://localhost:11434").rstrip("/")
+        try:
+            urllib.request.urlopen(f"{host}/api/tags", timeout=3).read()
+            return True
+        except Exception:                                       # noqa: BLE001
+            return False
+    return _client() is not None
+
+
 def _ask(system: str, user: str) -> str | None:
+    if _backend() in ("ollama", "local"):
+        return _ask_ollama(system, user)
     client = _client()
     if client is None:
         return None
