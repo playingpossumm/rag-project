@@ -1060,56 +1060,57 @@ export function captions(run) {
   const big = c.biggest && c.biggest.delta ? c.biggest : null;
   return [
     { title: "Index",
-      text: `${run.city.docs} documents were split into ${run.city.total.toLocaleString()} `
-          + `overlapping passages. They overlap so that a sentence crossing a `
-          + `boundary survives whole in one of them. Each was turned into a `
-          + `vector once, before any question was asked, and every stage after `
-          + `this one narrows the set.` },
+      text: `${run.city.docs} documents, split into `
+          + `${run.city.total.toLocaleString()} overlapping passages. The `
+          + `overlap keeps a sentence that crosses a boundary intact in one of `
+          + `them. Each passage was converted to a vector before any question `
+          + `was asked. Every stage after this one reduces the set.` },
 
     { title: "Dense retrieval",
-      text: `The question becomes a vector the same way the passages did, and `
-          + `the ${c.dense} nearest by cosine similarity are kept. This finds `
-          + `passages that mean the same thing as the question even when they share `
-          + `none of its words.` },
+      text: `The question is converted to a vector by the same model that `
+          + `converted the passages. The ${c.dense} nearest by cosine `
+          + `similarity are kept. This retrieves passages with the same meaning `
+          + `as the question even when they share none of its words.` },
 
     { title: "BM25",
       text: c.sparse
-        ? `The same index searched a second way, by word overlap, weighting rare `
-          + `words far above common ones. ${c.sparse} candidates. It runs alongside `
-          + `dense retrieval rather than after it, and catches exact terms that `
-          + `an embedding averages away, such as a species name or a symbol.`
+        ? `A second search over the same index, scoring word overlap and `
+          + `weighting rare words above common ones. ${c.sparse} candidates. It `
+          + `runs at the same time as dense retrieval, not after it, and it `
+          + `retrieves exact terms that a vector does not preserve, such as a `
+          + `species name or a symbol.`
         : `No word in the question appears in the index, so lexical search returned `
           + `nothing and the result rests on dense retrieval alone.` },
 
     { title: "Rank fusion",
-      text: `The two lists are merged by POSITION rather than score, because a `
-          + `cosine similarity and a BM25 weight are different units and cannot be `
-          + `compared. A passage both methods rank highly rises above one `
-          + `only a single method liked. ${c.both} of them appeared in both lists.` },
+      text: `The two lists are merged on position rather than score. A cosine `
+          + `similarity and a BM25 weight are different units and cannot be `
+          + `compared directly. A passage ranked highly by both searches ends up `
+          + `above one ranked highly by a single search. ${c.both} passages `
+          + `appeared in both lists.` },
 
     { title: "Cross-encoder",
-      text: `Every stage so far compared the question and the passage separately. `
-          + `Here a second model reads them together, one pair at a time. It is `
-          + `slower, and much better at telling a passage that mentions the subject `
-          + `from one that answers the question. `
+      text: `The earlier stages scored the question and each passage `
+          + `separately, then compared the two scores. This model reads the pair `
+          + `together. It is slower, and more accurate at separating a passage `
+          + `that mentions the subject from one that answers the question. `
           + (big
-              ? `Biggest correction: ${shortDoc(big.source)} moved `
+              ? `Largest change: ${shortDoc(big.source)} moved `
                 + `${big.delta > 0 ? "up" : "down"} ${Math.abs(big.delta)} places.`
-              : `The order barely changed, which means the first two stages already `
-                + `had it roughly right.`) },
+              : `The order was almost unchanged on this question.`) },
 
     { title: "Diversity cap",
-      text: `At most two passages from any one document, so a single thorough `
-          + `document cannot fill every slot and hide a second source that also `
-          + `answers. ${c.selected} kept.` },
+      text: `A limit of two passages per document. Without it, one long `
+          + `document can occupy every slot and a second document that also `
+          + `answers is never returned. ${c.selected} passages kept.` },
 
     { title: run.confident ? "Answer" : "Below threshold",
       text: run.confident
-        ? `The ${c.selected} passages above are what the answer is drawn from and `
-          + `what gets cited. Nothing outside them reached the answer.`
-        : `The best passage scored below this set's cut-off. That is the score `
-          + `under which passages from these documents usually turn out not to `
-          + `hold the answer, so nothing is returned. The candidates are still `
-          + `listed, so you can see what was considered and judge for yourself.` },
+        ? `The answer is drawn from these ${c.selected} passages and cites `
+          + `them. No other text was used.`
+        : `The best passage scored below this corpus's threshold, the point `
+          + `under which passages from these documents usually do not contain `
+          + `the answer. No answer is returned. The candidates remain listed `
+          + `below.` },
   ];
 }

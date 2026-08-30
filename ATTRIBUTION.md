@@ -1,8 +1,8 @@
 # Attribution
 
 **Every document in all three sets is listed in
-[`docs/corpus-manifest.md`](docs/corpus-manifest.md)** — filename, title, format
-and passage count, generated from the built indexes. The demo cites its sources
+[`docs/corpus-manifest.md`](docs/corpus-manifest.md)**, with filename, title,
+format and passage count, generated from the built indexes. The demo cites its sources
 by filename, and a citation you cannot look up is a dead end; a bibliography is
 metadata, not redistribution.
 
@@ -16,7 +16,7 @@ Those articles are published under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/), which permits
 redistribution with attribution and share-alike. Each passage the interface
 shows names the file it came from, and every file is named after the Wikipedia
-article it was built from — `peregrine_falcon.pdf` is
+article it was built from. `peregrine_falcon.pdf` is
 <https://en.wikipedia.org/wiki/Peregrine_falcon>, and so on.
 
 `src/fetch_topic.py` records how each file was produced.
@@ -24,8 +24,8 @@ article it was built from — `peregrine_falcon.pdf` is
 ## ML & NLP papers, and quantitative finance — arXiv
 
 36 arXiv cs.CL/cs.LG papers and 35 q-fin papers. **Neither set ships with
-this repository** — both were untracked on 2026-08-28 — so a clone gives you
-the code and not the corpus. `src/fetch_corpus.py` and
+this repository.** Both were untracked on 2026-08-28, so a clone gives you the
+code and not the corpus. `src/fetch_corpus.py` and
 `src/fetch_topic.py` rebuild them by downloading from arXiv, so anyone running
 this locally gets the papers from the people who published them.
 
@@ -52,13 +52,13 @@ on. Measured on the current build:
 | Quantitative finance | 1,211 | 312k | 35 |
 
 For the arXiv sets that is roughly 40 non-contiguous excerpts per paper,
-averaging 257 characters each — about a quarter of a typical paper's body text,
-in retrieval-rank order, with no figures, tables or reference lists, and every
-excerpt labelled with its source file and page.
+averaging 257 characters each. That is about a quarter of a typical paper's
+body text, in retrieval-rank order, with no figures, tables or reference lists.
+Every excerpt is labelled with its source file and page.
 
 The demo publishes **quotation with attribution**, not the papers. arXiv's
 terms allow anyone to read and quote a submission, whatever licence its author
-chose. They do not allow republishing one — and a page showing forty short
+chose. They do not allow republishing one. A page showing forty short
 fragments out of order, each captioned with where it came from, is not a copy
 of a paper. It is a page of search results, which is what it is.
 
@@ -70,7 +70,7 @@ claim that was wrong for a while is worth leaving a record of.
 
 **If you are an author of one of these papers and would rather not be in the
 demo, open an issue and it comes out.** Rebuilding without a corpus is one
-command — `python src/record_static.py --corpus birds --all`.
+command: `python src/record_static.py --corpus birds --all`.
 
 This distinction matters more for a retrieval system than for most software: a
 RAG interface exists to show you passage text verbatim, so deploying one
