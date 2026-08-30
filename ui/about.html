@@ -66,6 +66,28 @@ h2.lab{margin:0;font-size:10px}
   .folio a,.folio .here{font-size:9.5px;letter-spacing:.09em}
 }
 
+/* ---- how it got here. A progression, not a dated log: each stage exists
+   because the one before it was measured and found wanting. The dropped half
+   is the half worth reading, so it is not tucked away in a footnote. */
+.tl{margin:0;padding:0;list-style:none}
+.tl li{position:relative;padding:0 0 20px 26px;border-left:1px solid var(--rule)}
+.tl li:last-child{padding-bottom:2px;border-left-color:transparent}
+.tl li::before{content:"";position:absolute;left:-4.5px;top:5px;width:8px;
+  height:8px;border-radius:50%;background:var(--panel);
+  border:1.5px solid var(--faint)}
+.tl li.kept::before{background:var(--series-1);border-color:var(--series-1)}
+.tl li.gone::before{background:var(--panel);border-color:var(--faint)}
+.tl h4{margin:0 0 3px;font-size:14px;font-weight:600;letter-spacing:-.005em;
+  color:var(--ink);display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.tl .verdict{font-family:var(--mono);font-size:9px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;padding:2px 6px;border-radius:3px;
+  border:1px solid var(--rule);color:var(--muted);flex:none}
+.tl li.kept .verdict{color:var(--series-1);border-color:var(--series-1)}
+.tl p{margin:0;font-size:13px;line-height:1.62;color:var(--muted);max-width:74ch}
+.tl .num{font-family:var(--mono);font-size:12px;color:var(--dim);
+  font-variant-numeric:tabular-nums}
+.tl .num b{color:var(--ink);font-weight:500}
+@media(max-width:560px){.tl li{padding-left:20px}}
 .wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 110px}
 
 .hero{max-width:70ch;margin:22px 0 8px}
@@ -356,6 +378,116 @@ h2.lab{margin:0;font-size:10px}
            passages rather than from the model. No model judges those answers,
            because a judge is a second system whose own mistakes are invisible.
            <a href="/quality">The figures are on the analytics page.</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------- how it got here -->
+  <section class="panel">
+    <div class="phead"><h2 class="lab">How it got here</h2>
+      <span class="lab right">any-hit@5, ML papers</span></div>
+    <div class="pbody">
+      <div class="prose" style="margin-bottom:20px">
+        <p>Nothing here was designed in one pass. Each stage was added because
+           the one before it was measured and found wanting, and the figure
+           beside each is the share of questions where a correct passage came
+           back in the top five.</p>
+      </div>
+
+      <ol class="tl">
+        <li class="kept">
+          <h4>Search by meaning<span class="verdict">kept</span></h4>
+          <p>Every passage becomes a vector, and the question is compared
+             against all of them. This is the whole of what most tutorials
+             build. <span class="num">any-hit <b>0.791</b></span></p>
+        </li>
+        <li class="kept">
+          <h4>Read the question and the passage together<span class="verdict">kept</span></h4>
+          <p>A second, slower model re-reads the shortlist one pair at a time.
+             Comparing two separately-made vectors is cheap and blunt; reading
+             the pair is expensive and much better at telling a passage that
+             mentions the subject from one that answers the question.
+             <span class="num">0.791 &rarr; <b>0.806</b></span></p>
+        </li>
+        <li class="kept">
+          <h4>Search by exact words as well<span class="verdict">kept</span></h4>
+          <p>Meaning-matching misses terms that carry their meaning by being
+             exact, such as a model number or a species name. A second
+             retriever scores word overlap, and the two rankings are merged.
+             This was the largest single gain in the project.
+             <span class="num">0.806 &rarr; <b>0.866</b></span></p>
+        </li>
+        <li class="kept">
+          <h4>Cap each document to two passages<span class="verdict">a trade</span></h4>
+          <p>One thorough document could fill every slot and hide a second
+             document that also answered. The cap costs hit rate and buys
+             coverage, and it is the only change here that was shipped while
+             making a headline number worse.
+             <span class="num">0.866 &rarr; <b>0.851</b>, documents found
+             0.721 &rarr; <b>0.761</b></span></p>
+        </li>
+      </ol>
+
+      <div class="prose" style="margin:26px 0 16px">
+        <p><b>And the half that did not survive.</b> Five changes that sounded
+           obviously right were built, measured and taken out again. They are
+           kept here because a reader learns more from them than from the four
+           above, and because each was written before it was tested, which is
+           the only way to find out that it does not work.</p>
+      </div>
+
+      <ol class="tl">
+        <li class="gone">
+          <h4>A reranker eight times larger<span class="verdict">rejected</span></h4>
+          <p>The obvious answer to "the reranker is the weakest stage". It
+             recovered the same two questions the small one did and took ten
+             times as long per query. Three models were compared, and the two
+             halves of the job move in opposite directions as the model grows:
+             the bigger ones rank worse and separate answerable from
+             unanswerable better.</p>
+        </li>
+        <li class="gone">
+          <h4>Compressing the reranker to run faster<span class="verdict">rejected</span></h4>
+          <p>1.5&times; faster, and the rankings barely moved, which is all a
+             normal comparison would have checked. Every score also shifted
+             down by a fifth of a point, and the threshold that decides whether
+             to answer at all reads that score as an absolute. It silently
+             started refusing questions it could answer.</p>
+        </li>
+        <li class="gone">
+          <h4>Putting each document's title on every passage<span class="verdict">reverted</span></h4>
+          <p>It should have helped a passage say what it belongs to. It bought
+             no ranking gain and lost coverage. An earlier version had looked
+             like a win, and that reading came from changing two things at once.
+             <span class="num">documents found <b>&minus;0.051</b></span></p>
+        </li>
+        <li class="gone">
+          <h4>Expanding the query with words from the first results<span class="verdict">rejected</span></h4>
+          <p>The classical fix for a question whose answer uses different
+             words. It recovered none of the twelve questions it was aimed at,
+             for a reason that was written down before the run: the extra words
+             come from the passages the first search returned, and the missing
+             word is not in those either.
+             <span class="num"><b>0 of 12</b> recovered</span></p>
+        </li>
+        <li class="gone">
+          <h4>Considering more candidates before reranking<span class="verdict">rejected</span></h4>
+          <p>More candidates means the answer is available more often, and it
+             was returned <em>less</em> often, on all three document sets. The
+             reranker's precision falls faster than the extra candidates help.
+             This is the clearest statement in the project of where the weak
+             stage is, and it came out of an experiment about speed.</p>
+        </li>
+      </ol>
+
+      <div class="prose" style="margin-top:26px">
+        <p><b>The pattern worth taking away.</b> Three separate experiments
+           improved what the first search finds and made the finished answer
+           worse. Finding the answer and returning it are different problems,
+           and a change that helps the first can cost the second. Every one of
+           these was written, run and measured before it was judged, which is
+           why the list of what did not work is longer than the list of what
+           did.</p>
       </div>
     </div>
   </section>

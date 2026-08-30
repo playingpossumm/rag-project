@@ -31,6 +31,7 @@ have drifted, 2 a table this expects to find is gone.
 import argparse
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -658,10 +659,153 @@ def check_readme(measured: dict, problems: list[str], notes: list[str]) -> bool:
     return True
 
 
+# --------------------------------------------------------------- test counts
+# Which prose word in HANDOFF's "Test counts" sentence means which suite.
+# Written out rather than derived: a checker that guesses would stop covering a
+# suite the day somebody rewords the sentence, which is the failure it exists
+# to catch, one level up.
+SUITE_LABELS = {
+    "test_trace": "trace",
+    "test_evaluate_answers": "answer-quality judge",
+    "test_loaders": "loaders",
+    "test_freshness": "freshness",
+    "test_serve": "serve",
+    "test_generate_local": "local generation",
+    "test_metrics": "metrics",
+    "test_generate": "generate",
+    "test_golden": "golden-set audit",
+    "test_analytics": "analytics",
+    "test_api": "api",
+    "test_rerank": "reranker cache",
+    "test_ingest_cache": "ingest cache",
+    "test_ocr": "OCR",
+}
+# Counted in the same sentence and run by node, not python.
+NODE_SUITE = ("ui/test-answer-mark.mjs", "answer-highlight")
+# Documented as "plus the route suite" and deliberately outside the total,
+# because it starts its own server.
+UNCOUNTED = {"test_routes"}
+
+COUNT_LINE = re.compile(r"^\s*(\d+)\s*/\s*(\d+)\b")
+
+
+def label_pattern(label: str) -> str:
+    """Match "24 local generation" even where the label wraps across a line.
+
+    These documents are hard-wrapped, so a two-word label is routinely split by
+    a newline. Escaping the label whole requires a literal space and silently
+    matches nothing, which is how this checker first reported that the sentence
+    gave no number for `local generation` while the sentence plainly did.
+    """
+    return (r"(\d+)\s+"
+            + r"\s+".join(re.escape(w) for w in label.split())
+            + r"\b")
+
+
+def run_suite(cmd: list[str], cwd: Path) -> tuple[int | None, str]:
+    """Run one suite and read the count off its last line.
+
+    Returns (count, note). A suite that fails returns None, because a count
+    from a failing suite is not a number anyone should compare against.
+    """
+    try:
+        r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True,
+                           timeout=900, encoding="utf-8", errors="replace")
+    except (OSError, subprocess.SubprocessError) as exc:        # noqa: BLE001
+        return None, f"could not run: {exc}"
+    tail = [ln for ln in (r.stdout or "").splitlines() if ln.strip()]
+    last = tail[-1] if tail else ""
+    if r.returncode != 0:
+        return None, f"FAILED ({last.strip()[:60]})"
+    m = COUNT_LINE.match(last)
+    if not m:
+        return None, f"no count on its last line: {last.strip()[:60]!r}"
+    passed, total = int(m.group(1)), int(m.group(2))
+    if passed != total:
+        return None, f"{passed} of {total} passed"
+    return passed, ""
+
+
+def check_tests(problems: list[str], notes: list[str]) -> bool:
+    """Every count in HANDOFF's test-count sentence, against the suites."""
+    handoff = (ROOT / "HANDOFF.md").read_text(encoding="utf-8")
+    sentence = re.search(r"Test counts,[^\n]*(?:\n(?!\n)[^\n]*)*", handoff)
+    if not sentence:
+        print("  the 'Test counts' sentence is gone from HANDOFF.md -- this "
+              "checker looks for a line starting 'Test counts,'")
+        return False
+    text = sentence.group(0)
+
+    py = sorted(p.stem for p in (ROOT / "src").glob("test_*.py"))
+    undocumented = [m for m in py
+                    if m not in SUITE_LABELS and m not in UNCOUNTED]
+    for m in undocumented:
+        problems.append(f"src/{m}.py exists and the test-count sentence does "
+                        f"not mention it")
+
+    subtotal = 0
+    for mod, label in SUITE_LABELS.items():
+        path = ROOT / "src" / f"{mod}.py"
+        if not path.exists():
+            problems.append(f"the sentence counts '{label}' and "
+                            f"src/{mod}.py does not exist")
+            continue
+        count, why = run_suite([sys.executable, str(path)], ROOT)
+        if count is None:
+            problems.append(f"src/{mod}.py {why}")
+            continue
+        subtotal += count
+        m = re.search(label_pattern(label), text)
+        if not m:
+            problems.append(f"the sentence gives no number for '{label}', "
+                            f"which runs {count}")
+        elif int(m.group(1)) != count:
+            problems.append(f"'{label}' is written as {m.group(1)} and runs "
+                            f"{count}")
+        else:
+            notes.append(f"    ok    {label:<22} {count}")
+
+    node_path, node_label = NODE_SUITE
+    node_count, why = run_suite(["node", str(ROOT / node_path)], ROOT)
+    if node_count is None:
+        notes.append(f"    note  {node_label}: {why}")
+    else:
+        m = re.search(label_pattern(node_label), text)
+        if m and int(m.group(1)) != node_count:
+            problems.append(f"'{node_label}' is written as {m.group(1)} and "
+                            f"runs {node_count}")
+        else:
+            notes.append(f"    ok    {node_label:<22} {node_count}")
+
+    # The two totals the sentence states: the python subtotal, and the headline
+    # that adds the node suite to it.
+    stated_sub = re.search(r"which is (\d+)", text)
+    if stated_sub and int(stated_sub.group(1)) != subtotal:
+        problems.append(f"the sentence says the suites sum to "
+                        f"{stated_sub.group(1)} and they sum to {subtotal}")
+    total = subtotal + (node_count or 0)
+    for doc, pat in (("HANDOFF.md", r"\*\*(\d+) checks plus the route suite\*\*"),
+                     ("docs/roadmap.md", r"\*\*(\d+) checks\*\*")):
+        body = (ROOT / doc).read_text(encoding="utf-8")
+        m = re.search(pat, body)
+        if not m:
+            problems.append(f"{doc} no longer states a test total where this "
+                            f"checker looks for one")
+        elif int(m.group(1)) != total:
+            problems.append(f"{doc} says {m.group(1)} checks and {total} run")
+        else:
+            notes.append(f"    ok    {doc:<22} total {total}")
+    return True
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--tests", action="store_true",
+                    help="also run every test suite and check the counts the "
+                         "documents quote. Two to three minutes, which is why "
+                         "it is not part of the default run.")
     args = ap.parse_args()
 
     measured = truth()
@@ -678,6 +822,10 @@ def main() -> int:
     ok = check_notes(measured, problems, notes) and ok
     ok = check_routes(problems, notes) and ok
     ok = check_commits(problems, notes) and ok
+    if args.tests:
+        print("running every suite to check the counts; this takes a few "
+              "minutes")
+        ok = check_tests(problems, notes) and ok
 
     if not args.quiet and notes:
         print("checked:")
