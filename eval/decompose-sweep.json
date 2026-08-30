@@ -1,0 +1,112 @@
+{
+ "generated_by": "src/sweep_decompose.py",
+ "note": "End to end at the served configuration, on the whole answerable set. A pool is a ceiling and not a proxy, and a mode measured only on the cases it was built for cannot show what it costs the rest.",
+ "corpora": {
+  "llm": {
+   "label": "ML & NLP papers",
+   "modes": {
+    "none": {
+     "hit_rate": 0.0,
+     "mrr": 0.0,
+     "ndcg": 0.0,
+     "src_recall": 0.4857,
+     "seconds_per_query": 1.82,
+     "structural_hit": 0,
+     "structural_total": 7,
+     "rewritten": {}
+    },
+    "rewrite": {
+     "hit_rate": 0.1429,
+     "mrr": 0.0357,
+     "ndcg": 0.0615,
+     "src_recall": 0.5286,
+     "seconds_per_query": 9.79,
+     "structural_hit": 1,
+     "structural_total": 7,
+     "rewritten": {
+      "dropout-rate": [
+       "What dropout rate was used for regularization in the neural network?"
+      ],
+      "wmt14": [
+       "Which English-to-German machine translation dataset was used for the experiments?"
+      ],
+      "adam-bias": [
+       "How does the optimizer in a machine learning algorithm correct for bias in its moment estimates, specifically in the context of variance reduction techniques such as Hessian-free optimization or quasi-Newton methods?"
+      ],
+      "gpt3-params": [
+       "What is the maximum number of parameters in an autoregressive (AR) model?"
+      ],
+      "gpt3-fewshot": [
+       "How does the effect of the number of examples in the prompt on task performance change?"
+      ],
+      "roberta-nsp-drop": [
+       "What pre-training objectives were found unnecessary and removed from recent models?"
+      ],
+      "t5-text2text": [
+       "How do all Natural Language Processing (NLP) tasks, including but not limited to text classification, sentiment analysis, named entity recognition, language modeling, and machine translation, get standardized into a single format?"
+      ]
+     }
+    },
+    "decompose": {
+     "hit_rate": 0.0,
+     "mrr": 0.0,
+     "ndcg": 0.0,
+     "src_recall": 0.5571,
+     "seconds_per_query": 44.05,
+     "structural_hit": 0,
+     "structural_total": 7,
+     "rewritten": {
+      "dropout-rate": [
+       "What is the dropout rate used in this paper?",
+       "What is regularization in machine learning?",
+       "What is the purpose of dropout in neural networks?"
+      ],
+      "wmt14": [
+       "WMT14 English-German Translation Dataset"
+      ],
+      "adam-bias": [
+       "What is the optimizer's approach to correcting for bias in its moment estimates?",
+       "How does the optimizer handle bias in its moment estimates?",
+       "What techniques does the optimizer use to correct for bias in its moment estimates?"
+      ],
+      "gpt3-params": [
+       "What is the largest autoregressive model?",
+       "What is the largest autoregressive model in terms of number of parameters?"
+      ],
+      "gpt3-fewshot": [
+       "The relationship between the number of examples in the prompt and task performance is a complex one, with research suggesting that the optimal number of examples can vary depending on the specific task and dataset. However, in general, increasing the number of examples in the prompt can lead to improved task performance, as it provides the model with more information to learn from and reduces the impact of noise and variability in the data. On the other hand, too many examples can lead to overfitting, where the model becomes too specialized to the training data and fails to generalize well to new, unseen data. The ideal number of examples will depend on the specific task and dataset, but as a general rule, a moderate number of examples (e.g. 5-10) is often found to be optimal for many tasks.",
+       "The impact of the number of examples in the prompt on task performance is a topic of ongoing research, with some studies suggesting that the relationship is non-linear, and that the optimal number of examples may depend on the specific task and dataset. For example, a study on question answering tasks found that increasing the number of examples from 1 to 5 improved performance, but further increases in the number of examples did not lead to significant improvements. In contrast, a study on text classification tasks found that increasing the number of examples from 10 to 50 improved performance, but further increases in the number of examples did not lead to significant improvements. The relationship between the number of examples and task performance is likely to be complex and dependent on the specific task and dataset, and more research is needed to fully understand the optimal number of examples for different tasks.",
+       "The effect of the number of examples in the prompt on task performance is a multifaceted issue, with research suggesting that the optimal number of examples can vary depending on the specific task, dataset, and model architecture. For example, a study on natural language processing tasks found that increasing the number of examples from 1 to 5 improved performance, but further increases in the number of examples did not lead to significant improvements. In contrast, a study on computer vision tasks found that increasing the number of examples from 10 to 50 improved performance, but further increases in the number of examples did not lead to significant improvements. The relationship between the number of examples and task performance is likely to be complex and dependent on the specific task, dataset, and model architecture, and more research is needed to fully understand the optimal number of examples for different tasks."
+      ],
+      "roberta-nsp-drop": [
+       "What pre-training objective was found unnecessary and removed?"
+      ],
+      "t5-text2text": [
+       "What is the definition of NLP?",
+       "What are the main types of NLP tasks?",
+       "What is the difference between NLP and ML?",
+       "What are the applications of NLP?",
+       "What are the challenges in NLP?",
+       "What are the different NLP techniques used in text classification?",
+       "What is the role of deep learning in NLP?",
+       "What are the different NLP tasks used in sentiment analysis?"
+      ]
+     }
+    }
+   },
+   "changed": {
+    "rewrite": {
+     "gained": [
+      "adam-bias"
+     ],
+     "lost": []
+    },
+    "decompose": {
+     "gained": [],
+     "lost": []
+    }
+   },
+   "model": "llama3.2"
+  }
+ }
+}
