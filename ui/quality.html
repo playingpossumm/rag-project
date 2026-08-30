@@ -47,7 +47,16 @@ a{color:inherit}
   position:sticky;top:0;z-index:20}
 .folio-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:54px;
   display:flex;align-items:center;gap:22px}
-.folio .name{font-size:14px;font-weight:600;white-space:nowrap}
+/* The wordmark is a wordmark, not a nav label, so it does not take the
+   capitals the links take. It was rendering as RETRIEVAL VISUALIZED/ on this
+   page and as retrieval visualized/ on the front page. */
+.folio .name{font-family:var(--mono);font-size:13px;font-weight:500;
+  letter-spacing:-.01em;text-transform:none;white-space:nowrap;
+  color:var(--ink);text-decoration:none}
+.folio .name:hover{opacity:.72}
+.folio .name .slash{color:var(--faint)}
+.folio .here{font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
 .folio .rule{flex:1;height:1px;background:var(--rule)}
 .folio a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;
   text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
@@ -161,19 +170,20 @@ details[open] summary::before{content:"- ";}
 <body>
 
 <header class="folio"><div class="folio-in">
-  <span class="name">Retrieval analytics</span>
+  <a class="name" href="/">retrieval visualized<span class="slash">/</span></a>
+  <span class="rule"></span>
+  <a href="/">Ask</a>
   <a href="/about">About</a>
-  <a href="/">&larr; Ask a question</a>
+  <span class="here">Analytics</span>
   <a class="ghlink" href="https://github.com/ArdellAlfatih/rag-project"
      target="_blank" rel="noopener" title="Source on GitHub"
      aria-label="Source on GitHub"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
-  <span class="rule"></span>
-  <span class="lab" id="readout">loading</span>
 </div></header>
 
 <main class="wrap">
 
 
+  <p class="lab" id="readout" style="margin:0 0 10px">loading</p>
   <div class="pills" id="pills"></div>
   <div class="tiles panel" id="tiles" style="margin-top:14px"></div>
 
@@ -518,21 +528,22 @@ if (!A || !A.corpora?.length) {
     const c = active;
     const shipped = c.ladder.find(r => r.config === "+ diversity 2/src") || c.ladder.at(-1);
     $("#tiles").innerHTML = [
-      ["Corpus", nf(c.chunks), `${c.documents} documents · ${Object.keys(c.formats).join(" ").toUpperCase()}`,
-       "One set of documents and everything derived from it. The number is how many passages the documents were cut into, which is what the search actually looks through."],
-      ["Golden set", c.n_answerable + c.n_adversarial,
-       `${c.n_answerable} answerable · ${c.n_adversarial} adversarial`,
-       "The labelled questions this corpus is scored against, each with the documents that answer it. Every number on this page comes from running these."],
-      ["Hit rate @5", f3(shipped.hit_rate), "a relevant passage returned",
-       "How often at least one correct passage appears in the top five. A high hit rate means the answer was found; it says nothing about how far down the list it was."],
-      ["Source recall", f3(shipped.src_recall), "of the documents that answer",
-       "How many of the documents that answer a question were actually returned. Hit rate can be perfect while three of four answering documents are missed; this is the number that notices."],
-      ["Threshold", (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1),
-       c.calibrated ? "calibrated on this corpus" : "borrowed, not calibrated",
-       "The score below which the system declines to answer. Set per corpus, because the same number refuses almost nothing on one set and a third of the answers on another."],
-      ["Wrongly refused", `${c.at_calibrated.refused} / ${c.n_answerable}`,
-       `${c.at_zero.refused} at the old global 0.0`,
-       "Questions the documents can answer that the gate turned down anyway. This is the cost of refusing at all, and it is the number a threshold is chosen to keep small."],
+      ["Passages searched", nf(c.chunks),
+       `${c.documents} documents · ${Object.keys(c.formats).join(" ").toUpperCase()}`,
+       "The documents are cut into short overlapping passages, and this is how many. Every search on this set looks through all of them."],
+      ["Test questions", c.n_answerable + c.n_adversarial,
+       `${c.n_answerable} answerable · ${c.n_adversarial} unanswerable`,
+       "Questions with known answers, used to score the system. The unanswerable ones are planted: the documents do not contain the answer, and the system is supposed to refuse them."],
+      ["Found in top 5", f3(shipped.hit_rate), "of answerable questions",
+       "How often a correct passage appears in the top five results. It tells you the answer was found. It does not tell you how far down the list it was."],
+      ["Documents found", f3(shipped.src_recall), "of the ones that answer",
+       "Some questions are answered by several documents. This is the share of those that came back. A question answered by four papers can score a perfect hit rate while returning only one of them."],
+      ["Refuses below", (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1),
+       c.calibrated ? "measured on this set" : "borrowed, not measured",
+       "The score under which the system declines to answer. Each set of documents gets its own, because one number refuses almost nothing on one set and a third of the answers on another."],
+      ["Refused wrongly", `${c.at_calibrated.refused} / ${c.n_answerable}`,
+       `${c.at_zero.refused} at the old shared 0.0`,
+       "Questions the documents can answer that were turned down anyway. This is what refusing costs, and it is what the threshold is chosen to keep small."],
     ].map(([k, v, s, why]) =>
       `<div class="tile" data-why="${esc(why)}" tabindex="0">
          <div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
