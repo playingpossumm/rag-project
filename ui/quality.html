@@ -39,6 +39,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
   font-size:15px;line-height:1.55;letter-spacing:-.006em;-webkit-font-smoothing:antialiased}
 h1,h2{margin:0;font-weight:600;letter-spacing:-.022em;line-height:1.1}
 a{color:inherit}
+h2.lab{margin:0;font-size:10px}
 .lab{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;
   text-transform:uppercase;color:var(--faint)}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
@@ -64,6 +65,15 @@ a{color:inherit}
 .ghlink{display:inline-flex;align-items:center;line-height:0;opacity:.62;
   transition:opacity 140ms ease-out}
 .ghlink:hover{opacity:1}
+
+/* A phone header, matching the front page's. The wordmark and three links do
+   not fit at 390px with 22px between them: six items make five gaps, which is
+   where most of the overflow was. Without this the page scrolled sideways. */
+@media (max-width:560px){
+  .folio-in{gap:11px}
+  .folio .name{font-size:11.5px}
+  .folio a,.folio .here{font-size:9.5px;letter-spacing:.09em}
+}
 
 .wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 96px}
 .panel{border:1px solid var(--rule);background:var(--panel);margin-top:24px;
@@ -157,6 +167,12 @@ td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top
 tr:last-child td{border-bottom:0}
 td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .scroll{overflow-x:auto}
+/* A heading for the document rather than for the eye: the page announces
+   itself in the wordmark and the nav marker, so drawing a sixth line of type
+   would repeat what the design already says. Clipped rather than
+   display:none, which would take it out of the accessibility tree too. */
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
 details{margin-top:16px}
 summary{cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--faint);list-style:none}
@@ -185,13 +201,14 @@ details[open] summary::before{content:"- ";}
 <main class="wrap">
 
 
+  <h1 class="vh">Retrieval analytics</h1>
   <p class="lab" id="readout" style="margin:0 0 10px">loading</p>
   <div class="pills" id="pills"></div>
   <div class="tiles panel" id="tiles" style="margin-top:14px"></div>
 
   <!-- 1. the ladder ------------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><span class="lab">What each mechanism is worth</span>
+    <div class="phead"><h2 class="lab">What each mechanism is worth</h2>
       <span class="right lab" id="ladder-n"></span></div>
     <div class="pbody">
       <p class="note">Each row is the row above it plus one more mechanism,
@@ -206,7 +223,7 @@ details[open] summary::before{content:"- ";}
 
   <!-- 2. across corpora ---------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><span class="lab">The same pipeline on three corpora</span>
+    <div class="phead"><h2 class="lab">The same pipeline on three corpora</h2>
       <span class="right lab">shipped configuration</span></div>
     <div class="pbody">
       <p class="note">The pipeline was tuned on the ML papers. Two further corpora
@@ -225,7 +242,7 @@ details[open] summary::before{content:"- ";}
 
   <!-- 3. the threshold ----------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><span class="lab">Where each corpus stops answering</span>
+    <div class="phead"><h2 class="lab">Where each corpus stops answering</h2>
       <span class="right lab">the finding that matters</span></div>
     <div class="pbody">
       <p class="note">Every question scored by the cross-encoder, plotted on one
@@ -250,7 +267,7 @@ details[open] summary::before{content:"- ";}
 
   <!-- 4. the sweep --------------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><span class="lab">What every cut point would cost</span>
+    <div class="phead"><h2 class="lab">What every cut point would cost</h2>
       <span class="right lab" id="sweep-n"></span></div>
     <div class="pbody">
       <p class="note">Counted in cases, not rates. <b>Rates are the wrong unit
@@ -267,7 +284,7 @@ details[open] summary::before{content:"- ";}
   </section>
 
   <section class="panel" id="answers-panel" hidden>
-    <div class="phead"><span class="lab">What the written answer is worth</span>
+    <div class="phead"><h2 class="lab">What the written answer is worth</h2>
       <span class="right lab" id="answers-n"></span></div>
     <div class="pbody">
       <p class="note">Every other number on this page measures retrieval: which

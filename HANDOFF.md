@@ -5,7 +5,7 @@ measurements overturned, and what is still wrong with it. `README.md` is the
 short version and the `/about` page in the running app is the plain-language
 one.
 
-Started 2026-08-19, current as of 2026-08-28. **Everything here is measured or
+Started 2026-08-19, current as of 2026-08-30. **Everything here is measured or
 verifiable from the repository, and where something is unverified it says so.**
 Numbers in §2 and §3 are checked against the generated measurements by
 `python src/check_docs.py`, so this document cannot quietly drift from the
@@ -328,6 +328,19 @@ rather than outstanding.
 | `ui/index.html` | the app |
 | `ui/pipeline-map.js` | the city — `buildCity` (corpus only), `buildRun` (one query), `drawScene`, `captions` |
 | `ui/fonts/*.woff2` | Inter + DM Mono, latin subsets, 78 KB, served from `/fonts/` |
+| `ui/versions.html` + `ui/versions/` | **temporary.** Every version of the hero diagram, drawn side by side from one trace |
+
+**`/versions` is deployed, linked from nothing, and meant to be deleted.** It
+draws all four versions the hero diagram has been through, each rendered by the
+code from the commit that produced it, from one trace and one palette, so the
+comparison is about the drawing and nothing else. It exists so a direction can
+be chosen by looking rather than by remembering.
+
+Delete `ui/versions.html`, `ui/versions/` and the two data files under it once
+that choice is made. `src/check_links.py` lists `/versions` as a file page
+rather than a route, so removing it means removing that exception too, which is
+deliberate: the checker fails and names it rather than letting a dead page sit
+quietly.
 *(`ui/pipeline.html`, `ui/ambient.html` and `ui/ambient-fields.js` were deleted on
 2026-08-21; see "Ambient fields" below. They are in git if wanted back.)*
 
@@ -866,11 +879,17 @@ that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-30: **384 checks plus the route suite**: 22 metrics,
-28 loaders, 80 trace, 8 OCR, 33 freshness, 10 reranker cache, 17 golden-set
-audit, 13 api, 9 ingest cache, 19 generate, 24 local generation, 25 serve, 16
-analytics, 60 answer-quality judge, plus 20 answer-highlight checks under
-`node ui/test-answer-mark.mjs`.
+Test counts, as of 2026-08-30: **389 checks plus the route suite**: 80 trace,
+60 answer-quality judge, 33 loaders, 33 freshness, 25 serve, 24 local
+generation, 22 metrics, 19 generate, 17 golden-set audit, 16 analytics, 13 api,
+10 reranker cache, 9 ingest cache and 8 OCR, which is 369, plus 20
+answer-highlight checks under `node ui/test-answer-mark.mjs`.
+
+These are counted by running the suites. They were wrong until 2026-08-30: the
+total read 384 because the list still said 28 loaders, a figure five behind
+since `_unhash` added five cases, and the total had been computed from the
+stale item. Nothing checks this family of numbers, so it is the one place in
+these documents where a figure can still drift quietly.
 
 The 60 on the judge are worth their own sentence, because that module is the
 only measurement here whose input is prose, and prose is where a string test
