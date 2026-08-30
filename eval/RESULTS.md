@@ -579,3 +579,22 @@ already serialises rows as `Column: value` pairs for exactly that reason, but th
 choice is **unvalidated**, since no spreadsheet has been evaluated. Testing on real
 financial data is the only way to know, and it is likely to produce a different
 answer.
+
+---
+
+## The written answer is measured elsewhere
+
+Everything above scores **retrieval**: which passages came back, and in what
+order. None of it says anything about the prose written from them.
+
+That is measured separately by `src/evaluate_answers.py`, and the figures live
+in [`answer-quality.json`](answer-quality.json) rather than here. Two reasons
+they are not in this file. Every table above is generated from `results.json`
+and checked by `python src/build_results_doc.py --check`, and a hand-typed
+table of numbers from a different file is the drift that check exists to
+prevent. And the answer figures are not the same kind of measurement: they
+describe one local model on a sample, and would move under a different
+generator, which is true of nothing above.
+
+The quality page renders them per corpus, and the README's limitations section
+carries the summary with its caveats.

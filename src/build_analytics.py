@@ -18,6 +18,7 @@ from check_freshness import artefact, stamp  # noqa: E402
 
 ROOT = Path(__file__).parent.parent
 OUT = ROOT / "eval" / "analytics.json"
+ANSWERS = ROOT / "eval" / "answer-quality.json"
 
 # The order the harness reports configurations in is the order they were added,
 # which is not the order they compose in. This is the ladder: each row adds one
@@ -108,6 +109,41 @@ def examples(cases: list[dict]) -> list[dict]:
     return out
 
 
+def answer_quality() -> dict:
+    """What `src/evaluate_answers.py` measured, per corpus, if anything.
+
+    Optional on purpose. Answer quality costs about a minute per question on a
+    CPU, so it is sampled and may not exist for a corpus at all; a missing
+    block means the section is not drawn, rather than drawn empty.
+    """
+    if not ANSWERS.exists():
+        return {}
+    try:
+        raw = json.loads(ANSWERS.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:                      # noqa: BLE001
+        print(f"  answer-quality.json unreadable, skipped: {exc}")
+        return {}
+    out = {}
+    for name, block in (raw.get("corpora") or {}).items():
+        sm = block.get("summary") or {}
+        if not sm.get("n"):
+            continue
+        out[name] = {
+            "model": block.get("model"),
+            "n": sm["n"],
+            "n_answerable": sm.get("n_answerable", 0),
+            "n_adversarial": sm.get("n_adversarial", 0),
+            "invented_citations": sm.get("invented_citations", 0),
+            "answers_with_invented": sm.get("answers_with_invented", 0),
+            "correct": sm.get("correct", 0),
+            "unmatched": len(sm.get("unmatched", [])),
+            "refused_rightly": sm.get("refused_rightly", 0),
+            "refused_wrongly": sm.get("refused_wrongly", 0),
+            "grounded_mean": sm.get("grounded_mean"),
+        }
+    return out
+
+
 def build():
     data = {"generated_by": "src/build_analytics.py", "corpora": [],
             # Which files each entry was built from. This is what makes a
@@ -115,8 +151,14 @@ def build():
             # detectable: every count still agrees and every number is old.
             # src/check_freshness.py compares these against what is on disk.
             "inputs": {"corpora_json": stamp(corpora.CONFIG)["digest"],
+                       # Answer quality is sampled, so a re-score can move every
+                       # figure without moving any count. Only a digest catches
+                       # that, and check_freshness compares this one.
+                       "answers": (stamp(ANSWERS)["digest"]
+                                   if ANSWERS.exists() else None),
                        "per_corpus": {}}}
     reg = corpora.registry()
+    answers = answer_quality()
 
     for name, cfg in reg.items():
         if not cfg["indexed"] or not cfg["golden"]:
@@ -179,9 +221,16 @@ def build():
             # corpus still suggested asking about BLEU scores on WMT 2014.
             "examples": examples(cases),
         }
+        # The only measurement here produced by a language model rather than by
+        # arithmetic over rankings, and the only one that would move under a
+        # different generator. Absent when that corpus has none.
+        if name in answers:
+            entry["answers"] = answers[name]
         data["corpora"].append(entry)
         print(f"  {name}: {len(ans)} answerable, {len(adv)} adversarial, "
-              f"{len(entry['ladder'])} ladder rows")
+              f"{len(entry['ladder'])} ladder rows"
+              + (f", {entry['answers']['n']} answers scored"
+                 if "answers" in entry else ""))
 
     OUT.write_text(json.dumps(data, indent=1), encoding="utf-8")
     print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size // 1024} KB)")
