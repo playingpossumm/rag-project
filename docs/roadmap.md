@@ -30,14 +30,17 @@ python src/test_generate_local.py # generation, over a real socket
 node  ui/test-answer-mark.mjs     # which words of a passage are set bold
 ```
 
-**Four guards**, each exiting non-zero rather than printing a warning nobody
-reads. They exist because a generated file has gone stale silently three times:
+**Six guards**, each exiting non-zero rather than printing a warning nobody
+reads. They exist because a generated file has gone stale silently three times,
+and because a link on `/about` named a branch this repository does not have:
 
 ```bash
 python src/check_freshness.py     # golden set -> per_case -> analytics -> front page
 python src/check_golden.py        # do the labels still describe the corpus?
 python src/check_docs.py          # do the documents match the measurements?
+python src/check_links.py         # do the links the interface serves go anywhere?
 python src/build_results_doc.py --check
+python src/build_corpus_manifest.py --check   # does the document list match the indexes?
 ```
 
 One thing is deliberately outside the count: `python src/smoke_routes.py` asks
@@ -130,7 +133,25 @@ these are in `docs/engineering-log.md` with the measurements.
 ## Still genuinely blocked
 
 Nothing is blocked on API credit any more. `RAG_GENERATOR=ollama` runs the
-whole generation path against a local model. What remains unmeasured is answer
-*quality*: every number in this project measures retrieval, and no evaluation of
-generated prose exists. That needs a rubric and a judge, and the judge is the
-hard part.
+whole generation path against a local model, and `src/evaluate_answers.py`
+scores the prose that comes out of it: invented citations, correctness against
+the labelled answer string, refusal on adversarial questions, and a lexical
+groundedness proxy. There is no LLM judge, deliberately, because a judge model
+is a second system whose own failures are invisible and would make this
+project's claim that every number is reproducible from the repository false.
+
+Three limits on that measurement, none of which is a missing rubric:
+
+- **The generator is a 3B local model**, so the numbers describe llama3.2 on
+  this corpus and not the pipeline's ceiling. A stronger model would need
+  either credit or a larger local one.
+- **Correctness is a substring test**, so it cannot credit a right answer in
+  other words. It is a floor rather than a rate, and the cases it rejects are
+  reported in `unmatched` to be read rather than silently scored as wrong.
+- **The sample is small.** Answer quality costs about a minute per question on
+  a CPU, which is why it samples by default rather than running all 157 cases.
+
+`src/test_evaluate_answers.py` holds the judge to answers it has already got
+wrong, which is how both of its first-run defects were found: a plain refusal
+scored as an answer, and a correct paraphrase scored as wrong with nothing
+saying so.

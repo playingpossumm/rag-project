@@ -872,13 +872,17 @@ audit, 13 api, 9 ingest cache, 19 generate, 24 local generation, 25 serve, 16
 analytics, plus 20 answer-highlight checks under
 `node ui/test-answer-mark.mjs`.
 
-Three checks now guard the things that have gone wrong silently before, and
-all three exit non-zero rather than printing a warning nobody reads:
+Six guards now cover the things that have gone wrong silently before, and all
+six exit non-zero rather than printing a warning nobody reads. The count in
+this sentence disagreed with the list under it until 2026-08-30, which is the
+failure `check_docs.py` exists to stop, one level up:
 
 ```
-python src/check_freshness.py   # golden set -> per_case -> analytics -> front page
-python src/check_golden.py      # does each golden set still describe its corpus?
-python src/check_docs.py        # do HANDOFF §2 and the README match the measurements?
+python src/check_freshness.py     # golden set -> per_case -> analytics -> front page
+python src/check_golden.py        # do the labels still describe the corpus?
+python src/check_docs.py          # do the documents match the measurements?
+python src/check_links.py         # do the links the interface serves go anywhere?
+python src/build_results_doc.py --check
 python src/build_corpus_manifest.py --check   # does the document list match the indexes?
 ```
 
@@ -955,6 +959,8 @@ disclaim current work.
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
 | `src/check_golden.py` | does each golden set still describe the corpus it scores? |
+| `src/check_links.py` | do the links the interface serves resolve, including the branch a GitHub link names? |
+| `src/test_evaluate_answers.py` | the answer-quality judge, against answers it has already scored wrongly |
 | `src/check_docs.py` | do the numbers written in HANDOFF §2 and the README match the measurements? |
 | `src/sweep_fusion.py` | every fusion, every corpus, at the configuration served |
 | `src/profile_query.py` | where the time in one query goes, stage by stage |
