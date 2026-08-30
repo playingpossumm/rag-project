@@ -78,19 +78,70 @@ STOP = {
 # How a citation is written, per generate.SYSTEM_PROMPT: [source, page X].
 CITATION = re.compile(r"\[([^\]]+?)(?:,\s*(?:page|slide|sheet|section)\s*[^\]]*)?\]")
 
-# Phrases a refusal uses. Matched loosely because the instruction is "say so
+# How a refusal is worded. Matched loosely because the instruction is "say so
 # plainly" rather than a fixed form, and a model that invents its own wording
 # for "I cannot answer this" is still refusing.
-REFUSAL = ("does not contain", "doesn't contain", "no information",
-           "not contain", "cannot answer", "can't answer", "unable to answer",
-           "not provided", "not mentioned", "not available", "does not provide",
-           "not enough information", "no mention", "not present", "not found",
-           "does not include", "not specify", "does not specify")
+#
+# This began as a list of fixed phrases and missed a refusal on its first real
+# run: "I don't have any information about proof of stake protocols" was scored
+# as an answer, because the list held "no information" and nothing that matched
+# "don't have any information". A miss here is expensive in one direction only:
+# it reports a model that refused correctly as one that confabulated, which is
+# the worst thing this harness can say about an answer.
+#
+# Split in two, because the second group is only a refusal when it is talking
+# about the source material. "Air sacs are not found in mammals" is a claim
+# about biology and was scored as a refusal by an earlier version of this list.
+REFUSAL_PLAIN = tuple(re.compile(p) for p in (
+    r"do\s?n[o']t\s+have\s+(?:any\s+)?(?:information|details|data|mention)",
+    r"(?:do|did|does)\s?n[o']t\s+have\s+(?:enough|sufficient)\s+information",
+    r"\bno\s+(?:information|mention|reference|indication)\b",
+    r"(?:can|could|cann)o?t\s+(?:be\s+)?(?:answer|determine)",
+    r"\bcan[''`]?t\s+(?:answer|determine)",
+    r"unable\s+to\s+(?:answer|determine|find)",
+    r"not\s+enough\s+information",
+    r"cannot\s+be\s+answered",
+))
+
+# The same negations, but they have to be about the documents to count.
+REFUSAL_SCOPED = tuple(re.compile(p) for p in (
+    r"does\s?n[o']t\s+(?:contain|provide|include|specify|mention|say|discuss)",
+    r"do\s?n[o']t\s+(?:contain|provide|include|specify|mention|say|discuss)",
+    r"(?:is|are|was|were)\s+(?:no|not)\s+(?:any\s+)?"
+    r"(?:information|mention|reference|details|indication)",
+    r"\bnot\s+(?:contain|mentioned|provided|available|present|found|specified"
+    r"|discussed|included|addressed|given)",
+    r"\bno\s+(?:details|record)\b",
+))
+
+# What a model calls the material it was handed.
+SOURCE_NOUN = re.compile(
+    r"excerpt|passage|context|document|text|source|material|corpus|"
+    r"provided|supplied|given|above|here|these|record")
+
+# How far either side of the negation a source noun still scopes it. One
+# clause, roughly: long enough for "not mentioned anywhere in the provided
+# excerpts", short enough that a later unrelated sentence cannot rescue it.
+SCOPE = 60
 
 
 def words(text: str) -> set[str]:
     return {w for w in re.findall(r"[a-z0-9][a-z0-9\-']+", normalize(text))
             if w not in STOP and len(w) > 2}
+
+
+def stem(word: str) -> str:
+    """Enough inflection-stripping to match "keeled" against "keel".
+
+    Not a real stemmer, and it does not need to be: it decides only whether an
+    answer the string test rejected is worth a human reading. It refuses to
+    strip when the remainder would be a stump, so "wing" stays "wing" rather
+    than becoming "w".
+    """
+    for suffix in ("ing", "ed", "es", "s"):
+        if word.endswith(suffix) and len(word) - len(suffix) >= 4:
+            return word[:-len(suffix)]
+    return word
 
 
 def cited_sources(answer: str) -> list[str]:
@@ -111,11 +162,11 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
     cites = cited_sources(answer)
     invented = []
     for c in cites:
-        stem = Path(c).stem.lower()
+        cited = Path(c).stem.lower()
         # A citation counts as supplied if it names a document that was given,
         # allowing for the model dropping or mangling the extension. Substring
         # both ways, because models truncate long filenames.
-        if not any(stem == s or stem in s or s in stem for s in supplied_stems):
+        if not any(cited == s or cited in s or s in cited for s in supplied_stems):
             invented.append(c)
 
     answer_words = words(answer)
@@ -125,17 +176,35 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
     grounded = (len(answer_words & passage_words) / len(answer_words)
                 if answer_words else 0.0)
 
-    lowered = answer.lower()
-    refused = any(phrase in lowered for phrase in REFUSAL)
+    lowered = normalize(answer)
+    refused = any(p.search(lowered) for p in REFUSAL_PLAIN)
+    if not refused:
+        for p in REFUSAL_SCOPED:
+            m = p.search(lowered)
+            if m and SOURCE_NOUN.search(
+                    lowered[max(0, m.start() - SCOPE):m.end() + SCOPE]):
+                refused = True
+                break
 
+    # `correct` is containment of the labelled string and nothing looser. On
+    # the first real run it called `bird-keel` wrong for answering "the keel on
+    # their breastbone" where the label says "keeled sternum": the right answer
+    # in the wrong words. Loosening the test would trade that false negative
+    # for false positives and inflate the number, so the test is unchanged and
+    # the rejects are surfaced instead. `near` says which of them share the
+    # label's content words and are therefore worth reading first.
     wanted = case.get("answer_contains")
-    correct = None
+    correct, near = None, None
     if wanted and not case.get("unanswerable"):
-        correct = normalize(wanted) in normalize(answer)
+        correct = normalize(wanted) in lowered
+        if not correct:
+            want_stems = {stem(w) for w in words(wanted)}
+            have_stems = {stem(w) for w in words(answer)}
+            near = bool(want_stems) and bool(want_stems & have_stems)
 
     return {"citations": len(cites), "invented": invented,
             "grounded": round(grounded, 3), "refused": refused,
-            "correct": correct, "chars": len(answer)}
+            "correct": correct, "near": near, "chars": len(answer)}
 
 
 def main() -> int:
@@ -203,12 +272,18 @@ def main() -> int:
 
         ans = [r for r in rows if not r["unanswerable"]]
         adv = [r for r in rows if r["unanswerable"]]
+        unmatched = [r["id"] for r in ans if r["correct"] is False]
         summary = {
             "n": len(rows),
             "invented_citations": sum(len(r["invented"]) for r in rows),
             "answers_with_invented": sum(1 for r in rows if r["invented"]),
             "correct": sum(1 for r in ans if r["correct"]),
             "n_answerable": len(ans),
+            # Every answerable case the string test rejected. Some are wrong
+            # answers and some are right answers in other words, and this
+            # harness does not claim to tell them apart. Read them.
+            "unmatched": unmatched,
+            "unmatched_sharing_words": [r["id"] for r in ans if r.get("near")],
             "refused_wrongly": sum(1 for r in ans if r["refused"]),
             "refused_rightly": sum(1 for r in adv if r["refused"]),
             "n_adversarial": len(adv),
@@ -221,23 +296,36 @@ def main() -> int:
               f"(in {summary['answers_with_invented']} of {summary['n']} answers)")
         print(f"    correct              {summary['correct']}/{summary['n_answerable']}"
               f"   (contains the labelled answer string)")
+        if unmatched:
+            print(f"    unmatched            {len(unmatched)} to read by hand: "
+                  f"{', '.join(unmatched)}")
         print(f"    refused when it should  {summary['refused_rightly']}/"
               f"{summary['n_adversarial']}   and when it should not: "
               f"{summary['refused_wrongly']}/{summary['n_answerable']}")
         print(f"    groundedness (proxy) {summary['grounded_mean']:.3f}")
         report[name] = {"label": cfg["label"], "model": generate_local.MODEL,
                         "summary": summary, "cases": rows}
+        # After each corpus, so an interrupted run keeps what it has measured.
+        write(args.emit, report)
 
     if not report:
         print("nothing evaluated")
         return 1
-    args.emit.write_text(json.dumps(
-        {"generated_by": "src/evaluate_answers.py",
-         "note": "No LLM judge. Citations and correctness are objective; "
-                 "groundedness is a lexical proxy and not a verdict.",
-         "corpora": report}, indent=1) + "\n", encoding="utf-8")
     print(f"\n  wrote {args.emit.name}")
     return 0
+
+
+def write(dest: Path, report: dict) -> None:
+    """The results so far, in the shape the finished file has."""
+    dest.write_text(json.dumps(
+        {"generated_by": "src/evaluate_answers.py",
+         "note": "No LLM judge. Citations and correctness are objective; "
+                 "groundedness is a lexical proxy and not a verdict. "
+                 "`correct` is containment of the labelled answer string, so a "
+                 "right answer in other words counts against it; the cases it "
+                 "rejected are listed in `unmatched` to be read rather than "
+                 "scored.",
+         "corpora": report}, indent=1) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

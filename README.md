@@ -283,15 +283,17 @@ python src/build_analytics.py  # what the pages plot -> eval/analytics.json
 python src/hard_cases.py       # only the cases nothing gets right, in ~20s
 ```
 
-**Five guards, each exiting non-zero rather than printing a warning nobody
+**Six guards, each exiting non-zero rather than printing a warning nobody
 reads.** They exist because a generated file has gone stale silently three
-times, and once the front page spent four days offering questions that had been
-deleted from the golden set for being unanswerable:
+times, once the front page spent four days offering questions that had been
+deleted from the golden set for being unanswerable, and once a link on `/about`
+named a branch this repository does not have:
 
 ```bash
 python src/check_freshness.py     # golden set -> per_case -> analytics -> front page
 python src/check_golden.py        # do the labels still describe the corpus?
 python src/check_docs.py          # do the documents match the measurements?
+python src/check_links.py         # do the links the interface serves go anywhere?
 python src/build_results_doc.py --check
 python src/build_corpus_manifest.py --check   # does the document list match the indexes?
 ```
