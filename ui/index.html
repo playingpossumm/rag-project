@@ -1851,7 +1851,7 @@ function renderTurn(turn, question, data, opts) {
   const top = sel[0];
   const gen = data.generation || { state: "off" };
 
-  const label = !gated ? "Can't tell" : v.confident ? "Answered" : "Not in your files";
+  const label = !gated ? "Can't tell" : v.confident ? "Answered" : "Not in these documents";
 
   // The header used to read "-9.23 · it needs 0.0 to answer at all", which is a
   // debugger readout standing where the answer should be. The numbers are real
@@ -1869,8 +1869,8 @@ function renderTurn(turn, question, data, opts) {
          passage together. It runs roughly −11 to +11 and is not a
          probability.`
       : `Nothing scored high enough to answer with. The closest passage reached
-         <b>${sig(v.confidence)}</b>, and everything below that is further away
-         still. The passages are shown so you can see what was considered.`;
+         <b>${sig(v.confidence)}</b>, and everything below that scored lower
+         still. The candidates are listed below for inspection.`;
 
   // The cited passage can be a bare heading -- "Bird vocalization", 17
   // characters -- which clears the gate on score alone and answers nothing.
@@ -1885,7 +1885,7 @@ function renderTurn(turn, question, data, opts) {
     ? `<div class="answer prose">${gen.text.split(/\n{2,}/)
         .map(p => `<p>${esc(p.trim())}</p>`).join("")}</div>`
     : v.confident === false
-      ? `<p class="answer">I could not find an answer to this in your documents.</p>`
+      ? `<p class="answer">No passage in this document set answers the question.</p>`
     : cells
       ? `<p class="fromsheet">This passage is one row of a spreadsheet. The
            labels are its columns.</p>
@@ -1917,13 +1917,13 @@ function renderTurn(turn, question, data, opts) {
       ${top && v.confident !== false ? alsoFound(sel, top, question, colour) : ""}
       ${gen.state === "unavailable" ? `<div class="warnbox">
         <span class="k">could not write it out</span>
-        It could not write this one out, so you are getting the passage itself.
-        That is the normal fallback, not a failure.
+        Generation was unavailable for this question, so the retrieved passage
+        is shown instead. This is the defined fallback, not an error.
         <br><code>${esc(gen.reason || "")}</code></div>` : ""}
       ${v.confident === false
-        ? `<p class="note">The closest matches are below, but none of them actually
-           answer the question. Handing you the nearest thing it found would be
-           <b>worse than saying nothing</b>.</p>`
+        ? `<p class="note">The closest matches are listed below, and none of them
+           answers the question. Returning the nearest match would be
+           <b>worse than returning nothing</b>.</p>`
         : gen.state === "ok"
           ? `<p class="note">Written from the ${sel.length} passages below.</p>`
           : ""}
@@ -2140,7 +2140,7 @@ function renderStack(turn, data, colour, sig) {
     const hue = it ? colour(it.source) : "var(--wire)";
     out.push(`<div class="cn${kept.has(id) ? " in" : ""}"
       title="${esc(docName(it?.source || "unknown"))}${
-        kept.has(id) ? " — in the answer" : ""}">
+        kept.has(id) ? " · in the answer" : ""}">
       <i style="background:${hue}"></i>${String(i + 1).padStart(2, "0")}</div>`);
   });
   att.terms.forEach((t, r) => {
@@ -2162,9 +2162,9 @@ function renderStack(turn, data, colour, sig) {
 
   const dropped = (att.dropped || []).filter(Boolean);
   host.innerHTML = `
-    <p class="pnote">BM25 scores a passage by which of your words it contains,
-    counting rare words for much more than common ones. <b>Each row is one word
-    from your question. Each column is one candidate passage.</b> A darker cell
+    <p class="pnote">BM25 scores a passage by which of the question's words it
+    contains, counting rare words for much more than common ones. <b>Each row is
+    one word from the question. Each column is one candidate passage.</b> A darker cell
     means that word supplied more of that passage's score, and an empty cell
     means the word does not appear in it. Hover a cell for the document it
     belongs to.${dropped.length ? ` ${dropped.length === 1 ? "One word was" :

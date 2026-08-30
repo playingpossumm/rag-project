@@ -16,17 +16,18 @@ system it describes.
 ## 1. What this is, and why it exists
 
 A retrieval-augmented generation (RAG) system built by hand, in Python, from
-parts — not a wrapper around a framework.
+parts rather than as a wrapper around a framework.
 
 **The owner's stated goal is learning and portfolio**, not shipping a product
-today. That matters for how you weigh trade-offs: a working measurement that
-overturns a plan is worth more here than a feature that ships. They have also
+today. That sets how trade-offs are weighed: a measurement that overturns a
+plan is worth more here than a feature that ships. They have also
 explicitly said they intend to keep iterating and covering edge cases rather
 than stopping at "good enough", and that is their call, already reaffirmed once.
 
 **The strategic thesis** (settled, do not relitigate): this will not beat
-NotebookLM or Glean on answer quality — better models, more compute, teams. It
-competes on what closed consumer products structurally cannot offer:
+NotebookLM or Glean on answer quality, which have larger models and more
+compute behind them. It competes on what closed consumer products cannot
+offer:
 
 | Question a user has | Closed product | Here |
 |---|---|---|
@@ -41,8 +42,8 @@ competes on what closed consumer products structurally cannot offer:
 ## 2. Current measured state
 
 Three corpora, each with its own index, golden set, abstention threshold and
-rerank blend. **Nothing about a corpus transfers to another one** — that is the
-single most reused finding in this project, see §4.
+rerank blend. **Nothing about a corpus transfers to another one.** That is the
+most reused finding in this project; see §4.
 
 | | ML & NLP papers | Ornithology | Quant finance |
 |---|---|---|---|
@@ -72,8 +73,8 @@ one configuration everywhere, and `src/uniform_baseline.py` measures it:
 
 **Quote this table for the generalisation claim and the one above for the
 per-corpus one.** Across three corpora sharing no format, subject or provenance,
-one untuned configuration spans 0.078 of any-hit — and the corpus the pipeline
-was developed on gains +0.000 any-hit from its own tuning, so the tuning is not
+one untuned configuration spans 0.078 of any-hit. The corpus the pipeline was
+developed on gains +0.000 any-hit from its own tuning, so the tuning is not
 holding up three special cases.
 
 Reproduce: `python src/evaluate.py` (add `--golden eval/golden-birds.json` and
@@ -85,8 +86,8 @@ measures what the server serves.
 `src/build_results_doc.py`; `--check` fails when they have drifted. The prose
 around them is not generated.
 
-The other generated chain — golden set -> `per_case*.json` -> `analytics.json`
--> the questions the front page offers — is checked by
+The other generated chain, golden set -> `per_case*.json` -> `analytics.json`
+-> the questions the front page offers, is checked by
 `python src/check_freshness.py`, which exits 1 when any link is stale and prints
 the commands that rebuild it in order. `src/serve.py` runs it on startup and
 warns rather than blocking. See §7.
@@ -106,8 +107,8 @@ Context expansion (ML): none 0.746 recall @ 998 tok · **window±1 0.806 @ 2,355
 
 Fusion is corpus-dependent too, and the obvious reading of that was wrong.
 On the **candidate pool**, RRF beats dense-only on ML and quant and loses on
-birds — dense 0.962 against RRF 0.885 — which said the bird corpus wanted more
-dense weighting. Measured **end to end at the served configuration**
+birds, at dense 0.962 against RRF 0.885. That reading said the bird corpus
+wanted more dense weighting. Measured **end to end at the served configuration**
 (`src/sweep_fusion.py`, 2026-08-27) it reverses:
 
 | birds | pool any-hit | shipped-pipeline any-hit |
@@ -118,22 +119,21 @@ dense weighting. Measured **end to end at the served configuration**
 
 The first stage that finds the answer most often produces the worst final
 answer. A pool is not just a set of passages, it is an *ordering* handed to the
-cross-encoder, and dense hands over one the reranker cannot exploit — the same
-weakness the rerank blend exists to hedge against. **Quote the end-to-end row,
+cross-encoder, and dense hands over one the reranker cannot exploit. That is
+the same weakness the rerank blend exists to hedge against. **Quote the end-to-end row,
 never the pool row, when arguing about fusion.**
 
 `weighted a=0.5` does win a question on birds (`bird-dialects`, 0.846 → 0.885)
 and costs MRR (0.614 → 0.587) and NDCG. That is the same trade the rerank blend
 was judged on, and this corpus's own note already settles how to read it: on 26
 cases an any-hit gain of one question is thinner evidence than MRR, so **not
-shipped**. On quant, `weighted a=0.7` is weakly dominant — MRR 0.714 → 0.727,
-NDCG +0.006, source recall +0.006, any-hit unchanged — but no case changes
-hands, so it buys a fraction of a rank position at the cost of recalibrating
-that corpus's threshold. Also **not shipped**, and recorded rather than
-forgotten.
+shipped**. On quant, `weighted a=0.7` is weakly dominant: MRR 0.714 → 0.727,
+NDCG +0.006, source recall +0.006, any-hit unchanged. No case changes hands, so
+it buys a fraction of a rank position at the cost of recalibrating that
+corpus's threshold. Also **not shipped**, and recorded rather than forgotten.
 
 Query latency, measured per stage by `src/profile_query.py` (warm, median):
-**reranking is 92–95% of a query** — about 1,000 ms of 1,100. Embedding, FAISS,
+**reranking is 92–95% of a query**, about 1,000 ms of 1,100. Embedding, FAISS,
 BM25, fusion, the diversity cap and context expansion together are ~80 ms. Two
 consequences worth carrying: any latency work that is not about the
 cross-encoder is rounding error, and the interface's single "search, scoring and
@@ -141,12 +141,12 @@ reranking" number was hiding which of the three it was.
 
 `src/sweep_candidates.py` measures quality against milliseconds. **28 candidates
 scores worse than 20 on all three corpora while the pool ceiling rises on all
-three** — the reranker's precision degrades faster than the first stage's recall
-improves. 16 candidates gives *identical* any-hit on all three for ~22% less
+three.** The reranker's precision degrades faster than the first stage's
+recall improves. 16 candidates gives *identical* any-hit on all three for ~22% less
 time, at −2.6 MRR on birds; a real option, not shipped, because it regresses a
 corpus that was not the problem.
 
-Indexing caches live in the store being written, one set per corpus — until
+Indexing caches live in the store being written, one set per corpus. Until
 2026-08-27 they were shared and `prune()` deleted whatever did not belong to
 the corpus in hand, so indexing one corpus made the next re-index of the
 others a full re-parse. The timings below assume the caches survive.
@@ -188,7 +188,7 @@ Defaults, all justified by measurement in `eval/RESULTS.md`:
 `CHUNK_SIZE_TOKENS=210`, `CHUNK_OVERLAP_TOKENS=40`, `TOP_K=5`, `CANDIDATE_K=20`,
 `DEFAULT_FUSION="rrf"`, `RRF_K=60`, `DEFAULT_MAX_PER_SOURCE=2`,
 `ABSTAIN_THRESHOLD=0.0`, `DEFAULT_EXPANSION="window"`, `PARSER_VERSION=3`,
-`USE_TITLE_PREFIX=0` (off — see §4).
+`USE_TITLE_PREFIX=0` (off; see §4).
 
 ---
 
@@ -215,7 +215,7 @@ found in this repo's last five working sessions was in code that had tests
 wrong-typed JSON field dropped the connection, indexing one corpus deleted
 another's parse cache, six routes were served and documented nowhere, and
 `generate.py` had never been executed at all. In each case the module was read,
-reviewed and described correctly in the documents — and never invoked.
+reviewed and described correctly in the documents, and never invoked.
 
 So the rule is not "write more tests", it is **run the thing**. A test that
 imports a module and asserts on its output found all five; no amount of reading
@@ -229,16 +229,16 @@ written and reviewed in the same session. Do not treat visual verification as a
 final polish step.
 
 Other hard-won corrections worth not repeating:
-- NDCG once read **1.373** — the eval tool's own IDCG bug. Fixed, and as of
+- NDCG once read **1.373**, from the eval tool's own IDCG bug. Fixed, and as of
   2026-08-21 actually unit-checked: `src/test_metrics.py` holds the four
   hand-computed cases the field notes have always said were verified but which
-  were never committed. The regression has teeth — the pre-fix arithmetic
+  were never committed. The regression test has teeth: the pre-fix arithmetic
   returns 2.131 where the assertion demands ≤ 1.0. Second claimed-but-absent
   test found in this project, after `test_trace_matches_pipeline`.
 - Embeddings were silently truncated at 256 tokens (median 370 tokens lost per
   chunk) because chunk size was specified in *words*. Now token-based, with an assertion.
 - README numbers went stale against a grown golden set, and were caught by hand rather
-  than by anything automatic — which is why `check_docs.py` now exists. Re-running
+  than by anything automatic, which is why `check_docs.py` now exists. Re-running
   eval surfaced three more conclusion reversals.
 - `src/trace.py` would have shadowed the stdlib `trace` module for every dependency
   (`src/` is first on `sys.path`). Renamed `pipeline_trace.py`.
@@ -247,12 +247,12 @@ Other hard-won corrections worth not repeating:
 
 ## 5. UI state
 
-### Rewritten 2026-08-26 — the front page as it now stands
+### The front page as it now stands, rewritten 2026-08-26
 
 `retrieval visualized/`. Header carries **About**, **Analytics** and
 **Source**. The name is a **home button** that clears the thread. A third link
-to `/archive` — the pre-rebuild front page, served live beside the current one
-— was removed on 2026-08-29: the rebuild it existed to compare against is
+to `/archive`, the pre-rebuild front page served live beside the current one,
+was removed on 2026-08-29. The rebuild it existed to compare against is
 finished, and a visitor has no use for a frozen copy of the page they are
 already reading. The snapshot stays in `archive/`.
 
@@ -260,20 +260,20 @@ Flow: headline → what RAG is → the pipeline diagram → **pick a document se
 (dropdown, each with an isometric mark, counts and formats) → ask. Clicking the
 field opens the example questions, grouped by what each exercises: *one figure
 in one place*, *spread over several documents*, *decoys that look right*, *not
-in these documents*. Those come from `eval/analytics.json` — **regenerate it
-after any golden-set change or the page offers questions the corpus cannot
+in these documents*. Those come from `eval/analytics.json`. **Regenerate it
+after any golden-set change, or the page offers questions the corpus cannot
 answer.**
 
 An answer shows the passage at normal weight with only the **answering words**
 bold, its citation with the document's real title, a plain-language reading of
-the score, and **Also found** — passages from *other* documents, open by
-default. That last one exists because the top passage is sometimes wrong in a
+the score, and **Also found**, which lists passages from *other* documents and
+is open by default. That last one exists because the top passage is sometimes wrong in a
 specific way: asked for a bird's fused collarbone, the reranker prefers the
 pygostyle passage and puts the furcula second.
 
 The diagram: upright isometric panels, left to right, each stage a block whose
-**depth is how much survives** — six sheets at the index down to one at the
-answer. Projection is two numbers, not one angle: `SPREAD` 0.68 (how wide the
+**depth is how much survives**, from six sheets at the index down to one at
+the answer. Projection is two numbers, not one angle: `SPREAD` 0.68 (how wide the
 ground axes fan) and `RISE` 0.15 (camera height; 0 is eye level, 0.5 is a true
 isometric). Conflating them is why several attempts went wrong.
 
@@ -293,7 +293,7 @@ isometric). Conflating them is why several attempts went wrong.
 Rewritten in the session of 2026-08-19/20. `ui/index.html` is now an **app**, not
 the two-tab inspector this section used to describe.
 
-### Direction as of 2026-08-20 — dial the UI back
+### Direction as of 2026-08-20: dial the UI back
 
 The owner's current instruction, and it supersedes the ambition recorded below:
 **keep the UI clean and simple, and put the effort into the technicals.**
@@ -329,9 +329,9 @@ rather than outstanding.
 | `ui/pipeline-map.js` | the city — `buildCity` (corpus only), `buildRun` (one query), `drawScene`, `captions` |
 | `ui/fonts/*.woff2` | Inter + DM Mono, latin subsets, 78 KB, served from `/fonts/` |
 *(`ui/pipeline.html`, `ui/ambient.html` and `ui/ambient-fields.js` were deleted on
-2026-08-21 — see "Ambient fields" below. They are in git if wanted back.)*
+2026-08-21; see "Ambient fields" below. They are in git if wanted back.)*
 
-### Design direction — supersedes docs/ui-brief.md
+### Design direction, which supersedes docs/ui-brief.md
 
 The brief was written before a reference design was chosen
 (`JearDesuss/compute-debt-obligations`, a near-black editorial explainer). Where
@@ -346,7 +346,8 @@ the two disagree, this list wins and the brief is marked stale:
 - **Typographic rows, not cards.**
 - **No CDN, ever.** Fonts are bundled precisely because the corpus may be
   private and a page about private documents should not call a font host.
-- **The answer is the visual climax** — 30px against 10px labels.
+- **The answer is the largest element on the page**, at 30px against 10px
+  labels.
 
 Motion follows the `emil-design-eng` skill: custom `cubic-bezier(.23,1,.32,1)`
 rather than the weak built-in eases, `scale(.97)` press feedback, 60 ms staggered
@@ -354,11 +355,12 @@ panel entry, specific transition properties, reduced-motion honoured.
 
 ### The city
 
-Stages are places, and **the city is always fully drawn** — every block, tower
-and road exists before a question is asked; a query changes lighting and nothing
-else. This is load-bearing and was arrived at the hard way: an earlier draft grew
-the roads as results arrived, and the verdict on it was that it "pops out",
-because structure appearing as a consequence of the question is backwards.
+Stages are places, and **the city is always fully drawn.** Every block, tower
+and road exists before a question is asked; a query changes lighting and
+nothing else. This is load-bearing and was arrived at the hard way: an earlier
+draft grew the roads as results arrived, and the verdict on it was that it
+"pops out", because structure appearing as a consequence of the question is
+backwards.
 
 - The index is one block per document, sized by that document's **real** chunk
   count from `/api/chunks`. An even split looked right and was wrong.
@@ -378,11 +380,12 @@ because structure appearing as a consequence of the question is backwards.
 categorical palette, validated *all-pairs* (lines can sit anywhere): light CVD
 ΔE 9.2 / normal 24.0. Only three: no ordering of more clears the floor, so a
 fourth document folds to grey with a direct label. The previous code cycled HSL
-and failed at ΔE 1.6 — two documents the same colour for a deuteranopic reader.
+and failed at ΔE 1.6, which gave two documents the same colour for a
+deuteranopic reader.
 **Do not add a fourth hue without re-running the validator.** Note the dark-mode
 validation is now moot; if anyone reintroduces dark, it must be re-run.
 
-### Ambient fields — decided, then orphaned
+### Ambient fields: decided, then orphaned
 
 The owner asked to see generative options side by side, saw four at `/ambient`,
 and chose **Lattice for the masthead, Fringe for the idle backdrop, at 0.6
@@ -396,7 +399,7 @@ field into the masthead is the opposite of that. The work is in git
 
 ---
 
-## 5b. The architecture map — removed 2026-08-28
+## 5b. The architecture map, removed 2026-08-28
 
 `docs/architecture.html` was a self-contained isometric map of the codebase,
 generated from measured module sizes and hand-authored prose per building. It
@@ -408,7 +411,7 @@ is gone, along with `architecture/`, the three build scripts, `package.json`,
 **It was stale and said so itself.** `node scripts/architecture-sync.mjs --check`
 printed "measured.generated.ts is stale". Its coverage file described
 twenty-nine modules; `src/` holds seventy-five. Fixing it did not mean re-running
-the sync — the measurements regenerate, but every unclaimed module appears as
+the sync. The measurements regenerate, but every unclaimed module appears as
 drift until somebody writes prose for it, so the real cost was authoring
 forty-six buildings' worth of description that this document already covers in
 words.
@@ -420,7 +423,7 @@ serving no reader.
 **It contradicted the thing the project claims to be.** The README's first
 paragraph is that this is Python from parts with no framework; the map dragged
 in React 19, TypeScript and esbuild for one page. `package.json`'s own
-description conceded the point — "the project itself is Python; this exists
+description conceded the point: "the project itself is Python; this exists
 because the map ships as a bundled standalone page."
 
 **What replaced it, and it is better.** The `/about` page explains the pipeline
@@ -435,7 +438,7 @@ It is in git history if it is ever wanted back.
 
 - Developed on Windows 11, which is why the paths in these documents use
   backslashes. Nothing in the code is Windows-specific and the test suite has
-  no platform dependencies, but it has not been run on Linux or macOS — treat
+  no platform dependencies, but it has not been run on Linux or macOS. Treat
   that as untested rather than as supported.
 - venv at `.venv`. On Windows use `.venv\Scripts\python.exe` rather than bare
   `python`, so the tooling runs against the pinned dependencies rather than
@@ -443,37 +446,37 @@ It is in git history if it is ever wanted back.
 - Run the server: `.venv\Scripts\python.exe src\serve.py` → http://127.0.0.1:8000/
 - Routes: checked against the dispatch in `serve.py` by `src/check_docs.py`,
   both ways, because the gap that mattered was a route the code
-  served and no document mentioned — nobody tests what nobody has written down.
+  served and no document mentioned. Nobody tests what nobody has written down.
 
-  **Pages** — `/` the app · `/about` why the project exists, a guide to the
+  **Pages:** `/` the app · `/about` why the project exists, a guide to the
   pipeline and a glossary · `/quality` the retrieval-quality dashboard.
 
   The archive route, which served the pre-rebuild front page beside the current
   one, was removed on 2026-08-29: the rebuild it existed to compare against is
   finished. The snapshot stays in `archive/`.
 
-  **Assets** — `/pipeline-map.js` the diagram · `/answer-mark.js` the logic
+  **Assets:** `/pipeline-map.js` the diagram · `/answer-mark.js` the logic
   that decides which words of a passage are set bold ·
   `/fonts/*`.
 
-  **Asking** — `POST /api/chat` is what the interface calls for every question:
+  **Asking:** `POST /api/chat` is what the interface calls for every question:
   answer and trace in one round trip, so the two cannot disagree.
   `POST /ask` is the library wrapper, and `POST /api/trace` the pipeline
   inspector, which takes options. All three follow the selected corpus;
   `/ask` did not until 2026-08-27, and see §7.
 
-  **Corpus** — `/api/corpus` the active one · `/api/corpora` all of them, for
+  **Corpus:** `/api/corpus` the active one · `/api/corpora` all of them, for
   the document-set picker · `POST /api/corpus/select` switches which is served ·
   `/api/chunks` · `/api/index/inspect` · `POST /api/index/start` ·
   `/api/index/status`.
 
-  **Measurements** — `/api/eval` · `/api/analytics`, everything the analytics
+  **Measurements:** `/api/eval` · `/api/analytics`, everything the analytics
   page plots, generated by `src/build_analytics.py`.
 
   **`/health`**.
 - Playwright + Chromium installed in that venv. Use it; see §4.
 - `node` v24 available (the dataviz palette validator and architecture-map need it).
-- Console is cp1252 — scripts printing corpus text must
+- Console is cp1252, so scripts printing corpus text must
   `sys.stdout.reconfigure(encoding="utf-8", errors="replace")` or they crash.
 - Very long heredocs fail with `ENAMETOOLONG`; use the Write tool for large files.
 - `RAG_DATA_DIR` env var repoints the corpus directory (works for a synced Drive folder).
@@ -485,13 +488,13 @@ deliberate default.
 
 **Licence: MIT** (`LICENSE`), added 2026-08-28 for the public release.
 
-**`data/`, `store-birds/` and `store-quant/` are untracked** as of 2026-08-28 —
-78 MB of third-party papers and the same text again inside `metadata.json`.
+**`data/`, `store-birds/` and `store-quant/` are untracked** as of 2026-08-28:
+78 MB of third-party papers, and the same text again inside `metadata.json`.
 They remain in the *history* deliberately: this repository's prose cites
-**fourteen** of its own commit SHAs — `HANDOFF.md` §5 cites `f2ab5de` and
-`f1ea450`, and `docs/angle-sweep.html` stamps one on every entry — so a
-rewrite would dangle them, silently, because a dead SHA in a sentence reads
-exactly like a live one. (`serve.py` embedded `d1f8c71` in the archive banner
+**fourteen** of its own commit SHAs. `HANDOFF.md` §5 cites `f2ab5de` and
+`f1ea450`, and `docs/angle-sweep.html` stamps one on every entry. A rewrite
+would dangle them silently, because a dead SHA in a sentence reads exactly like
+a live one. (`serve.py` embedded `d1f8c71` in the archive banner
 until that route was removed on 2026-08-29; the count `check_docs.py` reports
 is the live one.) `src/check_docs.py` now counts and resolves them rather than
 leaving that as a number in a paragraph. See `docs/engineering-log.md`,
@@ -499,53 +502,55 @@ leaving that as a number in a paragraph. See `docs/engineering-log.md`,
 `src/fetch_corpus.py`, `src/fetch_topic.py` and `src/ingest.py`.
 
 **Git identity is repo-local**: `playingpossumm <the owner's address, removed 2026-09-07>`. The owner
-explicitly did not want their work email on this repo — do not change it.
+explicitly did not want their work email on this repo. Do not change it.
 
 **Commit style**: explain *why*, not just what; record the measurement that drove
 the change, including measurements that refuted the original plan.
 
 **Skills installed** (`~/.claude/skills/`): `frontend-design`, `design-anti-slop`,
 `algorithmic-art`, `hyperframes-animation`, `webapp-testing`, `architecture-map`,
-`dataviz`, plus all eleven from `emilkowalski/skills` — notably `emil-design-eng`
-(the UI-polish philosophy the current motion follows), `animate`,
-`review-animations`, `apple-design` and `prototype` (builds several genuinely
-different versions behind a picker, which is the right tool when a design
-direction is being guessed at rather than known).
+`dataviz`, plus all eleven from `emilkowalski/skills`. The relevant ones there
+are `emil-design-eng`, which is the UI-polish philosophy the current motion
+follows, along with `animate`, `review-animations`, `apple-design` and
+`prototype`. The last of those builds several different versions behind a
+picker, which is the right tool when a design direction is being guessed at
+rather than known.
 
-Installed as **copies, not symlinks** — Windows blocks symlinks without Developer
-Mode, so `git pull` in a skills repo will not update them; re-copy instead.
+Installed as **copies, not symlinks.** Windows blocks symlinks without
+Developer Mode, so `git pull` in a skills repo will not update them. Re-copy
+instead.
 
 ---
 
-## 7. What is unfinished — stated plainly
+## 7. What is unfinished
 
-### Added 2026-08-26 — read this first
+### Read this first, added 2026-08-26
 
 **The cross-encoder is the weakest stage, and only partly addressed.** On the
 bird corpus the candidate pool contains the answer 96.2% of the time and the
 finished pipeline returns it 84.6% of the time. Reranking used to discard the
 first stage's ordering outright; it now keeps 20% of it on that corpus, which
 recovered a question and four points of MRR. What remains is the model itself:
-`ms-marco-MiniLM-L-6-v2` is weak on questions that DESCRIBE a term rather than
-naming it ("the burst of collective singing at first light"). `src/compare_rerankers.py`
-exists for trying another. **Use `src/sweep_blend.py` for anything touching the
-blend — it runs every corpus, because the trap is tuning to one.** That trap was
-walked into directly: 0.35 was shipped globally, then measured worse than doing
-nothing on all three.
+`ms-marco-MiniLM-L-6-v2` is weak on questions that *describe* a term rather
+than naming it ("the burst of collective singing at first light").
+`src/compare_rerankers.py` exists for trying another. **Use
+`src/sweep_blend.py` for anything touching the blend.** It runs every corpus,
+because the trap is tuning to one. That trap was walked into directly: 0.35 was
+shipped globally, then measured worse than doing nothing on all three.
 
 **The adversarial half was read, 2026-08-27, and the labels held.** The ML gate
 lets 8 of 17 adversarial cases through, and the plausible story was that the
 corpus had grown into them. It has not: every top passage is topically adjacent
-and answers nothing — a driving paper's "reward signal" for the RLHF question, a
-training-details appendix with no seed in it for the seed question. They are
+and answers nothing: a driving paper's "reward signal" for the RLHF question,
+and a training-details appendix with no seed in it for the seed question. They are
 genuine gate failures. Relatedly, `audit_golden_set.py` reported 67 of 67
 answerable cases as ambiguous because it subtracted `case["source"]`, a key no
 case has; corrected, the figure is **0 of 67**.
 
 **Deriving labels from answer strings has a hole.** It proves the string is
 present, not that the passage answers the question. Sixteen quant cases asked
-textbook definitions of research papers that use the term once in passing —
-"volatility clustering" inside a list of stylized facts. The label looked valid
+textbook definitions of research papers that use the term once in passing,
+such as "volatility clustering" inside a list of stylized facts. The label looked valid
 and the question was unanswerable. Fixing the questions moved that corpus from
 0.543 to 0.886 any-hit with retrieval untouched. **When a corpus scores badly,
 read the failing questions before concluding anything about retrieval.**
@@ -554,15 +559,16 @@ read the failing questions before concluding anything about retrieval.**
 `python src/check_freshness.py` covers the chain `golden set -> per_case ->
 analytics -> the front page`, the one that had no test. It works two ways,
 because they fail differently: each generated file records a digest of the files
-it was built from (exact -- it catches rewording one question in place, which
+it was built from (exact, so it catches rewording one question in place, which
 changes no count), and case ids, question strings, corpus sizes and the
 per-corpus threshold and blend are compared directly (weaker, but it works on
 files written before provenance existed and names the question rather than a
 hash). `src/test_freshness.py` stages each known failure on a synthetic corpus
-and asserts the check reports it -- 30 checks, hermetic, milliseconds.
+and asserts the check reports it: 30 checks, hermetic, running in
+milliseconds.
 
 **And it found a live instance of the trap it was written for.** `per_case.py`
-imported `ABSTAIN_THRESHOLD` -- the ML papers' 0.0 -- and scored every corpus
+imported `ABSTAIN_THRESHOLD`, the ML papers' 0.0, and scored every corpus
 against it, and never set a rerank blend at all. `evaluate.py` did the same with
 the threshold. So:
 
@@ -580,7 +586,7 @@ resolve threshold, blend *and index* from `corpora.json` via the golden set, so
 a corpus can no longer be scored against another's index by forgetting
 `RAG_STORE_DIR`. Re-running everything left every retrieval figure in
 `results*.json` **identical** to three decimals, which is the evidence the
-resolution change measured nothing new -- only the abstention block moved.
+resolution change measured nothing new. Only the abstention block moved.
 
 `per_case.py` and `evaluate.py` now agree to three decimals on all three
 corpora from separate code paths; before the fix birds read 0.808 against 0.846.
@@ -588,26 +594,26 @@ corpora from separate code paths; before the fix birds read 0.808 against 0.846.
 One more thing fell out: `answerable_median` in `evaluate.py` was
 `sorted(scores)[len(scores) // 2]`, the upper middle value rather than the
 median. On the 26 even-sized bird cases that reported **+1.21** where
-`analytics.json`, which uses `statistics.median`, said **+1.15** -- one quantity,
-two documents, two values. Now `statistics.median` in both. §2 updated.
+`analytics.json`, which uses `statistics.median`, said **+1.15**: one quantity
+reported as two values in two documents. Now `statistics.median` in both. §2 updated.
 
 **Then the bird threshold, which the correction above made worth re-deriving.**
 `-3.0` was calibrated against confidences measured at rerank blend 0.00 on a
-corpus that ships 0.20 -- a gate tuned to a pipeline the server does not run. On
-the re-measured scores `-3.0` is **dominated**: every threshold in
+corpus that ships 0.20, so it was a gate tuned to a pipeline the server does
+not run. On the re-measured scores `-3.0` is **dominated**: every threshold in
 `(-6.48, -4.55]` catches the same five of six adversarial cases and wrongly
-refuses **three** of twenty-six rather than four. Shipped **-5.5**, the middle of
-that interval -- 0.95 of margin before it refuses an answerable question, 0.98
-before it stops catching an adversarial one. An edge of the interval would fit
-the threshold to a single case.
+refuses **three** of twenty-six rather than four. Shipped **-5.5**, the middle
+of that interval, which leaves 0.95 of margin before it refuses an answerable
+question and 0.98 before it stops catching an adversarial one. An edge of the
+interval would fit the threshold to a single case.
 
 Retrieval is untouched: any-hit stays 0.846, MRR 0.614. Only the gate moved, and
 it recovered `bird-incubation`, whose answer the pipeline had already retrieved
 into the top five.
 
 Checked on all three corpora before shipping, because the trap is tuning to one:
-the ML papers' 0.0 and quant's -4.0 are both already on the frontier -- every
-lowering costs catches. Only birds was dominated.
+the ML papers' 0.0 and quant's -4.0 are both already on the frontier, where
+every lowering costs catches. Only birds was dominated.
 
 `src/calibrate_threshold.py` could not have found this. Its grid was hardcoded
 to `[-4 .. +4]`, which is where the ML papers' scores live and nowhere near the
@@ -616,7 +622,7 @@ region being calibrated. The grid is derived from the scores now, and it reports
 the interval a threshold sits in rather than only a grid point, because -4.6 and
 -5.9 do the same thing today and only one of them survives the corpus growing.
 
-**What this does not fix, and it is the honest half:** `bird-dawn-chorus`
+**What this does not fix:** `bird-dawn-chorus`
 (-10.68) and `bird-imprinting` (-8.28) are questions whose answer the pipeline
 retrieved into the top five and whose passage the cross-encoder then scored
 below three of the six adversarial cases. No threshold recovers those without
@@ -629,8 +635,8 @@ The original entry, kept because the history is the argument:
 had the same shared-path bug and had not been regenerated for four days, so the
 interface was offering questions that had just been deleted as unanswerable. Only
 `RESULTS.md` had a `--check`, and the chain `per_case -> analytics -> the
-interface` had no freshness test at all -- which is what made it the most
-valuable small thing left, and what the entry above closes.
+interface` had no freshness test at all, which is what made it the most
+valuable small thing left and what the entry above closes.
 
 **Blocked, not forgotten:** the API key has no credit, so generated prose and
 query decomposition have never run. Everything the interface shows is the
@@ -639,13 +645,14 @@ retrieved passage verbatim.
 **How to unblock each of them without Anthropic credit**, written down
 2026-08-27 so the next attempt can act rather than re-derive:
 
-1. **Generation, end to end — BUILT 2026-08-27.** `src/generate_local.py`
+1. **Generation, end to end. Built 2026-08-27.** `src/generate_local.py`
    speaks the same `synthesize(question, chunks)` contract to a local **Ollama**,
    selected by `RAG_GENERATOR=ollama`, and `generate.synthesize_with_backend()`
    is what `api.ask` and `serve.chat` now call so neither has to branch.
    `src/test_generate_local.py` stands up a real HTTP server implementing
-   Ollama's two endpoints and drives the module over a socket — 24 checks, the
-   first in this repo where the generation path executes end to end.
+   Ollama's two endpoints and drives the module over a socket. That is 24
+   checks, and the first in this repo where the generation path executes end
+   to end.
 
    **Still outstanding:** no real model has answered. Install Ollama, `ollama
    pull llama3.2`, set `RAG_GENERATOR=ollama`, and `ask(generate=True)` writes
@@ -659,12 +666,12 @@ retrieved passage verbatim.
    corpus that grew. If a 7B local model moves 2 of the 7, that is the finding;
    the shipped implementation can still call a better model later.
 
-3. **The five description cases — MEASURED 2026-08-27, and the answer is
+3. **The five description cases. Measured 2026-08-27, and the answer is
    yes.** `src/sweep_ensemble.py` fuses the shipped embedder with a second one
    by RRF. Fused with `bge-small-en-v1.5` it is **weakly dominant**: +0.015 pool
-   recall on the ML papers, +0.038 on birds, level on quant — the first
-   retrieval change here that is better-or-equal on all three rather than a
-   trade. Bird pool recall reaches **1.000** and `bird-alula` leaves the
+   recall on the ML papers, +0.038 on birds and level on quant. It is the
+   first retrieval change here that is better or equal on all three rather
+   than a trade. Bird pool recall reaches **1.000** and `bird-alula` leaves the
    structural fixture.
 
    **Not shipped, for engineering reasons rather than evidence:** a second
@@ -676,21 +683,22 @@ retrieved passage verbatim.
    ML papers (0.910 vs 0.881), and the `multi-qa` pairing costs quant 0.057, so
    "fuse two dense models" is not a general improvement.
 
-4. **The reranker.** Exhausted among off-the-shelf options —
+4. **The reranker.** Exhausted among off-the-shelf options:
    `compare_rerankers.py` covers three and `sweep_quantized.py` covers int8. The
    remaining honest move is a **fine-tune** on this project's own labelled data,
    which is 157 cases and probably too few, or accepting the ceiling and saying
    so. Not credit-blocked; data-blocked.
 
 
-1. **Closed 2026-08-21 — and the spreadsheet assumption was wrong.** The loaders
+1. **Closed 2026-08-21. The spreadsheet assumption was wrong.** The loaders
    have now run on real files. `load_xlsx` took row 1 as the header; a sheet whose
-   first row is a *title* made every row read `Q3 sales report: 41200` — the title
-   repeated as the column name, the real headers demoted to data, every value
-   unlabelled, and nothing erroring. Fixed by finding the header rather than
+   first row is a *title* made every row read `Q3 sales report: 41200`. The
+   title was repeated as the column name, the real headers were demoted to
+   data, every value was unlabelled, and nothing errored. Fixed by finding the header rather than
    assuming it. `load_docx` and `load_pptx` were correct as written, tables and
    speaker notes included. `src/test_loaders.py` writes a real file per format and
-   reads it back — 15 checks, verified to fail 3 when the old assumption is put back.
+   reads it back: 15 checks, verified to fail 3 when the old assumption is put
+   back.
 
    The corpus is now **36 documents / 5,459 passages**. Two further topic corpora
    are built by `src/fetch_topic.py`: `data-birds/` (45 documents, mixed
@@ -702,24 +710,25 @@ retrieved passage verbatim.
    **Closed since, and this paragraph was stale until 2026-08-27.** The OCR path
    has seen a scanned document since 2026-08-23: `src/test_ocr.py` builds one by
    rendering a page to an image and putting it on a fresh page, then asserts the
-   text is unextractable before OCR and recovered after -- 8 checks, including
+   text is unextractable before OCR and recovered after: 8 checks, including
    that a page with no text yields no invented text. Both new corpora have
    golden sets and are measured: 26 + 6 bird cases, 35 + 6 quant.
 2. **Two structural failure modes, ~10% and ~6%.** Measured on all three
    corpora 2026-08-27, six configurations each: 7 of 67 ML cases (10.4%), 3 of
    26 bird cases (11.5%) and 2 of 35 quant cases (5.7%) fail under *every*
-   configuration. **Relative to the first stage, not absolute** — all six
-   configurations shared one embedder, and  reaches
-    immediately. See the embedder comparison in the log. The ~11% floor reproduces between ML and birds and does not
-   hold on quant, so do not quote it as universal.
+   configuration. **That floor is relative to the first stage, not absolute.**
+   All six configurations shared one embedder, and a different embedder reaches
+   `bird-alula` immediately; see the embedder comparison in the log. The ~11%
+   floor reproduces between ML and birds and does not hold on quant, so do not
+   quote it as universal.
 
    Reading the twelve together, they are **two different problems**:
 
-   - **ML, all seven** — an attribute many papers share ("what dropout rate",
-     "which translation dataset", "how many parameters"). The topic matches a
+   - **ML, all seven.** The question asks for an attribute many papers share,
+     such as "what dropout rate" or "how many parameters". The topic matches a
      dozen documents and the distinguishing clause is ignored. This is
      cross-document confusion, and **query decomposition is the right fix**.
-   - **Birds and quant, all five** — the question *describes* a term and asks
+   - **Birds and quant, all five.** The question *describes* a term and asks
      its name ("which small group of feathers helps prevent a stall" → alula;
      "which effect describes past winners continuing to outperform" → momentum).
      The answer word is absent from the query. Nothing needs decomposing; this
@@ -727,15 +736,15 @@ retrieved passage verbatim.
      feedback) was **measured against it on 2026-08-27 and recovers 0 of 12**,
      with no question changing hands on any corpus. The reason is structural:
      feedback terms are harvested from the top results of the original query,
-     and the missing word is not in those passages either — checked directly,
-     not inferred. A stopword leak found in the same module was fixed and
+     and the missing word is not in those passages either. That was checked
+     directly rather than inferred. A stopword leak found in the same module was fixed and
      measured **worse** on two corpora of three, and reverted. See
      `docs/engineering-log.md`.
 
    Fixtures: `eval/hard_cases.json`, `eval/hard_cases-birds.json`,
    `eval/hard_cases-quant.json`.
 
-   **Cross-document confusion — a ~11% floor, not a flat 15%.** The retriever
+   **Cross-document confusion: a ~11% floor, not a flat 15%.** The retriever
    matches the topic and ignores the constraint that distinguishes the answer
    ("normalisation across features *rather than examples*" still returns Batch
    Normalization). Mechanism understood; the obvious fix is ruled out by
@@ -745,8 +754,8 @@ retrieved passage verbatim.
    Sharpened 2026-08-21 by `src/failure_overlap.py` across six configurations
    (see `eval/RESULTS.md`). **Re-measured 2026-08-27** across the same six
    configurations: **21 of 67** answerable cases fail under *some*
-   configuration, and **7 fail under all of them** — and they are the **same
-   seven ids** as on 2026-08-21, unchanged through a threshold recalibration, a
+   configuration, and **7 fail under all of them**. They are the **same seven
+   ids** as on 2026-08-21, unchanged through a threshold recalibration, a
    rerank-blend change, a corrected label and a corpus a case larger. The
    earlier "18 of 66" was measured before the golden set grew.
 
@@ -759,7 +768,7 @@ retrieved passage verbatim.
 
    A tempting explanation was tested and refuted: three of the seven return the
    right document at rank 1 and miss on page, which looks like incomplete
-   labels rather than bad retrieval. Context recall is 0.000 for all seven —
+   labels rather than bad retrieval. Context recall is 0.000 for all seven, so
    the answer text was not returned at all. They are real misses.
 3. **Generation is unverified against a real model.** `generate.py` targets
    `claude-opus-5` and has never completed a real call. As of **2026-08-27 the
@@ -771,16 +780,16 @@ retrieved passage verbatim.
    fixed by reading the code against the data it receives (§5b), and everything
    up to the network boundary is exercised with a stubbed client. One judgement call left open deliberately: the current
    API guidance is to pass server-side `fallbacks` on `claude-opus-5` calls so a
-   safety decline reroutes rather than stopping. It is **not** added here — it is
-   an unverifiable beta parameter on a path that has never run, and a refusal on
-   grounded Q&A over ML papers is close to hypothetical. `synthesize()` raises a
+   safety decline reroutes rather than stopping. It is **not** added here. It
+   is an unverifiable beta parameter on a path that has never run, and a
+   refusal on grounded Q&A over ML papers is close to hypothetical. `synthesize()` raises a
    named error on `stop_reason == "refusal"` instead. Worth adding the moment
    there is credit to test it with.
-4. **Folder linking** — **done 2026-08-21**, as a pasted path; see item 7. The
+4. **Folder linking. Done 2026-08-21**, as a pasted path; see item 7. The
    constraint recorded here was right and is why the design is what it is: a
    browser cannot read a filesystem path from a file picker.
-5. **Google Drive native docs** — `.gdoc`/`.gsheet`/`.gslides` are pointers, not
-   files. Needs the Drive API export path in `loaders.py`. Uploaded PDFs/Office
+5. **Google Drive native docs.** `.gdoc`/`.gsheet`/`.gslides` are pointers,
+   not files. Needs the Drive API export path in `loaders.py`. Uploaded PDFs/Office
    files already work today via `RAG_DATA_DIR`.
 6. **No permissions model.** Fine for a local single-user tool; would matter if
    this ever served more than one person.
@@ -789,12 +798,12 @@ retrieved passage verbatim.
    be indexed and what would be skipped, and refuses a folder with nothing
    indexable in it), then indexes it. Drive is still a badged tab: native
    `.gdoc`/`.gsheet` files are pointers and need the export API. Files that are
-   genuinely files in a synced Drive folder already work — point the folder
+   genuinely files in a synced Drive folder already work. Point the folder
    intake at the synced directory.
 
 8. **The settings controls re-run retrieval.** Done 2026-08-21. `/api/trace`
    takes `rerank`, `fusion`, `max_per_source` and `expansion`; the panel runs
-   the question twice — once at defaults, once at the current settings — and
+   the question twice, once at defaults and once at the current settings, then
    reports what changed between them for that one question. The aggregate
    numbers beside each option still come from `eval/results.json` and still
    describe 84 cases; the two answer different questions on purpose.
@@ -806,7 +815,7 @@ retrieved passage verbatim.
      always positive, so testing one against 0.0 would pass every query
      including the ones that should be refused. `verdict.confident` is `null`
      and the UI has a third state for it.
-   - `retrieve()` takes a **different path** when reranking is off — it
+   - `retrieve()` takes a **different path** when reranking is off. It
      shortlists `k` rather than `candidate_k` and skips the diversity cap
      entirely. `pipeline_trace` now mirrors that rather than drawing a
      twenty-candidate pool and a cap the serving path never ran.
@@ -814,7 +823,7 @@ retrieved passage verbatim.
      (80 checks). That test is what the module's docstring had claimed existed
      since it was written; it did not.
 
-9. **Two of the three unbuilt journey pieces are still unbuilt** — the pool
+9. **Two of the three unbuilt journey pieces are still unbuilt:** the pool
    visibly growing as documents are added, and Act 1. The third is unblocked:
    `src/per_case.py` writes every case's outcome to `eval/per_case.json`
    (84 rows: retrieved passages, per-passage relevance, confidence, and one of
@@ -823,7 +832,7 @@ retrieved passage verbatim.
    It closed a real gap on its first run, and the gap is now closed properly.
    `eval/results.json` measured the diversity cap only on the **weighted**
    fusion branch, so the row every document quoted as the default was
-   `weighted + cap 2` — while `DEFAULT_FUSION` is `"rrf"`, which is what
+   `weighted + cap 2`, while `DEFAULT_FUSION` is `"rrf"`, which is what
    `api.ask()` and the app serve. The served configuration had never appeared
    in the aggregate table at all.
 
@@ -844,24 +853,24 @@ retrieved passage verbatim.
    reproduces its figures to three decimals from a separate code path.
 
 Ranked by value: **(1) is worth more than everything else combined**, and it is
-unblocked by pointing the system at more documents rather than by writing code —
-the folder intake in (7) is the mechanism, so it no longer needs files copied
-into `data/`. (8) is done.
+unblocked by pointing the system at more documents rather than by writing
+code. The folder intake in (7) is the mechanism, so files no longer need to be
+copied into `data/`. (8) is done.
 
 **The cross-encoder question is now answered, and the answer is no.** Measured
 on all three corpora 2026-08-27: MiniLM-L12 and BGE-reranker-base both trade a
 gain on one corpus for a loss on another, and the two halves of the reranker's
-job — ordering and scoring — move in opposite directions as the model grows.
+job, ordering and scoring, move in opposite directions as the model grows.
 Neither is shippable. The mechanism behind the remaining failures is questions
 that *describe* a term rather than naming it, and a cross-encoder of any size
 reads the same words; the fix that addresses it is query decomposition, which
 needs credit. Full numbers in `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-27: **324 checks + the route suite** — 22 metrics, 28 loaders, 80
-trace, 8 OCR, 33 freshness, 10 reranker cache, 17 golden-set audit, 13 api,
-9 ingest cache, 19 generate, 24 local generation, 25 serve, 16 analytics,
-plus 20 answer-highlight
-checks under `node ui/test-answer-mark.mjs`.
+Test counts, as of 2026-08-27: **324 checks plus the route suite**: 22 metrics,
+28 loaders, 80 trace, 8 OCR, 33 freshness, 10 reranker cache, 17 golden-set
+audit, 13 api, 9 ingest cache, 19 generate, 24 local generation, 25 serve, 16
+analytics, plus 20 answer-highlight checks under
+`node ui/test-answer-mark.mjs`.
 
 Three checks now guard the things that have gone wrong silently before, and
 all three exit non-zero rather than printing a warning nobody reads:
@@ -875,7 +884,7 @@ python src/build_corpus_manifest.py --check   # does the document list match the
 
 ---
 
-## 8. Published artifacts — update, never re-publish
+## 8. Published artifacts: update, never re-publish
 
 Their **source is in this repo**; the published copies live in the cloud and are
 not carried by any session.
@@ -891,8 +900,8 @@ not carried by any session.
 **To update one, pass its URL.** Publishing the source file without the `url`
 creates a *second, separate* artifact instead of updating the existing one, and
 the existing link silently goes stale. This is the single easiest way to
-break something here, and nothing in the file itself warns you — which is why the
-URLs are recorded here.
+break something here, and nothing in the file itself warns you, which is why
+the URLs are recorded here.
 
 ### The two `8c62ba9a` / `0fa6a672` URLs are not owned by this account
 
@@ -905,7 +914,7 @@ session does not spend the same time on it:
 - Publishing to that URL is refused until the session has read the live version.
 - Reading it is refused: *"served to you as a public (non-member) reader, and
   reading public artifacts that way is not enabled yet."* Making the artifact
-  public does **not** lift this — it was already being served that way.
+  public does **not** lift this; it was already being served that way.
 
 So the only route to that URL is `force: true`, which overwrites the live copy
 without seeing it. The owner was asked and chose to **keep both** rather than
