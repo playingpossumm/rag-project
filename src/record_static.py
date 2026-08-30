@@ -414,6 +414,19 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
 """
 
 
+def copy_measurements(out: Path) -> None:
+    """The figures the quality page draws, copied rather than regenerated.
+
+    Copied so the static build shows the same numbers as the live one, and on
+    both build paths because a page and the numbers it draws are one artifact.
+    """
+    for name in ("analytics.json",):
+        src = ROOT / "eval" / name
+        if src.exists():
+            (out / name).write_text(src.read_text(encoding="utf-8"),
+                                    encoding="utf-8")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -437,6 +450,11 @@ def main() -> int:
                   f"no manifest.json there. Record once first.")
             return 2
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        # Also on this path. Copying a JSON file needs no models, and leaving
+        # it out meant every --site-only rebuild shipped the current page
+        # against whatever measurements the last full recording happened to
+        # carry.
+        copy_measurements(args.out)
         write_site(args.out, manifest)
         total = sum(c["questions"] for c in manifest["corpora"].values())
         print(f"  page rebuilt from ui/ around {total} recorded question(s), "
@@ -541,14 +559,7 @@ def main() -> int:
     (args.out / "manifest.json").write_text(
         json.dumps(manifest, indent=1), encoding="utf-8")
 
-    # The evaluation figures the quality page draws, copied rather than
-    # regenerated so the static build shows the same numbers as the live one.
-    for src_name, dest in (("analytics.json", "analytics.json"),):
-        src_path = ROOT / "eval" / src_name
-        if src_path.exists():
-            (args.out / dest).write_text(
-                src_path.read_text(encoding="utf-8"), encoding="utf-8")
-
+    copy_measurements(args.out)
     write_site(args.out, manifest)
     total = sum(c["questions"] for c in manifest["corpora"].values())
     size = sum(f.stat().st_size for f in args.out.rglob("*.json"))

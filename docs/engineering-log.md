@@ -1512,6 +1512,204 @@ correct and all of them were about the wrong computer.
 
 ---
 
+## 2026-08-30 — The answer-quality judge was wrong four times
+
+**Why look.** Answer quality had been measured once: nine answers, one corpus,
+2026-08-29. Extending it to three corpora meant reading the nine that existed
+against the labels they had been scored on, which is the only reason any of
+what follows was found. Nothing here came from reading the code.
+
+**Every one of the four made the model look worse than it was**, which is the
+direction that flatters a project: a harness that reports failures nobody has
+to explain away is a harness nobody checks.
+
+**1. A refusal scored as an answer.** `adv-bird-consensus` replied "I don't
+have any information about proof of stake protocols or consensus mechanisms
+from the provided excerpts". The refusal set held the fixed phrase "no
+information" and nothing matching "don't have any information", so the corpus
+reported 2 of 3 adversarial questions refused where the truth was 3 of 3.
+
+The list was replaced with patterns and immediately made the opposite error:
+"air sacs are not found in mammals" is a claim about biology, and "not found"
+matched. So the patterns split in two. The ones whose verbs also occur in
+ordinary claims have to land near a word naming the source material; the
+unambiguous ones do not. Against eight real answers the old list is wrong on
+five, in both directions, and the patterns on none.
+
+**2. Mathematics scored as fabricated citations.** The ML papers reported
+**20 invented citations across 12 answers**, and not one was a citation:
+
+    mha-def     [Q]  [K]  [j]
+    pos-enc-fn  [2]  [model]
+    warmup      [min(]  [num]  [warmup]  [steps]
+
+The regex matched any bracket group, and these are papers full of notation the
+model copies out of the passages it is given. This is the worst wrong number
+here: `invented_citations` is the measure the harness leads with, on the
+argument that a fabricated citation is worse than no answer, and it was firing
+hardest on the most technical corpus, at a model that had fabricated nothing.
+
+A bracket group now has to be citation-shaped before it counts: an extension, a
+locator, or a supplied filename. The cost is stated rather than hidden, because
+it is real: a fabrication written in some other form, "[Smith et al. 2019]", is
+no longer counted, since nothing distinguishes it from "[Q]" by shape alone.
+
+**3. A single character matched every long filename.** With the shape rule in
+and 44 checks passing, the volume-imbalance formula still reported five
+citations. `[t]` is a substring of
+`multi_level_market_making_with_reinforcement_learning`, and the rule allowed a
+substring match because models truncate long filenames. Substring matching now
+needs four characters. Exact equality still counts at any length, so a corpus
+holding `t5.pdf` can still cite it.
+
+**4. A hedge scored as a refusal.** Broadening the patterns in (1) fixed the
+misses and reported seven answerable questions as wrongly refused, five of
+which had been answered:
+
+    "The text does not explicitly state the type of load balancing loss used.
+     However, it does mention that the auxiliary-loss-free load balancing
+     strategy is adopted..."                                   moe-routing
+
+    "According to [attention...pdf, page 3], multi-head attention is used in
+     the following three ways: 1. ...  The provided excerpts do not mention
+     the third way."                                           attn-uses
+
+Refusal is a property of the answer, not of a sentence in it. The test is now
+whether any claim survives once the declining sentences are set aside, so a
+hedge followed by an answer has answered, and so has a partial answer that says
+which part is missing.
+
+That produced one more error in the other direction, and it is the interesting
+one. A model that declines and then describes the corpus instead of answering
+
+    "I don't have enough information to answer this question. The provided
+     excerpts appear to be related to machine learning and natural language
+     processing."                                              adv-qf-syrinx
+
+has a second sentence that declines nothing and carries plenty of content
+words, so it counted as a surviving claim. A sentence whose subject is the
+source material is therefore never counted as an answer. It is a claim about
+the documents, not about the question.
+
+**Results, after all four, hand-adjudicated case by case:**
+
+| | ML papers | Ornithology | Quant |
+|---|---|---|---|
+| invented citations | **0** | **0** | **0** |
+| refused correctly | 4/5 | 5/5 | 4/5 |
+| refused wrongly | 0/10 | 1/10 | 1/10 |
+| contains the labelled answer | 6/10 | 6/10 | 4/10 |
+| groundedness (proxy) | 0.678 | 0.525 | 0.566 |
+
+Zero invented citations across 45 answers is the result that matters, and it is
+the one the broken measure was hiding. Correctness is a floor rather than a
+rate: it is a substring test, so `bird-keel` answering "the keel on their
+breastbone" against a label reading "keeled sternum" counts as wrong. The test
+was left exactly as strict, because loosening it trades a false negative for
+false positives and inflates the number, and the 14 answers it rejects are
+listed under `unmatched` to be read instead.
+
+**Two things built because of this, not planned before it.**
+
+`--rescore` re-judges answers that already exist. Twice today a defect
+invalidated a finished run and both times the answers were fine, and
+regenerating an hour of identical prose to re-apply a corrected string test is
+the wrong shape of work. It re-runs retrieval, which the judge needs for the
+passages, and never calls the model: a minute instead of the better part of an
+hour. Every number above was produced by it.
+
+`src/test_evaluate_answers.py`, 60 checks, hermetic. Most of the strings in it
+are answers this repository has already scored wrongly, kept verbatim rather
+than written to pass. Each of the four defects has a check that fails without
+its fix. The suite is also the reason (3) and the second half of (4) were
+found: both were introduced by a fix and caught by writing the test for it.
+
+**The lesson, and it is not "write more tests".** Every one of these was found
+by reading the harness's own output against the thing it was measuring. The
+module had been read, reviewed and described correctly, and it had never been
+checked against a single real answer. This is the same finding as 2026-08-27,
+in the one place left where the input is prose: a string test over prose does
+not fail loudly, it reports a number.
+
+---
+
+## 2026-08-30 — A link that would have failed twice
+
+`/about` linked to `docs/corpus-manifest.md` under `blob/main/`, and this
+repository's only branch is `master`. The repository is also still private, so
+the link 404s today for an entirely different reason.
+
+That is the shape worth recording. Making the repository public fixes the
+visible symptom and leaves the branch wrong, and the second failure looks
+exactly like the first from outside: a 404. One failure hiding behind another,
+where fixing the one you can see hides the one you cannot.
+
+The branch half is decidable offline, so `src/check_links.py` decides it
+offline. It reads the internal routes out of `serve.py`'s dispatch through
+`check_docs.served_routes()` rather than repeating them, checks that an anchor
+names an `id` that exists in the target page, and checks that a link into this
+repository names a branch and a file that exist. `--http` asks the network
+about external links and is not part of the default run, because it cannot pass
+while the repository is private.
+
+Verified by reintroducing both faults. An anchor is worth checking for the same
+reason as the branch: `/about#nosuchid` does not error, it lands silently at
+the top of the page, which is worse than an error because it looks like it
+worked.
+
+**The guard lists disagreed with each other**, and that was found while adding
+the sixth. `HANDOFF.md` said "three checks" above four commands, the roadmap
+said "four guards" and omitted `build_corpus_manifest --check`, the README said
+five. All three now name the same six.
+
+---
+
+## 2026-08-30 — Three panes, and a bar that could not draw
+
+All three reported by the owner, all three confirmed by rendering the panes
+rather than by reading the diff.
+
+**The Stages pane had no visualisation.** Each stage carried a bar whose width
+was a percentage of the passages it held, and every stage drew the same stub.
+The bar was a flex item with a percentage width inside a `float:right` that
+shrink-wraps to its content, so the percentage resolved against a box the bar
+was itself sizing. Rebuilt with a fixed-width track and a proportional fill: it
+now measures 102, 102, 102, 102 and 32 pixels across the five stages of a
+16-candidate run, so the narrowing is a shape rather than five numbers.
+
+**The Word-matches heatmap introduced orange and green with nothing naming
+them.** Hue is the document, which the rest of the site establishes, but this
+pane's only key was a blue ramp, so the first orange column arrived
+unexplained. It now carries a document key with swatch, name and column count,
+and the intensity ramp is neutral grey, because it encodes strength and not
+identity and a blue ramp beside coloured cells read as a fourth document.
+
+**The rank chart's markers were ovals because the geometry was dishonest.** It
+was drawn in a 100-unit viewBox with `preserveAspectRatio="none"`, stretched
+across about 1,030 pixels, so the horizontal scale ran roughly ten times the
+vertical. Both axes scale a stroke, which is why the end markers were ellipses
+and a steep line drew several times the weight of a shallow one. Drawn in pixel
+units taken from the element instead, redrawn from a `ResizeObserver` rather
+than per frame.
+
+Worth separating the two halves of that. The distortion was a bug; what it hid
+was that the chart had no axes. Once a circle was a circle it was obvious that
+rank was unlabelled and the stage labels were distributed by `space-between`
+rather than sitting under their columns. Looking at it then showed two more:
+the tick list appended the deepest rank unconditionally and drew 15 and 16 a
+few pixels apart, and the "removed here" ring was drawn for the grey lines too,
+stacking ten of them into a vertical chain at each column.
+
+**And a stale file the same day.** `record_static.py --site-only` returns
+before the line that copies `eval/analytics.json` into the build, so every
+cheap page rebuild shipped the current interface against whatever measurements
+the last full recording carried. It surfaced as a panel that would not appear,
+which is the lucky version. The unlucky version is a number, because a stale
+number looks exactly like a current one. Copying a JSON file needs no models,
+so it now happens on both paths.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

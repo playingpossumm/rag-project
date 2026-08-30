@@ -377,7 +377,20 @@
      "adversarial": true,
      "expect": "should be refused"
     }
-   ]
+   ],
+   "answers": {
+    "model": "llama3.2",
+    "n": 15,
+    "n_answerable": 10,
+    "n_adversarial": 5,
+    "invented_citations": 0,
+    "answers_with_invented": 0,
+    "correct": 6,
+    "unmatched": 4,
+    "refused_rightly": 4,
+    "refused_wrongly": 0,
+    "grounded_mean": 0.678
+   }
   },
   {
    "name": "birds",
@@ -706,7 +719,20 @@
      "adversarial": true,
      "expect": "should be refused"
     }
-   ]
+   ],
+   "answers": {
+    "model": "llama3.2",
+    "n": 15,
+    "n_answerable": 10,
+    "n_adversarial": 5,
+    "invented_citations": 0,
+    "answers_with_invented": 0,
+    "correct": 6,
+    "unmatched": 4,
+    "refused_rightly": 5,
+    "refused_wrongly": 1,
+    "grounded_mean": 0.525
+   }
   },
   {
    "name": "quant",
@@ -1035,11 +1061,25 @@
      "adversarial": true,
      "expect": "should be refused"
     }
-   ]
+   ],
+   "answers": {
+    "model": "llama3.2",
+    "n": 15,
+    "n_answerable": 10,
+    "n_adversarial": 5,
+    "invented_citations": 0,
+    "answers_with_invented": 0,
+    "correct": 4,
+    "unmatched": 6,
+    "refused_rightly": 4,
+    "refused_wrongly": 1,
+    "grounded_mean": 0.566
+   }
   }
  ],
  "inputs": {
   "corpora_json": "sha256:bb6bcecce74915dc",
+  "answers": "sha256:0e223cbfad953892",
   "per_corpus": {
    "llm": {
     "golden": {

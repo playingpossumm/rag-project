@@ -49,6 +49,7 @@ import corpora  # noqa: E402
 ROOT = Path(__file__).parent.parent
 EVAL = ROOT / "eval"
 ANALYTICS = EVAL / "analytics.json"
+ANSWER_QUALITY = EVAL / "answer-quality.json"
 
 # Enough of a sha256 that a collision is not a thing to think about, short
 # enough to sit on one line of a diff. Full hashes made every regeneration a
@@ -352,6 +353,23 @@ def check_analytics(rep: Report, reg: dict, golds: dict, per_cases: dict):
 
     entries = {c["name"]: c for c in data.get("corpora", [])}
     inputs = (data.get("inputs") or {}).get("per_corpus") or {}
+
+    # analytics.json carries the answer-quality figures the quality page draws,
+    # so re-scoring answers without rebuilding analytics leaves that panel
+    # showing the previous run. Sampled measurements can move every figure
+    # without moving a count, so this compares the digest.
+    if ANSWER_QUALITY.exists():
+        recorded = (data.get("inputs") or {}).get("answers")
+        current = stamp(ANSWER_QUALITY)["digest"]
+        if recorded is None:
+            rep.note(scope, "answers",
+                     "analytics.json predates the answer-quality stamp; "
+                     "rebuild it to cover the quality page's answer panel")
+        elif recorded != current:
+            rep.stale(scope, "answers",
+                      "eval/answer-quality.json has changed since analytics.json "
+                      "was built, so /quality still shows the previous answer "
+                      "figures", fix)
     if not data.get("inputs"):
         rep.note(scope, "provenance",
                  "analytics.json predates provenance; checked by content only")

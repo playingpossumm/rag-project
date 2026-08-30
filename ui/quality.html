@@ -266,6 +266,21 @@ details[open] summary::before{content:"- ";}
     </div>
   </section>
 
+  <section class="panel" id="answers-panel" hidden>
+    <div class="phead"><span class="lab">What the written answer is worth</span>
+      <span class="right lab" id="answers-n"></span></div>
+    <div class="pbody">
+      <p class="note">Every other number on this page measures retrieval: which
+      passages came back, and in what order. These measure the prose written
+      from them. <b>There is no model judging these answers.</b> A judge model
+      is a second system whose own failures are invisible, and it would make
+      the claim that every number here is reproducible from the repository
+      false. Citations and refusals are checked mechanically instead.</p>
+      <div class="tiles" id="answer-tiles"></div>
+      <p class="note" id="answers-foot"></p>
+    </div>
+  </section>
+
   <p class="note" style="margin-top:32px">This is a learning project. It does
   not match NotebookLM, Glean or the enterprise search platforms sold to
   companies, which have larger models and far more compute. What it has is
@@ -525,6 +540,60 @@ if (!A || !A.corpora?.length) {
     };
   });
 
+  /* ---- the generated answer, when this corpus has any scored.
+
+     Sampled, and small: about a minute of local generation per question. The
+     panel hides rather than drawing an empty frame, because a section with no
+     numbers in it reads as a measurement of zero. */
+  function renderAnswers(c) {
+    const a = c.answers;
+    const panel = $("#answers-panel");
+    if (!a || !a.n) { panel.hidden = true; return; }
+    panel.hidden = false;
+    $("#answers-n").textContent =
+      `${a.n} answers written by ${a.model || "a local model"}`;
+
+    $("#answer-tiles").innerHTML = [
+      ["Invented citations", a.invented_citations,
+       a.answers_with_invented
+         ? `in ${a.answers_with_invented} of ${a.n} answers`
+         : `none in ${a.n} answers`,
+       "A citation to a document the model was never given.|The failure that " +
+       "matters most: a citation is what a reader checks instead of the source."],
+      ["Refused correctly", `${a.refused_rightly} / ${a.n_adversarial}`,
+       "questions the documents cannot answer",
+       "Planted questions with no answer in these documents.|Saying so is the " +
+       "correct behaviour. Answering one fluently is worse than retrieving badly."],
+      ["Refused wrongly", `${a.refused_wrongly} / ${a.n_answerable}`,
+       "answerable questions declined",
+       "Questions the documents do answer, declined anyway.|The cost of " +
+       "refusing, measured on the prose rather than on the gate's score."],
+      ["Contains the answer", `${a.correct} / ${a.n_answerable}`,
+       a.unmatched ? `${a.unmatched} more to read by hand` : "of answerable questions",
+       "The answer holds the labelled answer string.|A floor, not a rate: a " +
+       "correct answer in different words counts against it."],
+      ["Groundedness", a.grounded_mean == null ? "\u2014" : f3(a.grounded_mean),
+       "of content words came from the passages",
+       "How much of the answer's vocabulary appears in the passages given.|A " +
+       "proxy, not a verdict: it cannot tell a correct claim from a wrong one."],
+    ].map(([k, v, sub, why]) =>
+      `<div class="tile" data-why="${esc(why)}" tabindex="0">
+         <div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
+         <div class="c">${esc(sub)}</div></div>`).join("");
+
+    $("#answers-foot").innerHTML =
+      `This is the only measurement on this page produced by a language model, ` +
+      `so it describes <b>${esc(a.model || "the generator")}</b> on this corpus ` +
+      `rather than the pipeline's ceiling. A larger model would move it; ` +
+      `nothing else on this page would.` +
+      (a.unmatched
+        ? ` The ${a.unmatched} answers the string test rejected are listed in ` +
+          `<code>eval/answer-quality.json</code> under <code>unmatched</code>, ` +
+          `to be read rather than scored: some are wrong and some are right in ` +
+          `other words, and this check does not claim to tell them apart.`
+        : "");
+  }
+
   /* ---- panels that describe one corpus */
   function renderActive() {
     const c = active;
@@ -551,7 +620,10 @@ if (!A || !A.corpora?.length) {
          <div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
          <div class="c">${esc(s)}</div></div>`).join("");
 
-    for (const tile of $("#tiles").querySelectorAll(".tile[data-why]")) {
+    renderAnswers(c);
+
+    for (const tile of document.querySelectorAll(
+           "#tiles .tile[data-why], #answer-tiles .tile[data-why]")) {
       const why = tile.dataset.why;
       const head = tile.querySelector(".lab").textContent;
       const [def, implies] = why.split("|");
