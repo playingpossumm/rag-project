@@ -439,7 +439,10 @@ harness.
 - **Every corpus needs its own tuning.** Five settings have now been measured as
   per-corpus rather than global: the abstention threshold, the rerank blend,
   the candidate pool size, the choice of embedder, and whether fusing a second
-  embedder helps at all. Pointing this at your own documents means re-running the
+  embedder helps at all. The last of those was settled end to end on
+  2026-08-31: worse on every metric on the ML papers, a one-question trade on
+  the birds, and earned on quantitative finance, which is the only corpus that
+  ships it. Pointing this at your own documents means re-running the
   harness, not just re-indexing.
 
 ---

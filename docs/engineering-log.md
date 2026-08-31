@@ -1710,6 +1710,89 @@ so it now happens on both paths.
 
 ---
 
+## 2026-08-31 — The dense ensemble, decided on all three corpora
+
+**The open question.** Roadmap item 1 has read "ship the dense ensemble
+properly, or decide not to" since the sweep measured it. That sweep measured
+**pool recall**, where fusing the shipped embedder with `bge-small-en-v1.5`
+looked weakly dominant: +0.015 on the ML papers, +0.038 on birds, level on
+quant. It was enabled on quant and left off the other two, and the decision was
+deferred rather than taken.
+
+**Measured end to end, in both directions.** The two missing indexes were
+built, both corpora were scored at the served configuration, and quant, which
+ships the ensemble, was scored with it removed. The baseline for the first two
+is the shipped `results*.json`, which is the ensemble-off measurement.
+
+| shipped configuration | any-hit | MRR | source recall |
+|---|---|---|---|
+| ML papers, off → on | 0.851 → **0.821** | 0.739 → 0.721 | 0.761 → 0.743 |
+| Ornithology, off → on | 0.846 → **0.885** | 0.613 → 0.597 | 0.762 → 0.762 |
+| Quant, on → off | 0.886 → 0.886 | 0.779 → **0.743** | 0.769 → **0.741** |
+
+**Three different answers on three corpora.** This is the fifth setting
+measured as per-corpus rather than global, after the abstention threshold, the
+rerank blend, the candidate pool size and the choice of embedder, and the
+documents have listed it as the fifth since the pool sweep. What is new is not
+the classification but the evidence: until now it rested on pool recall, which
+cannot see the thing that actually decided it.
+
+On the ML papers it is worse on every metric. On birds it wins a question of
+any-hit and loses MRR, which is precisely the trade `weighted a=0.5` was judged
+on and rejected on this corpus: on 26 cases a one-question gain in any-hit is
+thinner evidence than a fall in MRR. On quant it is earned, and removing it
+costs 0.036 MRR and 0.028 source recall for no change in any-hit.
+
+**Shipped: unchanged.** Quant keeps it, the other two do not get it, and the
+two indexes built for the experiment were deleted.
+
+**The part worth keeping is why the pool was wrong.** On the ML papers the
+candidate pool did not move at all: RRF pool recall is 0.910 with the ensemble
+and 0.910 without it. The same twenty passages arrive at the reranker in a
+different order, and the reranker does worse with that order. This is the
+fourth time in this project that a better or equal first stage has produced a
+worse finished answer, and the clearest instance yet, because here the pool is
+not merely a ceiling that failed to help. It is *identical*, and only the
+ordering changed.
+
+That also explains the sweep. Pool recall cannot see an ordering change inside
+the pool, so a measurement taken there was structurally incapable of predicting
+this result in either direction.
+
+---
+
+## 2026-08-31 — An override that changed the model and not the prefix
+
+The ensemble indexes for this experiment were built with `--model
+BAAI/bge-small-en-v1.5` on two corpora whose `corpora.json` entries name no
+ensemble model. The builder took the model from the flag and the query prefix
+from the corpus, so both indexes were written with an empty prefix.
+
+BGE retrieval models are trained with the query side carrying "Represent this
+sentence for searching relevant passages: " and land in a different region of
+the space without it. Nothing failed: the file is the right size, the row count
+matches `metadata.json`, the manifest is well formed, and retrieval is quietly
+worse. The first measurement off those indexes read 0.851 → 0.821 any-hit, and
+that number described a broken index rather than the ensemble.
+
+The prefix belongs to the model, so the model carries it now, and
+`corpora.json` still wins when it says something.
+
+**The fix then did not fire, and that is the more useful half.**
+`corpora.registry()` normalises an absent key to an empty string rather than
+`None`, so an `is not None` test always matched and the model default was never
+reached. The rebuild produced two more prefix-less indexes and reported
+success. The fix had been verified by reading the code rather than by reading
+what it produced, which is this project's own recurring failure appearing
+inside a fix for a different instance of it. One line, reading the manifest the
+builder had just written, is what found it.
+
+Rebuilt correctly, the ML figure was **unchanged at 0.821**. The prefix was a
+real defect and not the cause of the result, which is worth stating plainly:
+finding a bug in the instrument does not mean the reading was wrong.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

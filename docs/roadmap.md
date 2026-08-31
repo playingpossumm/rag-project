@@ -52,15 +52,20 @@ which is why that one *is* counted.
 
 ## What is worth doing next
 
-**1. Ship the dense ensemble properly, or decide not to.** Fusing a second
-embedder is measured and enabled on the quantitative-finance corpus, where it
-buys +0.036 MRR, +0.022 NDCG and +0.028 source recall for no loss of any-hit.
-It is *not* enabled on the other two, and the reason is the interesting part:
-on pool recall it looked weakly dominant everywhere, and measured end to end the
-ML corpus got **worse on all four metrics** from a strictly better candidate
-pool. What remains is a decision: whether a second vector per chunk is
-worth one corpus's worth of gain. It roughly doubles the index and adds
-an encode pass to ingest. `src/sweep_ensemble.py` reproduces the measurement.
+**1. The dense ensemble is decided, and stays where it is.** Measured end to
+end on all three corpora on 2026-08-31, in both directions. It is worse on
+every metric on the ML papers, a one-question any-hit gain against an MRR loss
+on birds, and earned on quant, which already ships it and loses 0.036 MRR and
+0.028 source recall without it. Three answers on three corpora: the sixth
+setting here that does not transfer. Nothing changed, and the indexes built for
+the experiment were deleted. The reasoning is in `docs/engineering-log.md`
+under that date, and the part worth carrying is that the ML candidate pool did
+not move at all, so only the ordering handed to the reranker changed.
+
+The engineering cost that made this worth deciding rather than defaulting is
+unchanged: a second embedder is a second vector per chunk, so the index roughly
+doubles and ingest gains an encode pass. `src/sweep_ensemble.py` reproduces the
+pool measurement and `src/evaluate.py` the end-to-end one.
 
 **2. Query decomposition, for seven of the twelve structural failures.**
 Splitting "normalisation across features *rather than examples*" into topic and
@@ -111,9 +116,13 @@ these are in `docs/engineering-log.md` with the measurements.
   candidate pool size, the choice of embedder, and whether fusing a second
   embedder helps at all. The 0.0 threshold that costs the ML papers one question
   costs the bird corpus ten.
-- **Pool recall is a ceiling, not a proxy.** Three separate experiments have now
+- **Pool recall is a ceiling, not a proxy.** Four separate experiments have now
   improved what the first stage retrieves and made the finished pipeline worse.
-  Measure end to end before shipping anything that changes the candidate pool.
+  The fourth is the sharpest: fusing a second embedder leaves the ML papers'
+  pool recall *identical* at 0.910 and costs 0.030 any-hit, so the same twenty
+  passages arrived at the reranker in a different order and it did worse with
+  them. A pool is an ordering, not a set. Measure end to end before shipping
+  anything that touches the candidate pool.
 - **When a corpus scores badly, read the failing questions first.** The
   quantitative-finance corpus looked like a retrieval weakness at 0.543 and was
   entirely a golden-set problem: textbook definitions asked of research papers.
