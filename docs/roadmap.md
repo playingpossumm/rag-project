@@ -20,7 +20,7 @@ figures. The ones below are a snapshot; the page is generated.
 | Ornithology | 45 | 864 | 0.846 |
 | Quantitative finance | 35 | 6,184 | 0.886 |
 
-**395 checks**, none of which need a network or an API key:
+**406 checks**, none of which need a network or an API key:
 
 ```bash
 python src/test_metrics.py        # the scoring functions, hand-computed
@@ -115,6 +115,10 @@ these are in `docs/engineering-log.md` with the measurements.
   questions and 0.045 any-hit. Measured over all 67 cases; the fixture alone
   said rewriting was a pure win, because everything it breaks lies outside the
   fixture.
+- **Dropping a paper's title block from the candidate pool.** It looked free:
+  55 chunks, about one per PDF, and no golden case names one. End to end it
+  costs 0.015 any-hit on the ML papers and 0.029 on quant, because the labels
+  credit a title block as a correct answer. See the excerpt entry in the log.
 - **Pseudo-relevance feedback.** Recovers 0 of 12 structural cases, because the
   feedback documents do not contain the missing word either.
 - **Prefixing chunks with their document title.** Built, measured, reverted:

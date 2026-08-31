@@ -17,6 +17,7 @@ The cost of that choice is duplication: the stage order here must match
 retrieve(). test_trace.py asserts the two agree on the final result under every
 option combination, which is what makes the duplication safe to keep.
 """
+import re
 from dataclasses import dataclass, field
 
 from diversify import DEFAULT_MAX_PER_SOURCE
@@ -42,18 +43,72 @@ class Stage:
     skipped: str = ""
 
 
-def _brief(chunk: dict, limit: int = 260) -> str:
-    return " ".join(chunk["text"].split())[:limit]
+# Words that say nothing about which sentence answers. Kept in step with the
+# list in ui/answer-mark.js, which chooses the words to embolden inside the
+# excerpt this function chooses.
+_STOP = frozenset((
+    "a an and are as at be by do does for from has have how in is it its of on "
+    "or that the this to was were what when where which who why with your you"
+).split())
+
+_SENTENCE = re.compile(r"(?<=[.!?])\s+")
 
 
-def _identity(chunk: dict) -> dict:
+def _terms(text: str) -> set:
+    return {w for w in re.findall(r"[a-z0-9][a-z0-9\-]{2,}", text.lower())
+            if w not in _STOP}
+
+
+def _brief(chunk: dict, query: str = "", limit: int = 260) -> str:
+    """The part of a passage worth showing, not simply its first 260 characters.
+
+    Taking the head is right whenever the passage opens with its substance, and
+    wrong in the one place it matters most: the first chunk of a paper is the
+    title, the authors and their email addresses, so a topical question gets an
+    excerpt made entirely of metadata that stops before the answer. That is
+    what "What problem does normalizing layer inputs address?" returned, cut
+    off at "complicated by" with the answering clause just past the edge.
+
+    So the window opens at the sentence with the most question words in it. A
+    passage whose opening already answers is unchanged, because its first
+    sentence wins on the same test.
+    """
+    text = " ".join(chunk["text"].split())
+    if len(text) <= limit:
+        return text
+    wanted = _terms(query)
+    if not wanted:
+        return text[:limit]
+
+    # Sentence starts, with the offset each one begins at.
+    starts, at = [0], 0
+    for part in _SENTENCE.split(text):
+        at += len(part) + 1
+        if at < len(text):
+            starts.append(at)
+
+    best, best_score = 0, -1
+    for i, start in enumerate(starts):
+        window = text[start:start + limit]
+        score = len(wanted & _terms(window))
+        # Ties go to the earlier sentence: with nothing to choose between two
+        # windows, the one nearer the start of the passage is the one a reader
+        # would have reached by reading.
+        if score > best_score:
+            best, best_score = start, score
+    if best_score <= 0:
+        return text[:limit]
+    return text[best:best + limit]
+
+
+def _identity(chunk: dict, query: str = "") -> dict:
     """The fields the UI needs to display and correlate a chunk across stages."""
     loc = chunk.get("locator", {})
     return {
         "chunk_id": chunk["chunk_id"],
         "source": chunk["source"],
         "locator": f"{loc.get('kind', '?')} {loc.get('value', '?')}",
-        "text": _brief(chunk),
+        "text": _brief(chunk, query),
     }
 
 
@@ -151,7 +206,7 @@ def trace_pipeline(
         "Embeds the query and finds the nearest chunk vectors by cosine "
         "similarity. It matches meaning, so it survives paraphrase, and it misses "
         "rare tokens that carry meaning by identity, like model numbers.",
-        [{**_identity(c), "rank": i, "score": round(c["score"], 4),
+        [{**_identity(c, query), "rank": i, "score": round(c["score"], 4),
           "also_found_by": sparse_rank.get(c["chunk_id"])}
          for i, c in enumerate(dense, 1)],
         note=f"all-MiniLM-L6-v2, {index.ntotal} chunks searched",
@@ -165,7 +220,7 @@ def trace_pipeline(
             "case by case. Measured on this corpus, each finds passages the "
             "other misses, so fusing them recovers questions "
             "neither reaches alone.",
-            [{**_identity(c), "rank": i, "score": round(c["score"], 4),
+            [{**_identity(c, query), "rank": i, "score": round(c["score"], 4),
               "also_found_by": dense_rank.get(c["chunk_id"])}
              for i, c in enumerate(second, 1)],
             note=f"{ensemble[1]}, {len(second)} candidates",
@@ -177,7 +232,7 @@ def trace_pipeline(
         "Scores exact term overlap, weighting rare terms far above common ones. "
         "The exact inverse profile: strong on identifiers and acronyms, blind to "
         "paraphrase. Returns nothing when no query term appears at all.",
-        [{**_identity(c), "rank": i, "score": round(c["score"], 3),
+        [{**_identity(c, query), "rank": i, "score": round(c["score"], 3),
           "also_found_by": dense_rank.get(c["chunk_id"])}
          for i, c in enumerate(sparse, 1)],
         note=(f"{len(query_terms)} query terms: {' '.join(query_terms[:12])}"
@@ -236,7 +291,7 @@ def trace_pipeline(
         "Min-max normalises each retriever's scores per query, then adds them "
         "weighted by alpha. Tunable, at the cost of a normalisation that is "
         "relative: a query where everything is mediocre still produces a 1.0.",
-        [{**_identity(c), "rank": i, "score": round(c["fusion_score"], 5),
+        [{**_identity(c, query), "rank": i, "score": round(c["fusion_score"], 5),
           "dense_rank": c["contrib"].get("dense"),
           "sparse_rank": c["contrib"].get("sparse"),
           "agreement": len(c["contrib"]) == 2}
@@ -254,7 +309,7 @@ def trace_pipeline(
     if use_reranker:
         ranked = rerank(query, fused_list, k=len(fused_list),
                         blend=rerank_blend)
-        moves = [{**_identity(c), "rank": i,
+        moves = [{**_identity(c, query), "rank": i,
                   "score": round(float(c["rerank_score"]), 3),
                   "was": fused_rank[c["chunk_id"]],
                   "delta": fused_rank[c["chunk_id"]] - i}
@@ -263,7 +318,7 @@ def trace_pipeline(
         # The candidate pool goes to selection in the order the first stage left
         # it. Scores stay on the fusion scale -- substituting a rerank score
         # would be inventing the number this run deliberately did not compute.
-        moves = [{**_identity(c), "rank": i,
+        moves = [{**_identity(c, query), "rank": i,
                   "score": round(float(c["fusion_score"]), 5),
                   "was": i, "delta": 0}
                  for i, c in enumerate(fused_list, 1)]

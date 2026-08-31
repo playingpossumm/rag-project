@@ -213,6 +213,11 @@ def retrieve(
     # The optional second dense index, from load_ensemble(). None means this
     # corpus does not have one and the pipeline behaves exactly as before.
     ensemble=None,
+    # Drop a paper's title block from the candidate pool. A title is the
+    # densest statement of what a document is about, so it outscores the
+    # paragraph that answers, and it answers nothing. Off until measured; see
+    # src/front_matter.py for the scope and the case that found it.
+    drop_front_matter: bool = False,
 ) -> list[dict]:
     """Full retrieval pipeline: shortlist, rerank, then expand context.
 
@@ -229,6 +234,14 @@ def retrieve(
                                allowed_ids=allowed_ids,
                                query_expansion=query_expansion,
                                ensemble=ensemble)
+        if drop_front_matter:
+            # Before reranking, not after: a title block that survives into the
+            # pool costs a slot the reranker could have spent on a real
+            # passage, so filtering the final five would fix the display and
+            # leave the pool one worse.
+            from front_matter import drop as _drop_front
+
+            candidates = _drop_front(candidates)
         # Rerank the whole pool, then select k. Selecting first would give the
         # diversity step nothing to choose between.
         ranked = rerank(query, candidates, k=len(candidates),
@@ -241,6 +254,10 @@ def retrieve(
                             allowed_ids=allowed_ids,
                             query_expansion=query_expansion,
                             ensemble=ensemble)
+        if drop_front_matter:
+            from front_matter import drop as _drop_front
+
+            results = _drop_front(results)
 
     # Expansion runs last, deliberately. Ranking on small chunks is what keeps
     # precision high; growing them any earlier would feed the reranker diluted

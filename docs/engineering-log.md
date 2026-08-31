@@ -1906,6 +1906,85 @@ project has now ruled out the fix it had been naming for them.
 
 ---
 
+## 2026-08-31 — The answer on screen was the title page, and the metric liked it
+
+**Reported by looking.** The owner asked "What problem does normalizing layer
+inputs address?" and got the batchnorm paper's title, its two authors, their
+two email addresses, and eight words of abstract stopping at "complicated by".
+Nothing bold, because none of the question's words were in it.
+
+**Three separate things were wrong, and the first two are not what they look
+like.**
+
+**1. Retrieval was right.** The chunk returned at rank 1 is 973 characters and
+contains "We refer to this phenomenon as internal covariate shift, and address
+the problem by normalizing layer inputs". The answer was in the passage the
+system chose.
+
+**2. The excerpt was wrong.** `pipeline_trace._brief` showed the first 260
+characters of a passage, always. On a median chunk of 696 characters the head
+reaches the substance; on the first chunk of a paper the head is the title, the
+authors and their email addresses, because that is what the first 260
+characters of a paper are. The reader was shown the 260 characters immediately
+before the answer.
+
+The window now opens at the sentence with the most question words in it, scored
+the way `ui/answer-mark.js` already scores sentences to decide what to embolden.
+A passage that opens with its answer is unaffected, because its first sentence
+wins the same test.
+
+**3. Filtering title blocks was the obvious fix and it is wrong.** Before
+finding the excerpt bug, the title block looked like the problem, so
+`src/front_matter.py` was written to drop it from the candidate pool: 55 chunks
+across the three corpora, about one per PDF, and no golden case names one.
+Measured end to end it is worse on both corpora that have title pages:
+
+| | any-hit | MRR | questions showing a title block |
+|---|---|---|---|
+| ML papers, filter off | **0.851** | **0.739** | 5 |
+| ML papers, filter on | 0.836 | 0.724 | **0** |
+| Quant, filter off | **0.886** | **0.779** | 2 |
+| Quant, filter on | 0.857 | 0.764 | **0** |
+| Ornithology, either | 0.846 | 0.614 | 0 |
+
+Kept, default off, as a refuted experiment. The birds are unaffected because
+Wikipedia articles have no title pages.
+
+**And the reason it measures worse is the interesting part.** `bn-covariate`
+carries `answer_contains: "internal covariate shift"` and gold pages that
+include `batch_normalization.pdf` page 1. The title reads "Batch
+Normalization: Accelerating Deep Network Training by Reducing Internal
+Covariate Shift". So the page is a gold page **and** the answer string is
+present, and both halves of the labelling scheme score the title block as a
+correct answer. Removing it removes a hit.
+
+**43 of 102 answerable cases have a title block on one of their gold pages, and
+17 of those have the answer string inside the title itself.** The measurement
+cannot distinguish "returned the answer" from "returned the title of the paper
+that contains the answer", and on those 17 a passage-level label would not fix
+it either.
+
+That is the same hole `HANDOFF.md` already records one level finer, where a
+derived label proves the string is present rather than that the passage answers.
+Here it is the page that is proved, not the passage.
+
+**What was actually shipped, and how it was checked.** The excerpt change only.
+It moves no retrieval metric, by construction, so it was verified by reading:
+a heuristic pass over all 157 recorded answers flagged 31 whose top passage
+looked like metadata rather than an answer, and 5 after. Of the 5, three are
+prose that happens to cite several papers, and two are genuinely weak
+retrievals scoring -1.09 and -1.15, near the floor. One of those two still
+shows a title block, correctly: the question's words really are in that paper's
+title and nowhere better in the chunk.
+
+**The lesson, and it is not a new one here.** Rendering the interface and
+reading it found this; no metric could have. The first fix that suggested
+itself would have made the system worse while making the defect invisible, and
+the measurement that stopped it is only trustworthy because the labels were
+read afterwards to find out why it said no.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
