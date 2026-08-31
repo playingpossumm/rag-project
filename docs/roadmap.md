@@ -4,7 +4,7 @@ What is worth doing next, what has been ruled out, and the mistakes that cost
 the most time. `HANDOFF.md` carries the reasoning behind every decision named
 here; this is the short list.
 
-Current as of 2026-08-30.
+Current as of 2026-08-31.
 
 ---
 
@@ -20,7 +20,7 @@ figures. The ones below are a snapshot; the page is generated.
 | Ornithology | 45 | 864 | 0.846 |
 | Quantitative finance | 35 | 6,184 | 0.886 |
 
-**389 checks**, none of which need a network or an API key:
+**395 checks**, none of which need a network or an API key:
 
 ```bash
 python src/test_metrics.py        # the scoring functions, hand-computed
