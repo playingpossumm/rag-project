@@ -135,6 +135,10 @@ def answer_quality() -> dict:
             "n_adversarial": sm.get("n_adversarial", 0),
             "invented_citations": sm.get("invented_citations", 0),
             "answers_with_invented": sm.get("answers_with_invented", 0),
+            # A citation that is only a reference number lifted from the
+            # passage. Carried so a zero on the page means zero rather than
+            # "not read from the file".
+            "malformed_citations": sm.get("malformed_citations", 0),
             "correct": sm.get("correct", 0),
             "unmatched": len(sm.get("unmatched", [])),
             "refused_rightly": sm.get("refused_rightly", 0),
