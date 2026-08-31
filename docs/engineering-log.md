@@ -1849,6 +1849,63 @@ place, so it is one command.
 
 ---
 
+## 2026-08-31 — Query decomposition, measured at last, and refuted
+
+**The claim.** Seven ML cases fail under every combination of fusion, reranking
+and diversity cap, and the roadmap has said since they were isolated that query
+decomposition is the right fix: the question names a topic and a constraint,
+retrieval matches the topic, and the constraint that picks the right document is
+averaged away. Splitting the question is what an LLM does well. That was an
+argument, never a measurement, and it was blocked on credit until
+`query_rewrite.py` learned to speak to a local Ollama.
+
+**Two modes against the shipped pipeline, on all 67 answerable cases:**
+
+| mode | any-hit | MRR | NDCG | src recall | structural | s/query |
+|---|---|---|---|---|---|---|
+| none *(shipped)* | **0.851** | **0.738** | **0.754** | 0.760 | 0/7 | **1.30** |
+| rewrite | 0.806 | 0.686 | 0.715 | **0.765** | **1/7** | 7.35 |
+| decompose | 0.806 | 0.622 | 0.666 | 0.759 | 0/7 | 27.56 |
+
+**Decomposition recovers none of the seven** and costs 0.045 any-hit at 21
+times the latency. The claim it was supposed to support does not survive its
+first measurement.
+
+**Rewriting recovers one of the seven and loses three questions net.** It gains
+`adam-bias` and `bert-wordpiece` and loses `cot-prompt`, `lora-frozen`,
+`mha-def`, `sbert-speed` and `seq2seq-reverse`. Five for two.
+
+**The part worth keeping is that the fixture said the opposite.** Run against
+the seven alone, rewrite recovered one and lost nothing, which reads as a pure
+win. It is not: the cases it breaks are all outside the fixture, so a harness
+pointed only at the fixture cannot see them. The module's own docstring named
+this before either run, which is why the sweep defaults to the whole set and
+`--structural-only` carries a warning:
+
+> a change measured only on the cases it was built for cannot show what it
+> costs the cases it was not: the seven are 10% of this corpus, and a rewrite
+> that recovers two of them while losing four elsewhere is a bad trade that
+> looks like a good one.
+
+The real trade was two recovered against five lost. Predicting the shape of a
+trap and then walking into a slightly worse version of it is the ordinary way
+this goes, and the reason the prediction was written into the code rather than
+into a plan.
+
+**Why rewriting breaks working questions.** The rewrite is a paraphrase, and a
+paraphrase of a question that already retrieves well moves it off the wording
+that was working. `mha-def` asks about multi-head attention in terms the paper
+uses; a rewrite that says the same thing differently retrieves worse. The seven
+structural cases are the ones where the original wording is the problem, so
+they are exactly the minority the change helps.
+
+**Nothing shipped.** Both modes stay off, `query_rewrite.py` keeps its
+degrade-to-the-original behaviour, and `eval/decompose-sweep.json` holds the
+numbers. The seven remain unreached, and the honest position is that this
+project has now ruled out the fix it had been naming for them.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
