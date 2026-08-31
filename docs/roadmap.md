@@ -8,7 +8,7 @@ Current as of 2026-08-31.
 
 ---
 
-## Where the system stands
+## Current state
 
 Three corpora, each measured separately, each with its own tuning. Run
 `python src/serve.py` and open <http://127.0.0.1:8000/quality> for the live
@@ -50,7 +50,7 @@ which is why that one *is* counted.
 
 ---
 
-## What is worth doing next
+## Worth doing next
 
 **1. The dense ensemble is decided, and stays where it is.** Measured end to
 end on all three corpora on 2026-08-31, in both directions. It is worse on
@@ -98,7 +98,7 @@ hides the reason for running both. Also wanted: a *gate* at the diversity cap
 showing passages blocked, and more motion inside the arrays. The
 index-as-a-field is right and should stay.
 
-## What has been ruled out, with numbers
+## Ruled out, with numbers
 
 Kept because a refuted experiment is worth as much as a shipped one. All of
 these are in `docs/engineering-log.md` with the measurements.
@@ -130,7 +130,7 @@ these are in `docs/engineering-log.md` with the measurements.
 - **Larger candidate pools.** 28 candidates scores *worse* than 20 on all three
   corpora while the pool ceiling rises on all three.
 
-## Things that will bite you
+## Traps
 
 - **A corpus setting does not transfer.** Five have now been measured
   per-corpus rather than global: the abstention threshold, the rerank blend, the
@@ -164,7 +164,7 @@ these are in `docs/engineering-log.md` with the measurements.
   connection, indexing one corpus deleting another's cache, and a module that
   had never been invoked at all.
 
-## Still genuinely blocked
+## Blocked
 
 Nothing is blocked on API credit any more. `RAG_GENERATOR=ollama` runs the
 whole generation path against a local model, and `src/evaluate_answers.py`
