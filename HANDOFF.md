@@ -979,6 +979,8 @@ disclaim current work.
 | `src/generate_local.py` | the same contract against a local Ollama, so the path can run |
 | `src/test_generate_local.py` | that path over a real socket, against a fake Ollama |
 | `src/sweep_ensemble.py` | two embedders fused; the first change to move the fixture |
+| `src/sweep_decompose.py` | rewriting and decomposing the question, scored against the cases nothing else reaches |
+| `src/query_rewrite.py` | the rewrite and decompose strategies themselves, against a local model or the API |
 | `src/test_serve.py` | request handling, the offered questions, and the folder intake |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
