@@ -1,25 +1,24 @@
-"""What does dropping title blocks from the candidate pool cost or buy?
+"""The cost of dropping title blocks from the candidate pool.
 
-`src/front_matter.py` explains the defect: a paper's title block outscores the
-paragraph that answers, because a title is the densest statement of what a
-document is about and a cross-encoder reads that density as relevance. 55
-chunks across the three corpora carry it, about one per PDF.
+`src/front_matter.py` describes the defect it was written for, which is that a
+paper's title block outscores the paragraph that answers, because a title is the
+densest statement of what a document is about and a cross-encoder reads that
+density as relevance. 56 chunks across the three corpora match, about one per
+PDF.
 
 That makes it look free, and this project has been wrong about free before.
-Four separate experiments here improved what the first stage retrieves and
-made the finished answer worse, so the filter is measured end to end at the
-served configuration, on the whole answerable set, before its default changes.
+Four separate experiments here improved what the first stage retrieves and made
+the finished answer worse, so the filter is measured end to end at the served
+configuration, on the whole answerable set, before its default changes.
 
-It was, and it lost: 0.851 -> 0.836 any-hit on the ML papers and 0.886 -> 0.857
-on quant. The labels are why. They name pages, a title block sits on page 1,
-and page 1 is a gold page for 43 of the 102 answerable cases in the two corpora
-that have one, so dropping a
-title block drops a chunk the golden set calls correct.
+It was measured and it lost, scoring 0.851 to 0.836 any-hit on the ML papers and
+0.886 to 0.857 on quant.
 
 **Read that loss with `src/audit_title_credit.py` before believing it.** Two
-questions account for all of it, and both are questions scored correct on a
-passage that answers nothing. The aggregate this script prints is the right
-number and the wrong verdict on its own.
+questions account for all of it, and both are answered by the chunk the filter
+removes, because a chunk that opens with a title block continues into the
+abstract. The aggregate this script prints is the right number, and on its own
+it does not say whether the questions behind it were lost fairly.
 
 Also reported: how many questions had a title block in their top five at all.
 A change that fixes a visible defect on three questions and moves no metric is

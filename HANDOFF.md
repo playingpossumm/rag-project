@@ -576,14 +576,21 @@ Wikipedia articles and have no title pages, which is why they are outside that
 denominator and inside the one below. This is why filtering title blocks out of
 retrieval measures worse.
 
-**What it actually costs, measured the same day.** Reaching a label is not
-collecting it. `src/audit_title_credit.py` runs the shipped configuration over
-every answerable case and finds **2 of 110 hits** resting only on a title block,
-`bn-covariate` and `qf-whale-attack`, and 3 of 97 answer-string credits. Those
-two are the entire loss the filter measured, to three decimal places on both
-any-hit and MRR. So the published figures are inflated by two questions, not by
-43, and the filter costs nothing real. Both entries are in
-`docs/engineering-log.md` under that date.
+**What it actually costs, measured the same day: nothing.** Reaching a label
+is not collecting it. `src/audit_title_credit.py` runs the shipped
+configuration over every answerable case and finds two hits satisfied only by a
+chunk flagged as front matter, `bn-covariate` and `qf-whale-attack`, and both
+of those chunks contain the answer string, so both credits are correct. The
+count of false credits is **zero**.
+
+**The first version of that audit said two, and was wrong.** It read
+`front_matter.is_front_matter`, which judges the first 600 characters of a
+chunk, as a verdict on a chunk of about 1,000, and what follows a title block
+is the abstract. The wrong figure reached five documents and the deployed site
+before the chunks were read in full. Recorded here because the same error, in
+the same week, is what put a title page on screen in the first place: judging a
+passage by how it opens. Both entries are in `docs/engineering-log.md` under
+2026-08-31.
 
 **Deriving labels from answer strings has a hole.** It proves the string is
 present, not that the passage answers the question. Sixteen quant cases asked
@@ -1052,5 +1059,5 @@ disclaim current work.
 | `src/test_excerpt.py` | which 260 characters of a passage the interface shows, against the passage it got wrong |
 | `src/front_matter.py` | a paper's title block, detected; a refuted experiment, off by default |
 | `src/sweep_front_matter.py` | what dropping title blocks costs end to end, on every corpus |
-| `src/audit_title_credit.py` | how many reported hits rest on a title block, which is what that cost really was |
+| `src/audit_title_credit.py` | whether a hit satisfied by a title-block chunk is a false credit; on this corpus, none are |
 | `git log` | why each decision was made, including the reversals |

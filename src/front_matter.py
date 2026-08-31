@@ -28,10 +28,15 @@ wrong document, and not a ranking that a better reranker fixes: the right
 document came back first, and the part of it that came back is the part that
 names the paper.
 
-**Scope, measured before writing any of this.** 55 chunks across the three
-corpora carry it: 29 of 5,459 on the ML papers, 26 of 6,184 on quant, and none
-at all on the birds, which are Wikipedia articles and have no title pages.
-Roughly one per PDF, which is what a title block should be.
+**Scope, and its precision, both read rather than assumed.** 56 chunks across
+the three corpora match: 30 of 5,459 on the ML papers, 26 of 6,184 on quant, and
+none at all on the birds, which are Wikipedia articles and have no title pages.
+That is roughly one per PDF, which is what a title block should be, and all 56
+were read. One is a false positive, a page-1 figure in
+`break_it_down_pass_it_on_cross_task_skill_transfer.pdf` listing interface
+labels, which is document content. A second, the reproduction-permission notice
+on `attention_is_all_you_need.pdf`, is not a title block either, although it
+answers nothing.
 
 **Measured, refuted, and off by default. Read this before turning it on.**
 Everything above is the argument, and the argument is not the result. End to
@@ -52,21 +57,28 @@ itself**. `bn-covariate` wants
 Covariate Shift", on page 1. So the measurement scores the title block as a
 correct answer, and removing it removes a hit.
 
-**And then the loss was opened, which changes the reasoning.**
-`src/audit_title_credit.py` counts the hits that actually rest on a title block:
-**2 of 110**, `bn-covariate` and `qf-whale-attack`, and they are the entire
-loss above to three decimals on both any-hit and MRR. Every point this filter
-"costs" is a point the golden set should not have awarded. It costs nothing
-real.
+**The loss is two questions, and both are genuine.**
+`src/audit_title_credit.py` finds two hits satisfied only by a chunk this module
+flags, `bn-covariate` and `qf-whale-attack`, and they are the whole of the loss
+above to three decimals on both any-hit and MRR. Read in full, both chunks
+answer the question outright, because `is_front_matter` judges the first 600
+characters and these chunks run to about 1,000, and what follows a title block
+is the abstract. The batchnorm chunk continues into "We refer to this phenomenon
+as internal covariate shift, and address the problem by normalizing layer
+inputs".
 
-It stays off because it buys nothing measurable either. The defect it was
-written for was a presentation defect, not a retrieval one: the chunk returned
-at rank 1 contains the answer 260 characters further in, and
-`pipeline_trace._brief` was showing the head. Windowing the excerpt on the
-answering sentence fixed the reported case and removed no passage. What
-switching this on would add is four questions no longer showing a title block
-at rank 1, against dropping 55 passages from every search on a three-part
-heuristic whose false positives are silent.
+So this filter drops abstracts, which is why it loses. That is information
+destroyed rather than a scoring artefact withdrawn, and it settles the question:
+the filter is off and it stays off.
+
+The first audit reported those two hits as false credits, and that reading
+reached five documents and the deployed site before the chunks were read whole.
+It took the flag on a chunk's opening for a verdict on the chunk, which is the
+same error that put a title block on screen in the first place. The defect this
+module was written for was a presentation defect and not a retrieval one:
+`pipeline_trace._brief` was showing the head of a passage, the answer sat 260
+characters further in, and windowing the excerpt on the answering sentence
+fixed the reported case without removing anything.
 
 `src/sweep_front_matter.py` reproduces the table above and
 `src/audit_title_credit.py` the count.

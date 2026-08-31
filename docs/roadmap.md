@@ -116,13 +116,13 @@ these are in `docs/engineering-log.md` with the measurements.
   said rewriting was a pure win, because everything it breaks lies outside the
   fixture.
 - **Dropping a paper's title block from the candidate pool.** Costs 0.015
-  any-hit on the ML papers and 0.029 on quant, and `src/audit_title_credit.py`
-  shows that the whole of that loss is two questions the golden set scores
-  correct on a title block that answers nothing. So it costs nothing real, and
-  it buys nothing measurable either: four questions stop showing a title block
-  at rank 1, against removing 55 passages from every search on a heuristic. Off
-  by default, and the one entry on this list that a reader might reasonably
-  reverse. See the two entries under 2026-08-31 in the log.
+  any-hit on the ML papers and 0.029 on quant. The whole of that loss is two
+  questions, and both are genuine, because a chunk that opens with a title block
+  continues into the abstract and both of these abstracts answer the question
+  outright. Dropping the first chunk of a paper drops its abstract, so the
+  filter destroys information rather than withdrawing a scoring artefact. It is
+  off and it stays off. An audit that first reported those two as false credits
+  was wrong for the reason recorded under 2026-08-31 in the log.
 - **Pseudo-relevance feedback.** Recovers 0 of 12 structural cases, because the
   feedback documents do not contain the missing word either.
 - **Prefixing chunks with their document title.** Built, measured, reverted:

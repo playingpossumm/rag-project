@@ -451,17 +451,18 @@ harness.
 - **Labels were authored by the same process that built the system.** Mitigated by
   deriving them from the corpus and by auditing them structurally
   (`src/check_golden.py`), not eliminated.
-- **And here is one instance of that, with a number on it.** The labels mark
-  correct *pages*. A paper's title block sits on page 1, and a paper is usually
-  titled after the thing it is about, so page 1 is a gold page for 43 of the 102
-  answerable cases in the two corpora that have title pages, and for 17 of those
-  the answer string is in the title itself. `bn-covariate` asks what normalizing
-  layer inputs addresses and its paper is titled "... by Reducing Internal
-  Covariate Shift". Scored, that title block is a correct answer.
-  `src/audit_title_credit.py` counts how much of that is actually being
-  collected: **2 of 110 hits**, `bn-covariate` and `qf-whale-attack`. So the
-  figures above are inflated by two questions, not by 43, and the difference
-  between those two numbers is the whole reason the count exists.
+- **One measured instance of that, and the count it came to.** The labels mark
+  correct pages rather than passages, and a paper's title block sits on page 1,
+  so page 1 is a gold page for 43 of the 102 answerable cases in the two corpora
+  that have title pages, with the answer string inside the title itself for 17
+  of them. `bn-covariate` asks what normalizing layer inputs addresses and its
+  paper is titled "... by Reducing Internal Covariate Shift", which the scoring
+  would accept. `src/audit_title_credit.py` measures how much of that reach is
+  collected and finds **two hits satisfied only by a chunk that opens with a
+  title block, and both of those chunks contain the answer**, because what
+  follows a title block is the abstract. False credits: **zero**. The reach is
+  real and the cost today is nothing, which is a distinction the figures above
+  depend on and no aggregate can show.
 - **Every corpus needs its own tuning.** Five settings have now been measured as
   per-corpus rather than global: the abstention threshold, the rerank blend,
   the candidate pool size, the choice of embedder, and whether fusing a second
