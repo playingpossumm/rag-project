@@ -258,6 +258,37 @@ check("a short filename still matches itself exactly",
 check("a one-character bracket group is never a citation",
       cited_sources("The value [t] rises.", {LONG}), [])
 
+# ------------------------------------------------- a number is not a document
+# real, both: llama3.1:8b on the ML papers emitted the papers' own bibliography
+# numbers as citations. They carry a locator, so they are citation-shaped, and
+# they name no document, so they cannot point a reader at one that does not
+# exist. Counted as malformed rather than invented.
+ref_in_prose = judge(
+    "The dot product is scaled by the square root of the key dimension to "
+    "counteract extremely small gradients [4, page 4].", case("q"), PASSAGES)
+check("a bare reference number is not an invented document",
+      ref_in_prose["invented"], [])
+check("it is reported as malformed", ref_in_prose["malformed"], ["4"])
+
+only_a_ref = judge("[36, page not specified]", case("q"), PASSAGES)
+check("an answer that is only a reference number invents nothing",
+      only_a_ref["invented"], [])
+check("and is malformed", only_a_ref["malformed"], ["36"])
+
+# The distinction has to hold in the other direction: a real filename that was
+# never supplied is still an invented citation, not a malformed one.
+real_fab = judge("Birds sing. [ornithology_handbook.pdf, page 44]",
+                 case("q"), PASSAGES)
+check("a fabricated filename is invented, not malformed",
+      (real_fab["invented"], real_fab["malformed"]),
+      (["ornithology_handbook.pdf"], []))
+
+# A supplied document cited properly is neither.
+clean = judge("Down feathers trap air. [feather.pdf, page 2]",
+              case("q"), PASSAGES)
+check("a good citation is neither invented nor malformed",
+      (clean["invented"], clean["malformed"]), ([], []))
+
 # --------------------------------------------------------------- correctness
 hit = judge("The interlocking structures are barbules.",
             case("q", "barbules"), PASSAGES)

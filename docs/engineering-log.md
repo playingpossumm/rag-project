@@ -1793,6 +1793,62 @@ finding a bug in the instrument does not mean the reading was wrong.
 
 ---
 
+## 2026-08-31 — A bigger generator, on a sample too small to settle it
+
+**Why.** Every answer-quality figure describes llama3.2, a 3B model, so the
+numbers describe that model on this corpus rather than the pipeline's ceiling.
+llama3.1:8b is the same family at roughly 2.7x the parameters, which makes size
+the only variable that changes.
+
+**The run did not finish.** Ollama stopped partway, so the ML corpus produced
+11 of its 15 answers and the other two corpora produced none. Everything below
+is the 11 cases both models answered, which is 7 answerable and 4 adversarial.
+That is small enough that one question is fourteen points, and it is reported
+because the shape of the result is interesting, not because the numbers are
+settled.
+
+| ML papers, 11 shared cases | llama3.2 (3B) | llama3.1 (8B) |
+|---|---|---|
+| contains the labelled answer | 4/7 | 4/7 |
+| refused correctly | 3/4 | **4/4** |
+| refused wrongly | 0/7 | 0/7 |
+| invented citations | 0 | 0 |
+| malformed citations | 0 | **2** |
+| groundedness (proxy) | 0.729 | 0.553 |
+| median answer length | 255 chars | 139 |
+
+**Correctness did not move.** Same 4 of 7, with one case swapped in each
+direction: the 8B loses `moe-routing` and gains `warmup`. On this sample 2.7x
+the parameters bought nothing on the measure that matters most, which is worth
+knowing before anyone reaches for a larger model as the obvious next step.
+
+**The gate improved**, 3 of 4 adversarial to 4 of 4. One question, so it is a
+direction and not a result.
+
+**Citation discipline got worse, and that is the surprise.** The 8B emitted the
+papers' own bibliography numbers as citations, `[4, page 4]` and
+`[36, page not specified]`, where the 3B emitted none across 45 answers. One of
+those answers is *only* the reference number, with no prose at all, which is
+the same collapse the 3B shows when the prompt says "Context:" instead of
+"Excerpts:". A larger model did not remove that brittleness; it found a
+different way into it.
+
+That also forced a distinction in the judge. A bare number names no document,
+so it cannot point a reader at one that does not exist, and calling it an
+invented citation overstates it. Invented and malformed are now counted apart:
+the first is a fabricated document, the second is uncheckable.
+
+**Shorter and less grounded.** Median answer length halves and lexical overlap
+with the supplied passages falls from 0.729 to 0.553. On a grounded-answering
+task, drawing less of the answer from the passages is not obviously an
+improvement, and the correctness column says it did not buy one here.
+
+**What would settle it** is the finished run on all three corpora, which needs
+Ollama up for about an hour. The harness, the model and `--rescore` are all in
+place, so it is one command.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

@@ -1,0 +1,240 @@
+{
+ "generated_by": "src/evaluate_answers.py",
+ "note": "No LLM judge. Citations and correctness are objective; groundedness is a lexical proxy and not a verdict. `correct` is containment of the labelled answer string, so a right answer in other words counts against it; the cases it rejected are listed in `unmatched` to be read rather than scored.",
+ "corpora": {
+  "llm": {
+   "label": "ML & NLP papers",
+   "model": "llama3.1:8b",
+   "summary": {
+    "n": 11,
+    "invented_citations": 0,
+    "answers_with_invented": 0,
+    "malformed_citations": 2,
+    "correct": 4,
+    "n_answerable": 7,
+    "unmatched": [
+     "pos-enc-fn",
+     "moe-routing",
+     "label-smooth"
+    ],
+    "unmatched_sharing_words": [
+     "pos-enc-fn",
+     "moe-routing"
+    ],
+    "refused_wrongly": 0,
+    "refused_rightly": 4,
+    "n_adversarial": 4,
+    "grounded_mean": 0.553,
+    "seconds": 13.5
+   },
+   "cases": [
+    {
+     "id": "scale-why",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [
+      "4"
+     ],
+     "grounded": 0.87,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 260,
+     "answer": "The dot product is scaled by the square root of the key dimension to counteract the effect of extremely small gradients when the dot products grow large in magnitude, pushing the softmax function into regions where it has extremely small gradients [4, page 4].",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "colbert.pdf",
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf"
+     ]
+    },
+    {
+     "id": "warmup",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.818,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 232,
+     "answer": "[attention_is_all_you_need.pdf, page 7]\n\nThis corresponds to increasing the learning rate linearly for the first warmup_steps training steps, and decreasing it thereafter proportionally to the inverse square root of the step number.",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+      "t5.pdf"
+     ]
+    },
+    {
+     "id": "pos-enc-fn",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.8,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 199,
+     "answer": "The sinusoidal function used to compute positional encodings is:\n\n_PE(pos,2i)_ = sin(pos/10000[2][i/d][model])\n\n_PE(pos,2i+1)_ = cos(pos/10000[2][i/d][model])\n\n[attention_is_all_you_need.pdf, page 6]",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "t5.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "pos-enc-why",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.87,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 266,
+     "answer": "Since our model contains no recurrence and no convolution, in order for the model to make use of the order of the sequence, we must inject some information about the relative or absolute position of the tokens in the sequence. [attention_is_all_you_need.pdf, page 6]",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "moe-routing",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.5,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 139,
+     "answer": "The sequence-level load balancing loss is used for expert routing. [let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf, page 17]",
+     "sources": [
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf"
+     ]
+    },
+    {
+     "id": "path-length",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.727,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 279,
+     "answer": "According to [attention_is_all_you_need.pdf, page 6], self-attention layers have a maximum path length between any two positions in the network, whereas recurrent layers require O(n) sequential operations, implying that the maximum path length for recurrent layers is at least n.",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "t5.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "label-smooth",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [
+      "36"
+     ],
+     "grounded": 0.0,
+     "refused": false,
+     "correct": false,
+     "near": false,
+     "chars": 24,
+     "answer": "[36, page not specified]",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "gpt3.pdf",
+      "let_s_scale_step_by_step_compute_efficient_hyperparameter.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
+     "id": "adv-diffusion",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.375,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 112,
+     "answer": "There is no information in the provided excerpts about the noise schedule used by the denoising diffusion model.",
+     "sources": [
+      "oenobench_a_wine_domain_benchmark_for_knowledge_grounded_e.pdf",
+      "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+      "t5.pdf",
+      "when_text_and_numbers_disagree_evidence_arbitration_in_lar.pdf"
+     ]
+    },
+    {
+     "id": "adv-rlhf",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.625,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 99,
+     "answer": "The provided excerpts do not explicitly describe the training process for the reward model in RLHF.",
+     "sources": [
+      "g_carl_grounded_checklist_aligned_reward_learning_for_pati.pdf",
+      "multi_agent_orchestration_with_the_common_sense_reasoning.pdf",
+      "phantom_gains_auditing_self_improvement_against_a_measured.pdf"
+     ]
+    },
+    {
+     "id": "adv-mamba",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.0,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 57,
+     "answer": "The context does not contain the answer to this question.",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "daedalus_150m_a_convolution_attention_hybrid_designed_for.pdf",
+      "layer_normalization.pdf"
+     ]
+    },
+    {
+     "id": "adv-price",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.5,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 83,
+     "answer": "There is no information in the provided excerpts about the cost to train the model.",
+     "sources": [
+      "chain_of_thought.pdf",
+      "gpt3.pdf",
+      "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
+      "t5.pdf"
+     ]
+    }
+   ]
+  }
+ }
+}
