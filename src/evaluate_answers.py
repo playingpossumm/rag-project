@@ -93,6 +93,15 @@ EXTENSIONS = (".pdf", ".docx", ".pptx", ".xlsx", ".md", ".txt", ".htm", ".html")
 # How much of a filename a bracket group has to carry before a substring match
 # counts as naming that document.
 MIN_STEM_MATCH = 4
+
+# A citation whose name is only digits is a reference number lifted from the
+# passage, not a document. "[4, page 4]" and "[36, page not specified]" are
+# real examples from llama3.1:8b on the ML papers. They name nothing, so they
+# cannot point a reader at a document that does not exist; they point nowhere
+# at all. Counted as malformed rather than invented, because the case for
+# leading with invented citations is that a reader checks the citation instead
+# of the source, and this kind cannot be checked in the first place.
+BARE_NUMBER = re.compile(r"^[\d\s.,;:\-\[\]()]+$")
 LOCATOR = re.compile(r"\b(?:page|slide|sheet|section|para|paragraph)\b", re.I)
 
 
@@ -282,8 +291,11 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
     supplied_stems = {Path(s).stem.lower() for s in supplied}
 
     cites = cited_sources(answer, supplied_stems)
-    invented = []
+    invented, malformed = [], []
     for c in cites:
+        if BARE_NUMBER.match(c):
+            malformed.append(c)
+            continue
         cited = Path(c).stem.lower()
         # A citation counts as supplied if it names a document that was given,
         # allowing for the model dropping or mangling the extension. Substring
@@ -319,6 +331,7 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
             near = bool(want_stems) and bool(want_stems & have_stems)
 
     return {"citations": len(cites), "invented": invented,
+            "malformed": malformed,
             "grounded": round(grounded, 3), "refused": refused,
             "correct": correct, "near": near, "chars": len(answer)}
 
@@ -388,9 +401,15 @@ def main() -> int:
         ensemble = load_ensemble(cfg["store"]) if cfg.get("ensemble_model") else None
         rr.RERANK_BLEND = cfg["rerank_blend"]
 
+        # The model that wrote the answers, which on a rescore is the one
+        # recorded in the file rather than whatever the environment names now.
+        # Printing the current one made a rescore of llama3.1:8b answers
+        # announce llama3.2.
+        naming = (stored.get(name, {}).get("model") or generate_local.MODEL
+                  if args.rescore else generate_local.MODEL)
         shown = ("rescoring stored answers" if args.rescore
                  else f"{len(answerable)} answerable + {len(adversarial)} adversarial")
-        print(f"\n  {cfg['label']}  ({shown}, {generate_local.MODEL})")
+        print(f"\n  {cfg['label']}  ({shown}, {naming})")
         rows, started = [], time.perf_counter()
         for case in cases:
             results = retrieve(case["question"], index, metadata, model,
@@ -423,6 +442,13 @@ def main() -> int:
             print(f"    {case['id']:<22} grounded {row['grounded']:.2f}  "
                   f"{row['citations']} cites  {flag}")
 
+        # A corpus that produced no answers is not a corpus that scored zero.
+        # The 8B run lost Ollama partway and wrote two corpora as "0 of 0
+        # correct, groundedness 0.000", which reads in a table exactly like a
+        # measurement and means the opposite of one.
+        if not rows:
+            print(f"    no answers for {name}; not recorded")
+            continue
         ans = [r for r in rows if not r["unanswerable"]]
         adv = [r for r in rows if r["unanswerable"]]
         unmatched = [r["id"] for r in ans if r["correct"] is False]
@@ -430,6 +456,10 @@ def main() -> int:
             "n": len(rows),
             "invented_citations": sum(len(r["invented"]) for r in rows),
             "answers_with_invented": sum(1 for r in rows if r["invented"]),
+            # A citation that is only a number: the paper's own reference
+            # marker, copied out of the passage. It names no document, so it
+            # cannot mislead a reader towards one; it is uncheckable instead.
+            "malformed_citations": sum(len(r.get("malformed", [])) for r in rows),
             "correct": sum(1 for r in ans if r["correct"]),
             "n_answerable": len(ans),
             # Every answerable case the string test rejected. Some are wrong
@@ -447,6 +477,9 @@ def main() -> int:
         print(f"    ---")
         print(f"    invented citations   {summary['invented_citations']} "
               f"(in {summary['answers_with_invented']} of {summary['n']} answers)")
+        if summary["malformed_citations"]:
+            print(f"    malformed citations  {summary['malformed_citations']}"
+                  f"   (a bare reference number, naming no document)")
         print(f"    correct              {summary['correct']}/{summary['n_answerable']}"
               f"   (contains the labelled answer string)")
         if unmatched:
@@ -456,9 +489,7 @@ def main() -> int:
               f"{summary['n_adversarial']}   and when it should not: "
               f"{summary['refused_wrongly']}/{summary['n_answerable']}")
         print(f"    groundedness (proxy) {summary['grounded_mean']:.3f}")
-        model_used = (stored[name].get("model", generate_local.MODEL)
-                      if args.rescore else generate_local.MODEL)
-        report[name] = {"label": cfg["label"], "model": model_used,
+        report[name] = {"label": cfg["label"], "model": naming,
                         "summary": summary, "cases": rows}
         # After each corpus, so an interrupted run keeps what it has measured.
         write(args.emit, report)
