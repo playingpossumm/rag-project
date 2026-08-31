@@ -211,7 +211,7 @@ as a success.
 | Let the strong model do only the gate, at 1/20 the cost | BGE scored AUC 0.968 ranking *and* gating, 0.827 gating MiniLM's pick — the gain was self-consistency | idea **refuted by its own harness** |
 | Query decomposition will reach the seven structural cases | recovers **0 of 7** and costs 0.045 any-hit at 21× the latency; rewriting recovers 1 and breaks 5 | named fix **ruled out**, nothing shipped |
 | Fusing a second embedder is weakly dominant everywhere | true of pool recall; end to end it is worse on ML, a one-question trade on birds, earned only on quant | **not shipped** beyond the one corpus |
-| A larger generator will answer better | llama3.1:8b scores the same 4 of 7, refuses one more, and cites worse | **no change**, and the run is partial |
+| A larger generator will answer better | over 43 matched cases llama3.1:8b gains 2 of 28 correct, refuses one adversarial question fewer, invents its first citation, and takes 58x as long | **no change**, run finished 2026-09-01 |
 
 **The generalisation, added 2026-08-27 after five in a row.** Every defect
 found in this repo's last five working sessions was in code that had tests

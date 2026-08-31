@@ -438,15 +438,16 @@ harness.
   and a correct answer. Ten answerable cases per corpus is still too few to
   conclude much. → [`eval/answer-quality.json`](eval/answer-quality.json)
 
-  **A larger model was tried and did not obviously help.** llama3.1:8b, the
-  same family at roughly 2.7x the parameters, scored the same 4 of 7 on the
-  cases both models answered, refused one more adversarial question, and got
-  *worse* at citations: it emitted the papers' own bibliography numbers,
-  `[4, page 4]`, where the 3B emitted none. Its answers are half as long and
-  less grounded in the passages. That run is partial, since Ollama stopped
-  partway, and seven answerable cases settle nothing. It is recorded because
-  reaching for a bigger model is the obvious next move and this is the only
-  evidence here about whether it works.
+  **A larger model was tried and did not help.** llama3.1:8b, the same family
+  at roughly 2.7x the parameters, was compared over the 43 cases both models
+  answered. It gets 16 of 28 answerable questions right against 14, which is two
+  questions on a sample where finding 6 above says two questions are noise, and
+  every other measure moves the other way. It refuses 12 of 15 adversarial
+  questions against 13, emits one invented citation and two malformed ones where
+  the 3B emits none, scores 0.476 on the groundedness proxy against 0.588, and
+  takes 5,665 seconds against 98. An earlier partial run over 11 answers on one
+  corpus reported the opposite direction on two of those three counts, which is
+  what a sample that size is worth.
   → [`eval/answer-quality-8b.json`](eval/answer-quality-8b.json)
 - **157 cases across three corpora is still small.** On the 26-case bird set each
   answerable question is worth ~3.8 points, so a one-question difference looks

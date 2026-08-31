@@ -2046,6 +2046,42 @@ title block either, although it answers nothing.
 
 ---
 
+## 2026-09-01 — A bigger generator, finished
+
+The run recorded on 2026-08-31 stopped partway and covered 11 answers on the ML
+papers alone. It reported that llama3.1:8b scored the same 4 of 7, refused one
+adversarial question more than llama3.2, and cited worse. That entry said seven
+answerable cases settle nothing, and finishing the run proved the point, because
+two of the three claims were wrong in direction.
+
+Completed across all three corpora on 2026-09-01, matched on the 43 cases both
+models answered. The 8B run produced 13 of 15 on the ML papers and the two it
+did not produce are excluded from both sides, since crediting a model on a case
+the other never saw is the comparison this project keeps warning about.
+
+| | llama3.2 (3B) | llama3.1 (8B) |
+|---|---|---|
+| correct | 14 of 28 | **16 of 28** |
+| adversarial refused | **13 of 15** | 12 of 15 |
+| invented citations | **0** | 1 |
+| malformed citations | **0** | 2 |
+| groundedness, lexical proxy | **0.588** | 0.476 |
+| generation time, all three corpora | **98 s** | 5,665 s |
+
+**Two questions better, and everything else worse.** The 8B model wins four
+cases and loses two, for a net of two out of 28, which on a sample this size is
+inside the noise that finding 6 of the README was written about. Against that it
+misses one adversarial question the 3B refuses, emits the first invented
+citation either model has produced, emits two malformed ones, draws 0.112 less
+of its wording from the passages it was given, and takes 58 times as long.
+
+**No change, and now on evidence rather than on a partial run.** The shipped
+generator stays llama3.2. What the finished run adds beyond the verdict is that
+the earlier one, on seven answerable cases, got the direction wrong on both the
+correctness and the refusal comparison while sounding precise about each.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
