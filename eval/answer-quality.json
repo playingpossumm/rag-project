@@ -5,6 +5,9 @@
   "llm": {
    "label": "ML & NLP papers",
    "model": "llama3.2",
+   "requested": 15,
+   "produced": 15,
+   "complete": true,
    "summary": {
     "n": 15,
     "invented_citations": 0,
@@ -28,7 +31,7 @@
     "refused_rightly": 4,
     "n_adversarial": 5,
     "grounded_mean": 0.678,
-    "seconds": 23.2
+    "seconds": 32.7
    },
    "cases": [
     {
@@ -311,6 +314,9 @@
   "birds": {
    "label": "Ornithology",
    "model": "llama3.2",
+   "requested": 15,
+   "produced": 15,
+   "complete": true,
    "summary": {
     "n": 15,
     "invented_citations": 0,
@@ -332,7 +338,7 @@
     "refused_rightly": 5,
     "n_adversarial": 5,
     "grounded_mean": 0.525,
-    "seconds": 24.8
+    "seconds": 34.0
    },
    "cases": [
     {
@@ -619,6 +625,9 @@
   "quant": {
    "label": "Quantitative finance",
    "model": "llama3.2",
+   "requested": 15,
+   "produced": 15,
+   "complete": true,
    "summary": {
     "n": 15,
     "invented_citations": 0,
@@ -642,7 +651,7 @@
     "refused_rightly": 4,
     "n_adversarial": 5,
     "grounded_mean": 0.566,
-    "seconds": 22.3
+    "seconds": 31.7
    },
    "cases": [
     {

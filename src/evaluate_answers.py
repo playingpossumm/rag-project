@@ -489,8 +489,21 @@ def main() -> int:
               f"{summary['n_adversarial']}   and when it should not: "
               f"{summary['refused_wrongly']}/{summary['n_answerable']}")
         print(f"    groundedness (proxy) {summary['grounded_mean']:.3f}")
+        # What was asked for, beside what came back. A run that loses its
+        # model partway produces a smaller n and nothing else that says so,
+        # and the next reader takes the smaller n for the intended sample.
+        # On a rescore the original request has to be carried forward, or a
+        # truncated run relabels itself complete the moment it is re-judged.
+        wanted = (stored[name].get("requested", len(stored[name]["cases"]))
+                  if args.rescore else len(cases))
         report[name] = {"label": cfg["label"], "model": naming,
+                        "requested": wanted,
+                        "produced": len(rows),
+                        "complete": len(rows) == wanted,
                         "summary": summary, "cases": rows}
+        if len(rows) != wanted:
+            print(f"    PARTIAL: {wanted} case(s) asked for, {len(rows)} "
+                  f"answered. The rest failed to generate.")
         # After each corpus, so an interrupted run keeps what it has measured.
         write(args.emit, report)
 
@@ -502,7 +515,12 @@ def main() -> int:
 
 
 def write(dest: Path, report: dict) -> None:
-    """The results so far, in the shape the finished file has."""
+    """The results so far, in the shape the finished file has.
+
+    A corpus carries `requested`, `produced` and `complete`, so a run that lost
+    its model partway is legible as a truncated run rather than as a smaller
+    sample.
+    """
     dest.write_text(json.dumps(
         {"generated_by": "src/evaluate_answers.py",
          "note": "No LLM judge. Citations and correctness are objective; "

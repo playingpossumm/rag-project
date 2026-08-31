@@ -5,6 +5,9 @@
   "llm": {
    "label": "ML & NLP papers",
    "model": "llama3.1:8b",
+   "requested": 15,
+   "produced": 11,
+   "complete": false,
    "summary": {
     "n": 11,
     "invented_citations": 0,
@@ -25,7 +28,7 @@
     "refused_rightly": 4,
     "n_adversarial": 4,
     "grounded_mean": 0.553,
-    "seconds": 13.5
+    "seconds": 21.5
    },
    "cases": [
     {
