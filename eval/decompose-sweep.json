@@ -1,85 +1,532 @@
 {
  "generated_by": "src/sweep_decompose.py",
- "note": "End to end at the served configuration, scored over the structural fixture only. These are the cases that fail under every pipeline configuration, so the baseline any-hit is 0.000 by construction and is not this corpus hit rate. Re-run without --structural-only to see what a mode costs the cases it was not built for.",
+ "scope": "all answerable cases",
+ "structural_only": false,
+ "note": "End to end at the served configuration, scored over all answerable cases. A pool is a ceiling and not a proxy here. A mode measured only on the cases it was built for cannot show what it costs the rest, which is why this is the whole set.",
  "corpora": {
   "llm": {
    "label": "ML & NLP papers",
    "modes": {
     "none": {
-     "hit_rate": 0.0,
-     "mrr": 0.0,
-     "ndcg": 0.0,
-     "src_recall": 0.4857,
-     "seconds_per_query": 1.82,
+     "hit_rate": 0.8507,
+     "mrr": 0.7381,
+     "ndcg": 0.7539,
+     "src_recall": 0.76,
+     "seconds_per_query": 1.3,
      "structural_hit": 0,
      "structural_total": 7,
      "rewritten": {}
     },
     "rewrite": {
-     "hit_rate": 0.1429,
-     "mrr": 0.0357,
-     "ndcg": 0.0615,
-     "src_recall": 0.5286,
-     "seconds_per_query": 9.79,
+     "hit_rate": 0.806,
+     "mrr": 0.6858,
+     "ndcg": 0.7152,
+     "src_recall": 0.7649,
+     "seconds_per_query": 7.35,
      "structural_hit": 1,
      "structural_total": 7,
      "rewritten": {
+      "mha-def": [
+       "What are the technical details of multi-head attention mechanisms in deep learning models, specifically in the context of transformer architectures?"
+      ],
+      "scale-why": [
+       "What is the dot product in the context of key dimensionality, and how does it relate to scaling?"
+      ],
+      "warmup": [
+       "What learning rate schedules exhibit an initial linear increase followed by a decay that follows an inverse square root function?"
+      ],
+      "pos-enc-fn": [
+       "What sinusoidal function is used to compute positional encodings in transformer models?"
+      ],
+      "pos-enc-why": [
+       "Why do models with no recurrence and no convolution require positional encodings?"
+      ],
+      "moe-routing": [
+       "What load balancing loss function is used for expert routing in network protocols such as BGP?"
+      ],
+      "path-length": [
+       "What is the maximum path length that can be processed by self-attention and recurrent neural networks?"
+      ],
+      "bleu-ende": [
+       "What English machine translation model achieved a BLEU score of 28.4 in the 2014 WMT English-to-German translation task?"
+      ],
+      "attn-uses": [
+       "What are the three different ways multi-head attention is used in a Transformer encoder-decoder model?"
+      ],
+      "label-smooth": [
+       "What label smoothing value was used during the training process?"
+      ],
+      "p100": [
+       "What type of GPU hardware was used for training, and how many specific models or configurations were employed?"
+      ],
+      "adam": [
+       "Which optimizer was used in the paper, and what were the specific beta values used in the optimization algorithm?"
+      ],
+      "relu": [
+       "Which type of activation function is commonly used between two linear layers in a feed-forward neural network block?"
+      ],
       "dropout-rate": [
-       "What dropout rate was used for regularization in the neural network?"
+       "What dropout rate was used for regularization in deep neural networks?"
+      ],
+      "residual": [
+       "How are residual connections and layer normalization applied around each sub-layer in a deep neural network architecture?"
       ],
       "wmt14": [
        "Which English-to-German machine translation dataset was used for the experiments?"
       ],
+      "colbert-late": [
+       "What is the concept of late interaction in a retrieval model, specifically in the context of information retrieval and search algorithms?"
+      ],
+      "dpr-dual": [
+       "How is a dual-encoder retriever trained using in-batch negative sampling, specifically with a specified number of negative examples per positive example?"
+      ],
+      "lora-rank": [
+       "How does low-rank adaptation reduce the number of trainable parameters in machine learning models?"
+      ],
+      "bert-mlm": [
+       "What is the pre-training objective of a masked language model?"
+      ],
+      "cot-prompt": [
+       "How does providing intermediate mathematical reasoning steps to a model impact its arithmetic accuracy in solving mathematical problems?"
+      ],
+      "sbert-siamese": [
+       "How are Siamese neural network architectures utilized to generate sentence embeddings?"
+      ],
+      "vit-patches": [
+       "How is an image split into spatial patches and fed to a multi-head self-attention Transformer architecture?"
+      ],
+      "faiss-pq": [
+       "How does product quantization specifically utilize binary vectors to compress vectors for similarity search in the context of nearest neighbor search?"
+      ],
       "adam-bias": [
        "How does the optimizer in a machine learning algorithm correct for bias in its moment estimates, specifically in the context of variance reduction techniques such as Hessian-free optimization or quasi-Newton methods?"
+      ],
+      "adam-adamax": [
+       "What variant of the infinity norm is proposed in the papers?"
+      ],
+      "bahdanau-fixed": [
+       "What are the technical limitations of encoding a sentence into a fixed-length vector that cause it to create a bottleneck in natural language processing tasks?"
+      ],
+      "bahdanau-align": [
+       "How does the model learn to jointly align and translate technical papers?"
+      ],
+      "bn-covariate": [
+       "What problem does a layer's input normalization address in deep learning?"
+      ],
+      "bn-minibatch": [
+       "How are the normalization statistics computed during the training of a neural network model?"
+      ],
+      "bert-nsp": [
+       "What sentence-level pre-training task is used alongside masked language prediction?"
+      ],
+      "bert-wordpiece": [
+       "What subword tokenization scheme is used in technical papers?"
+      ],
+      "bert-glue": [
+       "What benchmark suite is used to assess and evaluate language understanding capabilities?"
+      ],
+      "cot-gsm8k": [
+       "What is the grade-school math benchmark commonly used to assess mathematical reasoning?"
+      ],
+      "cot-scale": [
+       "What scale of neural network architectures is required to exhibit chain-of-thought reasoning in cognitive models?"
+      ],
+      "colbert-maxsim": [
+       "What operator computes the similarity between query and document embeddings in natural language processing?"
+      ],
+      "colbert-msmarco": [
+       "Which passage ranking dataset is used for evaluation of a particular retrieval system?"
+      ],
+      "dpr-bm25": [
+       "How does dense retrieval compare with BM25 on top-20 accuracy in a technical paper retrieval system, considering the impact of document similarity and relevance ranking?"
+      ],
+      "dpr-nq": [
+       "Which open-domain question answering dataset is used in the retrieval system?"
+      ],
+      "faiss-kselect": [
+       "How is top-k selection implemented efficiently on a Graphics Processing Unit (GPU)?"
+      ],
+      "faiss-ivf": [
+       "What index structures partition vectors into cells for spatial search?"
       ],
       "gpt3-params": [
        "What is the maximum number of parameters in an autoregressive (AR) model?"
       ],
+      "gpt3-icl": [
+       "What are the techniques for in-context learning that do not involve gradient-based optimization?"
+      ],
       "gpt3-fewshot": [
        "How does the effect of the number of examples in the prompt on task performance change?"
+      ],
+      "ln-vs-bn": [
+       "Why is layer normalization preferred over batch normalization for recurrent neural networks?"
+      ],
+      "ln-stats": [
+       "How are the normalization statistics computed across different features rather than across individual examples in a dataset?"
+      ],
+      "lora-latency": [
+       "Does the adaptation method used in the paper introduce additional latency due to the incorporation of inference processes?"
+      ],
+      "lora-frozen": [
+       "Are the pre-trained model's weights updated during the process of fine-tuning or adaptation?"
+      ],
+      "rag-parametric": [
+       "How do parametric and non-parametric memory models intersect or integrate with each other in cognitive psychology and neuroscience?"
+      ],
+      "rag-marginalize": [
+       "How do retrieved documents get downvoted or de-emphasized during the document generation process?"
+      ],
+      "resnet-degradation": [
+       "What effects do increased network depth have on the accuracy of plain neural networks?"
+      ],
+      "resnet-shortcut": [
+       "What connections enable gradients to propagate through extremely large neural networks?"
+      ],
+      "resnet-152": [
+       "What is the maximum depth of the deepest neural network architecture evaluated on the ImageNet dataset?"
+      ],
+      "roberta-dynamic": [
+       "What masking strategy is applied at each epoch differs?"
       ],
       "roberta-nsp-drop": [
        "What pre-training objectives were found unnecessary and removed from recent models?"
       ],
+      "sbert-cosine": [
+       "How is sentence similarity computed from the derived semantic embeddings, specifically using cosine similarity or a similar metric, from the embeddings generated by a word2vec or glove model?"
+      ],
+      "sbert-speed": [
+       "What is the performance difference between a retrieval system using a novel approach versus a cross-encoder for similarity search in terms of speed and efficiency?"
+      ],
+      "seq2seq-reverse": [
+       "What input transformation technique has been found to significantly enhance translation performance in machine learning models?"
+      ],
+      "seq2seq-lstm": [
+       "What recurrent neural network architecture is capable of mapping sequences to a fixed-dimensional vector?"
+      ],
+      "t5-c4": [
+       "What cleaned web-scraped corpus is used for pre-training a language model?"
+      ],
       "t5-text2text": [
        "How do all Natural Language Processing (NLP) tasks, including but not limited to text classification, sentiment analysis, named entity recognition, language modeling, and machine translation, get standardized into a single format?"
+      ],
+      "t5-span": [
+       "What objective of token corruption conceals sequential segments of tokens?"
+      ],
+      "vit-jft": [
+       "What large private dataset is used for large-scale deep learning model pre-training?"
+      ],
+      "vit-inductive": [
+       "What inductive biases do convolutional neural networks have that transformer models lack?"
+      ],
+      "w2v-cbow": [
+       "What is the architecture that uses contextual information to predict a word from its surrounding context?"
+      ],
+      "w2v-skipgram": [
+       "What architecture predicts surrounding words from a target word in a technical paper?"
+      ],
+      "w2v-analogy": [
+       "How are syntactic and semantic regularities measured in word embeddings?"
       ]
      }
     },
     "decompose": {
-     "hit_rate": 0.0,
-     "mrr": 0.0,
-     "ndcg": 0.0,
-     "src_recall": 0.5571,
-     "seconds_per_query": 44.05,
+     "hit_rate": 0.806,
+     "mrr": 0.6221,
+     "ndcg": 0.6658,
+     "src_recall": 0.7587,
+     "seconds_per_query": 27.56,
      "structural_hit": 0,
      "structural_total": 7,
      "rewritten": {
+      "mha-def": [
+       "What is multi-head attention and why use several heads instead of one?"
+      ],
+      "scale-why": [
+       "What is the dot product and how is it scaled?",
+       "What is the key dimension in the context of the dot product?"
+      ],
+      "warmup": [
+       "What is the name of the learning rate schedule that increases linearly for the first steps and then decays by inverse square root?"
+      ],
+      "pos-enc-fn": [
+       "Sine function"
+      ],
+      "pos-enc-why": [
+       "What is the purpose of positional encodings in a model without recurrence and convolution?",
+       "Why are positional encodings necessary even in models without recurrence and convolution?",
+       "How do positional encodings contribute to the functionality of a model without recurrence and convolution?"
+      ],
+      "moe-routing": [
+       "What is the load balancing loss used for expert routing?"
+      ],
+      "path-length": [
+       "What is the maximum path length between positions in self-attention?",
+       "How does the maximum path length between positions in self-attention compare to recurrent layers?"
+      ],
+      "bleu-ende": [
+       "What is the model that achieved 28.4 BLEU on WMT 2014 English-to-German?"
+      ],
+      "attn-uses": [
+       "Multi-head attention in the encoder: allows the model to attend to information from different representation subspaces at different positions.",
+       "Multi-head attention in the decoder: enables the model to attend to different input sequences and generate output sequences simultaneously.",
+       "Multi-head attention in the encoder-decoder: facilitates the model to attend to different input sequences and generate output sequences simultaneously, while also allowing the model to attend to different representation subspaces at different positions."
+      ],
+      "label-smooth": [
+       "What label smoothing value was used during training?"
+      ],
+      "p100": [
+       "What type of GPU hardware was used for training?",
+       "How many GPUs were used for training?"
+      ],
+      "adam": [
+       "What optimizer was used in the paper?",
+       "What are the beta values used in the optimizer?"
+      ],
+      "relu": [
+       "What is the activation function used in the middle layer of a feed-forward neural network?"
+      ],
       "dropout-rate": [
        "What is the dropout rate used in this paper?",
        "What is regularization in machine learning?",
        "What is the purpose of dropout in neural networks?"
       ],
+      "residual": [
+       "Residual connections are applied after each sub-layer in a residual network, allowing the model to learn the difference between the input and output of each layer.",
+       "Layer normalization is applied after each sub-layer in a residual network, normalizing the activations of each layer to have zero mean and unit variance, which helps to stabilize the training process and improve the model's performance."
+      ],
       "wmt14": [
        "WMT14 English-German Translation Dataset"
+      ],
+      "colbert-late": [
+       "What is late interaction in a retrieval model?",
+       "Late interaction in a retrieval model refers to the process of retrieving documents after the initial search results have been obtained. This can involve re-running the search query on the same or different documents to gather more relevant information."
+      ],
+      "dpr-dual": [
+       "What is the training process for a dual-encoder retriever with in-batch negatives?",
+       "How does in-batch negatives work in a dual-encoder retriever?",
+       "What are the key steps involved in training a dual-encoder retriever with in-batch negatives?",
+       "What are the benefits of using in-batch negatives in a dual-encoder retriever?",
+       "How does in-batch negatives improve the performance of a dual-encoder retriever?"
+      ],
+      "lora-rank": [
+       "Low-rank adaptation reduces the number of trainable parameters by utilizing a lower-dimensional representation of the data, allowing for more efficient learning and better generalization."
+      ],
+      "bert-mlm": [
+       "What is the masked language model pre-training objective?"
+      ],
+      "cot-prompt": [
+       "Does prompting a model with intermediate reasoning steps improve arithmetic accuracy?",
+       "Does intermediate reasoning steps in prompting improve arithmetic accuracy in specific mathematical operations?",
+       "How does the inclusion of intermediate reasoning steps in prompting affect the accuracy of arithmetic calculations in different mathematical contexts?"
+      ],
+      "sbert-siamese": [
+       "What is a Siamese network structure?",
+       "How does a Siamese network structure work for deriving sentence embeddings?",
+       "What are the key components of a Siamese network structure for sentence embeddings?",
+       "How is the similarity between sentences calculated in a Siamese network structure?",
+       "What are the advantages of using a Siamese network structure for deriving sentence embeddings?"
+      ],
+      "vit-patches": [
+       "What is the purpose of patching in image processing?",
+       "How does patching affect the spatial dimensions of an image?",
+       "What is the role of patch size in image patching?",
+       "How does patching enable parallel processing in image processing?",
+       "What are the benefits of using patching in image processing?"
+      ],
+      "faiss-pq": [
+       "What is product quantization?",
+       "How does product quantization work?",
+       "What are the benefits of product quantization?",
+       "What are the applications of product quantization?",
+       "How does product quantization compare to other similarity search methods?"
       ],
       "adam-bias": [
        "What is the optimizer's approach to correcting for bias in its moment estimates?",
        "How does the optimizer handle bias in its moment estimates?",
        "What techniques does the optimizer use to correct for bias in its moment estimates?"
       ],
+      "adam-adamax": [
+       "What variant based on the infinity norm is proposed?"
+      ],
+      "bahdanau-fixed": [
+       "What is the main bottleneck of encoding a sentence into a fixed-length vector?"
+      ],
+      "bahdanau-align": [
+       "What is the alignment mechanism in the model?",
+       "How does the model learn to translate jointly?",
+       "What is the role of attention mechanisms in the model's alignment and translation process?"
+      ],
+      "bn-covariate": [
+       "What is the purpose of normalizing layer inputs in a neural network?"
+      ],
+      "bn-minibatch": [
+       "What are normalization statistics computed during training?",
+       "How are normalization statistics computed during training?",
+       "What is the formula for computing normalization statistics during training?"
+      ],
+      "bert-nsp": [
+       "Masked Language Modeling"
+      ],
+      "bert-wordpiece": [
+       "What is subword tokenization?"
+      ],
+      "bert-glue": [
+       "SQuAD",
+       "SQuAD 2.0",
+       "SQuAD 3.0",
+       "SQuAD 3.1",
+       "SQuAD 4.0"
+      ],
+      "cot-gsm8k": [
+       "What is the grade-school math benchmark used to evaluate reasoning?"
+      ],
+      "cot-scale": [
+       "At what model scale does chain-of-thought reasoning emerge?"
+      ],
+      "colbert-maxsim": [
+       "Cosine Similarity",
+       "Dot Product",
+       "Euclidean Distance"
+      ],
+      "colbert-msmarco": [
+       "PassageRank"
+      ],
+      "dpr-bm25": [
+       "What is the difference between dense retrieval and BM25 in terms of top-20 accuracy?",
+       "How does dense retrieval compare to BM25 in terms of retrieval performance?",
+       "What are the key differences between dense retrieval and BM25 in terms of top-20 accuracy?",
+       "How does dense retrieval outperform BM25 in terms of top-20 accuracy?",
+       "What are the advantages and disadvantages of using dense retrieval compared to BM25 in terms of top-20 accuracy?"
+      ],
+      "dpr-nq": [
+       "SQuAD",
+       "TriviaQA",
+       "MultiNLI",
+       "Natural Questions",
+       "SQuAD2",
+       "SQuAD3",
+       "SuperGLUE",
+       "OpenBookQA",
+       "OpenBookQA V2",
+       "OpenBookQA V3",
+       "OpenBookQA V4",
+       "OpenBookQA V5",
+       "OpenBookQA V6",
+       "OpenBookQA V7",
+       "OpenBookQA V8",
+       "OpenBookQA V9",
+       "OpenBookQA V10",
+       "OpenBookQA V11",
+       "OpenBookQA V12",
+       "OpenBookQA V13",
+       "OpenBookQA V14",
+       "OpenBookQA V15",
+       "OpenBookQA V16",
+       "OpenBookQA V17",
+       "OpenBookQA V18",
+       "OpenBookQA V19",
+       "OpenBookQA V20"
+      ],
+      "faiss-kselect": [
+       "How is top-k selection implemented using CUDA?",
+       "What is the difference between top-k and top-k with ties in GPU implementation?",
+       "How does GPU-based top-k selection handle duplicate elements?"
+      ],
+      "faiss-ivf": [
+       "What is the index structure used for partitioning vectors into cells for search?",
+       "What is the name of the index structure used for partitioning vectors into cells for search?",
+       "What is the purpose of the index structure used for partitioning vectors into cells for search?"
+      ],
       "gpt3-params": [
        "What is the largest autoregressive model?",
        "What is the largest autoregressive model in terms of number of parameters?"
       ],
+      "gpt3-icl": [
+       "What is in-context learning?",
+       "What is in-context learning without gradient updates?",
+       "What is in-context learning without gradient updates in deep learning?"
+      ],
       "gpt3-fewshot": [
-       "The relationship between the number of examples in the prompt and task performance is a complex one, with research suggesting that the optimal number of examples can vary depending on the specific task and dataset. However, in general, increasing the number of examples in the prompt can lead to improved task performance, as it provides the model with more information to learn from and reduces the impact of noise and variability in the data. On the other hand, too many examples can lead to overfitting, where the model becomes too specialized to the training data and fails to generalize well to new, unseen data. The ideal number of examples will depend on the specific task and dataset, but as a general rule, a moderate number of examples (e.g. 5-10) is often found to be optimal for many tasks.",
-       "The impact of the number of examples in the prompt on task performance is a topic of ongoing research, with some studies suggesting that the relationship is non-linear, and that the optimal number of examples may depend on the specific task and dataset. For example, a study on question answering tasks found that increasing the number of examples from 1 to 5 improved performance, but further increases in the number of examples did not lead to significant improvements. In contrast, a study on text classification tasks found that increasing the number of examples from 10 to 50 improved performance, but further increases in the number of examples did not lead to significant improvements. The relationship between the number of examples and task performance is likely to be complex and dependent on the specific task and dataset, and more research is needed to fully understand the optimal number of examples for different tasks.",
-       "The effect of the number of examples in the prompt on task performance is a multifaceted issue, with research suggesting that the optimal number of examples can vary depending on the specific task, dataset, and model architecture. For example, a study on natural language processing tasks found that increasing the number of examples from 1 to 5 improved performance, but further increases in the number of examples did not lead to significant improvements. In contrast, a study on computer vision tasks found that increasing the number of examples from 10 to 50 improved performance, but further increases in the number of examples did not lead to significant improvements. The relationship between the number of examples and task performance is likely to be complex and dependent on the specific task, dataset, and model architecture, and more research is needed to fully understand the optimal number of examples for different tasks."
+       "The relationship between the number of examples in the prompt and task performance is a complex one. Research has shown that increasing the number of examples can lead to improved performance, but only up to a point. Beyond a certain threshold, additional examples can actually decrease performance due to overfitting. The optimal number of examples depends on the specific task and dataset, but generally falls in the range of 5-20 examples. More examples can lead to more accurate results, but also increase the risk of overfitting and decreased generalizability.",
+       "The impact of the number of examples on task performance is a topic of ongoing research. Studies have shown that a small number of examples can be sufficient for certain tasks, such as classification, but larger datasets are often required for tasks that involve more complex relationships between variables. The relationship between the number of examples and task performance is highly dependent on the specific task and dataset, and more research is needed to fully understand the optimal number of examples for different applications.",
+       "The effect of the number of examples on task performance is a multifaceted issue. On one hand, a large number of examples can provide a more comprehensive understanding of the task and lead to improved performance. On the other hand, an excessive number of examples can lead to overfitting and decreased generalizability. The optimal number of examples depends on the specific task and dataset, and more research is needed to determine the ideal number of examples for different applications."
+      ],
+      "ln-vs-bn": [
+       "Why is layer normalization preferred over batch normalization for recurrent networks?",
+       "What is the main difference between layer normalization and batch normalization?",
+       "How does layer normalization handle vanishing gradients in recurrent networks?",
+       "What are the advantages of using layer normalization in recurrent networks compared to batch normalization?"
+      ],
+      "ln-stats": [
+       "Normalization statistics are computed by taking the mean and standard deviation of each feature across all examples.",
+       "The mean is calculated by summing up all values in a feature and dividing by the total number of examples.",
+       "The standard deviation is calculated by taking the square root of the variance, which is the average of the squared differences from the mean.",
+       "Normalization statistics are often used to scale features to a common range, making it easier to compare and combine features from different sources.",
+       "Some common normalization techniques include Min-Max Scaling, Standardization, and Log Scaling."
+      ],
+      "lora-latency": [
+       "Does the adaptation method add inference latency?",
+       "What is inference latency in the context of adaptation methods?",
+       "How does the adaptation method impact inference latency?",
+       "What are the factors that contribute to inference latency in adaptation methods?"
+      ],
+      "lora-frozen": [
+       "Are the pretrained weights updated during adaptation?",
+       "What is the process of updating pretrained weights during adaptation?",
+       "How do pretrained weights get updated during adaptation?",
+       "What are the steps involved in updating pretrained weights during adaptation?"
+      ],
+      "rag-parametric": [
+       "What is the difference between parametric and non-parametric memory?",
+       "How do parametric and non-parametric memory interact in the brain?",
+       "What are the advantages and disadvantages of combining parametric and non-parametric memory?"
+      ],
+      "rag-marginalize": [
+       "What is the effect of document marginalization on retrieval accuracy?",
+       "How does document marginalization impact the generation of summaries?",
+       "What are the techniques used to mitigate document marginalization during generation?"
+      ],
+      "resnet-degradation": [
+       "What is the effect of increasing the depth of a plain network on its accuracy?",
+       "How does the depth of a plain network impact its ability to generalize?",
+       "What happens to the accuracy of a plain network when its depth is increased?",
+       "How does the depth of a plain network affect its capacity to learn complex representations?"
+      ],
+      "resnet-shortcut": [
+       "What are the key connections that enable gradients to flow through deep neural networks?",
+       "How do ReLU activation functions impact gradient flow in deep networks?",
+       "What role do batch normalization layers play in facilitating gradient flow in deep networks?"
+      ],
+      "resnet-152": [
+       "What is the depth of the largest network on ImageNet?"
+      ],
+      "roberta-dynamic": [
+       "What is the masking strategy used in the first epoch?",
+       "What is the masking strategy used in the second epoch?",
+       "What is the masking strategy used in the third epoch?"
       ],
       "roberta-nsp-drop": [
        "What pre-training objective was found unnecessary and removed?"
+      ],
+      "sbert-cosine": [
+       "How is sentence similarity computed from the derived embeddings?"
+      ],
+      "sbert-speed": [
+       "How much faster is the approach than a cross-encoder for similarity search?"
+      ],
+      "seq2seq-reverse": [
+       "What input transformation improved translation performance markedly?",
+       "What is the input transformation that improved translation performance markedly?"
+      ],
+      "seq2seq-lstm": [
+       "Recurrent Neural Network (RNN)"
+      ],
+      "t5-c4": [
+       "Corpus from Common Crawl",
+       "Corpus from Wikipedia",
+       "Corpus from BookCorpus",
+       "Corpus from arXiv",
+       "Corpus from arXiv Abstracts"
       ],
       "t5-text2text": [
        "What is the definition of NLP?",
@@ -90,6 +537,32 @@
        "What are the different NLP techniques used in text classification?",
        "What is the role of deep learning in NLP?",
        "What are the different NLP tasks used in sentiment analysis?"
+      ],
+      "t5-span": [
+       "What is Masked LMLM Objective?",
+       "What is Masked LMLM Objective? (continued)",
+       "What is Masked LMLM Objective? (final answer)"
+      ],
+      "vit-jft": [
+       "What is the name of the large private dataset used for pre-training?"
+      ],
+      "vit-inductive": [
+       "What inductive biases do convolutional networks have that transformers lack?",
+       "Convolutional networks have the inductive bias of being able to capture local patterns and hierarchies in data, whereas transformers lack this ability and are better suited for sequential data."
+      ],
+      "w2v-cbow": [
+       "What is the architecture that predicts a word from its surrounding context?",
+       "What is the name of the architecture that predicts a word from its surrounding context?"
+      ],
+      "w2v-skipgram": [
+       "What is the architecture that predicts the surrounding words from a target word?",
+       "What is the name of the architecture that predicts the surrounding words from a target word?"
+      ],
+      "w2v-analogy": [
+       "What are syntactic and semantic regularities in word vectors?",
+       "How are syntactic regularities measured in word vectors?",
+       "What is the role of semantic regularities in word vectors?",
+       "How are semantic regularities measured in word vectors?"
       ]
      }
     }
@@ -97,18 +570,32 @@
    "changed": {
     "rewrite": {
      "gained": [
-      "adam-bias"
+      "adam-bias",
+      "bert-wordpiece"
      ],
-     "lost": []
+     "lost": [
+      "cot-prompt",
+      "lora-frozen",
+      "mha-def",
+      "sbert-speed",
+      "seq2seq-reverse"
+     ]
     },
     "decompose": {
-     "gained": [],
-     "lost": []
+     "gained": [
+      "bert-wordpiece",
+      "lora-latency"
+     ],
+     "lost": [
+      "colbert-maxsim",
+      "dpr-nq",
+      "resnet-shortcut",
+      "t5-c4",
+      "t5-span"
+     ]
     }
    },
    "model": "llama3.2"
   }
- },
- "scope": "structural fixture only",
- "structural_only": true
+ }
 }

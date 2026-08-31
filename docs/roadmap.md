@@ -67,14 +67,22 @@ unchanged: a second embedder is a second vector per chunk, so the index roughly
 doubles and ingest gains an encode pass. `src/sweep_ensemble.py` reproduces the
 pool measurement and `src/evaluate.py` the end-to-end one.
 
-**2. Query decomposition, for seven of the twelve structural failures.**
-Splitting "normalisation across features *rather than examples*" into topic and
-constraint is what an LLM does well. This is no longer blocked: `generate_local.py`
-speaks to a local Ollama, so a small instruct model can be measured against
-`eval/hard_cases.json`, which exists for exactly this and has been verified
-stable across a threshold change, a blend change and a corpus that grew. If a
-local 7B moves two of the seven, that is the finding. A better model can be
-swapped in later.
+**2. Query decomposition is measured, and it does not work.** Splitting the
+question into topic and constraint was this project's named fix for the seven
+structural cases for months, on an argument rather than a measurement. Measured
+on 2026-08-31 with a local llama3.2 over all 67 answerable cases:
+decomposition recovers **none** of the seven and costs 0.045 any-hit at 21
+times the latency. Rewriting recovers one and loses three questions net, gaining
+two cases and breaking five that worked.
+
+The fixture said the opposite. Against the seven alone, rewriting recovered one
+and lost nothing, because every case it breaks is outside the fixture. That is
+the trap `src/sweep_decompose.py` warns about in its own docstring, which is
+why it scores the whole set by default.
+
+A stronger model may do better, and the harness is in place to find out:
+`RAG_GENERATOR=ollama python src/sweep_decompose.py --corpus llm`. What is no
+longer available is citing decomposition as the answer without running it.
 
 **3. The other five structural failures need no LLM.** They *describe* a term
 and ask for its name, as in "which small group of feathers helps prevent a
@@ -102,6 +110,11 @@ these are in `docs/engineering-log.md` with the measurements.
   rankings, and every score shifts by a systematic −0.22, so the gate silently
   starts refusing answerable questions. Rank-preserving is not enough when a
   threshold reads the score as an absolute.
+- **Query rewriting and decomposition.** Decomposition recovers 0 of 7 and
+  rewriting recovers 1 while breaking 5 that worked, for a net loss of three
+  questions and 0.045 any-hit. Measured over all 67 cases; the fixture alone
+  said rewriting was a pure win, because everything it breaks lies outside the
+  fixture.
 - **Pseudo-relevance feedback.** Recovers 0 of 12 structural cases, because the
   feedback documents do not contain the missing word either.
 - **Prefixing chunks with their document title.** Built, measured, reverted:
