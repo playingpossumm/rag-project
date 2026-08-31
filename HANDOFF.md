@@ -563,6 +563,17 @@ genuine gate failures. Relatedly, `audit_golden_set.py` reported 67 of 67
 answerable cases as ambiguous because it subtracted `case["source"]`, a key no
 case has; corrected, the figure is **0 of 67**.
 
+**A page-level label credits a title page.** Found 2026-08-31. `bn-covariate`
+asks what normalizing layer inputs addresses, wants the string "internal
+covariate shift", and lists `batch_normalization.pdf` page 1 among its gold
+pages. The paper's title is "Batch Normalization: Accelerating Deep Network
+Training by Reducing Internal Covariate Shift", and it sits on page 1. So the
+title block is a gold page and contains the answer string, and the measurement
+scores it as a correct answer although it answers nothing. **43 of 102
+answerable cases have a title block on a gold page and 17 have the answer
+string in the title itself.** This is why filtering title blocks out of
+retrieval measures worse; see `docs/engineering-log.md` under that date.
+
 **Deriving labels from answer strings has a hole.** It proves the string is
 present, not that the passage answers the question. Sixteen quant cases asked
 textbook definitions of research papers that use the term once in passing,
@@ -892,10 +903,10 @@ reads the same words. Query decomposition was the fix that addressed it on
 paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
 `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-30: **395 checks plus the route suite**: 80 trace,
-66 answer-quality judge, 33 loaders, 33 freshness, 25 serve, 24 local
+Test counts, as of 2026-08-30: **406 checks plus the route suite**: 80 trace,
+66 answer-quality judge, 11 excerpt, 33 loaders, 33 freshness, 25 serve, 24 local
 generation, 22 metrics, 19 generate, 17 golden-set audit, 16 analytics, 13 api,
-10 reranker cache, 9 ingest cache and 8 OCR, which is 375, plus 20
+10 reranker cache, 9 ingest cache and 8 OCR, which is 386, plus 20
 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 These are counted by running the suites. They were wrong until 2026-08-30: the

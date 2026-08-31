@@ -1,0 +1,88 @@
+{
+ "generated_by": "src/sweep_front_matter.py",
+ "note": "End to end at the served configuration, on every answerable case. `showing_front_matter` counts questions whose top five contained a title block, which is the defect this filter exists for and is not visible in the aggregate metrics.",
+ "corpora": {
+  "llm": {
+   "label": "ML & NLP papers",
+   "front_matter_chunks": 30,
+   "chunks": 5459,
+   "modes": {
+    "off": {
+     "hit_rate": 0.8507,
+     "mrr": 0.7393,
+     "ndcg": 0.7555,
+     "src_recall": 0.7607,
+     "showing_front_matter": [
+      "colbert-late",
+      "bahdanau-fixed",
+      "bn-covariate",
+      "sbert-speed",
+      "seq2seq-lstm"
+     ]
+    },
+    "on": {
+     "hit_rate": 0.8358,
+     "mrr": 0.7244,
+     "ndcg": 0.7399,
+     "src_recall": 0.7607,
+     "showing_front_matter": []
+    }
+   },
+   "gained": [],
+   "lost": [
+    "bn-covariate"
+   ]
+  },
+  "birds": {
+   "label": "Ornithology",
+   "front_matter_chunks": 0,
+   "chunks": 864,
+   "modes": {
+    "off": {
+     "hit_rate": 0.8462,
+     "mrr": 0.6135,
+     "ndcg": 0.6709,
+     "src_recall": 0.7615,
+     "showing_front_matter": []
+    },
+    "on": {
+     "hit_rate": 0.8462,
+     "mrr": 0.6135,
+     "ndcg": 0.6709,
+     "src_recall": 0.7615,
+     "showing_front_matter": []
+    }
+   },
+   "gained": [],
+   "lost": []
+  },
+  "quant": {
+   "label": "Quantitative finance",
+   "front_matter_chunks": 26,
+   "chunks": 6184,
+   "modes": {
+    "off": {
+     "hit_rate": 0.8857,
+     "mrr": 0.7786,
+     "ndcg": 0.7856,
+     "src_recall": 0.769,
+     "showing_front_matter": [
+      "qf-sparse-params",
+      "qf-whale-attack"
+     ]
+    },
+    "on": {
+     "hit_rate": 0.8571,
+     "mrr": 0.7643,
+     "ndcg": 0.7675,
+     "src_recall": 0.769,
+     "showing_front_matter": []
+    }
+   },
+   "gained": [],
+   "lost": [
+    "qf-whale-attack"
+   ]
+  }
+ }
+}
