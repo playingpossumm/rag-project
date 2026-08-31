@@ -213,7 +213,7 @@ in the other's metrics, so the harness reports both.
 | [`metadata_filter.py`](src/metadata_filter.py) | Scoped retrieval — constrains the search, not the results |
 | [`query_expansion.py`](src/query_expansion.py) | Pseudo-relevance feedback (measured; off by default) |
 | [`late_interaction.py`](src/late_interaction.py) | ColBERT-style MaxSim reranking (measured; off by default) |
-| [`query_rewrite.py`](src/query_rewrite.py) | LLM rewrite/decomposition — written, never run |
+| [`query_rewrite.py`](src/query_rewrite.py) | LLM rewrite/decomposition — measured 2026-08-31, off by default |
 | [`web_fallback.py`](src/web_fallback.py) | Optional web search when the corpus declines — off |
 | [`pipeline_trace.py`](src/pipeline_trace.py) | Re-runs retrieval keeping every intermediate ranking |
 
@@ -389,9 +389,13 @@ harness.
   papers share. The topic matches a dozen documents and the clause that picks
   one out is ignored. The other five *describe* a term and ask for its name
   ("which small group of feathers helps prevent a stall at low speed"), so the
-  answer word is absent from the question. The first wants query decomposition;
-  the second is vocabulary mismatch, and one of the five was recovered by
-  changing the embedder alone.
+  answer word is absent from the question. The first was supposed to want query
+  decomposition, and that was measured on 2026-08-31 and does not work:
+  decomposition reaches none of the seven, and rewriting reaches one while
+  breaking five questions that worked. The second is vocabulary mismatch, and
+  one of the five was recovered by changing the embedder alone. **No fix for
+  either is currently known**, which is a worse position than the roadmap held
+  a week ago and a better-evidenced one.
 - **The reranker is the weakest stage and off-the-shelf options are exhausted.**
   Three cross-encoders were compared and int8 quantisation measured; the
   candidates that are faster are worse, and the one that separates best is
