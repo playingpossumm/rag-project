@@ -6,10 +6,10 @@ dense and BM25 retrieval, reciprocal rank fusion, cross-encoder reranking, a
 per-document diversity cap, and a calibrated abstention threshold. Every stage
 emits a trace, and the bundled web interface draws it.
 
-**[Recorded demo](https://rag-retrieval-visualized.vercel.app)**. All 157
-evaluation questions across three corpora, answered in advance and written to
-files. No model runs behind that page, so it answers only those 157. Clone this
-repository to ask your own.
+The [recorded demo](https://rag-retrieval-visualized.vercel.app) holds all 157
+evaluation questions across the three corpora, answered in advance and written
+to files. No model runs behind that page, so it answers those 157 and nothing
+else, and asking your own question means cloning this repository.
 
 Every default here was chosen by measuring the alternatives on a labelled
 question set. `docs/engineering-log.md` records each experiment, including the
@@ -29,13 +29,13 @@ and 17 adversarial. Reproduce with `python src/evaluate.py`, which writes
 regenerates the tables in [`eval/RESULTS.md`](eval/RESULTS.md) from it, and
 `--check` fails when they have drifted.
 
-Note the last row: the diversity cap **trades** hit rate for source recall rather
-than adding one for free. An earlier, smaller golden set said it was free. It was
-wrong. See finding 6.
+In the last row the diversity cap trades hit rate for source recall rather than
+adding one for free, which an earlier and smaller golden set had reported as
+free before the larger set contradicted it. Finding 6 covers how that happened.
 
-## Three sets of documents, and one threshold per set
+## Corpora
 
-The system ships with three corpora, deliberately unlike each other:
+The system ships with three sets of documents, chosen to be unlike each other.
 
 | set | documents | passages | formats | refuses below |
 |---|---|---|---|---|
@@ -49,9 +49,10 @@ indexes themselves. The files are not in this repository;
 [`ATTRIBUTION.md`](ATTRIBUTION.md) says why and how to rebuild each set.
 
 The abstention threshold is the score below which the system declines to
-answer. It was a module constant for most of this project's life, with a comment
-guessing it was "a property of the data, not of the model". Measured across all
-three, that guess is right, and the size of it is the finding:
+answer. It was a module constant for most of this project's life, carrying a
+comment that guessed it was "a property of the data, not of the model", and
+measuring it across all three sets confirmed the guess. The size of the effect
+is what matters.
 
 ```
                         wrongly refused at 0.0
@@ -66,23 +67,21 @@ Each set now carries its own calibrated threshold in
 [`corpora.json`](corpora.json), beside the documents it was derived from. A set
 with no calibration says so rather than silently borrowing another's.
 
-One question makes it concrete. *"Which ratio of body mass to wing area governs
-flight performance?"* scores **−0.99**. That is refused under the ML
-threshold and answered under the ornithology one, and it is correct either way
-for the corpus being asked.
+One question shows what that means in practice. "Which ratio of body mass to
+wing area governs flight performance?" scores −0.99, which the ML threshold
+refuses and the ornithology threshold answers, and either outcome is correct for
+the corpus being asked.
 
 ---
 
-## What the measurements changed
+## Findings
 
-Most RAG tutorials produce a pipeline and stop. There is no way to tell whether
-any individual piece helps, so techniques accumulate on faith. This project
-inverts that: an evaluation harness came early, and **every subsequent change had
-to earn its place against a number.**
+The evaluation harness was built early, before most of the pipeline, so every
+change after it had to be measured against a labelled question set before it
+could ship. The six findings below came out of that and would otherwise have
+gone unnoticed.
 
-That discipline produced findings that would otherwise have shipped silently.
-
-### 1. Most of every chunk was invisible to search
+### 1. Chunk truncation
 
 The embedding model caps input at **256 tokens** and truncates the rest with no
 error. Chunks were sized in *words* (500), so the median chunk ran to 626 tokens
@@ -93,43 +92,46 @@ own chunk was retrieved.
 Fixed by chunking on the tokenizer, plus an assertion that refuses to build an
 index if any chunk exceeds the ceiling. → [`src/ingest.py`](src/ingest.py)
 
-### 2. A conclusion measured on a small corpus was backwards
+### 2. Corpus size, and three conclusions that reversed
 
-On one document, hybrid search looked useless. Dense, RRF and weighted fusion
-all tied at a perfect score. But a 20-candidate pool was **31% of that corpus**,
-so recall was trivially perfect for any method.
+On one document, hybrid search looked useless, because dense, RRF and weighted
+fusion all tied at a perfect score. A 20-candidate pool was 31% of that corpus,
+so recall was perfect for any method and the tie meant nothing.
 
 At 20 documents the pool is **0.84%**, and hybrid fusion is worth **+7.6 points of
 hit rate**. Three separate conclusions inverted when the corpus grew: whether
 fusion helps, which fusion to use, and where the abstention threshold belongs.
 
-**A conclusion measured on a toy corpus may not merely be imprecise. It may be
-backwards.**
+A conclusion measured on a corpus that small is not merely imprecise, it can
+point the wrong way.
 
-### 3. The metrics reported success on questions the system could not answer
+### 3. Ranking metrics against source coverage
 
 For a question five papers answer, the system returned **all five passages from
 one paper**. MRR scored it **1.000**; source recall scored it **0.200**.
 
-Ranking metrics call that perfect, and by their definition it is. That is the
-wrong definition when the goal is to compile every relevant source. A per-document cap
-lifts source recall from 0.742 to 0.773. → [`src/diversify.py`](src/diversify.py)
+Ranking metrics call that perfect and by their own definition it is, but the
+definition is the wrong one when the goal is to compile every relevant source. A
+per-document cap lifts source recall from 0.742 to 0.773.
+→ [`src/diversify.py`](src/diversify.py)
 
-### 4. The evaluation tool had a bug in it
+### 4. A bug in the evaluation tool
 
 NDCG is normalised and cannot exceed 1.0. Its first run printed **1.373**.
 Page-level relevance let several returned chunks share one gold page, so achieved
 DCG summed over all of them while the ideal allowed only one.
 
-Caught only because the output violated a bound the metric is known to have. **A
-metric with no known bounds would have shipped wrong and stayed wrong.**
+It was caught only because the output violated a bound the metric is known to
+have, and a metric with no known bounds would have shipped wrong and stayed
+wrong.
 
-### 5. A feature was built, measured, and deleted
+### 5. A feature built, measured and deleted
 
-Chunks carry no document identity, so passages from similar papers look alike.
-Prefixing each chunk with its document title should fix that, and it was reported
-as a small improvement. **That report was wrong.** The prefix arrived alongside a
-chunk-size change, and the two could not be attributed separately.
+Chunks carry no document identity, so passages from similar papers look alike,
+and prefixing each chunk with its document title should fix that. It was
+reported as a small improvement and the report was wrong, because the prefix
+arrived alongside a chunk-size change and the two could not be attributed
+separately.
 
 Re-measured with one variable *(on the 23-case golden set; superseded by
 finding 6, but the direction held under review)*:
@@ -146,7 +148,7 @@ retrieval harder onto one document, which is the opposite of the goal.
 Reverted.
 → [commit `d4ea4ab`](../../commit/d4ea4ab)
 
-### 6. Three "settled" conclusions were noise from too small a test set
+### 6. Three settled conclusions that were noise
 
 The golden set began at 23 answerable cases, mostly drawn from one paper. Growing
 it to **67 cases covering all 36 documents**, a strictly harder test, reversed
@@ -162,11 +164,11 @@ The abstention threshold moved too, for the third time. A gap that looked clean
 between the two score distributions closed once there were enough cases to see
 it, and the constant went 0.0 → 1.5 → back to 0.0.
 
-**None of these were bugs.** Every one was a real measurement, correctly
-performed, on a sample too small to support the conclusion drawn from it. With 23
-cases each one is worth 4.3 points, so differences that looked decisive were
-inside the noise. That is the failure mode a test set produces when it is trusted
-more than it deserves, and it is far harder to notice than a crash.
+None of these were bugs. Each was a real measurement, correctly performed, on a
+sample too small to support the conclusion drawn from it, and with 23 cases each
+one is worth 4.3 points, so differences that looked decisive sat inside the
+noise. A test set trusted further than it deserves fails this way, and it is
+much harder to notice than a crash.
 
 ---
 
@@ -190,9 +192,10 @@ more than it deserves, and it is far harder to notice than a crash.
                                    (+ optional generation)
 ```
 
-Two stages with different jobs, measured separately: **fusion decides what the
-candidate pool contains; reranking decides its order.** Improving one is invisible
-in the other's metrics, so the harness reports both.
+Fusion decides what the candidate pool contains and reranking decides its
+order, so the two stages do different jobs and are measured separately.
+Improving one is invisible in the other's metrics, which is why the harness
+reports both.
 
 | Module | Responsibility |
 |---|---|
@@ -230,9 +233,10 @@ range, Word cites *sections*. `.docx` pagination is computed by the
 renderer and shifts with fonts and margins, so any page number would be wrong on
 the reader's copy.
 
-**A per-document cap, not MMR.** MMR diversifies on embedding distance, conflating
-two kinds of redundancy, similar wording and same source, and needs a
-`lambda` tuned per corpus. Here the unit of redundancy is known exactly: the document.
+**A per-document cap, not MMR.** MMR diversifies on embedding distance, which
+conflates two kinds of redundancy, similar wording and the same source, and it
+needs a `lambda` tuned per corpus. Here the unit of redundancy is known exactly
+and it is the document.
 
 **RRF over weighted fusion by default.** A cosine similarity and a BM25 score are
 not commensurable, so weighted fusion needs per-query normalisation, which is
@@ -339,12 +343,12 @@ The server binds to 127.0.0.1 on purpose and makes no external request: the
 documents may be private, and the interface's fonts are bundled rather than
 pulled from a CDN for the same reason.
 
-Set `RAG_DATA_DIR` to point at any folder, including a Google Drive for
-Desktop mount. The UI does the same thing without an environment variable: the **Local
-folder** tab takes a pasted path, reports what it would index and what it would
-skip, and then indexes it. A browser cannot read a filesystem path out of a file
-picker, so pasting a path is the only version of a folder picker available
-here.
+Set `RAG_DATA_DIR` to point at any folder, including a Google Drive for Desktop
+mount. The interface does the same thing without an environment variable,
+through a Local folder tab that takes a pasted path, reports what it would index
+and what it would skip, and then indexes it. A browser cannot read a filesystem
+path out of a file picker, so pasting a path is the only form of folder picker
+available here.
 
 ---
 
@@ -352,24 +356,25 @@ here.
 
 `python src/serve.py`, then <http://127.0.0.1:8000>.
 
-Three pages: **`/`** to ask, **`/about`** for why the project exists and what
-every term means, **`/quality`** for every measurement behind it.
+There are three pages. `/` asks a question, `/about` says why the project
+exists and what every term means, and `/quality` carries every measurement
+behind it.
 
 Pick a set of documents, ask a question, and the answer arrives with the passage
 it came from, cited to the page, slide, or spreadsheet rows. A passage pulled
 out of a spreadsheet is shown as the table it came from rather than as a
 paragraph with the column headers left in the middle of the sentence.
 
-Underneath it, the retrieval result: the score, read in the units it is actually
-in. That is a cross-encoder logit running roughly −11 to +11, not a
-probability. The panel also shows which documents were drawn on, how much document text was read, and
-how long it took.
+Underneath the answer is the retrieval result, with the score given in the units
+it is actually in, which is a cross-encoder logit running roughly −11 to +11
+rather than a probability. The same panel shows which documents were drawn on,
+how much document text was read, and how long it took.
 
-Below that the search is drawn as a schematic: seven stages, each a block of
-sheets whose depth tracks how many candidates are still in play, so the funnel
-from 5,459 passages down to five is the shape of the picture rather than a
-number written under it. Colour means one thing: this passage is in your
-answer.
+Below that the search is drawn as a schematic of seven stages, each a block of
+sheets whose depth tracks how many candidates are still in play, so the fall
+from 5,459 passages to five is the shape of the picture rather than a number
+written under it. Colour carries one meaning only, which is that a passage is in
+your answer.
 
 Every answer states what it was run with, and the four retrieval settings can be
 changed from there; changing one re-runs the same question and shows what moved.

@@ -208,14 +208,14 @@ details[open] summary::before{content:"- ";}
 
   <!-- 1. the ladder ------------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><h2 class="lab">What each mechanism is worth</h2>
+    <div class="phead"><h2 class="lab">Contribution of each stage</h2>
       <span class="right lab" id="ladder-n"></span></div>
     <div class="pbody">
-      <p class="note">Each row is the row above it plus one more mechanism,
-      run on the same questions. <b>The cross-encoder gains the most.</b> The
-      diversity cap is the only row that gives something up: it accepts a lower
+      <p class="note">Each row is the row above it plus one more mechanism, run
+      on the same questions, and <b>the cross-encoder gains the most</b>. The
+      diversity cap is the only row that gives something up, accepting a lower
       hit rate in return for finding more of the documents that answer the
-      question. This system takes that trade.</p>
+      question, and this system takes that trade.</p>
       <div class="grid2" id="ladder"></div>
       <details><summary>Table</summary><div class="scroll"><table id="ladder-t"></table></div></details>
     </div>
@@ -253,8 +253,8 @@ details[open] summary::before{content:"- ";}
 
   <!-- 3. the threshold ----------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><h2 class="lab">Where each corpus stops answering</h2>
-      <span class="right lab">the finding that matters</span></div>
+    <div class="phead"><h2 class="lab">Abstention</h2>
+      <span class="right lab">one threshold per corpus</span></div>
     <div class="pbody">
       <p class="note">Every question scored by the cross-encoder, plotted on one
       axis. <b>Filled marks are questions the corpus can answer; hollow rings are
@@ -278,7 +278,7 @@ details[open] summary::before{content:"- ";}
 
   <!-- 4. the sweep --------------------------------------------------------- -->
   <section class="panel">
-    <div class="phead"><h2 class="lab">What every cut point would cost</h2>
+    <div class="phead"><h2 class="lab">The cost of each cut point</h2>
       <span class="right lab" id="sweep-n"></span></div>
     <div class="pbody">
       <p class="note">Counted in cases, not rates. <b>Rates are the wrong unit
@@ -295,7 +295,7 @@ details[open] summary::before{content:"- ";}
   </section>
 
   <section class="panel" id="answers-panel" hidden>
-    <div class="phead"><h2 class="lab">What the written answer is worth</h2>
+    <div class="phead"><h2 class="lab">Answer quality</h2>
       <span class="right lab" id="answers-n"></span></div>
     <div class="pbody">
       <p class="note">Every other number on this page measures retrieval: which

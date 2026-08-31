@@ -195,7 +195,8 @@ h2.lab{margin:0;font-size:10px}
     <div class="sub">A retrieval system built by hand, with every stage on screen.</div>
     <p>Retrieval-augmented generation answers a question by searching a set of
        documents and quoting what it finds. A framework will build one in an
-       afternoon. It works, and it hides every decision inside it.</p>
+       afternoon, and it works, but every decision it makes is hidden inside
+       it.</p>
     <p>This system is built from parts instead. Each stage is drawn as it runs,
        each setting can be changed and the question re-run, and each default
        was chosen by measuring the alternatives. This page explains what the
@@ -218,24 +219,24 @@ h2.lab{margin:0;font-size:10px}
 
       <div class="versus" style="margin-top:18px">
         <div class="q">Why did it return <em>that</em>?</div>
-        <div class="closed"><span class="lab tag">Closed product</span>No answer. The passage arrived; how is not exposed.</div>
-        <div class="here-col"><span class="lab tag">Here</span>Every stage is shown, with the score it assigned. Ask a question and the diagram draws what each retriever found, what the cross-encoder moved and what the cap dropped.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>The passage arrives and how it was chosen is not exposed.</div>
+        <div class="here-col"><span class="lab tag">Here</span>Every stage is shown with the score it assigned, and asking a question draws what each retriever found, what the cross-encoder moved and what the cap dropped.</div>
 
         <div class="q">Did my change help?</div>
-        <div class="closed"><span class="lab tag">Closed product</span>No numbers exist. Only an impression.</div>
-        <div class="here-col"><span class="lab tag">Here</span>Labelled questions across three corpora, scored under every pipeline configuration. A change is accepted or rejected on the measurement, and several were rejected.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>No numbers exist, so the judgement rests on an impression.</div>
+        <div class="here-col"><span class="lab tag">Here</span>Labelled questions across three corpora are scored under every pipeline configuration, so a change is accepted or rejected on the measurement, and several were rejected.</div>
 
         <div class="q">What if it does not know?</div>
-        <div class="closed"><span class="lab tag">Closed product</span>It answers anyway. Confident prose either way.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>It answers anyway, in the same confident prose either way.</div>
         <div class="here-col"><span class="lab tag">Here</span>It declines, below a threshold calibrated per corpus against questions the documents genuinely cannot answer.</div>
 
         <div class="q">What if the sources disagree?</div>
-        <div class="closed"><span class="lab tag">Closed product</span>Blended into one voice.</div>
-        <div class="here-col"><span class="lab tag">Here</span>Passages from other documents are shown alongside. The top result is sometimes the wrong one.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>The disagreement is blended into one voice.</div>
+        <div class="here-col"><span class="lab tag">Here</span>Passages from other documents are shown alongside, because the top result is sometimes the wrong one.</div>
 
         <div class="q">Can I put it in my own tool?</div>
-        <div class="closed"><span class="lab tag">Closed product</span>No. It is a destination, not a component.</div>
-        <div class="here-col"><span class="lab tag">Here</span>A Python library with an HTTP wrapper around it. The interface is one caller, not the product.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>No, because it is a destination rather than a component.</div>
+        <div class="here-col"><span class="lab tag">Here</span>It is a Python library with an HTTP wrapper around it, and this interface is one caller rather than the product.</div>
       </div>
 
       <div class="callout">
@@ -258,31 +259,31 @@ h2.lab{margin:0;font-size:10px}
   <!-- ------------------------------------------------------------- guide -->
   <section class="panel">
     <div class="phead"><h2 class="lab">A guide</h2>
-      <span class="lab right">What happens when you ask</span></div>
+      <span class="lab right">Stage by stage</span></div>
     <div class="pbody">
       <div class="prose" style="margin-bottom:20px">
         <p id="corpora"><b>This site is a learning project.</b> It was built to
            understand retrieval by making every part of it visible, rather than
            to serve documents at scale. Three prepared sets are searchable
-           here: 36 machine-learning papers, 45 ornithology articles, and 35
-           quantitative-finance papers. They are fixed. Each one had to be indexed, given a set of labelled
-           questions, and calibrated before any number on this site could be
-           measured.</p>
+           here, and they are fixed: 36 machine-learning papers, 45 ornithology
+           articles, and 35 quantitative-finance papers. Each set had to be
+           indexed, given labelled questions and calibrated before any number
+           on this site could be measured.</p>
         <p>To point it at your own documents, or to have it run the search live
            rather than replay a recorded one,
            <a href="https://github.com/ArdellAlfatih/rag-project" target="_blank"
               rel="noopener">run the project from GitHub</a>. The repository also
            lists every document in all three sets.</p>
         <p>Pick a document set, type a question, and the answer comes back with
-           the passage it rests on and the route it took. Nothing is generated by
-           default: what you read is the retrieved text, verbatim. Here is the
-           whole path, in order.</p>
+           the passage it rests on and the route it took. Nothing is generated
+           by default, so what you read is the retrieved text word for word.
+           The whole path follows, in order.</p>
         <p>The system <em>can</em> write the answer out instead, from those same
            passages, using a language model running on the machine that serves
-           it. That is off here, and deliberately: a written answer is one more
-           place for something to go wrong between a document and a reader, and
-           this site exists to show the retrieval. It has been measured
-           separately, and
+           it. That is deliberately off here, because a written answer is one
+           more place for something to go wrong between a document and a
+           reader, and this site exists to show the retrieval. It has been
+           measured separately and
            <a href="/quality">the analytics page reports what it is worth</a>.</p>
         <!-- Every passage on this site is captioned with the file it came from.
              Naming a file a reader has no way to look up is a citation that
@@ -387,7 +388,7 @@ h2.lab{margin:0;font-size:10px}
 
   <!-- ------------------------------------------------------- how it got here -->
   <section class="panel">
-    <div class="phead"><h2 class="lab">How it got here</h2>
+    <div class="phead"><h2 class="lab">Development</h2>
       <span class="lab right">any-hit@5, ML papers</span></div>
     <div class="pbody">
       <div class="prose" style="margin-bottom:20px">
@@ -572,7 +573,7 @@ h2.lab{margin:0;font-size:10px}
 
   <!-- --------------------------------------------------------- the numbers -->
   <section class="panel">
-    <div class="phead"><h2 class="lab">Where it stands</h2>
+    <div class="phead"><h2 class="lab">Current state</h2>
       <span class="lab right" id="asof">read live from the running system</span></div>
     <div class="pbody">
       <div class="stats" id="stats">
@@ -590,7 +591,7 @@ h2.lab{margin:0;font-size:10px}
   <!-- ---------------------------------------------------------- glossary -->
   <section class="panel">
     <div class="phead"><h2 class="lab">Glossary</h2>
-      <span class="lab right">Every term this interface uses</span></div>
+      <span class="lab right">Terms used in this interface</span></div>
     <div class="pbody">
       <dl class="gloss">
         <dt>RAG</dt>

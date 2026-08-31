@@ -13,7 +13,7 @@ system it describes.
 
 ---
 
-## 1. What this is, and why it exists
+## 1. Purpose
 
 A retrieval-augmented generation (RAG) system built by hand, in Python, from
 parts rather than as a wrapper around a framework.
@@ -192,7 +192,7 @@ Defaults, all justified by measurement in `eval/RESULTS.md`:
 
 ---
 
-## 4. The discipline that defines this project
+## 4. Method
 
 **Measure before building.** Four times a measurement overturned a plan that
 sounded obviously right. Three would have produced correct, well-engineered code
@@ -250,7 +250,7 @@ Other hard-won corrections worth not repeating:
 
 ## 5. UI state
 
-### The front page as it now stands, rewritten 2026-08-26
+### The front page, rewritten 2026-08-26
 
 `retrieval visualized/`. Header carries **About**, **Analytics** and
 **Source**. The name is a **home button** that clears the thread. A third link
@@ -296,7 +296,7 @@ isometric). Conflating them is why several attempts went wrong.
 Rewritten in the session of 2026-08-19/20. `ui/index.html` is now an **app**, not
 the two-tab inspector this section used to describe.
 
-### Direction as of 2026-08-20: dial the UI back
+### Direction, 2026-08-20
 
 The owner's current instruction, and it supersedes the ambition recorded below:
 **keep the UI clean and simple, and put the effort into the technicals.**
@@ -316,7 +316,7 @@ What that means for the work after it:
 - Prefer plain, legible, conventional components over anything bespoke.
 - Technical work below (§7) now outranks anything visual.
 
-### What it is
+### Scope
 
 One page, served at `/`. A folio bar (source tabs + corpus readout), a search
 field, then three panels that appear once you trace: **the pipeline** (the city),
@@ -347,7 +347,7 @@ quietly.
 *(`ui/pipeline.html`, `ui/ambient.html` and `ui/ambient-fields.js` were deleted on
 2026-08-21; see "Ambient fields" below. They are in git if wanted back.)*
 
-### Design direction, which supersedes docs/ui-brief.md
+### Design direction, superseding docs/ui-brief.md
 
 The brief was written before a reference design was chosen
 (`JearDesuss/compute-debt-obligations`, a near-black editorial explainer). Where
@@ -390,7 +390,7 @@ backwards.
   8-second playback is labelled `NNms · replay NNN×`. Animating during the wait
   would be motion pretending to be progress.
 
-### Still true, and still load-bearing
+### Still load-bearing
 
 **The chart palette.** Document colours are the first three slots of a documented
 categorical palette, validated *all-pairs* (lines can sit anywhere): light CVD
@@ -401,7 +401,7 @@ deuteranopic reader.
 **Do not add a fourth hue without re-running the validator.** Note the dark-mode
 validation is now moot; if anyone reintroduces dark, it must be re-run.
 
-### Ambient fields: decided, then orphaned
+### Ambient fields, decided and then orphaned
 
 The owner asked to see generative options side by side, saw four at `/ambient`,
 and chose **Lattice for the masthead, Fringe for the idle backdrop, at 0.6
@@ -538,9 +538,9 @@ instead.
 
 ---
 
-## 7. What is unfinished
+## 7. Unfinished
 
-### Read this first, added 2026-08-26
+### Open problems, added 2026-08-26
 
 **The cross-encoder is the weakest stage, and only partly addressed.** On the
 bird corpus the candidate pool contains the answer 96.2% of the time and the
@@ -954,7 +954,7 @@ python src/build_corpus_manifest.py --check   # does the document list match the
 
 ---
 
-## 8. Published artifacts: update, never re-publish
+## 8. Published artifacts
 
 Their **source is in this repo**; the published copies live in the cloud and are
 not carried by any session.
@@ -973,7 +973,7 @@ the existing link silently goes stale. This is the single easiest way to
 break something here, and nothing in the file itself warns you, which is why
 the URLs are recorded here.
 
-### The two `8c62ba9a` / `0fa6a672` URLs are not owned by this account
+### The `8c62ba9a` and `0fa6a672` URLs, which this account does not own
 
 Discovered 2026-08-21 while updating the field notes. `action: "list"` on
 `the owner's address, removed 2026-09-07` returns eight artifacts and **neither of those UUIDs is
@@ -1002,7 +1002,7 @@ disclaim current work.
 
 ---
 
-## 9. Where to read more
+## 9. Further reading
 
 | File | What it holds |
 |---|---|
