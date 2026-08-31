@@ -572,11 +572,18 @@ if (!A || !A.corpora?.length) {
 
     $("#answer-tiles").innerHTML = [
       ["Invented citations", a.invented_citations,
-       a.answers_with_invented
-         ? `in ${a.answers_with_invented} of ${a.n} answers`
-         : `none in ${a.n} answers`,
+       (a.answers_with_invented
+          ? `in ${a.answers_with_invented} of ${a.n} answers`
+          : `none in ${a.n} answers`)
+       // Normally zero, so it rides in the subtitle rather than taking a tile
+       // that would read 0 in every screenshot and teach a reader to skip it.
+       + (a.malformed_citations
+            ? ` · ${a.malformed_citations} malformed` : ""),
        "A citation to a document the model was never given.|The failure that " +
-       "matters most: a citation is what a reader checks instead of the source."],
+       "matters most: a citation is what a reader checks instead of the " +
+       "source. A malformed one is a bare reference number lifted from the " +
+       "passage: it names no document, so it misleads nobody and can be " +
+       "checked by nobody either."],
       ["Refused correctly", `${a.refused_rightly} / ${a.n_adversarial}`,
        "questions the documents cannot answer",
        "Planted questions with no answer in these documents.|Saying so is the " +
