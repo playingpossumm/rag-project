@@ -208,6 +208,9 @@ as a success.
 | Re-indexing is slow because the index is rebuilt | rebuilding the FAISS index is **0.01 s = 0%** of runtime | task **redefined** — caching + lazy loading instead |
 | A stronger cross-encoder will fix the descriptive questions | ranking and gate separation move in **opposite** directions across models; L12 ranks better on ML, worse on birds | swap **rejected**, all three corpora measured |
 | Let the strong model do only the gate, at 1/20 the cost | BGE scored AUC 0.968 ranking *and* gating, 0.827 gating MiniLM's pick — the gain was self-consistency | idea **refuted by its own harness** |
+| Query decomposition will reach the seven structural cases | recovers **0 of 7** and costs 0.045 any-hit at 21× the latency; rewriting recovers 1 and breaks 5 | named fix **ruled out**, nothing shipped |
+| Fusing a second embedder is weakly dominant everywhere | true of pool recall; end to end it is worse on ML, a one-question trade on birds, earned only on quant | **not shipped** beyond the one corpus |
+| A larger generator will answer better | llama3.1:8b scores the same 4 of 7, refuses one more, and cites worse | **no change**, and the run is partial |
 
 **The generalisation, added 2026-08-27 after five in a row.** Every defect
 found in this repo's last five working sessions was in code that had tests
@@ -651,9 +654,14 @@ interface was offering questions that had just been deleted as unanswerable. Onl
 interface` had no freshness test at all, which is what made it the most
 valuable small thing left and what the entry above closes.
 
-**Blocked, not forgotten:** the API key has no credit, so generated prose and
-query decomposition have never run. Everything the interface shows is the
-retrieved passage verbatim.
+**No longer blocked, and both were measured.** The API key still has no
+credit, and neither path needed it in the end. Generated prose runs against a
+local Ollama and is scored by `src/evaluate_answers.py` on all three corpora.
+Query decomposition runs the same way and was scored on 2026-08-31: it recovers
+**none** of the seven structural cases and costs 0.045 any-hit at 21 times the
+latency, so it is measured and rejected rather than pending. The interface
+still shows the retrieved passage verbatim, which is a choice now rather than a
+limitation.
 
 **How to unblock each of them without Anthropic credit**, written down
 2026-08-27 so the next attempt can act rather than re-derive:
@@ -740,7 +748,9 @@ retrieved passage verbatim.
    - **ML, all seven.** The question asks for an attribute many papers share,
      such as "what dropout rate" or "how many parameters". The topic matches a
      dozen documents and the distinguishing clause is ignored. This is
-     cross-document confusion, and **query decomposition is the right fix**.
+     cross-document confusion. Query decomposition was the named fix for it
+     and **was measured on 2026-08-31 and recovers none of the seven**; see
+     the log under that date. Nothing currently reaches these.
    - **Birds and quant, all five.** The question *describes* a term and asks
      its name ("which small group of feathers helps prevent a stall" → alula;
      "which effect describes past winners continuing to outperform" → momentum).
@@ -760,9 +770,11 @@ retrieved passage verbatim.
    **Cross-document confusion: a ~11% floor, not a flat 15%.** The retriever
    matches the topic and ignores the constraint that distinguishes the answer
    ("normalisation across features *rather than examples*" still returns Batch
-   Normalization). Mechanism understood; the obvious fix is ruled out by
-   measurement (§4). The real fix is query decomposition, which needs an LLM →
-   needs credit.
+   Normalization). Mechanism understood, and now both candidate fixes are ruled
+   out by measurement: title prefixing and a larger reranker in §4, and query
+   decomposition on 2026-08-31, which recovered none of the seven and cost the
+   corpus three questions. Rewriting recovered one and broke five. No fix for
+   this failure mode is currently known.
 
    Sharpened 2026-08-21 by `src/failure_overlap.py` across six configurations
    (see `eval/RESULTS.md`). **Re-measured 2026-08-27** across the same six
@@ -774,8 +786,8 @@ retrieved passage verbatim.
 
    `adam-bias`, `dropout-rate`, `gpt3-fewshot`, `gpt3-params`,
    `roberta-nsp-drop`, `t5-text2text`, `wmt14`. Reproducible, unreachable by any
-   fusion/rerank/cap change, and the right thing to score query decomposition
-   against. Regenerate with `src/failure_overlap.py --emit-fixture
+   fusion/rerank/cap change, and the thing query decomposition was scored
+   against on 2026-08-31, which is how that fix came to be ruled out. Regenerate with `src/failure_overlap.py --emit-fixture
    eval/hard_cases.json` over six `src/per_case.py` runs. The other eleven move with
    ranking and should not be counted as the same problem.
 
@@ -876,8 +888,9 @@ gain on one corpus for a loss on another, and the two halves of the reranker's
 job, ordering and scoring, move in opposite directions as the model grows.
 Neither is shippable. The mechanism behind the remaining failures is questions
 that *describe* a term rather than naming it, and a cross-encoder of any size
-reads the same words; the fix that addresses it is query decomposition, which
-needs credit. Full numbers in `docs/engineering-log.md`.
+reads the same words. Query decomposition was the fix that addressed it on
+paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
+`docs/engineering-log.md`.
 
 Test counts, as of 2026-08-30: **389 checks plus the route suite**: 80 trace,
 60 answer-quality judge, 33 loaders, 33 freshness, 25 serve, 24 local

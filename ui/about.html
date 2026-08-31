@@ -429,11 +429,13 @@ h2.lab{margin:0;font-size:10px}
       </ol>
 
       <div class="prose" style="margin:26px 0 16px">
-        <p><b>And the half that did not survive.</b> Five changes that sounded
-           obviously right were built, measured and taken out again. They are
-           kept here because a reader learns more from them than from the four
-           above, and because each was written before it was tested, which is
-           the only way to find out that it does not work.</p>
+        <p><b>And the half that did not survive.</b> Eight changes that
+           sounded obviously right were built, measured and taken out again.
+           They are kept here because a reader learns more from them than from
+           the four above, and because each was written before it was tested,
+           which is the only way to find out that it does not work. The last
+           three were this project's own planned next steps, named for months,
+           and all three failed the first time they were measured.</p>
       </div>
 
       <ol class="tl">
@@ -478,16 +480,59 @@ h2.lab{margin:0;font-size:10px}
              This is the clearest statement in the project of where the weak
              stage is, and it came out of an experiment about speed.</p>
         </li>
+        <li class="gone">
+          <h4>Rewriting the question before searching<span class="verdict">rejected</span></h4>
+          <p>Seven questions on the paper set fail no matter how the search is
+             configured, and the plan for them was to have a language model
+             restate the question more clearly first. It reached one of the
+             seven and broke five questions the system had been getting right.
+             A rewrite is a paraphrase, and paraphrasing a question that
+             already works moves it off the wording that was working.
+             <span class="num">net <b>three questions worse</b>, and six times
+             slower</span></p>
+        </li>
+        <li class="gone">
+          <h4>Splitting the question into parts<span class="verdict">rejected</span></h4>
+          <p>The same seven, approached by breaking a question into its pieces,
+             searching for each and combining the results. It reached
+             <em>none</em> of them, cost the same three questions, and took
+             twenty times longer per search. This had been the project's
+             named answer for those seven for months, on an argument rather
+             than a measurement. <span class="num"><b>0 of 7</b>, at 21×
+             the time</span></p>
+        </li>
+        <li class="gone">
+          <h4>A second meaning-model searching alongside the first<span class="verdict">one set only</span></h4>
+          <p>Two different models reading the passages, their results combined.
+             On a candidate shortlist it looked better on all three document
+             sets. Measured on the finished answer it is worse on the papers,
+             an even trade on the birds, and genuinely better only on the
+             finance set, where it ships. The shortlist on the papers does not
+             change at all: the same passages arrive in a different order, and
+             the reranker does worse with that order.</p>
+        </li>
+        <li class="gone">
+          <h4>A larger model to write the answers<span class="verdict">no change</span></h4>
+          <p>Roughly three times the size, same family. It got the same number
+             of questions right, refused one more that it should have refused,
+             and cited <em>worse</em>: it started quoting the papers' own
+             reference numbers, which name no document and cannot be looked
+             up. Its answers were half as long and drew less of their wording
+             from the passages.</p>
+        </li>
       </ol>
 
       <div class="prose" style="margin-top:26px">
-        <p><b>The pattern worth taking away.</b> Three separate experiments
+        <p><b>The pattern worth taking away.</b> Four separate experiments
            improved what the first search finds and made the finished answer
            worse. Finding the answer and returning it are different problems,
-           and a change that helps the first can cost the second. Every one of
-           these was written, run and measured before it was judged, which is
-           why the list of what did not work is longer than the list of what
-           did.</p>
+           and a change that helps the first can cost the second. The clearest
+           case is the second meaning-model: on the paper set the shortlist it
+           produces is <em>identical</em>, and only the order changed.</p>
+        <p>Every one of these was written, run and measured before it was
+           judged, which is why the list of what did not work is longer than
+           the list of what did. Three of them were the planned next steps, and
+           measuring them is how they stopped being plans.</p>
       </div>
     </div>
   </section>
