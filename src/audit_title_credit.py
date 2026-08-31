@@ -16,22 +16,36 @@ numbers.
 **What that costs is a different question from how far it reaches**, and it is
 the one that decides whether the published figures mean anything. A label that
 *would* credit a title block costs nothing unless the pipeline actually returns
-one. This runs the shipped configuration over every answerable case and counts
-the credits that are actually being collected:
+one, and returning one costs nothing if the chunk answers anyway.
 
-  - a **false hit**: the case counts toward any-hit@5, and every returned chunk
-    that satisfies its page label is a title block.
-  - a **false context recall**: the answer string was found in the returned
-    text, and only inside a title block.
+**That second clause is the whole difficulty, and the first version of this
+script got it wrong.** `front_matter.is_front_matter` decides from the head of
+a chunk: does it open with a heading and carry an email or an affiliation. That
+is a statement about the first 600 characters. These chunks run to about 1,000,
+and a paper's first chunk is the title block *and then the abstract*. An
+abstract is among the most answer-dense text in a paper.
 
-Both are upper bounds on the damage, not estimates of it. A false hit here is
-one the golden set awards and a reader would not.
+So a chunk being flagged says nothing on its own. This asks instead whether the
+satisfying chunk contains the answer:
 
-**What it found on 2026-08-31, at the shipped configuration.** Two of 110 hits,
-`bn-covariate` and `qf-whale-attack`, and three of 97 answer-string credits.
-Those two hits are the entire loss the title-block filter measured, to three
-decimals on both any-hit and MRR: 57/67 is 0.851 and 56/67 is 0.836, 31/35 is
-0.886 and 30/35 is 0.857. So the labelling hole reaches 43 cases and costs two.
+  - **structural**: the case counts toward any-hit@5 and every returned chunk
+    satisfying its page label is flagged front matter.
+  - **answered anyway**: of those, the ones whose text contains the case's
+    answer string. These are correct credits and the flag was misleading.
+  - **unanswered**: the residual, which are the only candidates for a false
+    credit and are few enough to read.
+
+**What it found on 2026-08-31, at the shipped configuration.** Two hits are
+structural, `bn-covariate` and `qf-whale-attack`, and **both contain the answer
+string**, read and confirmed: "We refer to this phenomenon as internal
+covariate shift, and address the problem by normalizing layer inputs", and "by
+introducing certain detectability threshold, joining the attack can lead to
+strictly less reward for whales". **Zero false credits.**
+
+Which settles the title-block filter against itself. Those two hits are the
+entire loss it measured, to three decimals on any-hit and MRR, and both are
+genuine. Dropping a paper's first chunk drops its abstract. That is not a
+scoring artefact, it is information.
 
     .venv\\Scripts\\python.exe src\\audit_title_credit.py
 
@@ -66,7 +80,8 @@ def audit(name: str, cfg: dict, model) -> dict:
     ensemble = load_ensemble(cfg["store"])
     rr.RERANK_BLEND = cfg["rerank_blend"]
 
-    out = {"cases": len(answerable), "hits": 0, "false_hits": [],
+    out = {"cases": len(answerable), "hits": 0, "structural": [],
+           "answered_anyway": [], "unanswered": [],
            "recalled": 0, "false_recall": [], "showing": []}
 
     for case in answerable:
@@ -78,19 +93,29 @@ def audit(name: str, cfg: dict, model) -> dict:
         if results and title_block(results[0]):
             out["showing"].append(case["id"])
 
+        answer = case.get("answer_contains")
+        needle = normalize(answer) if answer else ""
+
         gold = gold_keys(case)
         relevant = [r for r in results if is_relevant(r, gold)]
         if relevant:
             out["hits"] += 1
             if all(title_block(r) for r in relevant):
-                out["false_hits"].append(case["id"])
+                out["structural"].append(case["id"])
+                # Flagged is not the same as empty. The chunk carries the
+                # abstract after the title block, and an abstract answers.
+                if needle and any(needle in normalize(r["text"])
+                                  for r in relevant):
+                    out["answered_anyway"].append(case["id"])
+                else:
+                    out["unanswered"].append(case["id"])
 
-        answer = case.get("answer_contains")
         if answer:
-            needle = normalize(answer)
             carrying = [r for r in results if needle in normalize(r["text"])]
             if carrying:
                 out["recalled"] += 1
+                # Same correction: the string being inside a flagged chunk is
+                # not evidence against it. It is evidence the abstract said it.
                 if all(title_block(r) for r in carrying):
                     out["false_recall"].append(case["id"])
     return out
@@ -107,7 +132,8 @@ def main() -> int:
     model = SentenceTransformer(EMBEDDING_MODEL)
 
     reg = corpora.registry()
-    total = {"hits": 0, "false_hits": 0, "recalled": 0, "false_recall": 0}
+    total = {"hits": 0, "structural": 0, "answered_anyway": 0,
+             "unanswered": 0, "recalled": 0, "false_recall": 0}
     for name, cfg in reg.items():
         if args.corpus and name != args.corpus:
             continue
@@ -115,26 +141,35 @@ def main() -> int:
             continue
         r = audit(name, cfg, model)
         total["hits"] += r["hits"]
-        total["false_hits"] += len(r["false_hits"])
+        for key in ("structural", "answered_anyway", "unanswered"):
+            total[key] += len(r[key])
         total["recalled"] += r["recalled"]
         total["false_recall"] += len(r["false_recall"])
 
-        print(f"\n{cfg['label']}  ({r['cases']} answerable)")
-        print(f"  hits at 5                        {r['hits']}")
-        print(f"  ... resting only on a title block {len(r['false_hits'])}"
-              f"{'  ' + ', '.join(r['false_hits']) if r['false_hits'] else ''}")
-        print(f"  answer string found              {r['recalled']}")
-        print(f"  ... only inside a title block    {len(r['false_recall'])}"
-              f"{'  ' + ', '.join(r['false_recall']) if r['false_recall'] else ''}")
-        print(f"  showing a title block at rank 1  {len(r['showing'])}"
-              f"{'  ' + ', '.join(r['showing']) if r['showing'] else ''}")
+        def names(ids):
+            return "  " + ", ".join(ids) if ids else ""
 
-    print(f"\nacross the corpora audited: {total['false_hits']} of "
-          f"{total['hits']} hits and {total['false_recall']} of "
-          f"{total['recalled']} answer-string credits rest on a title block")
-    print("Reaching a label is not the same as collecting it. The count above "
-          "is what the\nlabelling hole actually costs; front_matter.py carries "
-          "how far it could reach.")
+        print(f"\n{cfg['label']}  ({r['cases']} answerable)")
+        print(f"  hits at 5                          {r['hits']}")
+        print(f"  ... satisfied only by a flagged chunk  "
+              f"{len(r['structural'])}{names(r['structural'])}")
+        print(f"      of those, containing the answer    "
+              f"{len(r['answered_anyway'])}{names(r['answered_anyway'])}")
+        print(f"      of those, not                      "
+              f"{len(r['unanswered'])}{names(r['unanswered'])}")
+        print(f"  answer string found                {r['recalled']}")
+        print(f"  ... only inside a flagged chunk    {len(r['false_recall'])}"
+              f"{names(r['false_recall'])}")
+        print(f"  showing a flagged chunk at rank 1  {len(r['showing'])}"
+              f"{names(r['showing'])}")
+
+    print(f"\nacross the corpora audited: {total['structural']} of "
+          f"{total['hits']} hits are satisfied only by a chunk flagged as front "
+          f"matter,\nand {total['answered_anyway']} of those contain the answer "
+          f"string. False credits: {total['unanswered']}.")
+    print("A chunk being flagged is a statement about its first 600 characters. "
+          "The chunk\nis about a thousand, and what follows a title block is "
+          "the abstract.")
     return 0
 
 

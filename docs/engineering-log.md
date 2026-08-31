@@ -1987,54 +1987,62 @@ read afterwards to find out why it said no.
 
 ---
 
-## 2026-08-31 — The filter that "measured worse" removed two false credits
+## 2026-08-31 — The title-block filter, settled
 
-**Why measure again.** Dropping a paper's title block from the candidate pool
-was recorded as refuted the same day, on 0.851 -> 0.836 any-hit for the ML
-papers and 0.886 -> 0.857 for quant. The reason given was that the labels credit
-a title block as a correct answer, and 43 of 102 answerable cases have a title
-block on one of their gold pages.
+Dropping a paper's title block from the candidate pool scored 0.851 to 0.836
+any-hit on the ML papers and 0.886 to 0.857 on quant, and the entry above
+recorded it as refuted on that arithmetic. The reason offered was that the
+labels credit a title block as a correct answer, since a title block sits on
+page 1 and page 1 is a gold page for 43 of the 102 answerable cases in the two
+corpora that have title pages.
 
-**But reaching a label is not collecting it.** A case whose label *would* credit
-a title block costs nothing unless the pipeline actually returns one. That is
-countable, and it was not counted. `src/audit_title_credit.py` runs the shipped
-configuration over every answerable case and asks two questions of each hit: did
-this case reach any-hit only through a title block, and was the answer string
-found only inside one?
+`src/audit_title_credit.py` was written to find out how much of that reach is
+actually collected, because a label that would credit a title block costs
+nothing unless the pipeline returns one. It found two hits satisfied only by a
+chunk flagged as front matter, `bn-covariate` and `qf-whale-attack`, and those
+two account for the whole of the filter's loss to three decimals on both
+any-hit and MRR, since 57/67 is 0.851 and 56/67 is 0.836, and 31/35 is 0.886
+and 30/35 is 0.857.
 
-| | hits at 5 | resting only on a title block | answer string found | only in a title block |
-|---|---|---|---|---|
-| ML & NLP papers | 57 | **1** (`bn-covariate`) | 51 | 2 |
-| Ornithology | 22 | 0 | 19 | 0 |
-| Quantitative finance | 31 | **1** (`qf-whale-attack`) | 27 | 1 |
+**The first conclusion drawn from that was wrong, and the error is the useful
+half.** The script reported the two hits as false credits, which was written
+into five documents and deployed. `front_matter.is_front_matter` decides from
+the head of a chunk, asking whether it opens with a heading and carries an
+email address or an affiliation, so it is a statement about the first 600
+characters. These chunks run to about 1,000 characters, and what follows a
+title block is the abstract. Treating the flag as a verdict on the whole chunk
+is the same mistake `_brief` made in the entry above, which took the head of a
+passage for the passage.
 
-**Two of 110 hits, and they account for the whole of the filter's loss.** 57/67
-is 0.851 and 56/67 is 0.836. 31/35 is 0.886 and 30/35 is 0.857. The MRR loss
-reconciles too: 0.015 x 67 is 1.01 reciprocal ranks and 0.015 x 35 is 0.53, so
-one hit at rank 1 and one at rank 2, which is where those two title blocks sat.
-Nothing else moved on any corpus.
+Read whole, both chunks answer outright. The batchnorm chunk contains "We refer
+to this phenomenon as internal covariate shift, and address the problem by
+normalizing layer inputs", and the blockchain chunk contains "by introducing
+certain detectability threshold, joining the attack can lead to strictly less
+reward for whales", which is the label's answer string word for word. Both
+credits are correct, and the corrected count of false credits is **zero**.
 
-**So the filter does not cost anything real.** Every point it "loses" is a point
-the golden set should not have awarded. The earlier entry's conclusion, that the
-filter is worse, was arithmetic read at the wrong level: the aggregate said
-worse and the cases say the aggregate was wrong.
+So the filter is settled against itself, and the original verdict stands for a
+better reason than it was given. The two hits it removes are genuine, and it
+removes them because a paper's first chunk carries the abstract, which is among
+the most answer-dense text in the document. Dropping it destroys information
+rather than withdrawing a scoring artefact. Reading what the filter does to the
+five questions that touch it says the same thing: on `bn-covariate` the answer
+moves from rank 1 to outside the top five entirely, and the passage that
+replaces it discusses what normalizing an input can do to a layer's
+representation without naming the problem the question asks about.
 
-**It still ships off, and for a different reason.** It buys nothing measurable
-either. The presentation defect it was written for was fixed by windowing the
-excerpt, which cost no passage. What the filter would add is that four questions
-stop showing a title block at rank 1 (`colbert-late`, `bahdanau-fixed`,
-`bn-covariate`, `qf-sparse-params`), against removing 55 passages from every
-search on a three-part heuristic whose false positives are silent. That is a
-judgement about risk, not a measurement, and it is the owner's to make. It is
-recorded here so that it is made rather than defaulted into.
+The filter is off, it stays off, and `src/front_matter.py` and
+`src/sweep_front_matter.py` carry the reasoning where someone reaching for it
+would look. What survives is the labelling weakness itself, which is real,
+reaches 43 cases, and today costs nothing.
 
-**The general form, which is the part worth keeping.** An aggregate that moves
-in the wrong direction is a reason to look at the cases, not a verdict. Both
-readings of this experiment came from the same two numbers; only the one that
-opened the cases was right. This project already had "when a corpus scores
-badly, read the failing questions first". This is the same rule pointed at a
-change rather than a corpus: **when a change scores badly, read the questions it
-lost.**
+**Two smaller corrections found while checking.** The detector flags 56 chunks
+and not the 55 recorded, 30 on the ML papers rather than 29, and one of the 56
+is a genuine false positive: a page-1 figure in
+`break_it_down_pass_it_on_cross_task_skill_transfer.pdf` listing interface
+labels, which is document content rather than front matter. A second, the
+reproduction-permission notice on `attention_is_all_you_need.pdf`, is not a
+title block either, although it answers nothing.
 
 ---
 
