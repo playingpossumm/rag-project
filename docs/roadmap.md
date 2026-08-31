@@ -1,18 +1,16 @@
 # Roadmap
 
-What is worth doing next, what has been ruled out, and the mistakes that cost
-the most time. `HANDOFF.md` carries the reasoning behind every decision named
-here; this is the short list.
-
-Current as of 2026-08-31.
+Current as of 2026-08-31. `HANDOFF.md` carries the reasoning behind every
+decision named here.
 
 ---
 
 ## Current state
 
-Three corpora, each measured separately, each with its own tuning. Run
-`python src/serve.py` and open <http://127.0.0.1:8000/quality> for the live
-figures. The ones below are a snapshot; the page is generated.
+There are three corpora, each measured separately and each with its own
+tuning. Running `python src/serve.py` and opening
+<http://127.0.0.1:8000/quality> gives the live figures, of which the table below
+is a snapshot.
 
 | | documents | passages | any-hit@5 |
 |---|---|---|---|
@@ -100,12 +98,12 @@ index-as-a-field is right and should stay.
 
 ## Ruled out, with numbers
 
-Kept because a refuted experiment is worth as much as a shipped one. All of
-these are in `docs/engineering-log.md` with the measurements.
+These are kept because a refuted experiment is worth as much as a shipped one,
+and all of them are in `docs/engineering-log.md` with the measurements.
 
-- **A better cross-encoder.** Three compared. MiniLM-L12 ranks better on the ML
-  papers and worse on birds; BGE-reranker-base ranks worst and separates best.
-  Neither is shippable.
+- **A better cross-encoder.** Of the three compared, MiniLM-L12 ranks better on
+  the ML papers and worse on birds, while BGE-reranker-base ranks worst and
+  separates best, so neither is shippable.
 - **int8 quantisation of the reranker.** 1.5× faster with near-identical
   rankings, and every score shifts by a systematic −0.22, so the gate silently
   starts refusing answerable questions. Rank-preserving is not enough when a
@@ -125,8 +123,8 @@ these are in `docs/engineering-log.md` with the measurements.
   was wrong for the reason recorded under 2026-08-31 in the log.
 - **Pseudo-relevance feedback.** Recovers 0 of 12 structural cases, because the
   feedback documents do not contain the missing word either.
-- **Prefixing chunks with their document title.** Built, measured, reverted:
-  no ranking gain and source recall −0.051.
+- **Prefixing chunks with their document title.** Built, measured and then
+  reverted, because it gained no ranking and cost 0.051 of source recall.
 - **Larger candidate pools.** 28 candidates scores *worse* than 20 on all three
   corpora while the pool ceiling rises on all three.
 
