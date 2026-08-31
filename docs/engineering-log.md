@@ -1,16 +1,16 @@
 # Engineering log
 
-Every attempt, including the ones that were wrong. Started 2026-08-26.
+Started 2026-08-26. Every attempt is here, including the ones that were wrong.
 
-`HANDOFF.md` records where the project **is**; this records how it got there,
-and specifically what was tried and refuted. The project's own §4 argues that a
-measurement overturning a plan is worth more than a feature that ships. This
-is where those measurements live in full, rather than compressed to one row of
-a table.
+`HANDOFF.md` records where the project is and this records how it got there,
+and in particular what was tried and refuted. Section 4 of that document argues
+that a measurement overturning a plan is worth more than a feature that ships,
+and these are those measurements in full rather than compressed to a row of a
+table.
 
-Rules for entries: state the hypothesis before the result, give the number, and
-say what was done about it. An entry whose outcome is "no change" is worth as
-much as one that ships something, and is more likely to be forgotten.
+An entry states the hypothesis before the result, gives the number, and says
+what was done about it. An entry whose outcome is "no change" is worth as much
+as one that ships something and is more likely to be forgotten.
 
 ---
 
@@ -65,7 +65,7 @@ and only corrected which pipeline was being described.
 
 ---
 
-## 2026-08-26 — The bird gate was calibrated against a pipeline nobody runs
+## 2026-08-26 — The bird gate, calibrated against a pipeline nobody runs
 
 **Hypothesis.** With the confidences re-measured on the served pipeline, the
 bird threshold `-3.0` might no longer be right, having been derived at rerank
@@ -101,7 +101,7 @@ point crosses an actual score.
 
 ---
 
-## 2026-08-27 — The score cache claimed to be keyed on the model and was not
+## 2026-08-27 — A score cache keyed on the model in name only
 
 **Found while preparing to compare rerankers.** `rerank._score_cache` was keyed
 on `(query, chunk text)`. The comment directly above it had always read "scores
@@ -121,7 +121,7 @@ and was never even asked.
 
 ---
 
-## 2026-08-27 — A better cross-encoder: what the measurement actually said
+## 2026-08-27 — A better cross-encoder, and what the measurement said
 
 **Hypothesis.** `ms-marco-MiniLM-L-6-v2` is weak on questions that *describe* a
 term rather than naming it, as in "the burst of collective singing at first
@@ -228,7 +228,7 @@ is now measured rather than asserted.
 
 ---
 
-## 2026-08-27 — Fusion per corpus: the pool says one thing, the pipeline another
+## 2026-08-27 — Fusion per corpus, where the pool and the pipeline disagree
 
 **Hypothesis.** The reranker turned out to be a dead end, but the stage before it
 looked promising. `HANDOFF.md` had said since the second corpus was built that
@@ -285,7 +285,7 @@ pool row.
 
 ---
 
-## 2026-08-27 — The answer highlight: moved, bounded, and measured
+## 2026-08-27 — The answer highlight, moved, bounded and measured
 
 **Why.** The interface sets the answering words bold inside a passage shown at
 normal weight. That logic lived inline in a two-thousand-line HTML file, so
@@ -382,7 +382,7 @@ more cases in `test_freshness.py` (30 → 32).
 
 ---
 
-## 2026-08-27 — The documents are now checked against the measurements
+## 2026-08-27 — Documents checked against the measurements
 
 **The failure this closes** is this repo's most-repeated one. The README once
 claimed "84 evaluation cases" directly above figures measured on 23.
@@ -413,7 +413,7 @@ read.
 
 ---
 
-## 2026-08-27 — Optimising: measure first, and the measurement is unambiguous
+## 2026-08-27 — Optimising, and an unambiguous measurement
 
 **The rule this project already learned.** "Re-indexing is slow because the
 index is rebuilt" was a well-formed plan until rebuilding the FAISS index
@@ -544,7 +544,7 @@ case answerable is a guess; running the retriever is a measurement.
 
 ---
 
-## 2026-08-27 — The documented defaults are now checked against the code
+## 2026-08-27 — Documented defaults checked against the code
 
 HANDOFF §3 lists eleven constants under "Defaults, all justified by measurement
 in eval/RESULTS.md". That opening makes each of them a claim about the code, and
@@ -582,7 +582,7 @@ else.
 
 ---
 
-## 2026-08-27 — The seven-case fixture is still the same seven
+## 2026-08-27 — The seven-case fixture, unchanged
 
 **Why re-measure.** HANDOFF §7 claims "18 of 66 answerable cases fail under some
 configuration, but only 7 fail under all of them", and calls those seven a
@@ -628,7 +628,7 @@ Consistent rather than new, and worth noting that it reproduced.
 
 ---
 
-## 2026-08-27 — Every corpus gets a fixture, and there turn out to be two failure modes
+## 2026-08-27 — A fixture for every corpus, and two failure modes
 
 **Why.** The structural-versus-contested split had only ever been computed for
 the ML corpus, so "stress-test all the golden sets" was two-thirds unmet. Six
@@ -695,7 +695,7 @@ Fixtures written to `eval/hard_cases-birds.json` and `eval/hard_cases-quant.json
 
 ---
 
-## 2026-08-27 — Query expansion against the description-style cases: refuted twice
+## 2026-08-27 — Query expansion against the description-style cases, refuted twice
 
 **The hypothesis, from the previous entry.** The twelve structural cases split
 in two, and the five on birds and quant describe a term without naming it,
@@ -815,7 +815,7 @@ check reads the part of the claim that cannot be deliberately historical.
 
 ---
 
-## 2026-08-27 — `POST /ask` answered from the wrong corpus, and the UI hid it
+## 2026-08-27 — `POST /ask`, answering from the wrong corpus
 
 **Found by rendering the app**, which this project's §4 says to do and which had
 not been done since `rerank.py` changed. The page itself was clean at every
@@ -977,7 +977,7 @@ somebody runs it.
 
 ---
 
-## 2026-08-27 — Indexing one corpus deleted the parse cache of the other two
+## 2026-08-27 — Indexing one corpus, deleting another's parse cache
 
 **Fourth defect in four iterations of exercising rather than reading**, and the
 largest. Indexing is the biggest subsystem nothing had ever run in a test, and
@@ -1183,7 +1183,7 @@ removed from the common path is the wrong trade today.
 
 ---
 
-## 2026-08-27 — The structural fixture is relative to the first stage
+## 2026-08-27 — The structural fixture, relative to the first stage
 
 **The stage nobody had varied.** Of the twelve cases that fail under every
 pipeline configuration, five describe a term and ask for its name, as in
@@ -1302,7 +1302,7 @@ doing.
 
 ---
 
-## 2026-08-27 — The generation path finally runs
+## 2026-08-27 — The generation path, run for the first time
 
 `generate.py` targets `claude-opus-5` and has never completed a call: no credit.
 `src/test_generate.py` covers everything up to the network boundary by stubbing
@@ -1346,7 +1346,7 @@ refusal being asserted.
 
 ---
 
-## 2026-08-28 — Going public: MIT, and the history stays
+## 2026-08-28 — Going public under MIT, with the history kept
 
 **The licence is MIT.** "Public" without one legally means nobody may reuse
 anything, which for a project whose stated purpose is to be read and learned
@@ -1390,7 +1390,7 @@ the same change, which is the part that is easy to miss.
 
 ---
 
-## 2026-08-28 — "Three tuned pipelines" is not "one pipeline on three corpora"
+## 2026-08-28 — Three tuned pipelines, not one pipeline on three corpora
 
 **The challenge, and it was right.** Four things are tuned per corpus now: the
 abstention threshold, the rerank blend, the candidate pool size, and whether a
@@ -1442,7 +1442,7 @@ stage.
 
 ---
 
-## 2026-08-29 — The interface was slow on any machine but this one
+## 2026-08-29 — An interface slow on any machine but this one
 
 **The report was "the website is very laggy" and the first three measurements
 disagreed with it.** Headless Chromium on the development desktop: 240 ms to
@@ -1512,7 +1512,7 @@ correct and all of them were about the wrong computer.
 
 ---
 
-## 2026-08-30 — The answer-quality judge was wrong four times
+## 2026-08-30 — Four defects in the answer-quality judge
 
 **Why look.** Answer quality had been measured once: nine answers, one corpus,
 2026-08-29. Extending it to three corpora meant reading the nine that existed
@@ -1906,7 +1906,7 @@ project has now ruled out the fix it had been naming for them.
 
 ---
 
-## 2026-08-31 — The answer on screen was the title page, and the metric liked it
+## 2026-08-31 — The answer on screen, which was the title page
 
 **Reported by looking.** The owner asked "What problem does normalizing layer
 inputs address?" and got the batchnorm paper's title, its two authors, their
