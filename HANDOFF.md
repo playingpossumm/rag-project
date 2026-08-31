@@ -15,19 +15,19 @@ system it describes.
 
 ## 1. Purpose
 
-A retrieval-augmented generation (RAG) system built by hand, in Python, from
-parts rather than as a wrapper around a framework.
+This is a retrieval-augmented generation (RAG) system built by hand, in Python,
+from parts rather than as a wrapper around a framework.
 
 **The owner's stated goal is learning and portfolio**, not shipping a product
-today. That sets how trade-offs are weighed: a measurement that overturns a
-plan is worth more here than a feature that ships. They have also
-explicitly said they intend to keep iterating and covering edge cases rather
-than stopping at "good enough", and that is their call, already reaffirmed once.
+today, which sets how trade-offs are weighed, because a measurement that
+overturns a plan is worth more here than a feature that ships. They have also
+said they intend to keep iterating and covering edge cases rather than stopping
+at "good enough", and that is their call, already reaffirmed once.
 
-**The strategic thesis** (settled, do not relitigate): this will not beat
-NotebookLM or Glean on answer quality, which have larger models and more
-compute behind them. It competes on what closed consumer products cannot
-offer:
+**The strategic thesis is settled and should not be relitigated.** This will not
+beat NotebookLM or Glean on answer quality, since those have larger models and
+more compute behind them, and it competes instead on what closed consumer
+products cannot offer.
 
 | Question a user has | Closed product | Here |
 |---|---|---|
@@ -41,9 +41,10 @@ offer:
 
 ## 2. Current measured state
 
-Three corpora, each with its own index, golden set, abstention threshold and
-rerank blend. **Nothing about a corpus transfers to another one.** That is the
-most reused finding in this project; see §4.
+There are three corpora, each with its own index, golden set, abstention
+threshold and rerank blend, because **nothing about a corpus transfers to
+another one**. That is the most reused finding in this project, and §4 covers
+it.
 
 | | ML & NLP papers | Ornithology | Quant finance |
 |---|---|---|---|
@@ -220,13 +221,15 @@ another's parse cache, six routes were served and documented nowhere, and
 `generate.py` had never been executed at all. In each case the module was read,
 reviewed and described correctly in the documents, and never invoked.
 
-So the rule is not "write more tests", it is **run the thing**. A test that
-imports a module and asserts on its output found all five; no amount of reading
-found any of them. The three claimed-but-absent tests in this repo's history are
-the same failure one step earlier: a check that was *performed* and not
-*committed* is indistinguishable, six days later, from one that never happened.
+So the rule is not to write more tests but to **run the thing**. A test that
+imports a module and asserts on its output found all five, and no amount of
+reading found any of them. The three claimed-but-absent tests in this repo's
+history are the same failure one step earlier, because a check that was
+performed and not committed is indistinguishable, six days later, from one that
+never happened.
 
-**Corollary that keeps biting: render it and look at it.** Screenshotting the UI
+**The same rule applied to the interface is to render it and look at it.**
+Screenshotting the UI
 with Playwright caught four defects invisible in source, three of them in code
 written and reviewed in the same session. Do not treat visual verification as a
 final polish step.
