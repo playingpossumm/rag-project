@@ -207,12 +207,28 @@ def main() -> int:
     if not report:
         print("nothing measured")
         return 1
+    # The scope has to come from what was run. The note used to be a constant
+    # claiming "the whole answerable set", so a --structural-only file
+    # described itself as a full one and its any-hit column, correct for the
+    # fixture and absurd for the corpus, read as the corpus figure.
+    scope = "structural fixture only" if args.structural_only else "all answerable cases"
+    note = ("End to end at the served configuration, scored over "
+            + scope + ". A pool is a ceiling and not a proxy here.")
+    if args.structural_only:
+        note += (" These are the cases that fail under every pipeline "
+                 "configuration, so the baseline any-hit is 0.000 by "
+                 "construction and is not this corpus's hit rate. Re-run "
+                 "without --structural-only to see what a mode costs the "
+                 "cases it was not built for.")
+    else:
+        note += (" A mode measured only on the cases it was built for cannot "
+                 "show what it costs the rest, which is why this is the whole "
+                 "set.")
     args.emit.write_text(json.dumps(
         {"generated_by": "src/sweep_decompose.py",
-         "note": "End to end at the served configuration, on the whole "
-                 "answerable set. A pool is a ceiling and not a proxy, and a "
-                 "mode measured only on the cases it was built for cannot show "
-                 "what it costs the rest.",
+         "scope": scope,
+         "structural_only": bool(args.structural_only),
+         "note": note,
          "corpora": report}, indent=1) + "\n", encoding="utf-8")
     print(f"\n  wrote {args.emit.name}")
     return 0

@@ -1,6 +1,6 @@
 {
  "generated_by": "src/sweep_decompose.py",
- "note": "End to end at the served configuration, on the whole answerable set. A pool is a ceiling and not a proxy, and a mode measured only on the cases it was built for cannot show what it costs the rest.",
+ "note": "End to end at the served configuration, scored over the structural fixture only. These are the cases that fail under every pipeline configuration, so the baseline any-hit is 0.000 by construction and is not this corpus hit rate. Re-run without --structural-only to see what a mode costs the cases it was not built for.",
  "corpora": {
   "llm": {
    "label": "ML & NLP papers",
@@ -108,5 +108,7 @@
    },
    "model": "llama3.2"
   }
- }
+ },
+ "scope": "structural fixture only",
+ "structural_only": true
 }
