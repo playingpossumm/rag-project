@@ -5,7 +5,7 @@ measurements overturned, and what is still wrong with it. `README.md` is the
 short version and the `/about` page in the running app is the plain-language
 one.
 
-Started 2026-08-19, current as of 2026-08-30. **Everything here is measured or
+Started 2026-08-19, current as of 2026-08-31. **Everything here is measured or
 verifiable from the repository, and where something is unverified it says so.**
 Numbers in §2 and §3 are checked against the generated measurements by
 `python src/check_docs.py`, so this document cannot quietly drift from the
@@ -892,10 +892,10 @@ reads the same words. Query decomposition was the fix that addressed it on
 paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
 `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-30: **389 checks plus the route suite**: 80 trace,
-60 answer-quality judge, 33 loaders, 33 freshness, 25 serve, 24 local
+Test counts, as of 2026-08-30: **395 checks plus the route suite**: 80 trace,
+66 answer-quality judge, 33 loaders, 33 freshness, 25 serve, 24 local
 generation, 22 metrics, 19 generate, 17 golden-set audit, 16 analytics, 13 api,
-10 reranker cache, 9 ingest cache and 8 OCR, which is 369, plus 20
+10 reranker cache, 9 ingest cache and 8 OCR, which is 375, plus 20
 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 These are counted by running the suites. They were wrong until 2026-08-30: the
