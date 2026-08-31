@@ -6,15 +6,15 @@
    "label": "ML & NLP papers",
    "model": "llama3.1:8b",
    "requested": 15,
-   "produced": 11,
+   "produced": 13,
    "complete": false,
    "summary": {
-    "n": 11,
+    "n": 13,
     "invented_citations": 0,
     "answers_with_invented": 0,
     "malformed_citations": 2,
-    "correct": 4,
-    "n_answerable": 7,
+    "correct": 5,
+    "n_answerable": 8,
     "unmatched": [
      "pos-enc-fn",
      "moe-routing",
@@ -25,10 +25,10 @@
      "moe-routing"
     ],
     "refused_wrongly": 0,
-    "refused_rightly": 4,
-    "n_adversarial": 4,
-    "grounded_mean": 0.553,
-    "seconds": 21.5
+    "refused_rightly": 5,
+    "n_adversarial": 5,
+    "grounded_mean": 0.578,
+    "seconds": 2331.2
    },
    "cases": [
     {
@@ -142,6 +142,24 @@
      ]
     },
     {
+     "id": "attn-uses",
+     "unanswerable": false,
+     "citations": 2,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.833,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 591,
+     "answer": "According to the excerpt [attention_is_all_you_need.pdf, page 5], multi-head attention is used in three different ways in an encoder-decoder Transformer:\n\n1. In \"encoder-decoder attention\" layers, the queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder. This allows every position in the decoder to attend over all positions in the input sequence. [attention_is_all_you_need.pdf, page 5]\n2. (No specific information is provided for the other two ways, but it is mentioned that multi-head attention is used in three different ways)",
+     "sources": [
+      "attention_is_all_you_need.pdf",
+      "t5.pdf",
+      "vision_transformer.pdf"
+     ]
+    },
+    {
      "id": "label-smooth",
      "unanswerable": false,
      "citations": 1,
@@ -235,6 +253,648 @@
       "gpt3.pdf",
       "phantom_gains_auditing_self_improvement_against_a_measured.pdf",
       "t5.pdf"
+     ]
+    },
+    {
+     "id": "adv-energy",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.6,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 134,
+     "answer": "Unfortunately, the provided context excerpts do not contain the answer to the question \"How many kilowatt-hours did training consume?\"",
+     "sources": [
+      "chain_of_thought.pdf",
+      "gpt3.pdf",
+      "t5.pdf"
+     ]
+    }
+   ]
+  },
+  "birds": {
+   "label": "Ornithology",
+   "model": "llama3.1:8b",
+   "requested": 15,
+   "produced": 15,
+   "complete": true,
+   "summary": {
+    "n": 15,
+    "invented_citations": 0,
+    "answers_with_invented": 0,
+    "malformed_citations": 0,
+    "correct": 7,
+    "n_answerable": 10,
+    "unmatched": [
+     "bird-keel",
+     "bird-airsacs",
+     "bird-precocial"
+    ],
+    "unmatched_sharing_words": [
+     "bird-keel"
+    ],
+    "refused_wrongly": 2,
+    "refused_rightly": 5,
+    "n_adversarial": 5,
+    "grounded_mean": 0.464,
+    "seconds": 1639.2
+   },
+   "cases": [
+    {
+     "id": "bird-syrinx",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.8,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 146,
+     "answer": "The syrinx, a bony structure at the bottom of the trachea, is the avian vocal organ used by birds to produce song. [bird_vocalization.pdf, page 2]",
+     "sources": [
+      "bird_vocalization.docx",
+      "bird_vocalization.pdf",
+      "parrot.xlsx"
+     ]
+    },
+    {
+     "id": "bird-keel",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.818,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 102,
+     "answer": "The keel on the breastbone anchors the muscles needed for wing movement. [flightless_bird.pdf, page 2]",
+     "sources": [
+      "bird.docx",
+      "flightless_bird.pdf",
+      "ruby_throated_hummingbird.docx"
+     ]
+    },
+    {
+     "id": "bird-barbules",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.474,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 255,
+     "answer": "According to the excerpts, the interlocking structures that hold the vane of a feather together are called barbicels, which are minute hooks that allow the barbules to cross-attach and form the vane. This is mentioned in the [feather.pdf, page 2] excerpt.",
+     "sources": [
+      "archaeopteryx.docx",
+      "feather.pdf",
+      "feather.xlsx"
+     ]
+    },
+    {
+     "id": "bird-down",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.773,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 270,
+     "answer": "Down feathers provide insulation rather than flight surface. [feather.xlsx, sheet Notes, Topic: Classification, Detail: There are two basic types of feather: vaned feathers which cover the exterior of the body, and down feathers which are underneath the vaned feathers.]",
+     "sources": [
+      "emperor_penguin.pptx",
+      "feather.pdf",
+      "feather.xlsx"
+     ]
+    },
+    {
+     "id": "bird-airsacs",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.0,
+     "refused": true,
+     "correct": false,
+     "near": false,
+     "chars": 56,
+     "answer": "The context does not contain the answer to the question.",
+     "sources": [
+      "bird_anatomy.docx",
+      "bird_anatomy.pptx",
+      "bird_flight.xlsx",
+      "peregrine_falcon.pdf"
+     ]
+    },
+    {
+     "id": "bird-brood-parasite",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.947,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 341,
+     "answer": "Brood parasitism [bird_egg.xlsx, sheet Notes, Topic: Predation; Detail: Brood parasitism occurs in birds when one species lays its eggs in the nest of another. In some cases, the host's eggs are removed or eaten by the female, or expelled by her chick. Brood parasites include cowbirds, honeyguides, and many Old World cuckoos.; Length: 255]",
+     "sources": [
+      "bird_egg.pptx",
+      "bird_egg.xlsx",
+      "bird_nest.docx",
+      "bird_nest.pptx"
+     ]
+    },
+    {
+     "id": "bird-altricial",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.5,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 130,
+     "answer": "The term that describes chicks that hatch helpless and wholly dependent on their parents is \"altricial\" [passerine.pptx, slide 6].",
+     "sources": [
+      "budgerigar.pdf",
+      "eurasian_magpie.docx",
+      "passerine.pptx",
+      "peregrine_falcon.pdf"
+     ]
+    },
+    {
+     "id": "bird-precocial",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.0,
+     "refused": true,
+     "correct": false,
+     "near": false,
+     "chars": 56,
+     "answer": "The context does not contain the answer to the question.",
+     "sources": [
+      "budgerigar.pdf",
+      "eurasian_magpie.docx",
+      "peregrine_falcon.pdf"
+     ]
+    },
+    {
+     "id": "bird-furcula",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.6,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 98,
+     "answer": "The fused collarbone of a bird is called the furcula (\"wishbone\") [origin_of_birds.pptx, slide 4].",
+     "sources": [
+      "beak.docx",
+      "bird_anatomy.docx",
+      "feather.pdf",
+      "origin_of_birds.pptx"
+     ]
+    },
+    {
+     "id": "bird-uropygial",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.692,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 119,
+     "answer": "The uropygial gland, also called the preen gland, supplies the oil a bird spreads while preening. [feather.pdf, page 4]",
+     "sources": [
+      "beak.docx",
+      "emperor_penguin.pptx",
+      "feather.pdf",
+      "owl.pptx"
+     ]
+    },
+    {
+     "id": "adv-bird-transformer",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.3,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 135,
+     "answer": "I don't have the answer to that question. The provided excerpts do not mention the transformer architecture or any attention mechanism.",
+     "sources": [
+      "beak.docx",
+      "beak.pdf",
+      "mallard.pdf",
+      "owl.pptx"
+     ]
+    },
+    {
+     "id": "adv-bird-insulin",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.333,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 101,
+     "answer": "There is no information in the provided excerpts about how insulin regulates blood glucose in humans.",
+     "sources": [
+      "arctic_tern.xlsx",
+      "emperor_penguin.pptx",
+      "owl.pptx",
+      "ruby_throated_hummingbird.docx"
+     ]
+    },
+    {
+     "id": "adv-bird-consensus",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.4,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 94,
+     "answer": "I don't have an answer to this question as it is not present in the provided context excerpts.",
+     "sources": [
+      "bird.docx",
+      "bird_vocalization.docx",
+      "emperor_penguin.pptx",
+      "origin_of_birds.pptx"
+     ]
+    },
+    {
+     "id": "adv-bird-price",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.2,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 80,
+     "answer": "I'm sorry, but the provided context does not contain the answer to the question.",
+     "sources": [
+      "bird_intelligence.docx",
+      "bird_intelligence.pptx",
+      "parrot.xlsx",
+      "peregrine_falcon.pdf"
+     ]
+    },
+    {
+     "id": "adv-bird-author",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.125,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 98,
+     "answer": "There is no information in the provided excerpts about the article's author or last revision date.",
+     "sources": [
+      "bird_egg.xlsx",
+      "bird_migration.pdf",
+      "origin_of_birds.pptx"
+     ]
+    }
+   ]
+  },
+  "quant": {
+   "label": "Quantitative finance",
+   "model": "llama3.1:8b",
+   "requested": 15,
+   "produced": 15,
+   "complete": true,
+   "summary": {
+    "n": 15,
+    "invented_citations": 1,
+    "answers_with_invented": 1,
+    "malformed_citations": 0,
+    "correct": 4,
+    "n_answerable": 10,
+    "unmatched": [
+     "qf-garch",
+     "qf-var",
+     "qf-sortino",
+     "qf-mean-variance",
+     "qf-order-flow",
+     "qf-market-making"
+    ],
+    "unmatched_sharing_words": [
+     "qf-var",
+     "qf-market-making"
+    ],
+    "refused_wrongly": 1,
+    "refused_rightly": 2,
+    "n_adversarial": 5,
+    "grounded_mean": 0.399,
+    "seconds": 1694.2
+   },
+   "cases": [
+    {
+     "id": "qf-garch",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.0,
+     "refused": false,
+     "correct": false,
+     "near": false,
+     "chars": 65,
+     "answer": "I do not see the answer to the question in the provided excerpts.",
+     "sources": [
+      "ai_driven_multiscenario_interest_rate_forecasting_a_proof.pdf",
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+      "regime_gated_residual_mixture_of_experts_for_cross_section.pdf"
+     ]
+    },
+    {
+     "id": "qf-var",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.412,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 154,
+     "answer": "Value-at-Risk (VaR) reports the loss threshold exceeded with a given probability. [regime_gated_residual_mixture_of_experts_for_cross_section.pdf, page 7]",
+     "sources": [
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "pricing_temperature_index_insurance_under_long_memory_and.pdf",
+      "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+      "simulating_stress_laws_under_extremal_dependence_character.pdf"
+     ]
+    },
+    {
+     "id": "qf-max-drawdown",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.741,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 350,
+     "answer": "The Calmar ratio compares the selected return measure with the worst peak-to-trough decline, i.e., maximum drawdown (MDD), capturing path-dependent downside risk. [entropic_value_at_risk_portfolio_optimization_for_tempered.pdf, page 4]\n\nThis suggests that the Calmar ratio is the measure that reports the largest peak-to-trough decline of a strategy.",
+     "sources": [
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+      "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+      "zlend_a_dual_scope_cash_flow_reconstruction_framework_for.pdf"
+     ]
+    },
+    {
+     "id": "qf-sortino",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.704,
+     "refused": false,
+     "correct": false,
+     "near": false,
+     "chars": 291,
+     "answer": "The Rachev ratio penalises only downside deviation, as it uses the lower-tail risk of the sign-inverted returns, i.e., an upper-tail reward of the original return series, and CVaR in both the numerator and denominator. [entropic_value_at_risk_portfolio_optimization_for_tempered.pdf, page 4]",
+     "sources": [
+      "disclosed_human_capital_disruption_and_firm_specific_risk.pdf",
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+      "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf"
+     ]
+    },
+    {
+     "id": "qf-mean-variance",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [
+      "Markowitz"
+     ],
+     "malformed": [],
+     "grounded": 0.818,
+     "refused": false,
+     "correct": false,
+     "near": false,
+     "chars": 104,
+     "answer": "The mean\u2013variance framework trades expected return against portfolio variance. [Markowitz, 1952, page 1]",
+     "sources": [
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "large_language_model_driven_small_capitalization_trading_i.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf"
+     ]
+    },
+    {
+     "id": "qf-markowitz",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.7,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 89,
+     "answer": "Markowitz (1952) [entropic_value_at_risk_portfolio_optimization_for_tempered.pdf, page 1]",
+     "sources": [
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "large_language_model_driven_small_capitalization_trading_i.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+      "scalable_pontryagin_guided_adjoint_to_control_recovery_for.pdf"
+     ]
+    },
+    {
+     "id": "qf-risk-parity",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.278,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 173,
+     "answer": "[large_language_model_driven_small_capitalization_trading_i.pdf, page 3]\n\nThe allocation method that equalises each asset's contribution to total risk is **3. Risk Parity**.",
+     "sources": [
+      "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "large_language_model_driven_small_capitalization_trading_i.pdf",
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf"
+     ]
+    },
+    {
+     "id": "qf-lob",
+     "unanswerable": false,
+     "citations": 1,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.72,
+     "refused": false,
+     "correct": true,
+     "near": null,
+     "chars": 248,
+     "answer": "According to the excerpt [multi_level_market_making_with_reinforcement_learning.pdf, page 2], it is the Limit Order Book (LOB) that records all outstanding limit orders, which represent commitments to buy or sell a given quantity at a stated price.",
+     "sources": [
+      "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+      "multi_level_market_making_with_reinforcement_learning.pdf"
+     ]
+    },
+    {
+     "id": "qf-order-flow",
+     "unanswerable": false,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.667,
+     "refused": true,
+     "correct": false,
+     "near": false,
+     "chars": 182,
+     "answer": "The volume imbalance signal is defined as in (16), but the signal that captures the imbalance of buying against selling pressure is not explicitly mentioned in the provided excerpts.",
+     "sources": [
+      "multi_level_market_making_with_reinforcement_learning.pdf",
+      "sectoral_inter_dependencies_drive_the_loss_of_structural_b.pdf",
+      "the_price_of_permission_classification_uncertainty_in_cons.pdf"
+     ]
+    },
+    {
+     "id": "qf-market-making",
+     "unanswerable": false,
+     "citations": 2,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.471,
+     "refused": false,
+     "correct": false,
+     "near": true,
+     "chars": 391,
+     "answer": "[flowlob_efficient_and_controllable_limit_order_book_genera.pdf, page 4]\n\nThe activity that involves quoting both sides of the book to earn the spread is not explicitly mentioned in this excerpt. However, it is implied that market makers quote on both sides while keeping their inventory centered at zero, as mentioned in [multi_level_market_making_with_reinforcement_learning.pdf, page 20].",
+     "sources": [
+      "does_a_structural_model_add_anything_to_the_closing_price.pdf",
+      "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+      "multi_level_market_making_with_reinforcement_learning.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-syrinx",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.25,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 81,
+     "answer": "I don't have any information about birds producing song in the provided excerpts.",
+     "sources": [
+      "calibration_bets_on_the_past_post_training_quantization_fo.pdf",
+      "communicating_credit_risk_with_large_language_models_evalu.pdf",
+      "flowlob_efficient_and_controllable_limit_order_book_genera.pdf",
+      "universality_and_heterogeneity_of_stylized_facts_in_crypto.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-photosynth",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.0,
+     "refused": false,
+     "correct": null,
+     "near": null,
+     "chars": 53,
+     "answer": "I don't have the information to answer this question.",
+     "sources": [
+      "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
+      "regime_gated_residual_mixture_of_experts_for_cross_section.pdf",
+      "the_reconfiguration_premium_co_movement_structure_as_an_un.pdf",
+      "when_the_fed_speaks_dynamics_and_forecasts_of_the_volatili.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-mortgage-rate",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.0,
+     "refused": false,
+     "correct": null,
+     "near": null,
+     "chars": 54,
+     "answer": "I do not have the information to answer this question.",
+     "sources": [
+      "communicating_credit_risk_with_large_language_models_evalu.pdf",
+      "governing_agentic_ai_in_fintech.pdf",
+      "pricing_temperature_index_insurance_under_long_memory_and.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-broker-fee",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.222,
+     "refused": true,
+     "correct": null,
+     "near": null,
+     "chars": 111,
+     "answer": "There is no information in the provided excerpts about the commission charged by the broker per executed trade.",
+     "sources": [
+      "concentrated_liquidity_provision_a_reinforcement_learning.pdf",
+      "governing_agentic_ai_in_fintech.pdf",
+      "multi_level_market_making_with_reinforcement_learning.pdf",
+      "the_market_s_conditioning_representation_equilibrium_crowd.pdf"
+     ]
+    },
+    {
+     "id": "adv-qf-author-pay",
+     "unanswerable": true,
+     "citations": 0,
+     "invented": [],
+     "malformed": [],
+     "grounded": 0.0,
+     "refused": false,
+     "correct": null,
+     "near": null,
+     "chars": 53,
+     "answer": "I do not have the information to answer the question.",
+     "sources": [
+      "detecting_money_laundering_in_rwandan_mobile_money_a_machi.pdf",
+      "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
+      "large_language_model_driven_small_capitalization_trading_i.pdf",
+      "the_price_of_permission_classification_uncertainty_in_cons.pdf"
      ]
     }
    ]
