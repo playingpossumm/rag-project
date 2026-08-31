@@ -799,6 +799,166 @@ def check_tests(problems: list[str], notes: list[str]) -> bool:
     return True
 
 
+# ------------------------------------------------------- the running tallies
+# Two claims in this repository are counters: how many settings have turned out
+# to need measuring per corpus, and how many experiments have improved what the
+# first stage retrieves and made the finished pipeline worse. Both go up, and
+# both are quoted as a number word in several documents at once. That is the
+# shape that drifts the first time one document is edited alone, and it did:
+# roadmap.md called the dense ensemble "the sixth setting here that does not
+# transfer" nine lines above its own list of five.
+#
+# The list after the colon is the authority. The word before it, and every
+# ordinal claim elsewhere, has to agree with the list.
+#
+# docs/engineering-log.md is deliberately not read. Its entries are dated and
+# say "the fourth setting in a row" because that is what it was on the day;
+# forcing those to today's total would be this checker rewriting history rather
+# than catching drift. Same reasoning as the superseded numerator in
+# check_notes.
+TALLY_DOCS = ("README.md", "docs/roadmap.md", "HANDOFF.md", "ui/about.html",
+              # A module argues from the same counter, and is where it
+              # drifted: sweep_front_matter.py said three long after it
+              # was four.
+              "src/sweep_front_matter.py")
+
+ORDINALS = {"first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5,
+            "sixth": 6, "seventh": 7, "eighth": 8, "ninth": 9, "tenth": 10}
+
+# "Five settings have now been measured as per-corpus rather than global: the
+# abstention threshold, the rerank blend, ... and whether fusing a second
+# embedder helps at all."
+ENUMERATED = re.compile(
+    r"\b(\w+)\b[^.:]{0,40}?(?:have|has) now been measured\s+(?:as\s+)?"
+    r"per-corpus[^:]*:(?P<items>[^.]+)\.")
+
+# "the fifth setting here that does not transfer"
+ORDINAL_CLAIM = re.compile(
+    r"\bthe\s+(\w+)\s+setting\b[^.]{0,90}?(?:does|do) not transfer")
+
+# "Four separate experiments have now improved ...", "Four separate
+# experiments here improved ...". Up to three words of hedge between the
+# noun and the verb, because the sentence is written three ways in three
+# places and a pattern that matched only one of them would quietly cover
+# one document.
+POOL_CLAIM = re.compile(
+    r"\b(\w+)\s+separate\s+experiments\b(?:\s+\w+){0,3}?\s+improved\b")
+
+# "Four settings are per-corpus". A different claim from the one above and
+# easy to read as contradicting it: this counts what corpora.json configures
+# per corpus, while the list counts what has been *measured* per corpus,
+# which is one more because the choice of embedder was measured per corpus
+# and shipped the same everywhere. This one is checkable against the file.
+CONFIGURED_CLAIM = re.compile(r"\b(\w+)\s+settings\s+are\s+per-corpus\b")
+
+# corpora.json keys that say where a corpus lives rather than how it is
+# tuned. Everything else is a setting, and the two ensemble keys are one
+# setting in two fields: the second embedder and the query prefix it needs.
+WHERE_IT_LIVES = frozenset(("data", "golden", "label", "store", "note"))
+
+
+def configured_settings() -> set:
+    raw = json.loads((ROOT / "corpora.json").read_text(encoding="utf-8"))
+    found = set()
+    for entry in raw.values():
+        for key in entry:
+            if key in WHERE_IT_LIVES:
+                continue
+            found.add("ensemble" if key.startswith("ensemble") else key)
+    return found
+
+
+def one_line(text: str) -> str:
+    """Documents wrap, so a claim spans lines. Match against one long line."""
+    return " ".join(text.split())
+
+
+def check_tallies(problems: list[str], notes: list[str]) -> bool:
+    """The number word, against the list it introduces and its other copies."""
+    listed: dict[str, int] = {}
+    pools: dict[str, int] = {}
+    ordinals: list[tuple[str, int]] = []
+
+    for rel in TALLY_DOCS:
+        path = ROOT / rel
+        if not path.exists():
+            problems.append(f"{rel}: missing, so the running tallies went "
+                            f"unchecked")
+            return False
+        text = one_line(path.read_text(encoding="utf-8"))
+
+        for m in ENUMERATED.finditer(text):
+            said = as_count(m.group(1))
+            # Split on commas alone. Every such list here is written with a
+            # serial comma, so the count is the comma count plus one, and a
+            # list that stops using one should fail loudly rather than be
+            # guessed at by a cleverer parser.
+            items = [i for i in m.group("items").split(",") if i.strip()]
+            if said is None:
+                problems.append(f"{rel}: \"{m.group(1)} ... have now been "
+                                f"measured per-corpus\" does not start with a "
+                                f"number this checker can read")
+                continue
+            if said != len(items):
+                problems.append(
+                    f"{rel}: says {m.group(1)} settings are measured "
+                    f"per-corpus and then lists {len(items)}")
+            listed[rel] = len(items)
+            notes.append(f"  {rel}: {len(items)} settings listed as per-corpus")
+
+        for m in ORDINAL_CLAIM.finditer(text):
+            got = ORDINALS.get(m.group(1).lower())
+            if got is not None:
+                ordinals.append((rel, got))
+
+        for m in CONFIGURED_CLAIM.finditer(text):
+            said = as_count(m.group(1))
+            tuned = configured_settings()
+            if said is not None and said != len(tuned):
+                problems.append(
+                    f"{rel}: says {m.group(1)} settings are per-corpus, but "
+                    f"corpora.json configures {len(tuned)}: "
+                    + ", ".join(sorted(tuned)))
+            elif said is not None:
+                notes.append(f"  {rel}: {said} settings per-corpus, as "
+                             f"corpora.json configures")
+
+        for m in POOL_CLAIM.finditer(text):
+            got = as_count(m.group(1))
+            if got is not None:
+                pools[rel] = got
+                notes.append(f"  {rel}: {got} experiments raised pool recall "
+                             f"and lowered the end-to-end score")
+
+    if not listed:
+        problems.append("no document lists the settings that are measured "
+                        "per corpus -- either the sentence was rewritten or "
+                        "this check has stopped matching it")
+        return False
+
+    total = max(listed.values())
+    if len(set(listed.values())) > 1:
+        problems.append("the documents disagree on how many settings are "
+                        "measured per corpus: "
+                        + ", ".join(f"{k} says {v}" for k, v in listed.items()))
+
+    for rel, got in ordinals:
+        if got != total:
+            problems.append(
+                f"{rel}: calls something \"the {[k for k, v in ORDINALS.items() if v == got][0]} "
+                f"setting that does not transfer\" while the list holds {total}")
+
+    # Only agreement is checkable here. Nothing in the repository counts the
+    # experiments that raised pool recall and lowered the end-to-end score, so
+    # this cannot say the number is right -- only that the documents have not
+    # drifted apart, which is the failure that actually happens.
+    if len(set(pools.values())) > 1:
+        problems.append("the documents disagree on how many experiments raised "
+                        "pool recall and lowered the end-to-end score: "
+                        + ", ".join(f"{k} says {v}" for k, v in pools.items()))
+    return True
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -823,6 +983,7 @@ def main() -> int:
     ok = check_notes(measured, problems, notes) and ok
     ok = check_routes(problems, notes) and ok
     ok = check_commits(problems, notes) and ok
+    ok = check_tallies(problems, notes) and ok
     if args.tests:
         print("running every suite to check the counts; this takes a few "
               "minutes")
@@ -845,8 +1006,9 @@ def main() -> int:
         return 1
     print("every number quoted in HANDOFF.md §2 and README.md matches the "
           "measurement it came from,\nevery default §3 lists matches the "
-          "constant that defines it, and the corpus\nnotes agree with the "
-          "golden sets they argue about")
+          "constant that defines it, the corpus notes agree with the\n"
+          "golden sets they argue about, and the running tallies agree with "
+          "the lists they count")
     return 0
 
 

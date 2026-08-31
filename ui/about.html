@@ -84,6 +84,9 @@ h2.lab{margin:0;font-size:10px}
   border:1px solid var(--rule);color:var(--muted);flex:none}
 .tl li.kept .verdict{color:var(--series-1);border-color:var(--series-1)}
 .tl p{margin:0;font-size:13px;line-height:1.62;color:var(--muted);max-width:74ch}
+/* One entry carries a second paragraph, where the first reading of a
+   measurement is corrected by the second. Without this they run together. */
+.tl p + p{margin-top:9px}
 .tl .num{font-family:var(--mono);font-size:12px;color:var(--dim);
   font-variant-numeric:tabular-nums}
 .tl .num b{color:var(--ink);font-weight:500}
@@ -519,6 +522,34 @@ h2.lab{margin:0;font-size:10px}
              reference numbers, which name no document and cannot be looked
              up. Its answers were half as long and drew less of their wording
              from the passages.</p>
+        </li>
+        <li class="kept">
+          <h4>Showing the part of a passage that answers<span class="verdict">kept</span></h4>
+          <p>The excerpt beneath each result began at the start of the passage,
+             always. On the first page of a paper the start is the title, the
+             authors and their addresses, so a question about the paper's
+             subject was answered on screen with its letterhead, and the
+             sentence that did answer sat just past the edge of what was shown.
+             The excerpt now begins at the sentence carrying most of the
+             question's words. Which passages are found did not change, so no
+             figure on this page moved.</p>
+        </li>
+        <li class="gone">
+          <h4>Removing title pages from the search<span class="verdict">left off</span></h4>
+          <p>The obvious repair for the entry above, written before the cause
+             was understood: drop a paper's title block from consideration.
+             Measured, it scores worse on both document sets that have title
+             pages, and the first reading was that it had been refuted.
+             <span class="num">0.851 &rarr; <b>0.836</b></span></p>
+          <p>Reading the questions it lost says something else. The whole of
+             that drop is <em>two</em> questions out of 110, and both are
+             questions the scoring marks correct on a title page that answers
+             nothing: the scoring marks correct <em>pages</em>, a title page is
+             page one, and page one is a marked page for 43 of the 102
+             questions asked of the two document sets that have title pages.
+             So the filter costs nothing real. It is off because it buys
+             nothing measurable either, and it would drop 55 passages out of
+             every search to spare four questions a title page at the top.</p>
         </li>
       </ol>
 
