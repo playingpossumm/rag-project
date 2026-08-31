@@ -56,7 +56,7 @@ which is why that one *is* counted.
 end on all three corpora on 2026-08-31, in both directions. It is worse on
 every metric on the ML papers, a one-question any-hit gain against an MRR loss
 on birds, and earned on quant, which already ships it and loses 0.036 MRR and
-0.028 source recall without it. Three answers on three corpora: the sixth
+0.028 source recall without it. Three answers on three corpora: the fifth
 setting here that does not transfer. Nothing changed, and the indexes built for
 the experiment were deleted. The reasoning is in `docs/engineering-log.md`
 under that date, and the part worth carrying is that the ML candidate pool did
@@ -115,10 +115,14 @@ these are in `docs/engineering-log.md` with the measurements.
   questions and 0.045 any-hit. Measured over all 67 cases; the fixture alone
   said rewriting was a pure win, because everything it breaks lies outside the
   fixture.
-- **Dropping a paper's title block from the candidate pool.** It looked free:
-  55 chunks, about one per PDF, and no golden case names one. End to end it
-  costs 0.015 any-hit on the ML papers and 0.029 on quant, because the labels
-  credit a title block as a correct answer. See the excerpt entry in the log.
+- **Dropping a paper's title block from the candidate pool.** Costs 0.015
+  any-hit on the ML papers and 0.029 on quant, and `src/audit_title_credit.py`
+  shows that the whole of that loss is two questions the golden set scores
+  correct on a title block that answers nothing. So it costs nothing real, and
+  it buys nothing measurable either: four questions stop showing a title block
+  at rank 1, against removing 55 passages from every search on a heuristic. Off
+  by default, and the one entry on this list that a reader might reasonably
+  reverse. See the two entries under 2026-08-31 in the log.
 - **Pseudo-relevance feedback.** Recovers 0 of 12 structural cases, because the
   feedback documents do not contain the missing word either.
 - **Prefixing chunks with their document title.** Built, measured, reverted:
@@ -131,8 +135,11 @@ these are in `docs/engineering-log.md` with the measurements.
 - **A corpus setting does not transfer.** Five have now been measured
   per-corpus rather than global: the abstention threshold, the rerank blend, the
   candidate pool size, the choice of embedder, and whether fusing a second
-  embedder helps at all. The 0.0 threshold that costs the ML papers one question
-  costs the bird corpus ten.
+  embedder helps at all. Four of those are configured per corpus in
+  `corpora.json`; the embedder was measured per corpus and shipped the same
+  everywhere, so `HANDOFF.md` counts four settings and this counts five
+  measurements. The 0.0 threshold that costs the ML papers one question costs
+  the bird corpus ten.
 - **Pool recall is a ceiling, not a proxy.** Four separate experiments have now
   improved what the first stage retrieves and made the finished pipeline worse.
   The fourth is the sharpest: fusing a second embedder leaves the ML papers'

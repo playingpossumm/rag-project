@@ -1,4 +1,7 @@
-"""A paper's title block is metadata, not an answer.
+"""A paper's title block is metadata, not an answer, and dropping it is worse.
+
+A refuted experiment, kept because the reasoning is worth more than the
+filter. Off by default; the verdict and its numbers are below the argument.
 
 **The defect this exists for.** Asked "What problem does normalizing layer
 inputs address?", the pipeline returned the batchnorm paper's first chunk at
@@ -28,9 +31,45 @@ names the paper.
 **Scope, measured before writing any of this.** 55 chunks across the three
 corpora carry it: 29 of 5,459 on the ML papers, 26 of 6,184 on quant, and none
 at all on the birds, which are Wikipedia articles and have no title pages.
-Roughly one per PDF, which is what a title block should be. **No golden case
-names one as its gold passage**, on any corpus, so removing them from
-consideration cannot cost a labelled answer.
+Roughly one per PDF, which is what a title block should be.
+
+**Measured, refuted, and off by default. Read this before turning it on.**
+Everything above is the argument, and the argument is not the result. End to
+end on the shipped configuration:
+
+    ML papers   any-hit 0.851 -> 0.836,  MRR 0.739 -> 0.724
+    Quant       any-hit 0.886 -> 0.857,  MRR 0.779 -> 0.764
+    Birds       unchanged, having no title pages to drop
+
+**And the reason it loses is worth more than the filter.** An earlier draft of
+this docstring claimed no golden case names a title block as its gold passage.
+That is true only because this golden set has no passage-level labels at all.
+At the level the labels are written and scored, the page, **43 of the 102
+answerable cases in the two corpora that have title pages have a title block on
+one of their gold pages, and 17 of those have the answer string inside the title
+itself**. `bn-covariate` wants
+"internal covariate shift" from a paper titled "... by Reducing Internal
+Covariate Shift", on page 1. So the measurement scores the title block as a
+correct answer, and removing it removes a hit.
+
+**And then the loss was opened, which changes the reasoning.**
+`src/audit_title_credit.py` counts the hits that actually rest on a title block:
+**2 of 110**, `bn-covariate` and `qf-whale-attack`, and they are the entire
+loss above to three decimals on both any-hit and MRR. Every point this filter
+"costs" is a point the golden set should not have awarded. It costs nothing
+real.
+
+It stays off because it buys nothing measurable either. The defect it was
+written for was a presentation defect, not a retrieval one: the chunk returned
+at rank 1 contains the answer 260 characters further in, and
+`pipeline_trace._brief` was showing the head. Windowing the excerpt on the
+answering sentence fixed the reported case and removed no passage. What
+switching this on would add is four questions no longer showing a title block
+at rank 1, against dropping 55 passages from every search on a three-part
+heuristic whose false positives are silent.
+
+`src/sweep_front_matter.py` reproduces the table above and
+`src/audit_title_credit.py` the count.
 
 **Deliberately narrow.** All three conditions must hold: the first page, the
 chunk opening with a heading the PDF converter produced, and an email address

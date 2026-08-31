@@ -569,10 +569,21 @@ covariate shift", and lists `batch_normalization.pdf` page 1 among its gold
 pages. The paper's title is "Batch Normalization: Accelerating Deep Network
 Training by Reducing Internal Covariate Shift", and it sits on page 1. So the
 title block is a gold page and contains the answer string, and the measurement
-scores it as a correct answer although it answers nothing. **43 of 102
-answerable cases have a title block on a gold page and 17 have the answer
-string in the title itself.** This is why filtering title blocks out of
-retrieval measures worse; see `docs/engineering-log.md` under that date.
+scores it as a correct answer although it answers nothing. **43 of the 102
+answerable cases in the two corpora that have title pages have a title block on
+a gold page, and 17 have the answer string in the title itself.** The birds are
+Wikipedia articles and have no title pages, which is why they are outside that
+denominator and inside the one below. This is why filtering title blocks out of
+retrieval measures worse.
+
+**What it actually costs, measured the same day.** Reaching a label is not
+collecting it. `src/audit_title_credit.py` runs the shipped configuration over
+every answerable case and finds **2 of 110 hits** resting only on a title block,
+`bn-covariate` and `qf-whale-attack`, and 3 of 97 answer-string credits. Those
+two are the entire loss the filter measured, to three decimal places on both
+any-hit and MRR. So the published figures are inflated by two questions, not by
+43, and the filter costs nothing real. Both entries are in
+`docs/engineering-log.md` under that date.
 
 **Deriving labels from answer strings has a hole.** It proves the string is
 present, not that the passage answers the question. Sixteen quant cases asked
@@ -1038,4 +1049,8 @@ disclaim current work.
 | `src/build_corpus_manifest.py` | writes that list from the indexes; `--check` fails when it has drifted |
 | `src/retitle.py` | recomputes stored titles in a built index without re-embedding it |
 | `src/test_analytics.py` | the analytics the quality page plots, against the per-case file |
+| `src/test_excerpt.py` | which 260 characters of a passage the interface shows, against the passage it got wrong |
+| `src/front_matter.py` | a paper's title block, detected; a refuted experiment, off by default |
+| `src/sweep_front_matter.py` | what dropping title blocks costs end to end, on every corpus |
+| `src/audit_title_credit.py` | how many reported hits rest on a title block, which is what that cost really was |
 | `git log` | why each decision was made, including the reversals |

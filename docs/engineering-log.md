@@ -1958,8 +1958,10 @@ Covariate Shift". So the page is a gold page **and** the answer string is
 present, and both halves of the labelling scheme score the title block as a
 correct answer. Removing it removes a hit.
 
-**43 of 102 answerable cases have a title block on one of their gold pages, and
-17 of those have the answer string inside the title itself.** The measurement
+**43 of the 102 answerable cases in the two corpora that have title pages have
+a title block on one of their gold pages, and 17 of those have the answer string
+inside the title itself.** The bird corpus is Wikipedia and has no title pages,
+so it is outside that count. The measurement
 cannot distinguish "returned the answer" from "returned the title of the paper
 that contains the answer", and on those 17 a passage-level label would not fix
 it either.
@@ -1982,6 +1984,57 @@ reading it found this; no metric could have. The first fix that suggested
 itself would have made the system worse while making the defect invisible, and
 the measurement that stopped it is only trustworthy because the labels were
 read afterwards to find out why it said no.
+
+---
+
+## 2026-08-31 — The filter that "measured worse" removed two false credits
+
+**Why measure again.** Dropping a paper's title block from the candidate pool
+was recorded as refuted the same day, on 0.851 -> 0.836 any-hit for the ML
+papers and 0.886 -> 0.857 for quant. The reason given was that the labels credit
+a title block as a correct answer, and 43 of 102 answerable cases have a title
+block on one of their gold pages.
+
+**But reaching a label is not collecting it.** A case whose label *would* credit
+a title block costs nothing unless the pipeline actually returns one. That is
+countable, and it was not counted. `src/audit_title_credit.py` runs the shipped
+configuration over every answerable case and asks two questions of each hit: did
+this case reach any-hit only through a title block, and was the answer string
+found only inside one?
+
+| | hits at 5 | resting only on a title block | answer string found | only in a title block |
+|---|---|---|---|---|
+| ML & NLP papers | 57 | **1** (`bn-covariate`) | 51 | 2 |
+| Ornithology | 22 | 0 | 19 | 0 |
+| Quantitative finance | 31 | **1** (`qf-whale-attack`) | 27 | 1 |
+
+**Two of 110 hits, and they account for the whole of the filter's loss.** 57/67
+is 0.851 and 56/67 is 0.836. 31/35 is 0.886 and 30/35 is 0.857. The MRR loss
+reconciles too: 0.015 x 67 is 1.01 reciprocal ranks and 0.015 x 35 is 0.53, so
+one hit at rank 1 and one at rank 2, which is where those two title blocks sat.
+Nothing else moved on any corpus.
+
+**So the filter does not cost anything real.** Every point it "loses" is a point
+the golden set should not have awarded. The earlier entry's conclusion, that the
+filter is worse, was arithmetic read at the wrong level: the aggregate said
+worse and the cases say the aggregate was wrong.
+
+**It still ships off, and for a different reason.** It buys nothing measurable
+either. The presentation defect it was written for was fixed by windowing the
+excerpt, which cost no passage. What the filter would add is that four questions
+stop showing a title block at rank 1 (`colbert-late`, `bahdanau-fixed`,
+`bn-covariate`, `qf-sparse-params`), against removing 55 passages from every
+search on a three-part heuristic whose false positives are silent. That is a
+judgement about risk, not a measurement, and it is the owner's to make. It is
+recorded here so that it is made rather than defaulted into.
+
+**The general form, which is the part worth keeping.** An aggregate that moves
+in the wrong direction is a reason to look at the cases, not a verdict. Both
+readings of this experiment came from the same two numbers; only the one that
+opened the cases was right. This project already had "when a corpus scores
+badly, read the failing questions first". This is the same rule pointed at a
+change rather than a corpus: **when a change scores badly, read the questions it
+lost.**
 
 ---
 
