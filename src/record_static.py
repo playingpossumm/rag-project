@@ -302,7 +302,7 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
     '<b>Recorded demo.</b> The pipeline answered these questions in advance ' +
     'and wrote each answer to a file. No model runs behind this page, so it ' +
     'answers the questions it was given and no others. ' +
-    '<a href="https://github.com/ArdellAlfatih/rag-project">Run it locally</a>' +
+    '<a href="https://github.com/playingpossumm/rag-project">Run it locally</a>' +
     ' to search your own documents.';
   const stripStyle = document.createElement("style");
   stripStyle.textContent = `

@@ -2082,6 +2082,49 @@ correctness and the refusal comparison while sounding precise about each.
 
 ---
 
+## 2026-09-01 — Four links to a repository that is not this one
+
+Every Source link the interface serves named
+`github.com/ArdellAlfatih/rag-project`. The remote is
+`github.com/playingpossumm/rag-project`. The two are different repositories and
+the first does not exist, so all four links 404 for a visitor, and have since
+they were written.
+
+**`check_links.py` passed throughout, and the reason is the interesting part.**
+It matched each URL against a pattern named `SELF_REPO`, treated the match as
+proof that the link pointed at this repository, and then checked the branch and
+the file path against the local working tree. Both agreed, because `master` and
+`docs/corpus-manifest.md` do exist here. The checker verified everything about
+the link except the only part that was wrong.
+
+That is the same shape as the entry the guard was written for, where a link
+named a branch this repository does not have while the repository was private,
+so one failure hid behind another. Here the hiding is done by the checker
+itself: a name chosen for a pattern, `SELF_REPO`, was read as a fact about the
+URL it matched.
+
+**The fix is offline, which is what makes it a guard.** `git remote get-url
+origin` gives the owner and repository name, and a link is now compared against
+them before anything else is checked. When the repository name matches and the
+owner does not, that is reported, since a link built on the wrong owner cannot
+resolve. When both differ the link is another repository's and is left to
+`--http`, which needs the network and is therefore not part of the default run.
+Staged against the old links the guard reports both and exits non-zero.
+
+The six links now name `playingpossumm/rag-project`, which is where the code
+is. They still 404 for a visitor, because that repository is private, and that
+is a decision for the owner rather than a defect in the interface. What has
+changed is that the link names the right repository, so making it public is now
+sufficient.
+
+**What is still unchecked.** `check_links.py` has no test suite, so this
+failure was demonstrated by staging it and reading the output rather than by a
+committed check. By this project's own rule that is one step short: a check
+performed and not committed is indistinguishable, six days later, from one that
+never happened.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

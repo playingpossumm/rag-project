@@ -40,7 +40,7 @@ ROOT = Path(__file__).parent.parent
 # served ten articles and then refused thirty in a row, which is rate limiting
 # rather than a bad request -- hence the backoff in fetch().
 UA = ("rag-project-educational/1.0 "
-      "(https://github.com/ArdellAlfatih/rag-project; personal learning project)")
+      "(https://github.com/playingpossumm/rag-project; personal learning project)")
 ATOM = "{http://www.w3.org/2005/Atom}"
 
 # Searches, not identifiers. Each is a real arXiv query string.

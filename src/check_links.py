@@ -22,9 +22,18 @@ one of them.
 page. An anchor to a missing id does not error; it silently lands at the top
 of the page, which is worse than an error because it looks like it worked.
 
-**Links into this repository** must name a branch that exists and a file that
-exists. Both are decidable from the working tree, so neither needs the
-repository to be public or the network to be up.
+**Links into this repository** must name this repository, then a branch that
+exists and a file that exists. All three are decidable from the working tree and
+from `git remote get-url origin`, so none of them needs the repository to be
+public or the network to be up.
+
+The repository half was added on 2026-09-01, after every Source link on the site
+was found to name `ArdellAlfatih/rag-project` while the remote is
+`playingpossumm/rag-project`. The checker had matched the URL against a pattern
+named for this repository, taken the match as proof it was this repository, and
+then checked the branch and the file against the local working tree, which
+agreed. Four links 404 and the guard passed. A link is only checked against the
+working tree when the owner and the repository name both match the remote.
 
 `--http` additionally asks the network about every external link, which
 requires the repository to be public to pass and is therefore not part of the
@@ -77,6 +86,19 @@ def page_ids(page: str) -> set[str] | None:
     return set(re.findall(r'id="([^"]+)"', f.read_text(encoding="utf-8")))
 
 
+def remote_slug() -> tuple[str, str] | None:
+    """The owner and repository name of `origin`, or None when there is no remote.
+
+    A link that names a different repository is not checkable against this
+    working tree, and checking it anyway is how four broken links passed.
+    """
+    url = git("remote", "get-url", "origin")
+    if not url:
+        return None
+    m = re.search(r"github\.com[:/]([^/]+)/(.+?)(?:\.git)?/?$", url.strip())
+    return (m.group(1), m.group(2)) if m else None
+
+
 def git(*args: str) -> str | None:
     try:
         r = subprocess.run(["git", *args], cwd=ROOT, capture_output=True,
@@ -102,6 +124,7 @@ def main() -> int:
               "and found none, which is a failure rather than a pass")
         return 1
 
+    slug = remote_slug()
     routes = served_routes()
     # serve.py compares the request path with the trailing slash stripped, so
     # the route the documents call "/" is the empty string in the dispatch.
@@ -135,6 +158,23 @@ def main() -> int:
         m = SELF_REPO.match(url)
         if not m:
             notes.append(f"{url} -> external, not checked offline")
+            continue
+
+        # Does it name this repository? Everything below reads the local
+        # working tree, so answering that first is what makes the rest mean
+        # anything.
+        owner, repo = m.group("owner"), m.group("repo").removesuffix(".git")
+        if slug is None:
+            notes.append(f"{url} -> no git remote, repository not checked")
+        elif (owner, repo) != slug:
+            if repo == slug[1]:
+                problems.append(
+                    f"{url} ({where}) names '{owner}/{repo}', and this "
+                    f"repository's origin is '{slug[0]}/{slug[1]}'. Every link "
+                    f"built on that owner points at a repository that is not "
+                    f"this one")
+            else:
+                notes.append(f"{url} -> another repository, not checked offline")
             continue
 
         # A link into this repository. The branch and the path are both

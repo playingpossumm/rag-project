@@ -1030,7 +1030,7 @@ disclaim current work.
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
 | `src/check_freshness.py` | is the front page still offering the questions the harness measured? |
 | `src/check_golden.py` | does each golden set still describe the corpus it scores? |
-| `src/check_links.py` | do the links the interface serves resolve, including the branch a GitHub link names? |
+| `src/check_links.py` | do the interface's links resolve, including the repository and branch a GitHub link names? |
 | `src/test_evaluate_answers.py` | the answer-quality judge, against answers it has already scored wrongly |
 | `src/check_docs.py` | do the numbers written in HANDOFF §2 and the README match the measurements? |
 | `src/sweep_fusion.py` | every fusion, every corpus, at the configuration served |
