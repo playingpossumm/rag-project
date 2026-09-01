@@ -775,26 +775,45 @@ limitation.
    floor reproduces between ML and birds and does not hold on quant, so do not
    quote it as universal.
 
-   Reading the twelve together, they are **two different problems**:
+   Reading them together gave **two problems**, and reading them one at a
+   time on 2026-09-01 gave **three**, of which only one is retrieval. The
+   earlier account is left below the corrected one because it was quoted for
+   five days and the correction is the more useful half.
 
-   - **ML, all seven.** The question asks for an attribute many papers share,
-     such as "what dropout rate" or "how many parameters". The topic matches a
-     dozen documents and the distinguishing clause is ignored. This is
-     cross-document confusion. Query decomposition was the named fix for it
-     and **was measured on 2026-08-31 and recovers none of the seven**; see
-     the log under that date. Nothing currently reaches these.
-   - **Birds and quant, all five.** The question *describes* a term and asks
-     its name ("which small group of feathers helps prevent a stall" → alula;
-     "which effect describes past winners continuing to outperform" → momentum).
-     The answer word is absent from the query. Nothing needs decomposing; this
-     is vocabulary mismatch. `src/query_expansion.py` (RM3 pseudo-relevance
-     feedback) was **measured against it on 2026-08-27 and recovers 0 of 12**,
-     with no question changing hands on any corpus. The reason is structural:
-     feedback terms are harvested from the top results of the original query,
-     and the missing word is not in those passages either. That was checked
-     directly rather than inferred. A stopword leak found in the same module was fixed and
-     measured **worse** on two corpora of three, and reverted. See
-     `docs/engineering-log.md`.
+   - **Five are genuine retrieval failures.** `wmt14` returns
+     English-to-French passages for an English-to-German question,
+     `gpt3-params` asks for the largest autoregressive model and matches every
+     discussion of model size, `roberta-nsp-drop` never returns `roberta.pdf`
+     at all, `bird-precocial` returns passages about hatching that never use
+     the word, and `bird-hollow-bones` returns the right document's Overview
+     and Axial skeleton sections and misses its Skeletal system section.
+     Nothing currently reaches these.
+   - **Four are answered and scored wrong**, because a derived label marks
+     every passage containing the answer string rather than every passage that
+     answers. `adam-bias` returns "we therefore divide by this term to correct
+     the initialization bias" one page from its gold pages, and
+     `t5-text2text` has four of its six gold passages in other papers'
+     bibliographies, since "unified text-to-text" is part of the T5 paper's
+     title. Correcting these labels would raise the published figures, so it
+     is a decision rather than a fix.
+   - **Three are questions the documents do not answer.** `bird-alula`,
+     `qf-mean-reversion` and `qf-momentum` name terms the corpora use without
+     explaining, as a factor name or in a list of anatomical features, and the
+     derived label makes them look answerable. They belong with the
+     adversarial cases.
+
+   The account this replaces, written 2026-08-27: the seven on the ML papers
+   were cross-document confusion, where the topic matches a dozen documents
+   and the distinguishing clause is ignored, and the five on birds and quant
+   were vocabulary mismatch, where the question describes a term and asks its
+   name. Query decomposition was the named fix for the first and **was
+   measured on 2026-08-31 and recovers none of the seven**.
+   `src/query_expansion.py` (RM3 pseudo-relevance feedback) was **measured
+   against the second on 2026-08-27 and recovers 0 of 12**, with no question
+   changing hands on any corpus, because feedback terms are harvested from the
+   top results of the original query and the missing word is not in those
+   passages either. A stopword leak found in the same module was fixed and
+   measured **worse** on two corpora of three, and reverted.
 
    Fixtures: `eval/hard_cases.json`, `eval/hard_cases-birds.json`,
    `eval/hard_cases-quant.json`.

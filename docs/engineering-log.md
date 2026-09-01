@@ -2137,6 +2137,98 @@ committed is indistinguishable, six days later, from one that never happened.
 
 ---
 
+## 2026-09-01 — The twelve that fail everywhere, read one at a time
+
+The documents have described these as two problems since 2026-08-27. Seven on
+the ML papers ask for an attribute many papers share, so the topic matches a
+dozen documents and the distinguishing clause is ignored, and five on birds and
+quant describe a term and ask for its name, so the answer word is absent from
+the question. That account was written once and quoted since, and no entry
+records reading the twelve individually.
+
+Read individually they are three problems, and only five are retrieval
+failures.
+
+**Four are cases the system answers and the label scores wrong.** On
+`adam-bias`, "how does the optimizer correct for bias in its moment estimates",
+rank 2 is `adam_optimizer.pdf` page 3, which reads "in algorithm 1 we therefore
+divide by this term to correct the initialization bias". That is the answer, in
+the right document, one page from the gold pages 5, 8 and 9, which are where
+the hyphenated string "bias-correction" happens to appear. On `gpt3-fewshot`,
+rank 2 is `gpt3.pdf` page 24, "in-context learning curves, which show task
+performance as a function of the number of in-context examples", against gold
+pages 7, 17 and 40. On `dropout-rate` rank 1 states a dropout rate, in a paper
+the label does not list, and the question names no paper while many state one.
+
+**`t5-text2text` is the sharpest of the four, because its gold is other
+people's bibliographies.** The case asks how all NLP tasks are cast into a
+single format and wants the string "unified text-to-text". Six chunks carry
+that string, and four of them are reference-list entries in `colbert.pdf` page
+10, `dense_passage_retrieval.pdf` page 11, `gpt3.pdf` page 73 and `rag.pdf`
+page 14, each carrying the line "Colin Raffel, Noam Shazeer, Adam Roberts,
+Katherine Lee, Sharan Narang, Michael Matena". The string is part of the T5
+paper's own title, so citing T5 makes a page gold. Meanwhile `t5.pdf` page 8,
+which says "we cast all of the tasks we consider into a text-to-text format",
+is not gold and is what the pipeline returns.
+
+**Five are genuine retrieval failures.** `wmt14` asks which dataset was used for
+the English-to-German experiments and returns `bahdanau_attention.pdf` on
+English-to-French and `seq2seq.pdf` on "the WMT'14 English to French dataset",
+so the one word that decides the answer is the one ignored. `gpt3-params` asks
+for the largest autoregressive model's parameter count and matches every
+discussion of model size in every paper. `roberta-nsp-drop` asks which
+pre-training objective was found unnecessary and removed, and `roberta.pdf`
+does not appear in the top five at all. `bird-precocial` is answered in the
+corpus by "the ducklings are precocial and fully capable of swimming as soon as
+they hatch" and retrieval returns passages about hatching that never use the
+word. `bird-hollow-bones` returns the right document twice, its Overview and
+Axial skeleton sections, and misses the Skeletal system section that says
+"birds have many bones that are hollow (pneumatized)".
+
+**Three are questions the documents do not answer.** `bird-alula` asks which
+small group of feathers prevents a stall at low speed. The word appears twice
+in the corpus, in "the development of an enlarged, keeled sternum and the
+alula" and "the presence of a pygostyle for tail feathers, and an alula on the
+wing". Neither says the alula is a group of feathers, and neither mentions
+stalling. `qf-mean-reversion` asks about prices pulled back toward a long-run
+level, and all five occurrences of the term are about temperature in a
+weather-derivatives paper, one of them a reference entry on page 43.
+`qf-momentum` asks which effect describes past winners continuing to
+outperform, and its 30 occurrences across seven documents are factor names such
+as "12-month momentum" and bibliography entries. A derived label marks every
+chunk containing the string, which cannot distinguish a passage that explains a
+term from one that uses it, so these three look answerable and are not.
+
+**A detector for reference lists was written, calibrated and abandoned.** The
+six chunks carrying "unified text-to-text" separate cleanly on citation
+furniture counted per 1,000 characters, with the four bibliography entries
+scoring 13.2 to 25.6 and the two prose passages 0.0 and 1.0. Applied to the
+corpora at a threshold of 8, inside that gap, it flags 14.7% of the ML papers
+and 11.9% of quant, and reading the chunks nearest the line shows it is wrong
+in both directions. It flags `rag.pdf` page 4, which is prose that cites
+heavily, and two quant chunks that are mathematics, because a converted PDF
+writes subscripts as `[24]` and the pattern cannot tell that from a citation
+number. It misses author-year bibliographies that carry no brackets and no
+arXiv identifier. Six examples separated and the corpus does not, which is the
+same mistake the answer-quality judge made on 2026-08-30 when it counted
+`[min(]` as an invented citation. No detector is shipped and no number from it
+is quoted anywhere but here.
+
+**What this changes.** The research frontier is five questions rather than
+twelve. Four would pass under labels that marked the passages answering the
+question rather than the passages containing a string, and three belong with
+the adversarial cases, since the documents do not answer them. Relabelling
+would raise the published figures, so nothing was changed here and the decision
+is recorded for the owner rather than taken.
+
+**And the rule it repeats.** This is the fourth time in this repository that a
+number describing a weakness turned out to describe the labels: the quant
+corpus at 0.543, the title block scored as a correct answer, the two hits
+called false credits, and now the twelve. Each was found by reading the cases
+and none by looking at an aggregate.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
