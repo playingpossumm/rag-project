@@ -17,8 +17,8 @@
  },
  "inputs": {
   "golden": {
-   "path": "eval\\golden_set.json",
-   "digest": "sha256:774df32543b9232f",
+   "path": "eval/golden_set.json",
+   "digest": "sha256:864b1e9157a3d5a2",
    "cases": 84
   },
   "index": {
@@ -30,12 +30,12 @@
  "totals": {
   "answerable": {
    "n": 67,
-   "hit_rate": 0.8507,
-   "mrr": 0.7393,
-   "ndcg": 0.7555,
-   "src_recall": 0.7607,
+   "hit_rate": 0.9104,
+   "mrr": 0.7841,
+   "ndcg": 0.8041,
+   "src_recall": 0.7846,
    "refused_wrongly": 1,
-   "missed": 10
+   "missed": 6
   },
   "adversarial": {
    "n": 17,
@@ -764,58 +764,57 @@
   },
   {
    "id": "dropout-rate",
-   "kind": "multi",
-   "question": "What dropout rate was applied for regularization?",
+   "kind": "fact",
+   "question": "Which dropout rate was used for the English-to-French model instead of 0.3?",
    "unanswerable": false,
    "gold_sources": [
-    "attention_is_all_you_need.pdf",
-    "dense_passage_retrieval.pdf"
+    "attention_is_all_you_need.pdf"
    ],
-   "confidence": 3.998,
+   "confidence": 7.029,
    "abstained": false,
-   "outcome": "missed",
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
-     "source": "t5.pdf",
-     "locator": "page 11",
-     "score": 3.9976,
-     "relevant": false
+     "source": "attention_is_all_you_need.pdf",
+     "locator": "page 8",
+     "score": 7.0291,
+     "relevant": true
     },
     {
      "rank": 2,
-     "source": "resnet.pdf",
+     "source": "attention_is_all_you_need.pdf",
      "locator": "page 8",
-     "score": 3.3568,
-     "relevant": false
+     "score": 6.4269,
+     "relevant": true
     },
     {
      "rank": 3,
-     "source": "batch_normalization.pdf",
-     "locator": "page 6",
-     "score": 1.2477,
+     "source": "t5.pdf",
+     "locator": "page 38",
+     "score": -0.0317,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "t5.pdf",
-     "locator": "page 13",
-     "score": 0.7023,
+     "source": "healmed_multilingual_evaluation_of_large_language_models_i.pdf",
+     "locator": "page 5",
+     "score": -1.9341,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "batch_normalization.pdf",
-     "locator": "page 6",
-     "score": -0.0076,
+     "source": "healmed_multilingual_evaluation_of_large_language_models_i.pdf",
+     "locator": "page 5",
+     "score": -2.5224,
      "relevant": false
     }
    ],
-   "hit_rate": 0.0,
-   "mrr": 0.0,
-   "ndcg": 0.0,
-   "src_recall": 0.0,
-   "context_recall": 0.0
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
   },
   {
    "id": "residual",
@@ -1383,7 +1382,7 @@
    ],
    "confidence": 3.473,
    "abstained": false,
-   "outcome": "missed",
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -1397,7 +1396,7 @@
      "source": "adam_optimizer.pdf",
      "locator": "page 3",
      "score": 3.206,
-     "relevant": false
+     "relevant": true
     },
     {
      "rank": 3,
@@ -1421,11 +1420,11 @@
      "relevant": false
     }
    ],
-   "hit_rate": 0.0,
-   "mrr": 0.0,
-   "ndcg": 0.0,
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
    "src_recall": 1.0,
-   "context_recall": 0.0
+   "context_recall": 1.0
   },
   {
    "id": "adam-adamax",
@@ -2432,7 +2431,7 @@
   },
   {
    "id": "gpt3-fewshot",
-   "kind": "cross-doc",
+   "kind": "fact",
    "question": "How does task performance change with the number of examples in the prompt?",
    "unanswerable": false,
    "gold_sources": [
@@ -2440,7 +2439,7 @@
    ],
    "confidence": 0.966,
    "abstained": false,
-   "outcome": "missed",
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
@@ -2454,7 +2453,7 @@
      "source": "gpt3.pdf",
      "locator": "page 24",
      "score": 0.8028,
-     "relevant": false
+     "relevant": true
     },
     {
      "rank": 3,
@@ -2478,11 +2477,11 @@
      "relevant": false
     }
    ],
-   "hit_rate": 0.0,
-   "mrr": 0.0,
-   "ndcg": 0.0,
+   "hit_rate": 1.0,
+   "mrr": 0.5,
+   "ndcg": 0.6309,
    "src_recall": 1.0,
-   "context_recall": 0.0
+   "context_recall": 1.0
   },
   {
    "id": "ln-vs-bn",
@@ -3369,33 +3368,29 @@
   },
   {
    "id": "t5-text2text",
-   "kind": "cross-doc",
+   "kind": "fact",
    "question": "How are all NLP tasks cast into a single format?",
    "unanswerable": false,
    "gold_sources": [
-    "colbert.pdf",
-    "dense_passage_retrieval.pdf",
-    "gpt3.pdf",
-    "rag.pdf",
     "t5.pdf"
    ],
    "confidence": 5.995,
    "abstained": false,
-   "outcome": "missed",
+   "outcome": "found",
    "results": [
     {
      "rank": 1,
      "source": "t5.pdf",
      "locator": "page 9",
      "score": 5.9949,
-     "relevant": false
+     "relevant": true
     },
     {
      "rank": 2,
      "source": "t5.pdf",
      "locator": "page 8",
      "score": 1.8344,
-     "relevant": false
+     "relevant": true
     },
     {
      "rank": 3,
@@ -3419,11 +3414,11 @@
      "relevant": false
     }
    ],
-   "hit_rate": 0.0,
-   "mrr": 0.0,
-   "ndcg": 0.0,
-   "src_recall": 0.4,
-   "context_recall": 0.0
+   "hit_rate": 1.0,
+   "mrr": 1.0,
+   "ndcg": 1.0,
+   "src_recall": 1.0,
+   "context_recall": 1.0
   },
   {
    "id": "t5-span",

@@ -11,15 +11,6 @@
  "note": "Answerable cases that fail under every configuration listed above, and adversarial cases answered under every gated one. Run with src/hard_cases.py.",
  "structural": [
   {
-   "id": "bird-alula",
-   "kind": "fact",
-   "question": "Which small group of feathers helps prevent a stall at low speed?",
-   "gold_sources": [
-    "bird.docx",
-    "flightless_bird.pdf"
-   ]
-  },
-  {
    "id": "bird-hollow-bones",
    "kind": "fact",
    "question": "Which skeletal adaptation reduces a bird's weight for flight?",

@@ -1,103 +1,199 @@
 {
-  "note": "Authored questions for the bird corpus. Every answer_contains string was checked against the indexed corpus before being written here: each appears verbatim, in between one and fourteen passages, so it is distinctive enough to identify a location without matching incidentally. Gold locations are derived from these strings by src/build_golden_set.py, never hand-listed. Deliberately spread across all four file formats, because half the point of this corpus is that .docx, .pptx and .xlsx are in it.",
-  "cases": [
-    {"id": "bird-syrinx", "kind": "fact",
-     "question": "What organ do birds use to produce song?",
-     "answer_contains": "syrinx"},
-    {"id": "bird-keel", "kind": "fact",
-     "question": "Which breastbone feature anchors the muscles that power flight?",
-     "answer_contains": "keeled sternum"},
-    {"id": "bird-barbules", "kind": "fact",
-     "question": "What interlocking structures hold the vane of a feather together?",
-     "answer_contains": "barbules"},
-    {"id": "bird-down", "kind": "multi",
-     "question": "Which type of feather provides insulation rather than flight surface?",
-     "answer_contains": "down feathers"},
-    {"id": "bird-airsacs", "kind": "fact",
-     "question": "What structures make airflow through a bird's lungs one-directional?",
-     "answer_contains": "air sacs"},
-    {"id": "bird-brood-parasite", "kind": "fact",
-     "question": "What is it called when a bird lays its eggs in another species' nest?",
-     "answer_contains": "brood parasitism"},
-    {"id": "bird-altricial", "kind": "cross-doc",
-     "question": "What term describes chicks that hatch helpless and wholly dependent on their parents?",
-     "answer_contains": "altricial"},
-    {"id": "bird-precocial", "kind": "cross-doc",
-     "question": "What term describes chicks able to move and feed themselves soon after hatching?",
-     "answer_contains": "precocial"},
-    {"id": "bird-furcula", "kind": "fact",
-     "question": "What is the fused collarbone of a bird called?",
-     "answer_contains": "furcula"},
-    {"id": "bird-uropygial", "kind": "fact",
-     "question": "Which gland supplies the oil a bird spreads while preening?",
-     "answer_contains": "uropygial gland"},
-    {"id": "bird-hollow-bones", "kind": "fact",
-     "question": "Which skeletal adaptation reduces a bird's weight for flight?",
-     "answer_contains": "hollow bones"},
-    {"id": "bird-flyway", "kind": "fact",
-     "question": "What is the established route a migrating population follows called?",
-     "answer_contains": "flyway"},
-    {"id": "bird-alula", "kind": "fact",
-     "question": "Which small group of feathers helps prevent a stall at low speed?",
-     "answer_contains": "alula"},
-    {"id": "bird-wing-loading", "kind": "fact",
-     "question": "Which ratio of body mass to wing area governs flight performance?",
-     "answer_contains": "wing loading"},
-    {"id": "bird-aspect-ratio", "kind": "fact",
-     "question": "Which wing measurement compares span against width?",
-     "answer_contains": "aspect ratio"},
-    {"id": "bird-melanin", "kind": "multi",
-     "question": "Which pigment gives feathers their black and brown colouring?",
-     "answer_contains": "melanin"},
-    {"id": "bird-carotenoid", "kind": "multi",
-     "question": "Which dietary pigments produce red and yellow feather colour?",
-     "answer_contains": "carotenoid"},
-    {"id": "bird-iridescence", "kind": "fact",
-     "question": "What optical effect produces structural rather than pigment colour in feathers?",
-     "answer_contains": "iridescence"},
-    {"id": "bird-tool-use", "kind": "cross-doc",
-     "question": "Which corvid behaviour involves shaping objects into implements?",
-     "answer_contains": "tool use"},
-    {"id": "bird-mirror", "kind": "fact",
-     "question": "Which self-recognition experiment have magpies been shown to pass?",
-     "answer_contains": "mirror test"},
-    {"id": "bird-dialects", "kind": "multi",
-     "question": "What regional variation appears in the songs of a single species?",
-     "answer_contains": "dialects"},
-    {"id": "bird-dawn-chorus", "kind": "fact",
-     "question": "What is the burst of collective singing at first light called?",
-     "answer_contains": "dawn chorus"},
-    {"id": "bird-mimicry", "kind": "fact",
-     "question": "What is it called when a bird reproduces the sounds of other species?",
-     "answer_contains": "mimicry"},
-    {"id": "bird-imprinting", "kind": "fact",
-     "question": "Which early-life attachment process was famously studied in ducklings?",
-     "answer_contains": "imprinting"},
-    {"id": "bird-incubation", "kind": "multi",
-     "question": "What is the period of sitting on eggs before hatching called?",
-     "answer_contains": "incubation"},
-    {"id": "bird-fledging", "kind": "multi",
-     "question": "What is the stage at which a young bird develops flight feathers and leaves the nest?",
-     "answer_contains": "fledging"}
-  ],
-  "adversarial": [
-    {"id": "adv-bird-transformer", "adversarial_kind": "absent",
-     "question": "What attention mechanism does the transformer architecture use?",
-     "why": "machine learning; nothing in an ornithology corpus discusses it"},
-    {"id": "adv-bird-insulin", "adversarial_kind": "absent",
-     "question": "How does insulin regulate blood glucose in humans?",
-     "why": "human endocrinology; adjacent biology but absent here"},
-    {"id": "adv-bird-consensus", "adversarial_kind": "absent",
-     "question": "How does a proof of stake protocol reach consensus?",
-     "why": "distributed systems; wholly outside the corpus"},
-    {"id": "adv-bird-price", "adversarial_kind": "near-miss",
-     "question": "How much does a trained falcon sell for at auction?",
-     "why": "falconry is discussed, commerce and prices are not"},
-    {"id": "adv-bird-author", "adversarial_kind": "metadata",
-     "question": "Who wrote this article and when was it last revised?",
-     "why": "authorship metadata is not in the extracted text"},
-    {"id": "adv-bird-count-2024", "adversarial_kind": "near-miss",
-     "question": "How many individuals were counted in the 2024 breeding survey?",
-     "why": "conservation status is discussed; no specific 2024 survey figures exist here"}
-  ]
+ "note": "Authored questions for the bird corpus. Every answer_contains string was checked against the indexed corpus before being written here: each appears verbatim, in between one and fourteen passages, so it is distinctive enough to identify a location without matching incidentally. Gold locations are derived from these strings by src/build_golden_set.py, never hand-listed. Deliberately spread across all four file formats, because half the point of this corpus is that .docx, .pptx and .xlsx are in it.",
+ "cases": [
+  {
+   "id": "bird-syrinx",
+   "kind": "fact",
+   "question": "What organ do birds use to produce song?",
+   "answer_contains": "syrinx"
+  },
+  {
+   "id": "bird-keel",
+   "kind": "fact",
+   "question": "Which breastbone feature anchors the muscles that power flight?",
+   "answer_contains": "keeled sternum"
+  },
+  {
+   "id": "bird-barbules",
+   "kind": "fact",
+   "question": "What interlocking structures hold the vane of a feather together?",
+   "answer_contains": "barbules"
+  },
+  {
+   "id": "bird-down",
+   "kind": "multi",
+   "question": "Which type of feather provides insulation rather than flight surface?",
+   "answer_contains": "down feathers"
+  },
+  {
+   "id": "bird-airsacs",
+   "kind": "fact",
+   "question": "What structures make airflow through a bird's lungs one-directional?",
+   "answer_contains": "air sacs"
+  },
+  {
+   "id": "bird-brood-parasite",
+   "kind": "fact",
+   "question": "What is it called when a bird lays its eggs in another species' nest?",
+   "answer_contains": "brood parasitism"
+  },
+  {
+   "id": "bird-altricial",
+   "kind": "cross-doc",
+   "question": "What term describes chicks that hatch helpless and wholly dependent on their parents?",
+   "answer_contains": "altricial"
+  },
+  {
+   "id": "bird-precocial",
+   "kind": "cross-doc",
+   "question": "What term describes chicks able to move and feed themselves soon after hatching?",
+   "answer_contains": "precocial"
+  },
+  {
+   "id": "bird-furcula",
+   "kind": "fact",
+   "question": "What is the fused collarbone of a bird called?",
+   "answer_contains": "furcula"
+  },
+  {
+   "id": "bird-uropygial",
+   "kind": "fact",
+   "question": "Which gland supplies the oil a bird spreads while preening?",
+   "answer_contains": "uropygial gland"
+  },
+  {
+   "id": "bird-hollow-bones",
+   "kind": "fact",
+   "question": "Which skeletal adaptation reduces a bird's weight for flight?",
+   "answer_contains": "hollow bones"
+  },
+  {
+   "id": "bird-flyway",
+   "kind": "fact",
+   "question": "What is the established route a migrating population follows called?",
+   "answer_contains": "flyway"
+  },
+  {
+   "id": "bird-wing-loading",
+   "kind": "fact",
+   "question": "Which ratio of body mass to wing area governs flight performance?",
+   "answer_contains": "wing loading"
+  },
+  {
+   "id": "bird-aspect-ratio",
+   "kind": "fact",
+   "question": "Which wing measurement compares span against width?",
+   "answer_contains": "aspect ratio"
+  },
+  {
+   "id": "bird-melanin",
+   "kind": "multi",
+   "question": "Which pigment gives feathers their black and brown colouring?",
+   "answer_contains": "melanin"
+  },
+  {
+   "id": "bird-carotenoid",
+   "kind": "multi",
+   "question": "Which dietary pigments produce red and yellow feather colour?",
+   "answer_contains": "carotenoid"
+  },
+  {
+   "id": "bird-iridescence",
+   "kind": "fact",
+   "question": "What optical effect produces structural rather than pigment colour in feathers?",
+   "answer_contains": "iridescence"
+  },
+  {
+   "id": "bird-tool-use",
+   "kind": "cross-doc",
+   "question": "Which corvid behaviour involves shaping objects into implements?",
+   "answer_contains": "tool use"
+  },
+  {
+   "id": "bird-mirror",
+   "kind": "fact",
+   "question": "Which self-recognition experiment have magpies been shown to pass?",
+   "answer_contains": "mirror test"
+  },
+  {
+   "id": "bird-dialects",
+   "kind": "multi",
+   "question": "What regional variation appears in the songs of a single species?",
+   "answer_contains": "dialects"
+  },
+  {
+   "id": "bird-dawn-chorus",
+   "kind": "fact",
+   "question": "What is the burst of collective singing at first light called?",
+   "answer_contains": "dawn chorus"
+  },
+  {
+   "id": "bird-mimicry",
+   "kind": "fact",
+   "question": "What is it called when a bird reproduces the sounds of other species?",
+   "answer_contains": "mimicry"
+  },
+  {
+   "id": "bird-imprinting",
+   "kind": "fact",
+   "question": "Which early-life attachment process was famously studied in ducklings?",
+   "answer_contains": "imprinting"
+  },
+  {
+   "id": "bird-incubation",
+   "kind": "multi",
+   "question": "What is the period of sitting on eggs before hatching called?",
+   "answer_contains": "incubation"
+  },
+  {
+   "id": "bird-fledging",
+   "kind": "multi",
+   "question": "What is the stage at which a young bird develops flight feathers and leaves the nest?",
+   "answer_contains": "fledging"
+  }
+ ],
+ "adversarial": [
+  {
+   "id": "adv-bird-author",
+   "adversarial_kind": "metadata",
+   "question": "Who wrote this article and when was it last revised?",
+   "why": "authorship metadata is not in the extracted text"
+  },
+  {
+   "id": "adv-bird-consensus",
+   "adversarial_kind": "absent",
+   "question": "How does a proof of stake protocol reach consensus?",
+   "why": "distributed systems; wholly outside the corpus"
+  },
+  {
+   "id": "adv-bird-count-2024",
+   "adversarial_kind": "near-miss",
+   "question": "How many individuals were counted in the 2024 breeding survey?",
+   "why": "conservation status is discussed; no specific 2024 survey figures exist here"
+  },
+  {
+   "id": "adv-bird-insulin",
+   "adversarial_kind": "absent",
+   "question": "How does insulin regulate blood glucose in humans?",
+   "why": "human endocrinology; adjacent biology but absent here"
+  },
+  {
+   "id": "adv-bird-price",
+   "adversarial_kind": "near-miss",
+   "question": "How much does a trained falcon sell for at auction?",
+   "why": "falconry is discussed, commerce and prices are not"
+  },
+  {
+   "id": "adv-bird-transformer",
+   "adversarial_kind": "absent",
+   "question": "What attention mechanism does the transformer architecture use?",
+   "why": "machine learning; nothing in an ornithology corpus discusses it"
+  },
+  {
+   "id": "bird-alula",
+   "adversarial_kind": "near-miss",
+   "question": "Which small group of feathers helps prevent a stall at low speed?",
+   "why": "the alula is named twice, in a list of skeletal features and in one of ratite anatomy, and neither passage says it is a group of feathers or mentions stalling; read 2026-09-01"
+  }
+ ]
 }

@@ -8,76 +8,76 @@
   "ensemble": false
  },
  "spread_under_uniform": {
-  "hit_rate": 0.078,
-  "mrr": 0.1682,
-  "ndcg": 0.1191,
-  "src_recall": 0.0205
+  "hit_rate": 0.0994,
+  "mrr": 0.1901,
+  "ndcg": 0.1423,
+  "src_recall": 0.0082
  },
  "corpora": {
   "llm": {
    "label": "ML & NLP papers",
    "n": 67,
    "uniform": {
-    "hit_rate": 0.8507,
-    "mrr": 0.7381,
-    "ndcg": 0.7539,
-    "src_recall": 0.76
+    "hit_rate": 0.9104,
+    "mrr": 0.7828,
+    "ndcg": 0.8025,
+    "src_recall": 0.7838
    },
    "tuned": {
-    "hit_rate": 0.8507,
-    "mrr": 0.7393,
-    "ndcg": 0.7555,
-    "src_recall": 0.7607
+    "hit_rate": 0.9104,
+    "mrr": 0.7841,
+    "ndcg": 0.8042,
+    "src_recall": 0.7846
    },
    "delta": {
     "hit_rate": 0.0,
-    "mrr": 0.0012,
-    "ndcg": 0.0016,
-    "src_recall": 0.0007
+    "mrr": 0.0013,
+    "ndcg": 0.0017,
+    "src_recall": 0.0008
    }
   },
   "birds": {
    "label": "Ornithology",
-   "n": 26,
+   "n": 25,
    "uniform": {
-    "hit_rate": 0.8077,
-    "mrr": 0.5699,
-    "ndcg": 0.6348,
-    "src_recall": 0.7615
+    "hit_rate": 0.84,
+    "mrr": 0.5927,
+    "ndcg": 0.6602,
+    "src_recall": 0.792
    },
    "tuned": {
-    "hit_rate": 0.8462,
-    "mrr": 0.6135,
-    "ndcg": 0.6709,
-    "src_recall": 0.7615
+    "hit_rate": 0.88,
+    "mrr": 0.638,
+    "ndcg": 0.6978,
+    "src_recall": 0.792
    },
    "delta": {
-    "hit_rate": 0.0385,
-    "mrr": 0.0436,
-    "ndcg": 0.0361,
+    "hit_rate": 0.04,
+    "mrr": 0.0453,
+    "ndcg": 0.0376,
     "src_recall": 0.0
    }
   },
   "quant": {
    "label": "Quantitative finance",
-   "n": 35,
+   "n": 33,
    "uniform": {
-    "hit_rate": 0.8857,
-    "mrr": 0.7143,
-    "ndcg": 0.749,
-    "src_recall": 0.741
+    "hit_rate": 0.9394,
+    "mrr": 0.7576,
+    "ndcg": 0.7944,
+    "src_recall": 0.7859
    },
    "tuned": {
-    "hit_rate": 0.8857,
-    "mrr": 0.7786,
-    "ndcg": 0.7856,
-    "src_recall": 0.769
+    "hit_rate": 0.9394,
+    "mrr": 0.8258,
+    "ndcg": 0.8332,
+    "src_recall": 0.8157
    },
    "delta": {
     "hit_rate": 0.0,
-    "mrr": 0.0643,
-    "ndcg": 0.0366,
-    "src_recall": 0.028
+    "mrr": 0.0682,
+    "ndcg": 0.0388,
+    "src_recall": 0.0298
    }
   }
  }

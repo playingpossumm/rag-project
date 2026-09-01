@@ -4,6 +4,7 @@
   "k": 5,
   "candidate_k": 20,
   "rerank_blend": 0.2,
+  "ensemble": null,
   "use_reranker": true,
   "fusion": "rrf",
   "max_per_source": 2
@@ -17,7 +18,7 @@
  "inputs": {
   "golden": {
    "path": "eval\\golden-birds.json",
-   "digest": "sha256:6da452b97d041254",
+   "digest": "sha256:5f76daac85c40863",
    "cases": 32
   },
   "index": {
@@ -28,17 +29,17 @@
  },
  "totals": {
   "answerable": {
-   "n": 26,
-   "hit_rate": 0.8462,
-   "mrr": 0.6135,
-   "ndcg": 0.6709,
-   "src_recall": 0.7615,
-   "refused_wrongly": 3,
+   "n": 25,
+   "hit_rate": 0.88,
+   "mrr": 0.638,
+   "ndcg": 0.6978,
+   "src_recall": 0.792,
+   "refused_wrongly": 2,
    "missed": 3
   },
   "adversarial": {
-   "n": 6,
-   "refused": 5,
+   "n": 7,
+   "refused": 6,
    "answered_anyway": 1
   }
  },
@@ -707,61 +708,6 @@
    "mrr": 0.25,
    "ndcg": 0.4307,
    "src_recall": 1.0,
-   "context_recall": 0.0
-  },
-  {
-   "id": "bird-alula",
-   "kind": "fact",
-   "question": "Which small group of feathers helps prevent a stall at low speed?",
-   "unanswerable": false,
-   "gold_sources": [
-    "bird.docx",
-    "flightless_bird.pdf"
-   ],
-   "confidence": -7.281,
-   "abstained": true,
-   "outcome": "refused_wrongly",
-   "results": [
-    {
-     "rank": 1,
-     "source": "bird_flight.xlsx",
-     "locator": "sheet Sections",
-     "score": -7.2811,
-     "relevant": false
-    },
-    {
-     "rank": 2,
-     "source": "bird_flight.pptx",
-     "locator": "slide 8",
-     "score": -7.5524,
-     "relevant": false
-    },
-    {
-     "rank": 3,
-     "source": "bird_flight.pptx",
-     "locator": "slide 8",
-     "score": -7.9501,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "feather.pdf",
-     "locator": "page 1",
-     "score": -8.2873,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "feather.xlsx",
-     "locator": "sheet Sections",
-     "score": -8.2782,
-     "relevant": false
-    }
-   ],
-   "hit_rate": 0.0,
-   "mrr": 0.0,
-   "ndcg": 0.0,
-   "src_recall": 0.0,
    "context_recall": 0.0
   },
   {
@@ -1490,95 +1436,48 @@
    "context_recall": 0.0
   },
   {
-   "id": "adv-bird-transformer",
-   "kind": "absent",
-   "question": "What attention mechanism does the transformer architecture use?",
+   "id": "adv-bird-author",
+   "kind": "metadata",
+   "question": "Who wrote this article and when was it last revised?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -10.722,
+   "confidence": -6.476,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "beak.pdf",
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 4",
+     "score": -6.4759,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "bird_migration.pdf",
      "locator": "page 1",
-     "score": -10.7216,
-     "relevant": false
-    },
-    {
-     "rank": 2,
-     "source": "owl.pptx",
-     "locator": "slide 7",
-     "score": -10.9796,
+     "score": -6.5575,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "owl.pptx",
-     "locator": "slide 6",
-     "score": -10.8694,
+     "source": "bird_migration.pdf",
+     "locator": "page 1",
+     "score": -8.5822,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "beak.docx",
-     "locator": "section Anatomy",
-     "score": -11.0351,
+     "source": "origin_of_birds.pptx",
+     "locator": "slide 4",
+     "score": -7.5544,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "mallard.pdf",
-     "locator": "page 5",
-     "score": -11.0899,
-     "relevant": false
-    }
-   ]
-  },
-  {
-   "id": "adv-bird-insulin",
-   "kind": "absent",
-   "question": "How does insulin regulate blood glucose in humans?",
-   "unanswerable": true,
-   "gold_sources": [],
-   "confidence": -10.391,
-   "abstained": true,
-   "outcome": "refused",
-   "results": [
-    {
-     "rank": 1,
-     "source": "emperor_penguin.pptx",
-     "locator": "slide 7",
-     "score": -10.3911,
-     "relevant": false
-    },
-    {
-     "rank": 2,
-     "source": "owl.pptx",
-     "locator": "slide 3",
-     "score": -10.9288,
-     "relevant": false
-    },
-    {
-     "rank": 3,
-     "source": "ruby_throated_hummingbird.docx",
-     "locator": "section Behavior and ecology",
-     "score": -10.9874,
-     "relevant": false
-    },
-    {
-     "rank": 4,
-     "source": "emperor_penguin.pptx",
-     "locator": "slide 6",
-     "score": -10.7114,
-     "relevant": false
-    },
-    {
-     "rank": 5,
-     "source": "arctic_tern.xlsx",
-     "locator": "sheet Notes",
-     "score": -11.0086,
+     "source": "bird_egg.xlsx",
+     "locator": "sheet Sections",
+     "score": -8.97,
      "relevant": false
     }
    ]
@@ -1631,6 +1530,100 @@
    ]
   },
   {
+   "id": "adv-bird-count-2024",
+   "kind": "near-miss",
+   "question": "How many individuals were counted in the 2024 breeding survey?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": 1.921,
+   "abstained": false,
+   "outcome": "answered_anyway",
+   "results": [
+    {
+     "rank": 1,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 8",
+     "score": 1.9207,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Population and status",
+     "score": -0.8279,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "mute_swan.docx",
+     "locator": "section Breeding",
+     "score": -5.0128,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "corvidae.xlsx",
+     "locator": "sheet Notes",
+     "score": -10.7202,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "bird_migration.xlsx",
+     "locator": "sheet Notes",
+     "score": -9.1245,
+     "relevant": false
+    }
+   ]
+  },
+  {
+   "id": "adv-bird-insulin",
+   "kind": "absent",
+   "question": "How does insulin regulate blood glucose in humans?",
+   "unanswerable": true,
+   "gold_sources": [],
+   "confidence": -10.391,
+   "abstained": true,
+   "outcome": "refused",
+   "results": [
+    {
+     "rank": 1,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 7",
+     "score": -10.3911,
+     "relevant": false
+    },
+    {
+     "rank": 2,
+     "source": "owl.pptx",
+     "locator": "slide 3",
+     "score": -10.9288,
+     "relevant": false
+    },
+    {
+     "rank": 3,
+     "source": "ruby_throated_hummingbird.docx",
+     "locator": "section Behavior and ecology",
+     "score": -10.9874,
+     "relevant": false
+    },
+    {
+     "rank": 4,
+     "source": "emperor_penguin.pptx",
+     "locator": "slide 6",
+     "score": -10.7114,
+     "relevant": false
+    },
+    {
+     "rank": 5,
+     "source": "arctic_tern.xlsx",
+     "locator": "sheet Notes",
+     "score": -11.0086,
+     "relevant": false
+    }
+   ]
+  },
+  {
    "id": "adv-bird-price",
    "kind": "near-miss",
    "question": "How much does a trained falcon sell for at auction?",
@@ -1678,95 +1671,95 @@
    ]
   },
   {
-   "id": "adv-bird-author",
-   "kind": "metadata",
-   "question": "Who wrote this article and when was it last revised?",
+   "id": "adv-bird-transformer",
+   "kind": "absent",
+   "question": "What attention mechanism does the transformer architecture use?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": -6.476,
+   "confidence": -10.722,
    "abstained": true,
    "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "origin_of_birds.pptx",
-     "locator": "slide 4",
-     "score": -6.4759,
+     "source": "beak.pdf",
+     "locator": "page 1",
+     "score": -10.7216,
      "relevant": false
     },
     {
      "rank": 2,
-     "source": "bird_migration.pdf",
-     "locator": "page 1",
-     "score": -6.5575,
+     "source": "owl.pptx",
+     "locator": "slide 7",
+     "score": -10.9796,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "bird_migration.pdf",
-     "locator": "page 1",
-     "score": -8.5822,
+     "source": "owl.pptx",
+     "locator": "slide 6",
+     "score": -10.8694,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "origin_of_birds.pptx",
-     "locator": "slide 4",
-     "score": -7.5544,
+     "source": "beak.docx",
+     "locator": "section Anatomy",
+     "score": -11.0351,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "bird_egg.xlsx",
-     "locator": "sheet Sections",
-     "score": -8.97,
+     "source": "mallard.pdf",
+     "locator": "page 5",
+     "score": -11.0899,
      "relevant": false
     }
    ]
   },
   {
-   "id": "adv-bird-count-2024",
+   "id": "bird-alula",
    "kind": "near-miss",
-   "question": "How many individuals were counted in the 2024 breeding survey?",
+   "question": "Which small group of feathers helps prevent a stall at low speed?",
    "unanswerable": true,
    "gold_sources": [],
-   "confidence": 1.921,
-   "abstained": false,
-   "outcome": "answered_anyway",
+   "confidence": -7.281,
+   "abstained": true,
+   "outcome": "refused",
    "results": [
     {
      "rank": 1,
-     "source": "emperor_penguin.pptx",
-     "locator": "slide 8",
-     "score": 1.9207,
+     "source": "bird_flight.xlsx",
+     "locator": "sheet Sections",
+     "score": -7.2811,
      "relevant": false
     },
     {
      "rank": 2,
-     "source": "ruby_throated_hummingbird.docx",
-     "locator": "section Population and status",
-     "score": -0.8279,
+     "source": "bird_flight.pptx",
+     "locator": "slide 8",
+     "score": -7.5524,
      "relevant": false
     },
     {
      "rank": 3,
-     "source": "mute_swan.docx",
-     "locator": "section Breeding",
-     "score": -5.0128,
+     "source": "bird_flight.pptx",
+     "locator": "slide 8",
+     "score": -7.9501,
      "relevant": false
     },
     {
      "rank": 4,
-     "source": "corvidae.xlsx",
-     "locator": "sheet Notes",
-     "score": -10.7202,
+     "source": "feather.pdf",
+     "locator": "page 1",
+     "score": -8.2873,
      "relevant": false
     },
     {
      "rank": 5,
-     "source": "bird_migration.xlsx",
-     "locator": "sheet Notes",
-     "score": -9.1245,
+     "source": "feather.xlsx",
+     "locator": "sheet Sections",
+     "score": -8.2782,
      "relevant": false
     }
    ]

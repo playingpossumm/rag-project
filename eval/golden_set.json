@@ -337,9 +337,9 @@
     },
     {
       "id": "dropout-rate",
-      "question": "What dropout rate was applied for regularization?",
-      "kind": "multi",
-      "answer_contains": "dropout rate",
+      "question": "Which dropout rate was used for the English-to-French model instead of 0.3?",
+      "kind": "fact",
+      "answer_contains": "Pdrop = 0.1",
       "gold": [
         {
           "source": "attention_is_all_you_need.pdf",
@@ -347,16 +347,9 @@
           "pages": [
             8
           ]
-        },
-        {
-          "source": "dense_passage_retrieval.pdf",
-          "kind": "page",
-          "pages": [
-            5
-          ]
         }
       ],
-      "multi_source": true
+      "multi_source": false
     },
     {
       "id": "residual",
@@ -674,15 +667,13 @@
       "id": "adam-bias",
       "question": "How does the optimizer correct for bias in its moment estimates?",
       "kind": "fact",
-      "answer_contains": "bias-correction",
+      "answer_contains": "correct the initialization bias",
       "gold": [
         {
           "source": "adam_optimizer.pdf",
           "kind": "page",
           "pages": [
-            5,
-            8,
-            9
+            3
           ]
         }
       ],
@@ -1357,16 +1348,14 @@
     {
       "id": "gpt3-fewshot",
       "question": "How does task performance change with the number of examples in the prompt?",
-      "kind": "cross-doc",
-      "answer_contains": "zero-shot, one-shot",
+      "kind": "fact",
+      "answer_contains": "as a function of the number of in-context examples",
       "gold": [
         {
           "source": "gpt3.pdf",
           "kind": "page",
           "pages": [
-            7,
-            17,
-            40
+            24
           ]
         }
       ],
@@ -1841,47 +1830,19 @@
     {
       "id": "t5-text2text",
       "question": "How are all NLP tasks cast into a single format?",
-      "kind": "cross-doc",
-      "answer_contains": "unified text-to-text",
+      "kind": "fact",
+      "answer_contains": "cast all of the tasks",
       "gold": [
-        {
-          "source": "colbert.pdf",
-          "kind": "page",
-          "pages": [
-            10
-          ]
-        },
-        {
-          "source": "dense_passage_retrieval.pdf",
-          "kind": "page",
-          "pages": [
-            11
-          ]
-        },
-        {
-          "source": "gpt3.pdf",
-          "kind": "page",
-          "pages": [
-            73
-          ]
-        },
-        {
-          "source": "rag.pdf",
-          "kind": "page",
-          "pages": [
-            14
-          ]
-        },
         {
           "source": "t5.pdf",
           "kind": "page",
           "pages": [
-            31,
-            44
+            8,
+            9
           ]
         }
       ],
-      "multi_source": true
+      "multi_source": false
     },
     {
       "id": "t5-span",
