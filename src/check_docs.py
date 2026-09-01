@@ -667,6 +667,7 @@ def check_readme(measured: dict, problems: list[str], notes: list[str]) -> bool:
 SUITE_LABELS = {
     "test_trace": "trace",
     "test_excerpt": "excerpt",
+    "test_links": "links",
     "test_evaluate_answers": "answer-quality judge",
     "test_loaders": "loaders",
     "test_freshness": "freshness",

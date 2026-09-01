@@ -924,17 +924,18 @@ reads the same words. Query decomposition was the fix that addressed it on
 paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
 `docs/engineering-log.md`.
 
-Test counts, as of 2026-08-30: **406 checks plus the route suite**: 80 trace,
-66 answer-quality judge, 11 excerpt, 33 loaders, 33 freshness, 25 serve, 24 local
-generation, 22 metrics, 19 generate, 17 golden-set audit, 16 analytics, 13 api,
-10 reranker cache, 9 ingest cache and 8 OCR, which is 386, plus 20
-answer-highlight checks under `node ui/test-answer-mark.mjs`.
+Test counts, as of 2026-09-01: **424 checks plus the route suite**: 80 trace,
+66 answer-quality judge, 18 links, 11 excerpt, 33 loaders, 33 freshness, 25
+serve, 24 local generation, 22 metrics, 19 generate, 17 golden-set audit, 16
+analytics, 13 api, 10 reranker cache, 9 ingest cache and 8 OCR, which is 404,
+plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
-These are counted by running the suites. They were wrong until 2026-08-30: the
-total read 384 because the list still said 28 loaders, a figure five behind
-since `_unhash` added five cases, and the total had been computed from the
-stale item. Nothing checks this family of numbers, so it is the one place in
-these documents where a figure can still drift quietly.
+These are counted by running the suites. They were wrong until 2026-08-30,
+when the total read 384 because the list still said 28 loaders, a figure five
+behind since `_unhash` added five cases, and the total had been computed from
+the stale item. Since 2026-08-31 `python src/check_docs.py --tests` runs every
+suite and compares its total against the sentence above, which takes two to
+three minutes and is why it is opt-in rather than part of the default run.
 
 The 60 on the judge are worth their own sentence, because that module is the
 only measurement here whose input is prose, and prose is where a string test
@@ -1059,6 +1060,7 @@ disclaim current work.
 | `src/build_corpus_manifest.py` | writes that list from the indexes; `--check` fails when it has drifted |
 | `src/retitle.py` | recomputes stored titles in a built index without re-embedding it |
 | `src/test_analytics.py` | the analytics the quality page plots, against the per-case file |
+| `src/test_links.py` | the link checker, staged against both links that actually broke |
 | `src/test_excerpt.py` | which 260 characters of a passage the interface shows, against the passage it got wrong |
 | `src/front_matter.py` | a paper's title block, detected; a refuted experiment, off by default |
 | `src/sweep_front_matter.py` | what dropping title blocks costs end to end, on every corpus |

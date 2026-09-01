@@ -2117,11 +2117,23 @@ is a decision for the owner rather than a defect in the interface. What has
 changed is that the link names the right repository, so making it public is now
 sufficient.
 
-**What is still unchecked.** `check_links.py` has no test suite, so this
-failure was demonstrated by staging it and reading the output rather than by a
-committed check. By this project's own rule that is one step short: a check
-performed and not committed is indistinguishable, six days later, from one that
-never happened.
+**And then the check was committed, which found one more defect.**
+`src/test_links.py` stages both failures this guard exists for, along with the
+route, anchor, branch and path cases it claims to cover, in a synthetic `ui/`
+with `git` and the route list answered by stubs. 18 checks, hermetic, running
+in milliseconds. Run against the version of the checker from before the fix, 4
+of the 18 fail and 14 pass, which is the right split, because only the
+repository half is new.
+
+The fourth failure is not one that was staged deliberately. The old checker
+treated any `github.com` URL as a link into this repository, so a link to
+somebody else's repository had its branch checked against this working tree and
+was reported broken for naming a branch that exists in that repository and not
+in this one. There is no such link in `ui/` today, so the bug had never fired,
+and the test says so before one is added rather than after.
+
+The rule this satisfies is the project's own: a check performed and not
+committed is indistinguishable, six days later, from one that never happened.
 
 ---
 
