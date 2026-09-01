@@ -83,11 +83,17 @@ A stronger model may do better, and the harness is in place to find out:
 `RAG_GENERATOR=ollama python src/sweep_decompose.py --corpus llm`. What is no
 longer available is citing decomposition as the answer without running it.
 
-**3. The other five structural failures need no LLM.** They *describe* a term
-and ask for its name, as in "which small group of feathers helps prevent a
-stall at low speed", so the answer word is absent from the question. One of the five was
-already recovered by changing the embedder alone, which is what motivated the
-ensemble work above.
+**3. The frontier is five questions, not twelve.** Reading the twelve
+individually on 2026-09-01 split them three ways. Five are genuine retrieval
+failures and nothing reaches them. Four are answered by the pipeline and scored
+wrong, because a derived label marks passages containing the answer string
+rather than passages that answer, and `t5-text2text` has four of its six gold
+passages in other papers' bibliographies. Three are questions the documents do
+not answer, where the term appears as a factor name or in a list of anatomical
+features and never as an explanation. Correcting the labels on the middle four
+and moving the last three to the adversarial set would raise the published
+figures, so it is a decision for the owner rather than a fix. The full reading
+is in `docs/engineering-log.md` under that date.
 
 **4. The hero diagram.** All seven stages are drawn as the same sheet-of-cells,
 which is wrong in one specific place: dense retrieval and BM25 have identical

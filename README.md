@@ -389,18 +389,21 @@ parameters had to be re-derived when the corpus changed, and one conclusion
 reversed outright. Pointing this at different documents means re-running the
 harness.
 
-- **Twelve questions fail under every pipeline configuration**, and they are two
-  different problems. Seven, on the ML papers, ask about an attribute many
-  papers share. The topic matches a dozen documents and the clause that picks
-  one out is ignored. The other five *describe* a term and ask for its name
-  ("which small group of feathers helps prevent a stall at low speed"), so the
-  answer word is absent from the question. The first was supposed to want query
-  decomposition, and that was measured on 2026-08-31 and does not work:
-  decomposition reaches none of the seven, and rewriting reaches one while
-  breaking five questions that worked. The second is vocabulary mismatch, and
-  one of the five was recovered by changing the embedder alone. **No fix for
-  either is currently known**, which is a worse position than the roadmap held
-  a week ago and a better-evidenced one.
+- **Twelve questions fail under every pipeline configuration, and only five of
+  them are retrieval failures.** Read one at a time on 2026-09-01, they are
+  three problems rather than the two this section claimed. Four are cases the
+  pipeline answers and the label scores wrong, because a label marks every
+  passage containing its answer string rather than every passage that answers.
+  `t5-text2text` is the clearest: the string "unified text-to-text" is part of
+  the T5 paper's title, so four of its six gold passages are other papers'
+  bibliographies, while the passage that says "we cast all of the tasks we
+  consider into a text-to-text format" is not gold and is what comes back.
+  Three more are questions the documents do not answer at all, where the term
+  appears only as a factor name or in a list of anatomical features, so the
+  derived label makes them look answerable. The remaining five are genuine, and
+  no fix for them is known: query decomposition was measured on 2026-08-31 and
+  reaches none, and pseudo-relevance feedback reaches none either. The full
+  reading is in `docs/engineering-log.md` under 2026-09-01.
 - **The reranker is the weakest stage and off-the-shelf options are exhausted.**
   Three cross-encoders were compared and int8 quantisation measured; the
   candidates that are faster are worse, and the one that separates best is
