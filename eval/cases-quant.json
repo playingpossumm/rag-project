@@ -1,253 +1,253 @@
 {
-  "note": "Authored questions for the quantitative finance corpus (arXiv q-fin). Every answer_contains string is tested against the indexed corpus before being written, and must appear in a passage that ANSWERS the question -- not merely one that mentions the term. That distinction is what the first version of this set got wrong: sixteen of thirty-five asked textbook definitional questions ('what describes the tendency of large price moves to be followed by more large moves?') of research papers that use the term in passing and never define it. 'volatility clustering' appears once, inside a list of stylized facts; 'tail dependence' appears in a citation. The string existed, so the label looked valid, and the question was unanswerable from this corpus. Those sixteen are replaced with questions grounded in what these papers actually report. Strings are also checked for breadth: 'Sharpe' alone matched 176 passages across 14 documents, 'ARCH' 581 because it is a substring of 'research' and 'architecture'.",
-  "cases": [
-    {
-      "id": "qf-garch",
-      "kind": "multi",
-      "question": "Which model family captures time-varying conditional variance in returns?",
-      "answer_contains": "GARCH"
-    },
-    {
-      "id": "qf-var",
-      "kind": "multi",
-      "question": "Which risk measure reports the loss threshold exceeded with a given probability?",
-      "answer_contains": "smallest loss threshold"
-    },
-    {
-      "id": "qf-max-drawdown",
-      "kind": "multi",
-      "question": "Which measure reports the largest peak-to-trough decline of a strategy?",
-      "answer_contains": "maximum drawdown"
-    },
-    {
-      "id": "qf-sortino",
-      "kind": "fact",
-      "question": "Which performance ratio penalises only downside deviation?",
-      "answer_contains": "Sortino"
-    },
-    {
-      "id": "qf-mean-variance",
-      "kind": "cross-doc",
-      "question": "Which framework trades expected return against portfolio variance?",
-      "answer_contains": "mean-variance"
-    },
-    {
-      "id": "qf-markowitz",
-      "kind": "multi",
-      "question": "Whose portfolio selection theory underpins modern allocation methods?",
-      "answer_contains": "Markowitz"
-    },
-    {
-      "id": "qf-risk-parity",
-      "kind": "multi",
-      "question": "Which allocation method equalises each asset's contribution to total risk?",
-      "answer_contains": "risk parity"
-    },
-    {
-      "id": "qf-lob",
-      "kind": "multi",
-      "question": "Which data structure records outstanding buy and sell orders at each price?",
-      "answer_contains": "limit order book"
-    },
-    {
-      "id": "qf-order-flow",
-      "kind": "multi",
-      "question": "Which signal captures the imbalance of buying against selling pressure?",
-      "answer_contains": "order flow"
-    },
-    {
-      "id": "qf-market-making",
-      "kind": "fact",
-      "question": "Which activity involves quoting both sides of the book to earn the spread?",
-      "answer_contains": "market making"
-    },
-    {
-      "id": "qf-hft",
-      "kind": "multi",
-      "question": "Which style of trading operates at sub-second timescales?",
-      "answer_contains": "high-frequency"
-    },
-    {
-      "id": "qf-transaction-costs",
-      "kind": "multi",
-      "question": "What does the fixed rebalancing cost represent in the liquidity-provision model?",
-      "answer_contains": "gas cost paid for interacting with the blockchain"
-    },
-    {
-      "id": "qf-backtest",
-      "kind": "multi",
-      "question": "Why does the controller act only occasionally rather than continuously?",
-      "answer_contains": "takes actions occasionally (interventions) because of the transaction costs"
-    },
-    {
-      "id": "qf-heavy-tails",
-      "kind": "multi",
-      "question": "Which property of return distributions makes extreme moves more likely than a normal model implies?",
-      "answer_contains": "heavy tails"
-    },
-    {
-      "id": "qf-stylized-facts",
-      "kind": "multi",
-      "question": "What are the empirical regularities observed across virtually all financial return series called?",
-      "answer_contains": "stylized facts"
-    },
-    {
-      "id": "qf-copula",
-      "kind": "fact",
-      "question": "Which tool models the dependence structure between assets separately from their margins?",
-      "answer_contains": "copula"
-    },
-    {
-      "id": "qf-black-scholes",
-      "kind": "fact",
-      "question": "Which classical formula prices a European option under constant volatility?",
-      "answer_contains": "Black-Scholes"
-    },
-    {
-      "id": "qf-mean-reversion",
-      "kind": "fact",
-      "question": "Which behaviour describes prices being pulled back toward a long-run level?",
-      "answer_contains": "mean reversion"
-    },
-    {
-      "id": "qf-momentum",
-      "kind": "multi",
-      "question": "Which effect describes past winners continuing to outperform?",
-      "answer_contains": "momentum"
-    },
-    {
-      "id": "qf-deep-learning",
-      "kind": "multi",
-      "question": "Which family of methods is applied to forecasting from raw market data?",
-      "answer_contains": "deep learning"
-    },
-    {
-      "id": "qf-quant-4bit",
-      "kind": "fact",
-      "question": "At what precision does activation calibration become the main determinant of performance?",
-      "answer_contains": "primary determinant of predictive performance at 4 bits"
-    },
-    {
-      "id": "qf-sparse-params",
-      "kind": "fact",
-      "question": "By how much does the dependence-informed architecture cut parameter count at matched width?",
-      "answer_contains": "parameter count by a factor of 80"
-    },
-    {
-      "id": "qf-structural-calibration",
-      "kind": "fact",
-      "question": "How does the structural model compare with the market on calibration slope?",
-      "answer_contains": "calibration slope 0.995 versus 1.103"
-    },
-    {
-      "id": "qf-aml-fusion",
-      "kind": "fact",
-      "question": "What did fusing data sources do to alert volume and recall in the money-laundering study?",
-      "answer_contains": "reduces alert volume without adding recall"
-    },
-    {
-      "id": "qf-news-taxonomy",
-      "kind": "fact",
-      "question": "How many news tags does the news-pricing taxonomy define?",
-      "answer_contains": "taxonomy of 17 news tags"
-    },
-    {
-      "id": "qf-whale-attack",
-      "kind": "fact",
-      "question": "What happens to whale rewards once a detectability threshold is introduced?",
-      "answer_contains": "strictly less reward for whales"
-    },
-    {
-      "id": "qf-degeneracy",
-      "kind": "fact",
-      "question": "What is the failure called where calibration activates mappings without improving results?",
-      "answer_contains": "calibration-induced degeneracy"
-    },
-    {
-      "id": "qf-credit-stakeholders",
-      "kind": "fact",
-      "question": "Do professional and non-professional stakeholders judge credit explanations the same way?",
-      "answer_contains": "apply different acceptance criteria"
-    },
-    {
-      "id": "qf-liquidity-policy",
-      "kind": "multi",
-      "question": "What does the learned liquidity-provision policy allocate according to?",
-      "answer_contains": "allocating liquidity according to mispricing"
-    },
-    {
-      "id": "qf-cvar-interval",
-      "kind": "fact",
-      "question": "Can the CVaR threshold be restricted to a bounded range?",
-      "answer_contains": "restricted to a common compact interval"
-    },
-    {
-      "id": "qf-verifiability-gap",
-      "kind": "fact",
-      "question": "What is the shortfall between demanded verification and retained explainability called?",
-      "answer_contains": "positive shortfall between the verification demanded"
-    },
-    {
-      "id": "qf-social-disclosure",
-      "kind": "fact",
-      "question": "What happens to firm risk on a first-time social disclosure through SEC filings?",
-      "answer_contains": "increased idiosyncratic firm risk"
-    },
-    {
-      "id": "qf-market-making-rl",
-      "kind": "fact",
-      "question": "What does the reinforcement-learning market-making algorithm try to maximise?",
-      "answer_contains": "maximize trading revenue by dynamically submitting"
-    },
-    {
-      "id": "qf-photonic-sharpe",
-      "kind": "fact",
-      "question": "What peak Sharpe ratio does the photonic approach report?",
-      "answer_contains": "peak Sharpe ratio of 0.76"
-    },
-    {
-      "id": "qf-bvar-probabilistic",
-      "kind": "fact",
-      "question": "What does combining BVAR with machine learning make possible?",
-      "answer_contains": "probabilistic forecasts instead of singlepoint"
-    }
-  ],
-  "adversarial": [
-    {
-      "id": "adv-qf-syrinx",
-      "adversarial_kind": "absent",
-      "question": "What organ do birds use to produce song?",
-      "why": "ornithology; the same question the bird corpus answers, so it tests topic separation directly"
-    },
-    {
-      "id": "adv-qf-photosynth",
-      "adversarial_kind": "absent",
-      "question": "How does the Calvin cycle fix carbon during photosynthesis?",
-      "why": "plant biology; wholly outside the corpus"
-    },
-    {
-      "id": "adv-qf-mortgage-rate",
-      "adversarial_kind": "near-miss",
-      "question": "What is the current 30-year fixed mortgage rate?",
-      "why": "finance-adjacent, but these are research papers, not a rate sheet"
-    },
-    {
-      "id": "adv-qf-broker-fee",
-      "adversarial_kind": "near-miss",
-      "question": "What commission does the broker charge per executed trade?",
-      "why": "transaction costs are modelled abstractly; no broker's fee schedule is here"
-    },
-    {
-      "id": "adv-qf-author-pay",
-      "adversarial_kind": "metadata",
-      "question": "Which fund employed the authors and what were they paid?",
-      "why": "employment and compensation metadata is not in the extracted text"
-    },
-    {
-      "id": "adv-qf-ticker-close",
-      "adversarial_kind": "near-miss",
-      "question": "What was the closing price of AAPL yesterday?",
-      "why": "asks for live market data; the corpus contains methods, not quotes"
-    }
-  ]
+ "note": "Authored questions for the quantitative finance corpus (arXiv q-fin). Every answer_contains string is tested against the indexed corpus before being written, and must appear in a passage that ANSWERS the question -- not merely one that mentions the term. That distinction is what the first version of this set got wrong: sixteen of thirty-five asked textbook definitional questions ('what describes the tendency of large price moves to be followed by more large moves?') of research papers that use the term in passing and never define it. 'volatility clustering' appears once, inside a list of stylized facts; 'tail dependence' appears in a citation. The string existed, so the label looked valid, and the question was unanswerable from this corpus. Those sixteen are replaced with questions grounded in what these papers actually report. Strings are also checked for breadth: 'Sharpe' alone matched 176 passages across 14 documents, 'ARCH' 581 because it is a substring of 'research' and 'architecture'.",
+ "cases": [
+  {
+   "id": "qf-garch",
+   "kind": "multi",
+   "question": "Which model family captures time-varying conditional variance in returns?",
+   "answer_contains": "GARCH"
+  },
+  {
+   "id": "qf-var",
+   "kind": "multi",
+   "question": "Which risk measure reports the loss threshold exceeded with a given probability?",
+   "answer_contains": "smallest loss threshold"
+  },
+  {
+   "id": "qf-max-drawdown",
+   "kind": "multi",
+   "question": "Which measure reports the largest peak-to-trough decline of a strategy?",
+   "answer_contains": "maximum drawdown"
+  },
+  {
+   "id": "qf-sortino",
+   "kind": "fact",
+   "question": "Which performance ratio penalises only downside deviation?",
+   "answer_contains": "Sortino"
+  },
+  {
+   "id": "qf-mean-variance",
+   "kind": "cross-doc",
+   "question": "Which framework trades expected return against portfolio variance?",
+   "answer_contains": "mean-variance"
+  },
+  {
+   "id": "qf-markowitz",
+   "kind": "multi",
+   "question": "Whose portfolio selection theory underpins modern allocation methods?",
+   "answer_contains": "Markowitz"
+  },
+  {
+   "id": "qf-risk-parity",
+   "kind": "multi",
+   "question": "Which allocation method equalises each asset's contribution to total risk?",
+   "answer_contains": "risk parity"
+  },
+  {
+   "id": "qf-lob",
+   "kind": "multi",
+   "question": "Which data structure records outstanding buy and sell orders at each price?",
+   "answer_contains": "limit order book"
+  },
+  {
+   "id": "qf-order-flow",
+   "kind": "multi",
+   "question": "Which signal captures the imbalance of buying against selling pressure?",
+   "answer_contains": "order flow"
+  },
+  {
+   "id": "qf-market-making",
+   "kind": "fact",
+   "question": "Which activity involves quoting both sides of the book to earn the spread?",
+   "answer_contains": "market making"
+  },
+  {
+   "id": "qf-hft",
+   "kind": "multi",
+   "question": "Which style of trading operates at sub-second timescales?",
+   "answer_contains": "high-frequency"
+  },
+  {
+   "id": "qf-transaction-costs",
+   "kind": "multi",
+   "question": "What does the fixed rebalancing cost represent in the liquidity-provision model?",
+   "answer_contains": "gas cost paid for interacting with the blockchain"
+  },
+  {
+   "id": "qf-backtest",
+   "kind": "multi",
+   "question": "Why does the controller act only occasionally rather than continuously?",
+   "answer_contains": "takes actions occasionally (interventions) because of the transaction costs"
+  },
+  {
+   "id": "qf-heavy-tails",
+   "kind": "multi",
+   "question": "Which property of return distributions makes extreme moves more likely than a normal model implies?",
+   "answer_contains": "heavy tails"
+  },
+  {
+   "id": "qf-stylized-facts",
+   "kind": "multi",
+   "question": "What are the empirical regularities observed across virtually all financial return series called?",
+   "answer_contains": "stylized facts"
+  },
+  {
+   "id": "qf-copula",
+   "kind": "fact",
+   "question": "Which tool models the dependence structure between assets separately from their margins?",
+   "answer_contains": "copula"
+  },
+  {
+   "id": "qf-black-scholes",
+   "kind": "fact",
+   "question": "Which classical formula prices a European option under constant volatility?",
+   "answer_contains": "Black-Scholes"
+  },
+  {
+   "id": "qf-deep-learning",
+   "kind": "multi",
+   "question": "Which family of methods is applied to forecasting from raw market data?",
+   "answer_contains": "deep learning"
+  },
+  {
+   "id": "qf-quant-4bit",
+   "kind": "fact",
+   "question": "At what precision does activation calibration become the main determinant of performance?",
+   "answer_contains": "primary determinant of predictive performance at 4 bits"
+  },
+  {
+   "id": "qf-sparse-params",
+   "kind": "fact",
+   "question": "By how much does the dependence-informed architecture cut parameter count at matched width?",
+   "answer_contains": "parameter count by a factor of 80"
+  },
+  {
+   "id": "qf-structural-calibration",
+   "kind": "fact",
+   "question": "How does the structural model compare with the market on calibration slope?",
+   "answer_contains": "calibration slope 0.995 versus 1.103"
+  },
+  {
+   "id": "qf-aml-fusion",
+   "kind": "fact",
+   "question": "What did fusing data sources do to alert volume and recall in the money-laundering study?",
+   "answer_contains": "reduces alert volume without adding recall"
+  },
+  {
+   "id": "qf-news-taxonomy",
+   "kind": "fact",
+   "question": "How many news tags does the news-pricing taxonomy define?",
+   "answer_contains": "taxonomy of 17 news tags"
+  },
+  {
+   "id": "qf-whale-attack",
+   "kind": "fact",
+   "question": "What happens to whale rewards once a detectability threshold is introduced?",
+   "answer_contains": "strictly less reward for whales"
+  },
+  {
+   "id": "qf-degeneracy",
+   "kind": "fact",
+   "question": "What is the failure called where calibration activates mappings without improving results?",
+   "answer_contains": "calibration-induced degeneracy"
+  },
+  {
+   "id": "qf-credit-stakeholders",
+   "kind": "fact",
+   "question": "Do professional and non-professional stakeholders judge credit explanations the same way?",
+   "answer_contains": "apply different acceptance criteria"
+  },
+  {
+   "id": "qf-liquidity-policy",
+   "kind": "multi",
+   "question": "What does the learned liquidity-provision policy allocate according to?",
+   "answer_contains": "allocating liquidity according to mispricing"
+  },
+  {
+   "id": "qf-cvar-interval",
+   "kind": "fact",
+   "question": "Can the CVaR threshold be restricted to a bounded range?",
+   "answer_contains": "restricted to a common compact interval"
+  },
+  {
+   "id": "qf-verifiability-gap",
+   "kind": "fact",
+   "question": "What is the shortfall between demanded verification and retained explainability called?",
+   "answer_contains": "positive shortfall between the verification demanded"
+  },
+  {
+   "id": "qf-social-disclosure",
+   "kind": "fact",
+   "question": "What happens to firm risk on a first-time social disclosure through SEC filings?",
+   "answer_contains": "increased idiosyncratic firm risk"
+  },
+  {
+   "id": "qf-market-making-rl",
+   "kind": "fact",
+   "question": "What does the reinforcement-learning market-making algorithm try to maximise?",
+   "answer_contains": "maximize trading revenue by dynamically submitting"
+  },
+  {
+   "id": "qf-photonic-sharpe",
+   "kind": "fact",
+   "question": "What peak Sharpe ratio does the photonic approach report?",
+   "answer_contains": "peak Sharpe ratio of 0.76"
+  },
+  {
+   "id": "qf-bvar-probabilistic",
+   "kind": "fact",
+   "question": "What does combining BVAR with machine learning make possible?",
+   "answer_contains": "probabilistic forecasts instead of singlepoint"
+  }
+ ],
+ "adversarial": [
+  {
+   "id": "adv-qf-author-pay",
+   "adversarial_kind": "metadata",
+   "question": "Which fund employed the authors and what were they paid?",
+   "why": "employment and compensation metadata is not in the extracted text"
+  },
+  {
+   "id": "adv-qf-broker-fee",
+   "adversarial_kind": "near-miss",
+   "question": "What commission does the broker charge per executed trade?",
+   "why": "transaction costs are modelled abstractly; no broker's fee schedule is here"
+  },
+  {
+   "id": "adv-qf-mortgage-rate",
+   "adversarial_kind": "near-miss",
+   "question": "What is the current 30-year fixed mortgage rate?",
+   "why": "finance-adjacent, but these are research papers, not a rate sheet"
+  },
+  {
+   "id": "adv-qf-photosynth",
+   "adversarial_kind": "absent",
+   "question": "How does the Calvin cycle fix carbon during photosynthesis?",
+   "why": "plant biology; wholly outside the corpus"
+  },
+  {
+   "id": "adv-qf-syrinx",
+   "adversarial_kind": "absent",
+   "question": "What organ do birds use to produce song?",
+   "why": "ornithology; the same question the bird corpus answers, so it tests topic separation directly"
+  },
+  {
+   "id": "adv-qf-ticker-close",
+   "adversarial_kind": "near-miss",
+   "question": "What was the closing price of AAPL yesterday?",
+   "why": "asks for live market data; the corpus contains methods, not quotes"
+  },
+  {
+   "id": "qf-mean-reversion",
+   "adversarial_kind": "near-miss",
+   "question": "Which behaviour describes prices being pulled back toward a long-run level?",
+   "why": "every occurrence is mean reversion of temperature in a weather-derivatives paper, one of them a reference entry, and none is about prices; read 2026-09-01"
+  },
+  {
+   "id": "qf-momentum",
+   "adversarial_kind": "near-miss",
+   "question": "Which effect describes past winners continuing to outperform?",
+   "why": "30 occurrences across seven documents, all factor names such as \"12-month momentum\" or reference entries, and none states that past winners continue to outperform; read 2026-09-01"
+  }
+ ]
 }

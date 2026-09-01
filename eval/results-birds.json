@@ -1,9 +1,10 @@
 {
   "corpus": {
+    "ensemble": null,
     "chunks": 864,
     "documents": 45,
-    "answerable_cases": 26,
-    "adversarial_cases": 6,
+    "answerable_cases": 25,
+    "adversarial_cases": 7,
     "k": 5,
     "candidate_k": 20,
     "golden": "eval\\golden-birds.json",
@@ -12,88 +13,88 @@
   },
   "candidate_pool": {
     "dense": {
-      "hit_rate": 0.962,
-      "mrr": 0.6,
-      "ndcg": 0.639,
-      "src_recall": 0.859
+      "hit_rate": 1.0,
+      "mrr": 0.624,
+      "ndcg": 0.664,
+      "src_recall": 0.894
     },
     "rrf": {
-      "hit_rate": 0.885,
-      "mrr": 0.576,
-      "ndcg": 0.616,
-      "src_recall": 0.841
+      "hit_rate": 0.92,
+      "mrr": 0.599,
+      "ndcg": 0.641,
+      "src_recall": 0.875
     },
     "weighted a=0.3": {
-      "hit_rate": 0.885,
-      "mrr": 0.447,
-      "ndcg": 0.541,
-      "src_recall": 0.846
+      "hit_rate": 0.92,
+      "mrr": 0.465,
+      "ndcg": 0.562,
+      "src_recall": 0.88
     },
     "weighted a=0.5": {
-      "hit_rate": 0.923,
-      "mrr": 0.563,
-      "ndcg": 0.621,
-      "src_recall": 0.854
+      "hit_rate": 0.96,
+      "mrr": 0.586,
+      "ndcg": 0.646,
+      "src_recall": 0.888
     },
     "weighted a=0.7": {
-      "hit_rate": 0.962,
-      "mrr": 0.539,
-      "ndcg": 0.635,
-      "src_recall": 0.883
+      "hit_rate": 1.0,
+      "mrr": 0.56,
+      "ndcg": 0.66,
+      "src_recall": 0.918
     }
   },
   "end_to_end": {
     "dense, no rerank": {
-      "hit_rate": 0.769,
-      "mrr": 0.58,
-      "ndcg": 0.609,
-      "src_recall": 0.656
+      "hit_rate": 0.8,
+      "mrr": 0.603,
+      "ndcg": 0.634,
+      "src_recall": 0.682
     },
     "dense + rerank": {
-      "hit_rate": 0.846,
-      "mrr": 0.601,
-      "ndcg": 0.655,
-      "src_recall": 0.717
+      "hit_rate": 0.88,
+      "mrr": 0.625,
+      "ndcg": 0.681,
+      "src_recall": 0.745
     },
     "weighted + rerank": {
-      "hit_rate": 0.885,
-      "mrr": 0.583,
-      "ndcg": 0.654,
-      "src_recall": 0.742
+      "hit_rate": 0.92,
+      "mrr": 0.607,
+      "ndcg": 0.681,
+      "src_recall": 0.772
     },
     "rrf + rerank": {
-      "hit_rate": 0.846,
-      "mrr": 0.612,
-      "ndcg": 0.667,
-      "src_recall": 0.742
+      "hit_rate": 0.88,
+      "mrr": 0.636,
+      "ndcg": 0.694,
+      "src_recall": 0.772
     },
     "+ diversity 2/src": {
-      "hit_rate": 0.846,
-      "mrr": 0.613,
-      "ndcg": 0.671,
-      "src_recall": 0.762
+      "hit_rate": 0.88,
+      "mrr": 0.638,
+      "ndcg": 0.698,
+      "src_recall": 0.792
     },
     "+ diversity 1/src": {
-      "hit_rate": 0.731,
-      "mrr": 0.59,
-      "ndcg": 0.623,
-      "src_recall": 0.774
+      "hit_rate": 0.76,
+      "mrr": 0.613,
+      "ndcg": 0.648,
+      "src_recall": 0.805
     }
   },
   "expansion": {
     "none (chunks)": {
-      "context_recall": 0.731,
+      "context_recall": 0.76,
       "tokens_per_query": 955,
       "blocks_per_query": 5.0
     },
     "window +/-1": {
-      "context_recall": 0.808,
-      "tokens_per_query": 1925,
+      "context_recall": 0.84,
+      "tokens_per_query": 1931,
       "blocks_per_query": 4.8
     },
     "page": {
-      "context_recall": 0.846,
-      "tokens_per_query": 3056,
+      "context_recall": 0.88,
+      "tokens_per_query": 3046,
       "blocks_per_query": 4.4
     }
   },
@@ -111,62 +112,62 @@
       },
       {
         "threshold": -6,
-        "caught": 5,
-        "false_abstain": 3
+        "caught": 6,
+        "false_abstain": 2
       },
       {
         "threshold": -5,
-        "caught": 5,
-        "false_abstain": 3
+        "caught": 6,
+        "false_abstain": 2
       },
       {
         "threshold": -4,
-        "caught": 5,
-        "false_abstain": 4
+        "caught": 6,
+        "false_abstain": 3
       },
       {
         "threshold": -3,
-        "caught": 5,
-        "false_abstain": 4
+        "caught": 6,
+        "false_abstain": 3
       },
       {
         "threshold": -2,
-        "caught": 5,
-        "false_abstain": 6
+        "caught": 6,
+        "false_abstain": 5
       },
       {
         "threshold": -1,
-        "caught": 5,
-        "false_abstain": 7
+        "caught": 6,
+        "false_abstain": 6
       },
       {
         "threshold": 0,
-        "caught": 5,
-        "false_abstain": 10
+        "caught": 6,
+        "false_abstain": 9
       },
       {
         "threshold": 1,
-        "caught": 5,
-        "false_abstain": 12
+        "caught": 6,
+        "false_abstain": 11
       },
       {
         "threshold": 2,
-        "caught": 6,
-        "false_abstain": 16
+        "caught": 7,
+        "false_abstain": 15
       }
     ],
     "shipped_threshold": -5.5,
     "best_net_threshold": -6,
-    "n_answerable": 26,
-    "n_adversarial": 6,
-    "answerable_median": 1.1513817310333252,
-    "adversarial_median": -8.978403091430664
+    "n_answerable": 25,
+    "n_adversarial": 7,
+    "answerable_median": 1.205580711364746,
+    "adversarial_median": -7.979213714599609
   },
   "generated_by": "src/evaluate.py",
   "inputs": {
     "golden": {
       "path": "eval\\golden-birds.json",
-      "digest": "sha256:6da452b97d041254",
+      "digest": "sha256:5f76daac85c40863",
       "cases": 32
     },
     "index": {

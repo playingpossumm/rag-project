@@ -1,120 +1,15 @@
 {
- "llm": {
-  "label": "ML & NLP papers",
-  "blend": 0.0,
-  "n": 67,
-  "fusions": {
-   "dense": {
-    "hit_rate": 0.7761,
-    "mrr": 0.6846,
-    "ndcg": 0.6965,
-    "src_recall": 0.7711,
-    "missed": [
-     "adam-bias",
-     "bert-glue",
-     "colbert-msmarco",
-     "cot-prompt",
-     "dropout-rate",
-     "gpt3-fewshot",
-     "gpt3-params",
-     "label-smooth",
-     "lora-frozen",
-     "lora-latency",
-     "p100",
-     "roberta-nsp-drop",
-     "seq2seq-reverse",
-     "t5-text2text",
-     "wmt14"
-    ]
-   },
-   "rrf": {
-    "hit_rate": 0.8507,
-    "mrr": 0.7381,
-    "ndcg": 0.7539,
-    "src_recall": 0.76,
-    "missed": [
-     "adam-bias",
-     "bert-glue",
-     "bert-wordpiece",
-     "dropout-rate",
-     "gpt3-fewshot",
-     "gpt3-params",
-     "lora-latency",
-     "roberta-nsp-drop",
-     "t5-text2text",
-     "wmt14"
-    ]
-   },
-   "weighted a=0.3": {
-    "hit_rate": 0.8358,
-    "mrr": 0.7318,
-    "ndcg": 0.7466,
-    "src_recall": 0.7644,
-    "missed": [
-     "adam-bias",
-     "bert-glue",
-     "bert-wordpiece",
-     "dropout-rate",
-     "gpt3-fewshot",
-     "gpt3-params",
-     "lora-frozen",
-     "lora-latency",
-     "roberta-nsp-drop",
-     "t5-text2text",
-     "wmt14"
-    ]
-   },
-   "weighted a=0.5": {
-    "hit_rate": 0.8507,
-    "mrr": 0.7348,
-    "ndcg": 0.7524,
-    "src_recall": 0.7644,
-    "missed": [
-     "adam-bias",
-     "bert-glue",
-     "bert-wordpiece",
-     "dropout-rate",
-     "gpt3-fewshot",
-     "gpt3-params",
-     "lora-latency",
-     "roberta-nsp-drop",
-     "t5-text2text",
-     "wmt14"
-    ]
-   },
-   "weighted a=0.7": {
-    "hit_rate": 0.8358,
-    "mrr": 0.7269,
-    "ndcg": 0.7455,
-    "src_recall": 0.7495,
-    "missed": [
-     "adam-bias",
-     "bert-glue",
-     "bert-wordpiece",
-     "colbert-msmarco",
-     "dropout-rate",
-     "gpt3-fewshot",
-     "gpt3-params",
-     "lora-latency",
-     "roberta-nsp-drop",
-     "t5-text2text",
-     "wmt14"
-    ]
-   }
-  }
- },
  "birds": {
   "label": "Ornithology",
   "blend": 0.2,
-  "n": 26,
+  "n": 25,
   "fusions": {
    "dense": {
-    "hit_rate": 0.8077,
-    "mrr": 0.591,
-    "ndcg": 0.6425,
-    "src_recall": 0.7359,
+    "hit_rate": 0.84,
+    "mrr": 0.6147,
+    "ndcg": 0.6682,
+    "src_recall": 0.7653,
     "missed": [
-     "bird-alula",
      "bird-aspect-ratio",
      "bird-dawn-chorus",
      "bird-hollow-bones",
@@ -122,118 +17,46 @@
     ]
    },
    "rrf": {
-    "hit_rate": 0.8462,
-    "mrr": 0.6135,
-    "ndcg": 0.6709,
-    "src_recall": 0.7615,
+    "hit_rate": 0.88,
+    "mrr": 0.638,
+    "ndcg": 0.6978,
+    "src_recall": 0.792,
     "missed": [
-     "bird-alula",
      "bird-dialects",
      "bird-hollow-bones",
      "bird-precocial"
     ]
    },
    "weighted a=0.3": {
-    "hit_rate": 0.8462,
-    "mrr": 0.5654,
-    "ndcg": 0.6403,
-    "src_recall": 0.7538,
+    "hit_rate": 0.88,
+    "mrr": 0.588,
+    "ndcg": 0.6659,
+    "src_recall": 0.784,
     "missed": [
-     "bird-alula",
      "bird-dialects",
      "bird-hollow-bones",
      "bird-precocial"
     ]
    },
    "weighted a=0.5": {
-    "hit_rate": 0.8846,
-    "mrr": 0.5872,
-    "ndcg": 0.6616,
-    "src_recall": 0.7615,
+    "hit_rate": 0.92,
+    "mrr": 0.6107,
+    "ndcg": 0.6881,
+    "src_recall": 0.792,
     "missed": [
-     "bird-alula",
      "bird-hollow-bones",
      "bird-precocial"
     ]
    },
    "weighted a=0.7": {
-    "hit_rate": 0.8462,
-    "mrr": 0.5808,
-    "ndcg": 0.6508,
-    "src_recall": 0.7359,
+    "hit_rate": 0.88,
+    "mrr": 0.604,
+    "ndcg": 0.6768,
+    "src_recall": 0.7653,
     "missed": [
-     "bird-alula",
      "bird-furcula",
      "bird-hollow-bones",
      "bird-precocial"
-    ]
-   }
-  }
- },
- "quant": {
-  "label": "Quantitative finance",
-  "blend": 0.0,
-  "n": 35,
-  "fusions": {
-   "dense": {
-    "hit_rate": 0.8571,
-    "mrr": 0.681,
-    "ndcg": 0.7084,
-    "src_recall": 0.7852,
-    "missed": [
-     "qf-cvar-interval",
-     "qf-max-drawdown",
-     "qf-mean-reversion",
-     "qf-momentum",
-     "qf-verifiability-gap"
-    ]
-   },
-   "rrf": {
-    "hit_rate": 0.8857,
-    "mrr": 0.7143,
-    "ndcg": 0.749,
-    "src_recall": 0.741,
-    "missed": [
-     "qf-aml-fusion",
-     "qf-mean-reversion",
-     "qf-momentum",
-     "qf-sparse-params"
-    ]
-   },
-   "weighted a=0.3": {
-    "hit_rate": 0.8857,
-    "mrr": 0.7071,
-    "ndcg": 0.7429,
-    "src_recall": 0.7467,
-    "missed": [
-     "qf-aml-fusion",
-     "qf-mean-reversion",
-     "qf-momentum",
-     "qf-sparse-params"
-    ]
-   },
-   "weighted a=0.5": {
-    "hit_rate": 0.8857,
-    "mrr": 0.7143,
-    "ndcg": 0.7505,
-    "src_recall": 0.741,
-    "missed": [
-     "qf-aml-fusion",
-     "qf-mean-reversion",
-     "qf-momentum",
-     "qf-sparse-params"
-    ]
-   },
-   "weighted a=0.7": {
-    "hit_rate": 0.8857,
-    "mrr": 0.7271,
-    "ndcg": 0.7546,
-    "src_recall": 0.7467,
-    "missed": [
-     "qf-aml-fusion",
-     "qf-mean-reversion",
-     "qf-momentum",
-     "qf-sparse-params"
     ]
    }
   }

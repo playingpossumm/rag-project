@@ -14,9 +14,9 @@ is a snapshot.
 
 | | documents | passages | any-hit@5 |
 |---|---|---|---|
-| ML & NLP papers | 36 | 5,459 | 0.851 |
-| Ornithology | 45 | 864 | 0.846 |
-| Quantitative finance | 35 | 6,184 | 0.886 |
+| ML & NLP papers | 36 | 5,459 | 0.910 |
+| Ornithology | 45 | 864 | 0.880 |
+| Quantitative finance | 35 | 6,184 | 0.939 |
 
 **424 checks**, none of which need a network or an API key:
 
@@ -83,17 +83,18 @@ A stronger model may do better, and the harness is in place to find out:
 `RAG_GENERATOR=ollama python src/sweep_decompose.py --corpus llm`. What is no
 longer available is citing decomposition as the answer without running it.
 
-**3. The frontier is five questions, not twelve.** Reading the twelve
-individually on 2026-09-01 split them three ways. Five are genuine retrieval
-failures and nothing reaches them. Four are answered by the pipeline and scored
-wrong, because a derived label marks passages containing the answer string
-rather than passages that answer, and `t5-text2text` has four of its six gold
-passages in other papers' bibliographies. Three are questions the documents do
-not answer, where the term appears as a factor name or in a list of anatomical
-features and never as an explanation. Correcting the labels on the middle four
-and moving the last three to the adversarial set would raise the published
-figures, so it is a decision for the owner rather than a fix. The full reading
-is in `docs/engineering-log.md` under that date.
+**3. The frontier is five questions.** It was twelve until they were read one
+at a time on 2026-09-01. Four were answered by the pipeline and scored wrong,
+because a derived label marks passages containing the answer string rather than
+passages that answer, and three were questions the documents do not answer.
+Those seven were corrected and reclassified the same day, and
+`src/failure_overlap.py`, re-derived from six configurations on each corpus,
+returns the same five that reading identified: `gpt3-params`,
+`roberta-nsp-drop` and `wmt14` on the papers, `bird-hollow-bones` and
+`bird-precocial` on the birds, and none on quant. Nothing reaches these five.
+`wmt14` is the sharpest, returning English-to-French passages for a question
+about English-to-German, so the single word that decides the answer is the one
+ignored.
 
 **4. The hero diagram.** All seven stages are drawn as the same sheet-of-cells,
 which is wrong in one specific place: dense retrieval and BM25 have identical
@@ -155,7 +156,9 @@ and all of them are in `docs/engineering-log.md` with the measurements.
 - **When a corpus scores badly, read the failing questions first.** The
   quantitative-finance corpus looked like a retrieval weakness at 0.543 and was
   entirely a golden-set problem: textbook definitions asked of research papers.
-  0.886 after rewriting the questions, retrieval untouched.
+  0.886 after rewriting the questions, retrieval untouched, and 0.939 after
+  two questions the corpus does not answer moved to the adversarial half on
+  2026-09-01.
 - **A measurement that returns zero deserves as much suspicion as a surprise**,
   and so does one that returns 100%. Two zeros here came from comparing a dict
   locator against its serialised string; a check reporting "67 of 67 cases

@@ -7,94 +7,94 @@
     "adversarial_cases": 17,
     "k": 5,
     "candidate_k": 16,
-    "golden": "eval\\golden_set.json",
+    "golden": "C:\\Users\\owner\\Desktop\\rag-project\\eval\\golden_set.json",
     "name": "llm",
     "rerank_blend": 0.0
   },
   "candidate_pool": {
     "dense": {
       "hit_rate": 0.866,
-      "mrr": 0.588,
-      "ndcg": 0.644,
-      "src_recall": 0.794
+      "mrr": 0.613,
+      "ndcg": 0.659,
+      "src_recall": 0.808
     },
     "rrf": {
-      "hit_rate": 0.91,
-      "mrr": 0.691,
-      "ndcg": 0.713,
-      "src_recall": 0.796
+      "hit_rate": 0.955,
+      "mrr": 0.737,
+      "ndcg": 0.754,
+      "src_recall": 0.809
     },
     "weighted a=0.3": {
-      "hit_rate": 0.925,
-      "mrr": 0.718,
-      "ndcg": 0.733,
-      "src_recall": 0.8
+      "hit_rate": 0.97,
+      "mrr": 0.768,
+      "ndcg": 0.782,
+      "src_recall": 0.811
     },
     "weighted a=0.5": {
-      "hit_rate": 0.925,
-      "mrr": 0.689,
-      "ndcg": 0.72,
-      "src_recall": 0.794
+      "hit_rate": 0.955,
+      "mrr": 0.737,
+      "ndcg": 0.759,
+      "src_recall": 0.807
     },
     "weighted a=0.7": {
-      "hit_rate": 0.925,
-      "mrr": 0.649,
-      "ndcg": 0.691,
-      "src_recall": 0.784
+      "hit_rate": 0.955,
+      "mrr": 0.692,
+      "ndcg": 0.721,
+      "src_recall": 0.798
     }
   },
   "end_to_end": {
     "dense, no rerank": {
-      "hit_rate": 0.791,
-      "mrr": 0.581,
-      "ndcg": 0.629,
-      "src_recall": 0.664
+      "hit_rate": 0.821,
+      "mrr": 0.607,
+      "ndcg": 0.657,
+      "src_recall": 0.678
     },
     "dense + rerank": {
-      "hit_rate": 0.806,
-      "mrr": 0.666,
-      "ndcg": 0.688,
-      "src_recall": 0.688
+      "hit_rate": 0.836,
+      "mrr": 0.7,
+      "ndcg": 0.72,
+      "src_recall": 0.712
     },
     "weighted + rerank": {
-      "hit_rate": 0.866,
-      "mrr": 0.743,
-      "ndcg": 0.756,
-      "src_recall": 0.706
+      "hit_rate": 0.925,
+      "mrr": 0.788,
+      "ndcg": 0.806,
+      "src_recall": 0.73
     },
     "rrf + rerank": {
-      "hit_rate": 0.866,
-      "mrr": 0.743,
-      "ndcg": 0.758,
-      "src_recall": 0.721
+      "hit_rate": 0.925,
+      "mrr": 0.788,
+      "ndcg": 0.808,
+      "src_recall": 0.745
     },
     "+ diversity 2/src": {
-      "hit_rate": 0.851,
-      "mrr": 0.739,
-      "ndcg": 0.755,
-      "src_recall": 0.761
+      "hit_rate": 0.91,
+      "mrr": 0.784,
+      "ndcg": 0.804,
+      "src_recall": 0.785
     },
     "+ diversity 1/src": {
-      "hit_rate": 0.791,
-      "mrr": 0.715,
-      "ndcg": 0.727,
-      "src_recall": 0.795
+      "hit_rate": 0.851,
+      "mrr": 0.76,
+      "ndcg": 0.776,
+      "src_recall": 0.816
     }
   },
   "expansion": {
     "none (chunks)": {
-      "context_recall": 0.761,
-      "tokens_per_query": 990,
+      "context_recall": 0.821,
+      "tokens_per_query": 989,
       "blocks_per_query": 5.0
     },
     "window +/-1": {
-      "context_recall": 0.821,
-      "tokens_per_query": 2340,
+      "context_recall": 0.881,
+      "tokens_per_query": 2338,
       "blocks_per_query": 5.0
     },
     "page": {
-      "context_recall": 0.851,
-      "tokens_per_query": 4660,
+      "context_recall": 0.91,
+      "tokens_per_query": 4646,
       "blocks_per_query": 4.4
     }
   },
@@ -160,14 +160,14 @@
     "best_net_threshold": 2,
     "n_answerable": 67,
     "n_adversarial": 17,
-    "answerable_median": 4.934403419494629,
+    "answerable_median": 5.252387046813965,
     "adversarial_median": -0.17716829478740692
   },
   "generated_by": "src/evaluate.py",
   "inputs": {
     "golden": {
-      "path": "eval\\golden_set.json",
-      "digest": "sha256:774df32543b9232f",
+      "path": "eval/golden_set.json",
+      "digest": "sha256:864b1e9157a3d5a2",
       "cases": 84
     },
     "index": {

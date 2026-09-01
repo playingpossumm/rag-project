@@ -9,29 +9,6 @@
   "weighted"
  ],
  "note": "Answerable cases that fail under every configuration listed above, and adversarial cases answered under every gated one. Run with src/hard_cases.py.",
- "structural": [
-  {
-   "id": "qf-mean-reversion",
-   "kind": "fact",
-   "question": "Which behaviour describes prices being pulled back toward a long-run level?",
-   "gold_sources": [
-    "pricing_temperature_index_insurance_under_long_memory_and.pdf"
-   ]
-  },
-  {
-   "id": "qf-momentum",
-   "kind": "multi",
-   "question": "Which effect describes past winners continuing to outperform?",
-   "gold_sources": [
-    "buy_the_rumor_sell_the_news_when_is_news_priced_in.pdf",
-    "dependence_informed_sparse_neural_architecture_for_stock_r.pdf",
-    "entropic_value_at_risk_portfolio_optimization_for_tempered.pdf",
-    "large_language_model_driven_small_capitalization_trading_i.pdf",
-    "photonic_quantum_computing_vs_classical_solvers_in_constra.pdf",
-    "the_market_s_conditioning_representation_equilibrium_crowd.pdf",
-    "the_price_of_permission_classification_uncertainty_in_cons.pdf"
-   ]
-  }
- ],
+ "structural": [],
  "slips_the_gate": []
 }

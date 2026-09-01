@@ -49,7 +49,7 @@ end on the shipped configuration:
 **And the reason it loses is worth more than the filter.** An earlier draft of
 this docstring claimed no golden case names a title block as its gold passage.
 That is true only because this golden set has no passage-level labels at all.
-At the level the labels are written and scored, the page, **43 of the 102
+At the level the labels are written and scored, the page, **43 of the 100
 answerable cases in the two corpora that have title pages have a title block on
 one of their gold pages, and 17 of those have the answer string inside the title
 itself**. `bn-covariate` wants

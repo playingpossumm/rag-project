@@ -11,31 +11,6 @@
  "note": "Answerable cases that fail under every configuration listed above, and adversarial cases answered under every gated one. Run with src/hard_cases.py.",
  "structural": [
   {
-   "id": "adam-bias",
-   "kind": "fact",
-   "question": "How does the optimizer correct for bias in its moment estimates?",
-   "gold_sources": [
-    "adam_optimizer.pdf"
-   ]
-  },
-  {
-   "id": "dropout-rate",
-   "kind": "multi",
-   "question": "What dropout rate was applied for regularization?",
-   "gold_sources": [
-    "attention_is_all_you_need.pdf",
-    "dense_passage_retrieval.pdf"
-   ]
-  },
-  {
-   "id": "gpt3-fewshot",
-   "kind": "cross-doc",
-   "question": "How does task performance change with the number of examples in the prompt?",
-   "gold_sources": [
-    "gpt3.pdf"
-   ]
-  },
-  {
    "id": "gpt3-params",
    "kind": "cross-doc",
    "question": "How many parameters does the largest autoregressive model have?",
@@ -50,18 +25,6 @@
    "question": "What pre-training objective was found unnecessary and removed?",
    "gold_sources": [
     "roberta.pdf"
-   ]
-  },
-  {
-   "id": "t5-text2text",
-   "kind": "cross-doc",
-   "question": "How are all NLP tasks cast into a single format?",
-   "gold_sources": [
-    "colbert.pdf",
-    "dense_passage_retrieval.pdf",
-    "gpt3.pdf",
-    "rag.pdf",
-    "t5.pdf"
    ]
   },
   {

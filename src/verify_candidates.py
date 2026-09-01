@@ -18,7 +18,7 @@ STORE = Path(__file__).parent.parent / "vector_store" / "metadata.json"
 # (id, question, answer_string, kind)
 CANDIDATES = [
     # ---- adam ----
-    ("adam-bias", "How does the optimizer correct for bias in its moment estimates?", "bias-correction", "fact"),
+    ("adam-bias", "How does the optimizer correct for bias in its moment estimates?", "correct the initialization bias", "fact"),
     ("adam-adamax", "What variant based on the infinity norm is proposed?", "AdaMax", "fact"),
     # ---- bahdanau ----
     ("bahdanau-fixed", "What bottleneck does encoding a sentence into a fixed-length vector create?", "fixed-length vector", "fact"),
@@ -45,7 +45,7 @@ CANDIDATES = [
     # ---- GPT-3 ----
     ("gpt3-params", "How many parameters does the largest autoregressive model have?", "175 billion", "cross-doc"),
     ("gpt3-icl", "What is in-context learning without gradient updates?", "in-context learning", "cross-doc"),
-    ("gpt3-fewshot", "How does task performance change with the number of examples in the prompt?", "few-shot", "cross-doc"),
+    ("gpt3-fewshot", "How does task performance change with the number of examples in the prompt?", "as a function of the number of in-context examples", "fact"),
     # ---- layer norm ----
     ("ln-vs-bn", "Why is layer normalization preferred over batch normalization for recurrent networks?", "recurrent neural networks", "multi"),
     ("ln-stats", "How are normalization statistics computed across features rather than examples?", "layer normalization", "cross-doc"),
@@ -70,7 +70,7 @@ CANDIDATES = [
     ("seq2seq-lstm", "What recurrent architecture maps sequences to a fixed-dimensional vector?", "LSTM", "multi"),
     # ---- T5 ----
     ("t5-c4", "What cleaned web-scraped corpus is used for pre-training?", "Colossal Clean Crawled Corpus", "fact"),
-    ("t5-text2text", "How are all NLP tasks cast into a single format?", "text-to-text", "cross-doc"),
+    ("t5-text2text", "How are all NLP tasks cast into a single format?", "cast all of the tasks", "fact"),
     ("t5-span", "What corruption objective masks contiguous spans of tokens?", "span", "multi"),
     # ---- ViT ----
     ("vit-jft", "Which large private dataset is used for pre-training?", "JFT", "fact"),

@@ -50,13 +50,13 @@ it.
 |---|---|---|---|
 | documents | 36 PDF | 45 mixed | 35 PDF |
 | passages | 5,459 | 864 | 6,184 |
-| cases | 67 + 17 adv | 26 + 6 adv | 35 + 6 adv |
-| any-hit@5 | **0.851** | **0.846** | **0.886** |
-| MRR | 0.739 | 0.613 | 0.779 |
-| source recall | 0.761 | 0.762 | 0.769 |
+| cases | 67 + 17 adv | 25 + 7 adv | 33 + 8 adv |
+| any-hit@5 | **0.910** | **0.880** | **0.939** |
+| MRR | 0.784 | 0.638 | 0.826 |
+| source recall | 0.785 | 0.792 | 0.816 |
 | abstention threshold | 0.0 | −5.5 | −4.0 |
 | rerank blend | 0.0 | 0.20 | 0.0 |
-| answerable median | +4.93 | +1.15 | +2.72 |
+| answerable median | +5.25 | +1.21 | +2.81 |
 
 Shipped config throughout: RRF fusion, cross-encoder rerank, diversity cap
 2/source, window±1 context expansion.
@@ -68,13 +68,13 @@ one configuration everywhere, and `src/uniform_baseline.py` measures it:
 
 | under the untuned defaults | any-hit | MRR | NDCG | src recall |
 |---|---|---|---|---|
-| ML & NLP papers | 0.851 | 0.738 | 0.754 | 0.760 |
-| Ornithology | 0.808 | 0.570 | 0.635 | 0.761 |
-| Quantitative finance | 0.886 | 0.714 | 0.749 | 0.741 |
+| ML & NLP papers | 0.910 | 0.783 | 0.802 | 0.784 |
+| Ornithology | 0.840 | 0.593 | 0.660 | 0.792 |
+| Quantitative finance | 0.939 | 0.758 | 0.794 | 0.786 |
 
 **Quote this table for the generalisation claim and the one above for the
 per-corpus one.** Across three corpora sharing no format, subject or provenance,
-one untuned configuration spans 0.078 of any-hit. The corpus the pipeline was
+one untuned configuration spans 0.099 of any-hit. The corpus the pipeline was
 developed on gains +0.000 any-hit from its own tuning, so the tuning is not
 holding up three special cases.
 
@@ -97,26 +97,30 @@ ML pipeline ladder, each row adding one stage:
 
 | pipeline | any-hit | MRR | NDCG | src recall |
 |---|---|---|---|---|
-| dense, no rerank *(naive RAG)* | 0.791 | 0.581 | 0.629 | 0.664 |
-| + cross-encoder rerank | 0.806 | 0.666 | 0.688 | 0.688 |
-| + RRF hybrid fusion | 0.866 | 0.743 | 0.758 | 0.721 |
-| **+ diversity cap 2/src** *(shipped)* | **0.851** | 0.739 | 0.755 | **0.761** |
-| + diversity cap 1/src | 0.791 | 0.715 | 0.727 | 0.795 |
+| dense, no rerank *(naive RAG)* | 0.821 | 0.607 | 0.657 | 0.678 |
+| + cross-encoder rerank | 0.836 | 0.700 | 0.720 | 0.712 |
+| + RRF hybrid fusion | 0.925 | 0.788 | 0.808 | 0.745 |
+| **+ diversity cap 2/src** *(shipped)* | **0.910** | 0.784 | 0.804 | **0.785** |
+| + diversity cap 1/src | 0.851 | 0.760 | 0.776 | 0.816 |
 
-Context expansion (ML): none 0.746 recall @ 998 tok · **window±1 0.806 @ 2,355
-(default)** · page 0.851 @ 4,752. Page buys 4.5 points for twice the tokens.
+Context expansion (ML): none 0.821 recall @ 989 tok · **window±1 0.881 @ 2,338
+(default)** · page 0.910 @ 4,646. Page buys 2.9 points for twice the tokens.
 
 Fusion is corpus-dependent too, and the obvious reading of that was wrong.
 On the **candidate pool**, RRF beats dense-only on ML and quant and loses on
-birds, at dense 0.962 against RRF 0.885. That reading said the bird corpus
-wanted more dense weighting. Measured **end to end at the served configuration**
-(`src/sweep_fusion.py`, 2026-08-27) it reverses:
+birds, at dense 1.000 against RRF 0.920.
+That reading said the bird corpus wanted more dense weighting. Measured **end to
+end at the served configuration** (`src/sweep_fusion.py`, re-run 2026-09-01
+against the corrected golden set) it reverses:
 
 | birds | pool any-hit | shipped-pipeline any-hit |
 |---|---|---|
-| dense only | **0.962** | **0.808** |
-| RRF *(shipped)* | 0.885 | **0.846** |
-| weighted a=0.5 | 0.923 | 0.885 |
+| dense only | **1.000** | **0.840** |
+| RRF *(shipped)* | 0.920 | **0.880** |
+| weighted a=0.5 | 0.960 | 0.920 |
+
+Dense now reaches every answerable question in the pool and still produces the
+worst finished answer of the five.
 
 The first stage that finds the answer most often produces the worst final
 answer. A pool is not just a set of passages, it is an *ordering* handed to the
@@ -124,9 +128,9 @@ cross-encoder, and dense hands over one the reranker cannot exploit. That is
 the same weakness the rerank blend exists to hedge against. **Quote the end-to-end row,
 never the pool row, when arguing about fusion.**
 
-`weighted a=0.5` does win a question on birds (`bird-dialects`, 0.846 → 0.885)
-and costs MRR (0.614 → 0.587) and NDCG. That is the same trade the rerank blend
-was judged on, and this corpus's own note already settles how to read it: on 26
+`weighted a=0.5` does win a question on birds (`bird-dialects`, 0.880 → 0.920)
+and costs MRR (0.638 → 0.611) and NDCG. That is the same trade the rerank blend
+was judged on, and this corpus's own note already settles how to read it: on 25
 cases an any-hit gain of one question is thinner evidence than MRR, so **not
 shipped**. On quant, `weighted a=0.7` is weakly dominant: MRR 0.714 → 0.727,
 NDCG +0.006, source recall +0.006, any-hit unchanged. No case changes hands, so
@@ -546,8 +550,9 @@ instead.
 ### Open problems, added 2026-08-26
 
 **The cross-encoder is the weakest stage, and only partly addressed.** On the
-bird corpus the candidate pool contains the answer 96.2% of the time and the
-finished pipeline returns it 84.6% of the time. Reranking used to discard the
+bird corpus the shipped candidate pool contains the answer 92.0% of the
+time and the finished pipeline returns it 88.0% of the time, and a dense-only
+pool reaches 100% while its pipeline returns the least of the five fusions. Reranking used to discard the
 first stage's ordering outright; it now keeps 20% of it on that corpus, which
 recovered a question and four points of MRR. What remains is the model itself:
 `ms-marco-MiniLM-L-6-v2` is weak on questions that *describe* a term rather
@@ -572,7 +577,7 @@ covariate shift", and lists `batch_normalization.pdf` page 1 among its gold
 pages. The paper's title is "Batch Normalization: Accelerating Deep Network
 Training by Reducing Internal Covariate Shift", and it sits on page 1. So the
 title block is a gold page and contains the answer string, and the measurement
-scores it as a correct answer although it answers nothing. **43 of the 102
+scores it as a correct answer although it answers nothing. **43 of the 100
 answerable cases in the two corpora that have title pages have a title block on
 a gold page, and 17 have the answer string in the title itself.** The birds are
 Wikipedia articles and have no title pages, which is why they are outside that
@@ -780,27 +785,30 @@ limitation.
    earlier account is left below the corrected one because it was quoted for
    five days and the correction is the more useful half.
 
-   - **Five are genuine retrieval failures.** `wmt14` returns
-     English-to-French passages for an English-to-German question,
-     `gpt3-params` asks for the largest autoregressive model and matches every
-     discussion of model size, `roberta-nsp-drop` never returns `roberta.pdf`
-     at all, `bird-precocial` returns passages about hatching that never use
-     the word, and `bird-hollow-bones` returns the right document's Overview
-     and Axial skeleton sections and misses its Skeletal system section.
-     Nothing currently reaches these.
-   - **Four are answered and scored wrong**, because a derived label marks
-     every passage containing the answer string rather than every passage that
-     answers. `adam-bias` returns "we therefore divide by this term to correct
-     the initialization bias" one page from its gold pages, and
-     `t5-text2text` has four of its six gold passages in other papers'
-     bibliographies, since "unified text-to-text" is part of the T5 paper's
-     title. Correcting these labels would raise the published figures, so it
-     is a decision rather than a fix.
-   - **Three are questions the documents do not answer.** `bird-alula`,
-     `qf-mean-reversion` and `qf-momentum` name terms the corpora use without
-     explaining, as a factor name or in a list of anatomical features, and the
-     derived label makes them look answerable. They belong with the
-     adversarial cases.
+   - **Five are genuine retrieval failures, and they are all that remain.**
+     `wmt14` returns English-to-French passages for an English-to-German
+     question, `gpt3-params` asks for the largest autoregressive model and
+     matches every discussion of model size, `roberta-nsp-drop` never returns
+     `roberta.pdf` at all, `bird-precocial` returns passages about hatching
+     that never use the word, and `bird-hollow-bones` returns the right
+     document's Overview and Axial skeleton sections and misses its Skeletal
+     system section. Nothing currently reaches these.
+   - **Four were answered and scored wrong, and were corrected 2026-09-01**,
+     because a derived label marks every passage containing the answer string
+     rather than every passage that answers. `adam-bias` returned "we therefore
+     divide by this term to correct the initialization bias" one page from its
+     gold pages, and `t5-text2text` had four of its six gold passages in other
+     papers' bibliographies, since "unified text-to-text" is part of the T5
+     paper's title.
+   - **Three were questions the documents do not answer**, and moved to the
+     adversarial half the same day. `bird-alula`, `qf-mean-reversion` and
+     `qf-momentum` name terms the corpora use without explaining, as a factor
+     name or in a list of anatomical features. The gate already refused all
+     three at their shipped thresholds.
+
+   `src/failure_overlap.py`, re-derived from six configurations on each corpus
+   after the corrections, returns exactly the five above, which is the harness
+   agreeing with the reading rather than repeating it.
 
    The account this replaces, written 2026-08-27: the seven on the ML papers
    were cross-document confusion, where the topic matches a dozen documents

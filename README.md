@@ -17,10 +17,10 @@ ones that were reverted.
 
 ```
                        any-hit@5    MRR    NDCG   source recall
-  naive RAG                0.791  0.581   0.629           0.664
-  + cross-encoder rerank   0.806  0.666   0.688           0.688
-  + hybrid BM25 fusion     0.866  0.743   0.758           0.721
-  + diversity cap (2/src)  0.851  0.739   0.755           0.761
+  naive RAG                0.821  0.607   0.657           0.678
+  + cross-encoder rerank   0.836  0.700   0.720           0.712
+  + hybrid BM25 fusion     0.925  0.788   0.808           0.745
+  + diversity cap (2/src)  0.910  0.784   0.804           0.785
 ```
 
 36 arXiv ML/NLP papers, 5,459 passages, and 84 labelled cases: 67 answerable
@@ -156,7 +156,7 @@ three findings that had already been written up as results:
 
 | claim, on 23 cases | on the full set |
 |---|---|
-| The diversity cap is **free** — no loss to ranking | It **trades**: +3.1 source recall for −1.6 any-hit |
+| The diversity cap is **free** — no loss to ranking | It **trades**: +4.0 source recall for −1.5 any-hit |
 | Window expansion is **strictly dominated** by page expansion | Window reaches 0.833 context recall for **half the tokens** (2,371 vs 4,828) |
 | Reranking improves hit rate | It improves **MRR only** (0.601→0.710); any-hit is flat at 0.788 |
 
@@ -389,21 +389,24 @@ parameters had to be re-derived when the corpus changed, and one conclusion
 reversed outright. Pointing this at different documents means re-running the
 harness.
 
-- **Twelve questions fail under every pipeline configuration, and only five of
-  them are retrieval failures.** Read one at a time on 2026-09-01, they are
-  three problems rather than the two this section claimed. Four are cases the
-  pipeline answers and the label scores wrong, because a label marks every
-  passage containing its answer string rather than every passage that answers.
-  `t5-text2text` is the clearest: the string "unified text-to-text" is part of
-  the T5 paper's title, so four of its six gold passages are other papers'
-  bibliographies, while the passage that says "we cast all of the tasks we
-  consider into a text-to-text format" is not gold and is what comes back.
-  Three more are questions the documents do not answer at all, where the term
-  appears only as a factor name or in a list of anatomical features, so the
-  derived label makes them look answerable. The remaining five are genuine, and
-  no fix for them is known: query decomposition was measured on 2026-08-31 and
-  reaches none, and pseudo-relevance feedback reaches none either. The full
-  reading is in `docs/engineering-log.md` under 2026-09-01.
+- **Five questions fail under every pipeline configuration**, and no fix for
+  them is known: query decomposition was measured on 2026-08-31 and reaches
+  none, and pseudo-relevance feedback reaches none either. They are
+  `gpt3-params`, `roberta-nsp-drop` and `wmt14` on the papers, and
+  `bird-hollow-bones` and `bird-precocial` on the birds. The finance corpus has
+  none.
+- **That number was twelve until the twelve were read one at a time.** Four were
+  cases the pipeline answers and the label scored wrong, because a derived label
+  marks every passage containing its answer string rather than every passage
+  that answers. `t5-text2text` is the clearest: "unified text-to-text" is part
+  of the T5 paper's title, so four of its six gold passages were other papers'
+  bibliographies, while the passage reading "we cast all of the tasks we consider
+  into a text-to-text format" was not gold and is what comes back. Three more
+  were questions the documents do not answer, where the term appears only as a
+  factor name or in a list of anatomical features. The labels were corrected on
+  2026-09-01 and `src/failure_overlap.py`, re-derived from six configurations
+  per corpus, independently returns the same five. The reading and every number
+  that moved with it are in `docs/engineering-log.md` under that date.
 - **The reranker is the weakest stage and off-the-shelf options are exhausted.**
   Three cross-encoders were compared and int8 quantisation measured; the
   candidates that are faster are worse, and the one that separates best is
@@ -452,9 +455,9 @@ harness.
   corpus reported the opposite direction on two of those three counts, which is
   what a sample that size is worth.
   → [`eval/answer-quality-8b.json`](eval/answer-quality-8b.json)
-- **157 cases across three corpora is still small.** On the 26-case bird set each
-  answerable question is worth ~3.8 points, so a one-question difference looks
-  like a result and is not. Treat small differences as noise: a 23-case set
+- **157 cases across three corpora is still small.** On the 25 answerable bird
+  questions each is worth 4.0 points, so a one-question difference looks like a
+  result and is not. Treat small differences as noise: a 23-case set
   earlier in this project produced three false conclusions (finding 6), and
   assume these are hiding others.
 - **Labels were authored by the same process that built the system.** Mitigated by
@@ -462,7 +465,7 @@ harness.
   (`src/check_golden.py`), not eliminated.
 - **One measured instance of that, and the count it came to.** The labels mark
   correct pages rather than passages, and a paper's title block sits on page 1,
-  so page 1 is a gold page for 43 of the 102 answerable cases in the two corpora
+  so page 1 is a gold page for 43 of the 100 answerable cases in the two corpora
   that have title pages, with the answer string inside the title itself for 17
   of them. `bn-covariate` asks what normalizing layer inputs addresses and its
   paper is titled "... by Reducing Internal Covariate Shift", which the scoring

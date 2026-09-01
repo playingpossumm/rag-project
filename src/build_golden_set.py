@@ -78,8 +78,13 @@ CASES = [
      "β1 = 0.9", "multi"),
     ("relu", "Which activation function is applied between the two linear layers of a feed-forward block?",
      "ReLU", "multi"),
-    ("dropout-rate", "What dropout rate was applied for regularization?",
-     "dropout rate", "multi"),
+    # The gold here was correct and the question was not: many papers state a
+    # dropout rate, so a passage saying "we use a dropout probability of 0.1
+    # everywhere" answered it and scored zero. Made discriminating by
+    # content rather than by naming the paper, which is the rule above.
+    # Corrected 2026-09-01.
+    ("dropout-rate", "Which dropout rate was used for the English-to-French model instead of 0.3?",
+     "Pdrop = 0.1", "fact"),
     ("residual", "How are residual connections and layer normalization applied around each sub-layer?",
      "residual connection", "multi"),
     ("wmt14", "Which translation dataset was used for the English-to-German experiments?",
@@ -111,7 +116,11 @@ CASES = [
     # inside other words, and "span" matched inside "spanning".
 
     # ---- adam ----
-    ("adam-bias", "How does the optimizer correct for bias in its moment estimates?", "bias-correction", "fact"),
+    # "bias-correction" marked pages 5, 8 and 9, which discuss the effect of
+    # the correction terms and never say how the correction works. Page 3
+    # does: "we therefore divide by this term to correct the initialization
+    # bias". Corrected 2026-09-01.
+    ("adam-bias", "How does the optimizer correct for bias in its moment estimates?", "correct the initialization bias", "fact"),
     ("adam-adamax", "What variant based on the infinity norm is proposed?", "AdaMax", "fact"),
     # ---- bahdanau ----
     ("bahdanau-fixed", "What bottleneck does encoding a sentence into a fixed-length vector create?", "fixed-length vector", "fact"),
@@ -138,7 +147,11 @@ CASES = [
     # ---- GPT-3 ----
     ("gpt3-params", "How many parameters does the largest autoregressive model have?", "175 billion", "cross-doc"),
     ("gpt3-icl", "What is in-context learning without gradient updates?", "in-context learning", "cross-doc"),
-    ("gpt3-fewshot", "How does task performance change with the number of examples in the prompt?", "zero-shot, one-shot", "cross-doc"),
+    # "zero-shot, one-shot" marked pages naming the three settings, which do
+    # not say how performance changes with the count. Page 24 does, and is
+    # the only page that does. Corrected 2026-09-01, and no longer cross-doc
+    # because the old label's second document was a results table.
+    ("gpt3-fewshot", "How does task performance change with the number of examples in the prompt?", "as a function of the number of in-context examples", "fact"),
     # ---- layer norm ----
     ("ln-vs-bn", "Why is layer normalization preferred over batch normalization for recurrent networks?", "recurrent neural networks", "multi"),
     ("ln-stats", "How are normalization statistics computed across features rather than examples?", "layer normalization", "cross-doc"),
@@ -170,7 +183,12 @@ CASES = [
     ("seq2seq-lstm", "What recurrent architecture maps sequences to a fixed-dimensional vector?", "deep LSTM", "fact"),
     # ---- T5 ----
     ("t5-c4", "What cleaned web-scraped corpus is used for pre-training?", "Colossal Clean Crawled Corpus", "fact"),
-    ("t5-text2text", "How are all NLP tasks cast into a single format?", "unified text-to-text", "cross-doc"),
+    # "unified text-to-text" is part of the T5 paper's title, so four of the
+    # six chunks carrying it were reference-list entries in colbert, DPR,
+    # gpt3 and rag. The case was only cross-doc because papers cite T5.
+    # "cast all of the tasks" marks pages 8 and 9 of t5.pdf, which is where
+    # the paper explains it. Corrected 2026-09-01.
+    ("t5-text2text", "How are all NLP tasks cast into a single format?", "cast all of the tasks", "fact"),
     ("t5-span", "What corruption objective masks contiguous spans of tokens?", "corrupted spans", "multi"),
     # ---- ViT ----
     ("vit-jft", "Which large private dataset is used for pre-training?", "JFT", "fact"),
@@ -235,11 +253,17 @@ def norm(text: str) -> str:
 def derive_gold(chunks, answer: str) -> list[dict]:
     """Every (source, locator) whose text contains the answer string."""
     needle = norm(answer)
-    found = {}
+    # Keyed on (source, kind), not on source. A document can hold chunks of two
+    # locator kinds at once: bird_anatomy.docx carries the answer in a named
+    # section and in a numbered table. Keying on the source alone took the kind
+    # from whichever chunk matched first and filed every later value under it,
+    # which produced a gold entry for "section 1" that no chunk has and lost
+    # "table 1", which one does. Found 2026-09-01, by rebuilding the set.
+    found: dict[tuple[str, str], set] = {}
     for c in chunks:
         if needle in norm(c["text"]):
             loc = c["locator"]
-            found.setdefault(c["source"], (loc.get("kind", "page"), set()))[1].add(loc["value"])
+            found.setdefault((c["source"], loc.get("kind", "page")), set()).add(loc["value"])
     # Locator values are not all one type once a corpus holds more than PDFs:
     # a page is an int, a Word section and a spreadsheet sheet are strings. Any
     # question whose gold spans both crashed on sorted(), which an all-PDF
@@ -253,7 +277,7 @@ def derive_gold(chunks, answer: str) -> list[dict]:
     return [
         {"source": src, "kind": kind,
          "pages": sorted(vals, key=lambda v: (isinstance(v, str), v))}
-        for src, (kind, vals) in sorted(found.items())
+        for (src, kind), vals in sorted(found.items())
     ]
 
 

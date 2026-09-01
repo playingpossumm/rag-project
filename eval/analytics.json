@@ -16,75 +16,75 @@
    "ladder": [
     {
      "config": "dense, no rerank",
-     "hit_rate": 0.791,
-     "mrr": 0.581,
-     "ndcg": 0.629,
-     "src_recall": 0.664
+     "hit_rate": 0.821,
+     "mrr": 0.607,
+     "ndcg": 0.657,
+     "src_recall": 0.678
     },
     {
      "config": "dense + rerank",
-     "hit_rate": 0.806,
-     "mrr": 0.666,
-     "ndcg": 0.688,
-     "src_recall": 0.688
+     "hit_rate": 0.836,
+     "mrr": 0.7,
+     "ndcg": 0.72,
+     "src_recall": 0.712
     },
     {
      "config": "rrf + rerank",
-     "hit_rate": 0.866,
-     "mrr": 0.743,
-     "ndcg": 0.758,
-     "src_recall": 0.721
+     "hit_rate": 0.925,
+     "mrr": 0.788,
+     "ndcg": 0.808,
+     "src_recall": 0.745
     },
     {
      "config": "+ diversity 2/src",
-     "hit_rate": 0.851,
-     "mrr": 0.739,
-     "ndcg": 0.755,
-     "src_recall": 0.761
+     "hit_rate": 0.91,
+     "mrr": 0.784,
+     "ndcg": 0.804,
+     "src_recall": 0.785
     },
     {
      "config": "+ diversity 1/src",
-     "hit_rate": 0.791,
-     "mrr": 0.715,
-     "ndcg": 0.727,
-     "src_recall": 0.795
+     "hit_rate": 0.851,
+     "mrr": 0.76,
+     "ndcg": 0.776,
+     "src_recall": 0.816
     }
    ],
    "pool": [
     {
      "config": "dense",
      "hit_rate": 0.866,
-     "mrr": 0.588,
-     "ndcg": 0.644,
-     "src_recall": 0.794
+     "mrr": 0.613,
+     "ndcg": 0.659,
+     "src_recall": 0.808
     },
     {
      "config": "rrf",
-     "hit_rate": 0.91,
-     "mrr": 0.691,
-     "ndcg": 0.713,
-     "src_recall": 0.796
+     "hit_rate": 0.955,
+     "mrr": 0.737,
+     "ndcg": 0.754,
+     "src_recall": 0.809
     },
     {
      "config": "weighted a=0.3",
-     "hit_rate": 0.925,
-     "mrr": 0.718,
-     "ndcg": 0.733,
-     "src_recall": 0.8
+     "hit_rate": 0.97,
+     "mrr": 0.768,
+     "ndcg": 0.782,
+     "src_recall": 0.811
     },
     {
      "config": "weighted a=0.5",
-     "hit_rate": 0.925,
-     "mrr": 0.689,
-     "ndcg": 0.72,
-     "src_recall": 0.794
+     "hit_rate": 0.955,
+     "mrr": 0.737,
+     "ndcg": 0.759,
+     "src_recall": 0.807
     },
     {
      "config": "weighted a=0.7",
-     "hit_rate": 0.925,
-     "mrr": 0.649,
-     "ndcg": 0.691,
-     "src_recall": 0.784
+     "hit_rate": 0.955,
+     "mrr": 0.692,
+     "ndcg": 0.721,
+     "src_recall": 0.798
     }
    ],
    "dist": {
@@ -110,7 +110,6 @@
      3.755,
      3.793,
      3.875,
-     3.998,
      4.106,
      4.165,
      4.319,
@@ -145,6 +144,7 @@
      6.642,
      6.851,
      7.002,
+     7.029,
      7.074,
      7.128,
      7.17,
@@ -177,7 +177,7 @@
      4.264
     ]
    },
-   "median_answerable": 4.934,
+   "median_answerable": 5.252,
    "median_adversarial": -0.177,
    "sweep": [
     {
@@ -302,7 +302,7 @@
     },
     {
      "t": 4.0,
-     "refused": 22,
+     "refused": 21,
      "caught": 15
     }
    ],
@@ -314,9 +314,15 @@
     "refused": 1,
     "caught": 9
    },
-   "gold_mean": 2.37,
-   "gold_divisor": 2.16,
+   "gold_mean": 2.3,
+   "gold_divisor": 2.09,
    "examples": [
+    {
+     "q": "How are all NLP tasks cast into a single format?",
+     "label": "answered in one place",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
     {
      "q": "Does the adaptation method add inference latency?",
      "label": "answered in one place",
@@ -330,19 +336,7 @@
      "expect": "should be answered"
     },
     {
-     "q": "What load balancing loss is used for expert routing?",
-     "label": "answered in one place",
-     "adversarial": false,
-     "expect": "should be answered"
-    },
-    {
      "q": "What subword tokenization scheme is used?",
-     "label": "spread over several documents",
-     "adversarial": false,
-     "expect": "should be answered"
-    },
-    {
-     "q": "What dropout rate was applied for regularization?",
      "label": "spread over several documents",
      "adversarial": false,
      "expect": "should be answered"
@@ -354,13 +348,19 @@
      "expect": "should be answered"
     },
     {
+     "q": "Which passage ranking dataset is used for evaluation?",
+     "label": "spread over several documents",
+     "adversarial": false,
+     "expect": "should be answered"
+    },
+    {
      "q": "What is late interaction in a retrieval model?",
      "label": "decoys that look right",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
-     "q": "How are all NLP tasks cast into a single format?",
+     "q": "What is in-context learning without gradient updates?",
      "label": "decoys that look right",
      "adversarial": false,
      "expect": "should be answered"
@@ -406,87 +406,86 @@
    },
    "threshold": -5.5,
    "calibrated": true,
-   "n_answerable": 26,
-   "n_adversarial": 6,
+   "n_answerable": 25,
+   "n_adversarial": 7,
    "ladder": [
     {
      "config": "dense, no rerank",
-     "hit_rate": 0.769,
-     "mrr": 0.58,
-     "ndcg": 0.609,
-     "src_recall": 0.656
+     "hit_rate": 0.8,
+     "mrr": 0.603,
+     "ndcg": 0.634,
+     "src_recall": 0.682
     },
     {
      "config": "dense + rerank",
-     "hit_rate": 0.846,
-     "mrr": 0.601,
-     "ndcg": 0.655,
-     "src_recall": 0.717
+     "hit_rate": 0.88,
+     "mrr": 0.625,
+     "ndcg": 0.681,
+     "src_recall": 0.745
     },
     {
      "config": "rrf + rerank",
-     "hit_rate": 0.846,
-     "mrr": 0.612,
-     "ndcg": 0.667,
-     "src_recall": 0.742
+     "hit_rate": 0.88,
+     "mrr": 0.636,
+     "ndcg": 0.694,
+     "src_recall": 0.772
     },
     {
      "config": "+ diversity 2/src",
-     "hit_rate": 0.846,
-     "mrr": 0.613,
-     "ndcg": 0.671,
-     "src_recall": 0.762
+     "hit_rate": 0.88,
+     "mrr": 0.638,
+     "ndcg": 0.698,
+     "src_recall": 0.792
     },
     {
      "config": "+ diversity 1/src",
-     "hit_rate": 0.731,
-     "mrr": 0.59,
-     "ndcg": 0.623,
-     "src_recall": 0.774
+     "hit_rate": 0.76,
+     "mrr": 0.613,
+     "ndcg": 0.648,
+     "src_recall": 0.805
     }
    ],
    "pool": [
     {
      "config": "dense",
-     "hit_rate": 0.962,
-     "mrr": 0.6,
-     "ndcg": 0.639,
-     "src_recall": 0.859
+     "hit_rate": 1.0,
+     "mrr": 0.624,
+     "ndcg": 0.664,
+     "src_recall": 0.894
     },
     {
      "config": "rrf",
-     "hit_rate": 0.885,
-     "mrr": 0.576,
-     "ndcg": 0.616,
-     "src_recall": 0.841
+     "hit_rate": 0.92,
+     "mrr": 0.599,
+     "ndcg": 0.641,
+     "src_recall": 0.875
     },
     {
      "config": "weighted a=0.3",
-     "hit_rate": 0.885,
-     "mrr": 0.447,
-     "ndcg": 0.541,
-     "src_recall": 0.846
+     "hit_rate": 0.92,
+     "mrr": 0.465,
+     "ndcg": 0.562,
+     "src_recall": 0.88
     },
     {
      "config": "weighted a=0.5",
-     "hit_rate": 0.923,
-     "mrr": 0.563,
-     "ndcg": 0.621,
-     "src_recall": 0.854
+     "hit_rate": 0.96,
+     "mrr": 0.586,
+     "ndcg": 0.646,
+     "src_recall": 0.888
     },
     {
      "config": "weighted a=0.7",
-     "hit_rate": 0.962,
-     "mrr": 0.539,
-     "ndcg": 0.635,
-     "src_recall": 0.883
+     "hit_rate": 1.0,
+     "mrr": 0.56,
+     "ndcg": 0.66,
+     "src_recall": 0.918
     }
    ],
    "dist": {
     "answerable": [
      -10.681,
      -8.276,
-     -7.281,
      -4.55,
      -2.974,
      -2.306,
@@ -516,12 +515,13 @@
      -10.391,
      -9.978,
      -7.979,
+     -7.281,
      -6.476,
      1.921
     ]
    },
-   "median_answerable": 1.151,
-   "median_adversarial": -8.979,
+   "median_answerable": 1.206,
+   "median_adversarial": -7.979,
    "sweep": [
     {
      "t": -8.0,
@@ -535,130 +535,130 @@
     },
     {
      "t": -7.0,
-     "refused": 3,
-     "caught": 4
+     "refused": 2,
+     "caught": 5
     },
     {
      "t": -6.5,
-     "refused": 3,
-     "caught": 4
+     "refused": 2,
+     "caught": 5
     },
     {
      "t": -6.0,
-     "refused": 3,
-     "caught": 5
+     "refused": 2,
+     "caught": 6
     },
     {
      "t": -5.5,
-     "refused": 3,
-     "caught": 5
+     "refused": 2,
+     "caught": 6
     },
     {
      "t": -5.0,
-     "refused": 3,
-     "caught": 5
+     "refused": 2,
+     "caught": 6
     },
     {
      "t": -4.5,
-     "refused": 4,
-     "caught": 5
+     "refused": 3,
+     "caught": 6
     },
     {
      "t": -4.0,
-     "refused": 4,
-     "caught": 5
+     "refused": 3,
+     "caught": 6
     },
     {
      "t": -3.5,
-     "refused": 4,
-     "caught": 5
+     "refused": 3,
+     "caught": 6
     },
     {
      "t": -3.0,
-     "refused": 4,
-     "caught": 5
+     "refused": 3,
+     "caught": 6
     },
     {
      "t": -2.5,
-     "refused": 5,
-     "caught": 5
+     "refused": 4,
+     "caught": 6
     },
     {
      "t": -2.0,
-     "refused": 6,
-     "caught": 5
+     "refused": 5,
+     "caught": 6
     },
     {
      "t": -1.5,
-     "refused": 6,
-     "caught": 5
+     "refused": 5,
+     "caught": 6
     },
     {
      "t": -1.0,
-     "refused": 7,
-     "caught": 5
+     "refused": 6,
+     "caught": 6
     },
     {
      "t": -0.5,
-     "refused": 10,
-     "caught": 5
+     "refused": 9,
+     "caught": 6
     },
     {
      "t": 0.0,
-     "refused": 10,
-     "caught": 5
+     "refused": 9,
+     "caught": 6
     },
     {
      "t": 0.5,
-     "refused": 12,
-     "caught": 5
+     "refused": 11,
+     "caught": 6
     },
     {
      "t": 1.0,
-     "refused": 12,
-     "caught": 5
+     "refused": 11,
+     "caught": 6
     },
     {
      "t": 1.5,
-     "refused": 14,
-     "caught": 5
+     "refused": 13,
+     "caught": 6
     },
     {
      "t": 2.0,
-     "refused": 16,
-     "caught": 6
+     "refused": 15,
+     "caught": 7
     },
     {
      "t": 2.5,
-     "refused": 16,
-     "caught": 6
+     "refused": 15,
+     "caught": 7
     },
     {
      "t": 3.0,
-     "refused": 17,
-     "caught": 6
+     "refused": 16,
+     "caught": 7
     },
     {
      "t": 3.5,
-     "refused": 18,
-     "caught": 6
+     "refused": 17,
+     "caught": 7
     },
     {
      "t": 4.0,
-     "refused": 18,
-     "caught": 6
+     "refused": 17,
+     "caught": 7
     }
    ],
    "at_zero": {
-    "refused": 10,
-    "caught": 5
+    "refused": 9,
+    "caught": 6
    },
    "at_calibrated": {
-    "refused": 3,
-    "caught": 5
+    "refused": 2,
+    "caught": 6
    },
-   "gold_mean": 2.62,
-   "gold_divisor": 2.54,
+   "gold_mean": 2.64,
+   "gold_divisor": 2.56,
    "examples": [
     {
      "q": "What organ do birds use to produce song?",
@@ -746,87 +746,85 @@
    },
    "threshold": -4.0,
    "calibrated": true,
-   "n_answerable": 35,
-   "n_adversarial": 6,
+   "n_answerable": 33,
+   "n_adversarial": 8,
    "ladder": [
     {
      "config": "dense, no rerank",
-     "hit_rate": 0.657,
-     "mrr": 0.407,
-     "ndcg": 0.464,
-     "src_recall": 0.702
-    },
-    {
-     "config": "dense + rerank",
-     "hit_rate": 0.857,
-     "mrr": 0.681,
-     "ndcg": 0.689,
+     "hit_rate": 0.697,
+     "mrr": 0.432,
+     "ndcg": 0.492,
      "src_recall": 0.745
     },
     {
+     "config": "dense + rerank",
+     "hit_rate": 0.909,
+     "mrr": 0.722,
+     "ndcg": 0.731,
+     "src_recall": 0.784
+    },
+    {
      "config": "rrf + rerank",
-     "hit_rate": 0.886,
-     "mrr": 0.779,
-     "ndcg": 0.769,
-     "src_recall": 0.744
+     "hit_rate": 0.939,
+     "mrr": 0.826,
+     "ndcg": 0.816,
+     "src_recall": 0.789
     },
     {
      "config": "+ diversity 2/src",
-     "hit_rate": 0.886,
-     "mrr": 0.779,
-     "ndcg": 0.786,
-     "src_recall": 0.769
+     "hit_rate": 0.939,
+     "mrr": 0.826,
+     "ndcg": 0.833,
+     "src_recall": 0.816
     },
     {
      "config": "+ diversity 1/src",
-     "hit_rate": 0.857,
-     "mrr": 0.764,
-     "ndcg": 0.769,
-     "src_recall": 0.796
+     "hit_rate": 0.909,
+     "mrr": 0.811,
+     "ndcg": 0.816,
+     "src_recall": 0.844
     }
    ],
    "pool": [
     {
      "config": "dense",
-     "hit_rate": 0.914,
-     "mrr": 0.434,
-     "ndcg": 0.522,
-     "src_recall": 0.804
+     "hit_rate": 0.939,
+     "mrr": 0.456,
+     "ndcg": 0.544,
+     "src_recall": 0.849
     },
     {
      "config": "rrf",
-     "hit_rate": 0.914,
-     "mrr": 0.592,
-     "ndcg": 0.619,
-     "src_recall": 0.798
+     "hit_rate": 0.97,
+     "mrr": 0.628,
+     "ndcg": 0.656,
+     "src_recall": 0.847
     },
     {
      "config": "weighted a=0.3",
-     "hit_rate": 0.886,
-     "mrr": 0.585,
-     "ndcg": 0.625,
-     "src_recall": 0.796
+     "hit_rate": 0.939,
+     "mrr": 0.62,
+     "ndcg": 0.663,
+     "src_recall": 0.844
     },
     {
      "config": "weighted a=0.5",
-     "hit_rate": 0.886,
-     "mrr": 0.482,
-     "ndcg": 0.576,
-     "src_recall": 0.796
+     "hit_rate": 0.939,
+     "mrr": 0.511,
+     "ndcg": 0.611,
+     "src_recall": 0.844
     },
     {
      "config": "weighted a=0.7",
-     "hit_rate": 0.943,
-     "mrr": 0.483,
-     "ndcg": 0.58,
-     "src_recall": 0.8
+     "hit_rate": 0.97,
+     "mrr": 0.509,
+     "ndcg": 0.607,
+     "src_recall": 0.844
     }
    ],
    "dist": {
     "answerable": [
-     -8.61,
      -8.047,
-     -7.206,
      -3.434,
      -2.969,
      -1.63,
@@ -863,151 +861,153 @@
     "adversarial": [
      -11.146,
      -10.938,
+     -8.61,
+     -7.206,
      -6.908,
      -6.676,
      -6.593,
      -3.36
     ]
    },
-   "median_answerable": 2.718,
-   "median_adversarial": -6.792,
+   "median_answerable": 2.814,
+   "median_adversarial": -7.057,
    "sweep": [
     {
      "t": -8.0,
-     "refused": 2,
-     "caught": 2
+     "refused": 1,
+     "caught": 3
     },
     {
      "t": -7.5,
-     "refused": 2,
-     "caught": 2
+     "refused": 1,
+     "caught": 3
     },
     {
      "t": -7.0,
-     "refused": 3,
-     "caught": 2
+     "refused": 1,
+     "caught": 4
     },
     {
      "t": -6.5,
-     "refused": 3,
-     "caught": 5
+     "refused": 1,
+     "caught": 7
     },
     {
      "t": -6.0,
-     "refused": 3,
-     "caught": 5
+     "refused": 1,
+     "caught": 7
     },
     {
      "t": -5.5,
-     "refused": 3,
-     "caught": 5
+     "refused": 1,
+     "caught": 7
     },
     {
      "t": -5.0,
-     "refused": 3,
-     "caught": 5
+     "refused": 1,
+     "caught": 7
     },
     {
      "t": -4.5,
-     "refused": 3,
-     "caught": 5
+     "refused": 1,
+     "caught": 7
     },
     {
      "t": -4.0,
-     "refused": 3,
-     "caught": 5
+     "refused": 1,
+     "caught": 7
     },
     {
      "t": -3.5,
-     "refused": 3,
-     "caught": 5
+     "refused": 1,
+     "caught": 7
     },
     {
      "t": -3.0,
-     "refused": 4,
-     "caught": 6
+     "refused": 2,
+     "caught": 8
     },
     {
      "t": -2.5,
-     "refused": 5,
-     "caught": 6
+     "refused": 3,
+     "caught": 8
     },
     {
      "t": -2.0,
-     "refused": 5,
-     "caught": 6
+     "refused": 3,
+     "caught": 8
     },
     {
      "t": -1.5,
-     "refused": 6,
-     "caught": 6
+     "refused": 4,
+     "caught": 8
     },
     {
      "t": -1.0,
-     "refused": 9,
-     "caught": 6
+     "refused": 7,
+     "caught": 8
     },
     {
      "t": -0.5,
-     "refused": 10,
-     "caught": 6
+     "refused": 8,
+     "caught": 8
     },
     {
      "t": 0.0,
-     "refused": 11,
-     "caught": 6
+     "refused": 9,
+     "caught": 8
     },
     {
      "t": 0.5,
-     "refused": 12,
-     "caught": 6
+     "refused": 10,
+     "caught": 8
     },
     {
      "t": 1.0,
-     "refused": 12,
-     "caught": 6
+     "refused": 10,
+     "caught": 8
     },
     {
      "t": 1.5,
-     "refused": 16,
-     "caught": 6
+     "refused": 14,
+     "caught": 8
     },
     {
      "t": 2.0,
-     "refused": 17,
-     "caught": 6
+     "refused": 15,
+     "caught": 8
     },
     {
      "t": 2.5,
-     "refused": 17,
-     "caught": 6
+     "refused": 15,
+     "caught": 8
     },
     {
      "t": 3.0,
-     "refused": 20,
-     "caught": 6
+     "refused": 18,
+     "caught": 8
     },
     {
      "t": 3.5,
-     "refused": 21,
-     "caught": 6
+     "refused": 19,
+     "caught": 8
     },
     {
      "t": 4.0,
-     "refused": 22,
-     "caught": 6
+     "refused": 20,
+     "caught": 8
     }
    ],
    "at_zero": {
-    "refused": 11,
-    "caught": 6
+    "refused": 9,
+    "caught": 8
    },
    "at_calibrated": {
-    "refused": 3,
-    "caught": 5
+    "refused": 1,
+    "caught": 7
    },
-   "gold_mean": 2.51,
-   "gold_divisor": 2.14,
+   "gold_mean": 2.42,
+   "gold_divisor": 2.09,
    "examples": [
     {
      "q": "Can the CVaR threshold be restricted to a bounded range?",
@@ -1034,13 +1034,13 @@
      "expect": "should be answered"
     },
     {
-     "q": "Which effect describes past winners continuing to outperform?",
+     "q": "Whose portfolio selection theory underpins modern allocation methods?",
      "label": "spread over several documents",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
-     "q": "Whose portfolio selection theory underpins modern allocation methods?",
+     "q": "Which measure reports the largest peak-to-trough decline of a strategy?",
      "label": "spread over several documents",
      "adversarial": false,
      "expect": "should be answered"
@@ -1087,43 +1087,43 @@
    "llm": {
     "golden": {
      "path": "eval/golden_set.json",
-     "digest": "sha256:774df32543b9232f"
+     "digest": "sha256:864b1e9157a3d5a2"
     },
     "per_case": {
      "path": "eval/per_case.json",
-     "digest": "sha256:05b193d425ff7c6a"
+     "digest": "sha256:3d928c5d56c4fb98"
     },
     "results": {
      "path": "eval/results.json",
-     "digest": "sha256:b763c1448cc176f3"
+     "digest": "sha256:a5046b4d0ef523a7"
     }
    },
    "birds": {
     "golden": {
      "path": "eval/golden-birds.json",
-     "digest": "sha256:6da452b97d041254"
+     "digest": "sha256:5f76daac85c40863"
     },
     "per_case": {
      "path": "eval/per_case-birds.json",
-     "digest": "sha256:2f362aafde1d9311"
+     "digest": "sha256:baa3d7810680198a"
     },
     "results": {
      "path": "eval/results-birds.json",
-     "digest": "sha256:f66381477a4d0dce"
+     "digest": "sha256:1c3e7771997a1361"
     }
    },
    "quant": {
     "golden": {
      "path": "eval/golden-quant.json",
-     "digest": "sha256:461e4c8ee2bc06ef"
+     "digest": "sha256:de4527e1b565cf74"
     },
     "per_case": {
      "path": "eval/per_case-quant.json",
-     "digest": "sha256:9c704956b591147b"
+     "digest": "sha256:559f878487703918"
     },
     "results": {
      "path": "eval/results-quant.json",
-     "digest": "sha256:97381673d96b2cd1"
+     "digest": "sha256:5fa5c2e1bd25cdb6"
     }
    }
   }

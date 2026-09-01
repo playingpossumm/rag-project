@@ -2229,6 +2229,100 @@ and none by looking at an aggregate.
 
 ---
 
+## 2026-09-01 — The labels corrected, and every number that moved with them
+
+The entry above read the twelve cases that fail under every configuration and
+found four the pipeline answers while the label scores them wrong, and three
+the documents do not answer at all. It recorded them and changed nothing,
+because correcting them raises the published figures. The owner then asked for
+the technicals fixed to the fullest extent, so they are corrected here.
+
+**What changed in the labels.** Four answer strings, each replaced with one that
+appears where the question is answered, and each candidate checked against the
+corpus and read before use:
+
+| case | was | is |
+|---|---|---|
+| `adam-bias` | "bias-correction", on pages discussing the effect of the terms | "correct the initialization bias", on the page that says how |
+| `gpt3-fewshot` | "zero-shot, one-shot", on pages naming the three settings | "as a function of the number of in-context examples" |
+| `t5-text2text` | "unified text-to-text", four of six chunks bibliographies | "cast all of the tasks", on t5.pdf pages 8 and 9 |
+| `dropout-rate` | an ambiguous question many papers answer | "Which dropout rate was used for the English-to-French model instead of 0.3?" |
+
+`dropout-rate` is the odd one: its gold was correct and its question was not.
+Many papers state a dropout rate, so a passage reading "we use a dropout
+probability of 0.1 everywhere" answered it and scored zero. It is now made
+discriminating by content, which is the rule `build_golden_set.py` states at the
+top of its own case list and this question had never followed.
+
+`bird-alula`, `qf-mean-reversion` and `qf-momentum` moved to the adversarial
+half as near-miss cases, the same class as `adv-price`, where compute cost is
+reported in FLOPs and never in currency. **The abstention gate agrees**: at
+their shipped thresholds all three score below the cut, at -7.28, -7.21 and
+-8.61, so the system already declined to answer them and the golden set was
+calling that a failure.
+
+**A bug in the label derivation, found by rebuilding.** `derive_gold` keyed its
+accumulator on the source alone, took the locator kind from whichever matching
+chunk came first, and filed every later value under that kind. `bird_anatomy.docx`
+carries "hollow bones" in a section named "Skeletal system" and in table 1, so
+the rebuilt gold read `{"kind": "section", "pages": [1, "Skeletal system"]}`.
+Section 1 does not exist and table 1, which does, became unmatchable.
+`check_golden.py` reported both the moment the set was rebuilt, which is the
+guard doing exactly what it was written for. The comment three lines below the
+bug already said "the KIND travels with the value"; the code keyed on source and
+did not.
+
+**What the numbers did.** Every figure below is the shipped configuration, and
+no line of retrieval code changed:
+
+| | any-hit | MRR | NDCG | source recall |
+|---|---|---|---|---|
+| ML & NLP papers | 0.851 → **0.910** | 0.739 → 0.784 | 0.755 → 0.804 | 0.761 → 0.785 |
+| Ornithology | 0.846 → **0.880** | 0.613 → 0.638 | 0.671 → 0.698 | 0.762 → 0.792 |
+| Quantitative finance | 0.886 → **0.939** | 0.779 → 0.826 | 0.786 → 0.833 | 0.769 → 0.816 |
+
+**And every point of that reconciles, which is the only reason to trust it.** The
+ML corpus went from 57 hits of 67 to 61 of 67, and the four it gained are the
+four relabelled cases; 61/67 is 0.910 and 57/67 is 0.851. The other two corpora
+kept their numerators exactly: birds was 22 of 26 and is 22 of 25, quant was 31
+of 35 and is 31 of 33. Nothing was retrieved that was not retrieved before. The
+bird and quant rises are entirely denominator, which is to say they are the
+score no longer counting questions the documents cannot answer as retrieval
+failures.
+
+**Read the corpora table as a different measurement from the one it replaces.**
+0.910 is not an improvement on 0.851. It is what 0.851 was measuring once four
+labels stopped disagreeing with their own passages.
+
+**What had to be re-run.** `evaluate.py` on three corpora, `per_case.py` on
+three, `build_analytics.py`, `build_results_doc.py`, `uniform_baseline.py` and
+`sweep_fusion.py` for the birds, and then 55 numbers across `HANDOFF.md`, the
+README, `docs/roadmap.md`, `corpora.json` and the site. `check_docs.py` named
+every one of the 55 and confirmed the rewrite, which is the whole argument for
+having built it: a labelling change touches numbers in five files and no one
+remembers all of them.
+
+**The corpus notes were recounted rather than patched.** Each argues for a
+threshold from counts over its own golden set, so the numerators move with the
+denominators: the birds note now reads six of seven adversarial caught and two
+of twenty-five wrongly refused, and quant reads seven of eight and one of
+thirty-three. Figures in those notes that were measured against the earlier sets
+are now marked with the date they were taken, because a superseded measurement
+is a record and an unmarked one is a mistake.
+
+**What did not change.** The five genuine retrieval failures are still failures,
+and nothing here was tuned to make them pass. `src/failure_overlap.py`,
+re-derived afterwards from six configurations on each corpus, returns exactly
+the five the reading identified: `gpt3-params`, `roberta-nsp-drop` and `wmt14`
+on the papers, `bird-hollow-bones` and `bird-precocial` on the birds, and none
+on quant. That is the harness agreeing with the reading rather than repeating
+it, and it is the check that the four corrections did not quietly make a
+genuine failure pass. The ML gate still lets 8 of 17
+adversarial cases through. The thresholds, blends, candidate pools and the
+ensemble are all where they were.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

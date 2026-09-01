@@ -1,7 +1,7 @@
 """How many of the reported hits rest on a paper's title block?
 
 **The hole.** The golden set labels pages, not passages. A paper's title block
-sits on page 1, and page 1 is a gold page for 43 of the 102 answerable cases in
+sits on page 1, and page 1 is a gold page for 43 of the 100 answerable cases in
 the two corpora that have title pages. For 17 of those the answer string is
 inside the title as well, because a paper is usually titled after the thing it
 is about: `bn-covariate` asks what normalizing layer inputs addresses, wants the
@@ -35,8 +35,8 @@ satisfying chunk contains the answer:
   - **unanswered**: the residual, which are the only candidates for a false
     credit and are few enough to read.
 
-**What it found on 2026-08-31, at the shipped configuration.** Two hits are
-structural, `bn-covariate` and `qf-whale-attack`, and **both contain the answer
+**What it found, re-run 2026-09-01 against the corrected golden sets.** Two of
+114 hits are structural, `bn-covariate` and `qf-whale-attack`, and **both contain the answer
 string**, read and confirmed: "We refer to this phenomenon as internal
 covariate shift, and address the problem by normalizing layer inputs", and "by
 introducing certain detectability threshold, joining the attack can lead to
