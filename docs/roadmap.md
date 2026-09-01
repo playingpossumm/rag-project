@@ -37,7 +37,7 @@ and because a link on `/about` named a branch this repository does not have:
 python src/check_freshness.py     # golden set -> per_case -> analytics -> front page
 python src/check_golden.py        # do the labels still describe the corpus?
 python src/check_docs.py          # do the documents match the measurements?
-python src/check_links.py         # do the links the interface serves go anywhere?
+python src/check_links.py         # do the links name this repository, and resolve in it?
 python src/build_results_doc.py --check
 python src/build_corpus_manifest.py --check   # does the document list match the indexes?
 ```
