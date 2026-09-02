@@ -29,6 +29,17 @@ export const clean = s => String(s)
   // reader following a bibliography, and this reader has no bibliography. They
   // survive into the middle of a quoted sentence and read as debris.
   .replace(/\s*\[\s*\d+(?:\s*[,;–-]\s*\d+)*\s*\]/g, "")
+  // Author-year citations are the same apparatus in a different notation, and
+  // they survive into the middle of a marked clause where a numeric marker
+  // would not: "introduce inference latency (Houlsby et al., 2019; Rebuffiet
+  // al., 2017) by extending model depth". A parenthetical counts as a citation
+  // when it carries a four-digit year or an "et al.", which leaves ordinary
+  // parentheticals alone -- "(in particular, BERT)" and "(pneumatized)" have
+  // neither.
+  .replace(/\s*\((?=[^)]*(?:\b(?:19|20)\d{2}[a-z]?\b|\bet\s+al\b))[^)]{0,200}\)/g, "")
+  // A trailing pointer to another part of the same paper is apparatus too.
+  .replace(/\s*\((?:see\s+)?(?:Section|Sec\.|Figure|Fig\.|Table|Tab\.|Appendix|Eq\.|Equation)\s*[\d.A-Z]+\s*\)/gi, "")
+  .replace(/\s+([,.;:])/g, "$1")
   .replace(/\s+/g, " ").trim();
 
 export const fragment = s => {
@@ -77,6 +88,12 @@ export const MAX_MARK_WORDS = 12;
    a clause. */
 export const MAX_MARK_CHARS = 180;
 
+/* And a bound relative to the passage. The two above are absolute, and a mark
+   can satisfy both while still covering all of a short passage: "Though models
+   like GPT-3 consume significant resources during training, they can" is
+   eleven words and 82 characters, and it was the entire passage. */
+export const MAX_MARK_SHARE = 0.5;
+
 export const QUANT = new RegExp(
   "\\b(how many|how much|how large|how long|how deep|how wide|"
   + "value|rate|size|number|probability|dimension|percentage|fraction|"
@@ -96,6 +113,14 @@ export const QUANT = new RegExp(
    corpus of academic papers, which is where these abbreviations all live. */
 const ABBREV = /\b(?:[A-Z]|al|e\.g|i\.e|cf|vs|etc|approx|Fig|Figs|Eq|Eqs|Tab|Ref|Refs|Sec|Ch|No|pp|Dr|Prof|St|Mr|Ms|Mrs)\.$/;
 
+/* A single capital letter before a full stop is an initial in "Vaswani, A."
+   and a label in "in Appendix D.", and only the first is an abbreviation. The
+   difference is the word in front of it, so the labelling words are named and
+   everything else keeps the initial rule. Without this, "for every task we
+   studied in Appendix D. Our text-to-text framework follows previous work"
+   was one sentence, and the mark landed on the clause about previous work. */
+const LABELLED = /\b(?:Appendix|Section|Figure|Fig|Table|Tab|Part|Chapter|Ch|Volume|Vol|Model|Case|Step|Phase|Class|Type|Level|Group|Panel)\s+[A-Z]\.$/;
+
 export function splitSentences(text) {
   const rough = text.split(/(?<=[.!?])(?=\s+(?:[A-Z"“(]|\d+(?:\.\d+)*\s+[A-Z]))/);
   const out = [];
@@ -104,7 +129,8 @@ export function splitSentences(text) {
     // "Vaswani et al." and "(2017) introduced the Transformer." stay one
     // sentence rather than two half-sentences the highlight has to choose
     // between.
-    if (out.length && ABBREV.test(out[out.length - 1].trimEnd())) {
+    const prev = out.length ? out[out.length - 1].trimEnd() : "";
+    if (out.length && ABBREV.test(prev) && !LABELLED.test(prev)) {
       out[out.length - 1] += piece;
     } else {
       out.push(piece);
@@ -169,6 +195,13 @@ export function answerSpan(sentence, want, quantitative) {
   }
   if (hi - lo >= MAX_MARK_WORDS) hi = lo + MAX_MARK_WORDS - 1;
 
+  // A colon or a semicolon ends the clause, and a mark that runs past one
+  // picks up whatever it introduces: "into a common format: McCann et al."
+  // marked the clause and then two words of the citation after it.
+  for (let k = lo; k < hi; k++) {
+    if (/[:;]$/.test(words[k].t)) { hi = k; break; }
+  }
+
   // Trim from the end to fit the character bound, whole words only. A span
   // that no longer carries two query words after trimming fails the check
   // below and is not marked at all, which is the right outcome for the case
@@ -197,7 +230,10 @@ export function answerSpan(sentence, want, quantitative) {
   const startTok = words[lo].i;
   const endTok = words[hi].i;
   const start = toks.slice(0, startTok).join("").length;
-  const end = start + toks.slice(startTok, endTok + 1).join("").length;
+  let end = start + toks.slice(startTok, endTok + 1).join("").length;
+  // A mark ending on the punctuation that closed its clause reads as though it
+  // were cut off. The words are the pointer; the colon belongs to the sentence.
+  while (end > start && /[:;,\s]/.test(sentence[end - 1])) end -= 1;
   return [start, end];
 }
 
@@ -215,11 +251,28 @@ export function markAnswer(text, question) {
   for (const w of want) {
     spread[w] = parts.filter(seg => seg.toLowerCase().includes(w)).length || parts.length;
   }
+  // Adjacent pairs of content words from the question, in the order asked.
+  // "What is late interaction in a retrieval model?" asks about a thing called
+  // "late interaction", and a sentence naming it answers in a way that a
+  // sentence merely containing "retrieval" and "model" does not. Scoring words
+  // one at a time cannot tell those apart, and it picked the wrong sentence by
+  // 0.1789 to 0.1728.
+  const phrases = [];
+  for (let i = 0; i + 1 < want.length; i++) {
+    const pair = `${want[i]} ${want[i + 1]}`;
+    if (String(question).toLowerCase().includes(pair)) phrases.push(pair);
+  }
+
   let best = -1, top = 0;
   parts.forEach((seg, i) => {
     const low = seg.toLowerCase();
     let sc = 0;
     for (const w of want) if (low.includes(w)) sc += 1 / spread[w];
+    // A phrase is worth the words it contains again, so naming the thing asked
+    // about doubles that part of the score rather than swamping everything.
+    for (const p of phrases) {
+      if (low.includes(p)) for (const w of p.split(" ")) sc += 1 / spread[w];
+    }
     sc /= Math.sqrt(Math.max(seg.trim().length, 40));
     if (sc > top) { top = sc; best = i; }
   });
@@ -231,6 +284,13 @@ export function markAnswer(text, question) {
   const span = answerSpan(parts[best], want, QUANT.test(question));
   if (!span) return esc(text);            // nothing worth pointing at
   const [a, b] = span;
+
+  // A mark is a pointer into a passage, so it has to be smaller than the
+  // passage. On a passage that is one short sentence the span above is the
+  // whole of it, and marking everything points at nothing. Half is the bound
+  // the suite checks, and it is checked here so the rule lives with the code
+  // rather than only in the test.
+  if (b - a > text.length * MAX_MARK_SHARE) return esc(text);
   return parts.map((seg, i) => {
     if (i !== best) return esc(seg);
     return esc(seg.slice(0, a)) + "<mark>" + esc(seg.slice(a, b)) + "</mark>"

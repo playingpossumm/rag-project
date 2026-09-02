@@ -105,6 +105,71 @@ TIE = ("The alula prevents a stall at low speed. " + "Filler sentence. " * 12
 tie = _brief({"text": TIE}, "Which structure prevents a stall at low speed?")
 check("ties go to the earlier sentence", tie.startswith("The alula"), tie[:40])
 
+# ---- reported 2026-09-01, by reading the page ------------------------------
+
+# real: lora.pdf page 2. Half the budget went on citation apparatus, so the
+# excerpt displayed 122 characters of prose out of 260 once ui/answer-mark.js
+# had stripped what the window had already paid for.
+LORA = (
+    "often introduce inference latency (Houlsby et al., 2019; Rebuffi et al., "
+    "2017) by extending model depth or reduce the model's usable sequence "
+    "length (Li & Liang, 2021; Lester et al., 2021; Hambardzumyan et al., "
+    "2020; Liu et al., 2021) (Section 3). More importantly, these method often "
+    "fail to match the fine-tuning baselines, posing a trade-off between "
+    "efficiency and model quality. We take inspiration from Li et al. (2018a); "
+    "Aghajanyan et al. (2020) which show that the learned over-parametrized "
+    "models in fact reside on a low intrinsic dimension."
+)
+out = _brief({"text": LORA}, "Does the adaptation method add inference latency?")
+check("an author-year citation is not shown", "et al., 2019" not in out, out[:70])
+check("a parenthetical pointer to a section is not shown",
+      "(Section 3)" not in out, out[:70])
+check("the sentence itself survives the stripping",
+      "introduce inference latency by extending model depth" in out, out[:70])
+check("no space is left in front of the punctuation",
+      " ." not in out and " ," not in out, out[:70])
+
+# An ordinary parenthetical is not apparatus and stays.
+KEEP = ("Birds have many bones that are hollow (pneumatized) with criss-crossing "
+        "struts or trusses for structural strength. " + "Filler sentence. " * 20)
+check("a parenthetical that is not a citation is kept",
+      "(pneumatized)" in _brief({"text": KEEP}, "which bones are hollow"))
+
+# real: t5.pdf page 9. "Appendix D." is a sentence end, and treating the single
+# capital as an abbreviation glued two sentences together.
+T5 = (
+    "examples is shown in Figure 1. We provide full examples of preprocessed "
+    "inputs for every task we studied in Appendix D. Our text-to-text "
+    "framework follows previous work that casts multiple NLP tasks into a "
+    "common format: McCann et al. propose the \u201cNatural Language "
+    "Decathlon\u201d, a benchmark that uses a consistent question-answering "
+    "format for a suite of ten NLP tasks. Radford et al. show that a language "
+    "model can perform some tasks in a zero-shot setting given a natural "
+    "language prompt, and Keskar et al. cast several tasks into span "
+    "extraction over the input. The real chunk is 953 characters, so the "
+    "window has to choose a start, which is the behaviour under test here."
+)
+out = _brief({"text": T5}, "How are all NLP tasks cast into a single format?")
+check("the window opens at a sentence rather than mid-clause",
+      not out.startswith("examples is shown"), out[:60])
+
+# An excerpt that stops mid-word reads as a truncation rather than a statement.
+LONG = ("First sentence that does not answer anything at all here. "
+        + "The alula is a small group of feathers on the leading edge of the "
+          "wing that prevents a stall at low speed by keeping airflow attached. "
+        + "Filler sentence about something else entirely. " * 12)
+out = _brief({"text": LONG}, "which feathers prevent a stall at low speed")
+check("the excerpt ends at a sentence boundary",
+      out.rstrip().endswith((".", "!", "?")), out[-60:])
+check("and it still carries the answer",
+      "prevents a stall at low speed" in out, out[:80])
+
+# The limit is a budget, not a target: a passage under it comes back whole and
+# is not padded or cut to a boundary that does not exist.
+SHORT_WHOLE = "Down feathers trap air and provide insulation for the bird."
+check("a passage under the limit is returned whole",
+      _brief({"text": SHORT_WHOLE}, "what do down feathers do") == SHORT_WHOLE)
+
 print(f"\n{checks - len(fails)}/{checks} excerpt checks passed")
 for f in fails:
     print(f"  FAIL  {f}")

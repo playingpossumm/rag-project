@@ -148,6 +148,26 @@ def answer_quality() -> dict:
     return out
 
 
+def answer_first(per: dict) -> dict:
+    """Of the answerable cases, how many put a gold passage at rank 1.
+
+    `found` counts the cases with a gold passage anywhere in the five, so
+    `first / answerable` and `found / answerable` are the two numbers side by
+    side and the gap between them is the ordering cost.
+    """
+    cases = [c for c in per.get("cases", []) if not c.get("unanswerable")]
+    first = found = 0
+    for c in cases:
+        ranks = [r["rank"] for r in c.get("results", []) if r.get("relevant")]
+        if not ranks:
+            continue
+        found += 1
+        if min(ranks) == 1:
+            first += 1
+    return {"answerable": len(cases), "found": found, "first": first,
+            "rate": round(first / len(cases), 4) if cases else 0.0}
+
+
 def build():
     data = {"generated_by": "src/build_analytics.py", "corpora": [],
             # Which files each entry was built from. This is what makes a
@@ -195,6 +215,14 @@ def build():
             "calibrated": cfg["calibrated"],
             "n_answerable": len(ans),
             "n_adversarial": len(adv),
+
+            # How often the FIRST passage is the one that answers, which is
+            # what a reader experiences and what no published figure here
+            # carried. Every other number is @5, and MRR is an average of
+            # reciprocals that does not read as "is the top result right".
+            # Counted from the per-case rankings rather than re-derived, so it
+            # cannot disagree with the rows the site draws.
+            "answer_first": answer_first(per),
 
             # The ladder, and the pool it draws candidates from.
             "ladder": [{"config": k, **res["end_to_end"][k]}

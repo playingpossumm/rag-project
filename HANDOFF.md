@@ -1,9 +1,7 @@
 # The complete technical account
 
-The long version of this system: what it does, what was measured, what the
-measurements overturned, and what is still wrong with it. `README.md` is the
-short version and the `/about` page in the running app is the plain-language
-one.
+`README.md` is the short version of this document and the `/about` page in the
+running app is the plain-language one.
 
 Started 2026-08-19, current as of 2026-08-31. **Everything here is measured or
 verifiable from the repository, and where something is unverified it says so.**
@@ -310,8 +308,9 @@ The owner's current instruction, and it supersedes the ambition recorded below:
 
 The UI went through four visual passes in one session and landed somewhere the
 owner was not happy with. Read that as a signal about sequencing rather than
-taste: the interface was being designed ahead of the capabilities it is meant to
-expose, so each pass was decorating a demo instead of surfacing a tool.
+taste, because the interface was being designed ahead of the capabilities it is
+meant to expose, so each pass was decorating a demo instead of surfacing a
+tool.
 
 What that means for the work after it:
 
@@ -348,9 +347,9 @@ be chosen by looking rather than by remembering.
 
 Delete `ui/versions.html`, `ui/versions/` and the two data files under it once
 that choice is made. `src/check_links.py` lists `/versions` as a file page
-rather than a route, so removing it means removing that exception too, which is
-deliberate: the checker fails and names it rather than letting a dead page sit
-quietly.
+rather than a route, so removing it means removing that exception too. That is
+deliberate, since the checker fails and names the page rather than letting a
+dead one sit quietly.
 *(`ui/pipeline.html`, `ui/ambient.html` and `ui/ambient-fields.js` were deleted on
 2026-08-21; see "Ambient fields" below. They are in git if wanted back.)*
 
@@ -513,7 +512,8 @@ deliberate default.
 
 **`data/`, `store-birds/` and `store-quant/` are untracked** as of 2026-08-28:
 78 MB of third-party papers, and the same text again inside `metadata.json`.
-They remain in the *history* deliberately: this repository's prose cites
+They remain in the *history* deliberately, because this repository's prose
+cites
 **fourteen** of its own commit SHAs. `HANDOFF.md` §5 cites `f2ab5de` and
 `f1ea450`, and `docs/angle-sweep.html` stamps one on every entry. A rewrite
 would dangle them silently, because a dead SHA in a sentence reads exactly like
@@ -610,9 +610,9 @@ read the failing questions before concluding anything about retrieval.**
 
 **Generated files went stale silently three times, and that is now checked.**
 `python src/check_freshness.py` covers the chain `golden set -> per_case ->
-analytics -> the front page`, the one that had no test. It works two ways,
-because they fail differently: each generated file records a digest of the files
-it was built from (exact, so it catches rewording one question in place, which
+analytics -> the front page`, the one that had no test. It works two ways because they fail
+differently. Each generated file records a digest of the files it was built
+from (exact, so it catches rewording one question in place, which
 changes no count), and case ids, question strings, corpus sizes and the
 per-corpus threshold and blend are compared directly (weaker, but it works on
 files written before provenance existed and names the question rather than a
@@ -660,7 +660,8 @@ of that interval, which leaves 0.95 of margin before it refuses an answerable
 question and 0.98 before it stops catching an adversarial one. An edge of the
 interval would fit the threshold to a single case.
 
-Retrieval is untouched: any-hit stays 0.846, MRR 0.614. Only the gate moved, and
+Retrieval is untouched, with any-hit at 0.846 and MRR at 0.614. Only the gate
+moved, and
 it recovered `bird-incubation`, whose answer the pipeline had already retrieved
 into the top five.
 
@@ -964,11 +965,11 @@ reads the same words. Query decomposition was the fix that addressed it on
 paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
 `docs/engineering-log.md`.
 
-Test counts, as of 2026-09-01: **424 checks plus the route suite**: 80 trace,
-66 answer-quality judge, 18 links, 11 excerpt, 33 loaders, 33 freshness, 25
+Test counts, as of 2026-09-01: **444 checks plus the route suite**: 80 trace,
+66 answer-quality judge, 20 excerpt, 18 links, 33 loaders, 33 freshness, 25
 serve, 24 local generation, 22 metrics, 19 generate, 17 golden-set audit, 16
-analytics, 13 api, 10 reranker cache, 9 ingest cache and 8 OCR, which is 404,
-plus 20 answer-highlight checks under `node ui/test-answer-mark.mjs`.
+analytics, 13 api, 10 reranker cache, 9 ingest cache and 8 OCR, which is 413,
+plus 31 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 These are counted by running the suites. They were wrong until 2026-08-30,
 when the total read 384 because the list still said 28 loaders, a figure five

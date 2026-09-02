@@ -2411,6 +2411,85 @@ reached by nothing.
 
 ---
 
+## 2026-09-02 — The answer on the page, read as a reader reads it
+
+Four screenshots, four defects, none of them in retrieval. Every one was found
+by reading the page and none is visible in any metric this project publishes.
+
+**A citation sat inside the bold.** Asked whether the adaptation method adds
+inference latency, the page showed "introduce inference latency (Houlsby et
+al., 2019; Rebuffiet al., 2017)" with the citation emphasised as though it were
+part of the answer. `clean` in `ui/answer-mark.js` stripped numeric reference
+markers, "[36]", and nothing else, so author-year citations survived. A
+parenthetical now counts as apparatus when it carries a four-digit year or an
+"et al.", and pointers such as "(Section 3)" go the same way. An explanatory
+parenthetical is left alone, because "(pneumatized)" and "(in particular,
+BERT)" are part of the sentence and removing them would be worse than the
+defect.
+
+**The excerpt was paying for what the display then threw away.** The window is
+measured in `pipeline_trace._brief` and the stripping happened afterwards in the
+browser, so the LoRA passage arrived at 260 characters and displayed as 122 of
+prose. The apparatus is now removed before the window is measured, and the two
+implementations are noted as a pair in both files.
+
+**"Appendix D." is not an abbreviation.** The sentence splitter treats a single
+capital before a full stop as an initial, which is right for "Vaswani, A." and
+wrong for "in Appendix D. Our text-to-text framework follows previous work".
+Two sentences became one and the mark landed on a clause crediting previous
+work. A single capital after a labelling word, Appendix, Section, Figure,
+Table and the rest, now ends the sentence.
+
+**And the mark ran past the clause it was in.** With the sentences split
+correctly the mark became "that casts multiple NLP tasks into a common format:
+McCann et al.", carrying two words of the citation the colon introduced. A mark
+now stops at a colon or semicolon, and trailing punctuation is trimmed off it,
+because the words are the pointer and the colon belongs to the sentence.
+
+**A fifth, found while fixing the others.** The contract at the top of
+`answer-mark.js` promises that the whole passage is never marked, and nothing
+enforced it. `answerSpan` returns all of a sentence short enough to be the
+answer, which says nothing about how much of the *passage* that sentence is, so
+"Though models like GPT-3 consume significant resources during training" was
+eleven words, 82 characters, and 100% of its passage. It satisfied every
+absolute bound. `MAX_MARK_SHARE` puts the rule in the code beside the two the
+module already had.
+
+**What a reader now sees**, asked what late interaction is:
+
+> To tackle this, we present ColBERT, a novel ranking model that adapts deep
+> LMs (in particular, BERT) for efficient retrieval. ColBERT introduces **a
+> late interaction architecture that independently encodes the query and the
+> document** using BERT and then employs a cheap yet powerful interaction step
+> that models their fine-grained similarity.
+
+Against a clause ending in "then employs a", with the wrong sentence bold. The
+excerpt limit rose from 260 to 420 characters and the window ends at a sentence
+boundary when one falls within reach, so a passage reads as a paragraph rather
+than as a truncation.
+
+**The phrase bonus, and why it is not redundant.** Sentence scoring now rewards
+a pair of adjacent content words from the question, so a sentence naming "late
+interaction" beats one that merely contains "retrieval" and "model". Both that
+and the longer excerpt fix the ColBERT case on their own, which is a reason to
+check whether the second is needed rather than to assume it: run against the
+truncated form, the old scorer still marks the wrong sentence and the new one
+does not. Truncation still happens whenever a chunk's last sentence runs past
+the limit, so the bonus earns its place.
+
+**Counted, not asserted.** 9 checks were added to `src/test_excerpt.py` and 11
+to `ui/test-answer-mark.mjs`, and staged against the previous code 5 of 9 and 8
+of 11 fail. The ones that pass against both are the mirror-image cases, where
+an ordinary parenthetical is kept and an initial still does not end a sentence,
+and they pass because that behaviour was already right.
+
+**One thing reported that is not a defect.** The late-interaction question was
+read as a decoy that the system answered wrongly. It is `colbert-late`, an
+ordinary answerable case, and the passage returned was always correct. What was
+wrong was which sentence of it the page emphasised.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on

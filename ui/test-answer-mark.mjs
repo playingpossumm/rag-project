@@ -21,8 +21,8 @@ import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { esc, fragment, markAnswer, splitSentences,
-         MAX_MARK_WORDS, MAX_MARK_CHARS } from "./answer-mark.js";
+import { clean, esc, fragment, markAnswer, splitSentences,
+         MAX_MARK_WORDS, MAX_MARK_CHARS, MAX_MARK_SHARE } from "./answer-mark.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CHECKS = [];
@@ -111,7 +111,88 @@ check("Fig. does not end a sentence",
 check("a real boundary still splits",
       splitSentences("The furcula is fused. The pygostyle is not.").length, 2);
 
+/* A colon ends the clause. Marking past it picks up whatever it introduces,
+   which on an academic passage is a citation. */
+{
+  const passage = "Our text-to-text framework follows previous work that casts "
+    + "multiple NLP tasks into a common format: McCann et al. propose the "
+    + "Natural Language Decathlon, a benchmark that uses a consistent "
+    + "question-answering format for a suite of ten NLP tasks.";
+  const run = marked(markAnswer(passage, "How are all NLP tasks cast into a single format?"))[0] || "";
+  check("a mark does not run past a colon", /[:;]/.test(run.slice(0, -1)), false);
+  check("and it does not end on a citation name", /et al\.?$/.test(run.trim()), false);
+}
+
 /* -------------------------------------------------------------- the sweep -- */
+
+/* ---- reported 2026-09-01, by reading the page -------------------------- */
+
+/* A citation is apparatus for a reader with a bibliography, and this reader
+   has none. Numeric markers were already stripped and author-year ones were
+   not, so "(Houlsby et al., 2019; Rebuffi et al., 2017)" sat inside a marked
+   clause. */
+check("an author-year citation is stripped",
+  clean("introduce inference latency (Houlsby et al., 2019; Rebuffi et al., 2017) by extending depth"),
+  "introduce inference latency by extending depth");
+check("a citation list with an ampersand is stripped",
+  clean("usable sequence length (Li & Liang, 2021; Lester et al., 2021) overall"),
+  "usable sequence length overall");
+check("a pointer to another part of the paper is stripped",
+  clean("posing a trade-off (Section 3). More importantly"),
+  "posing a trade-off. More importantly");
+
+/* And the mirror image: a parenthetical that explains something is part of the
+   sentence, not apparatus, and a rule that removed it would be worse than the
+   defect it fixes. */
+check("an explanatory parenthetical is kept",
+  clean("bones that are hollow (pneumatized) with struts"),
+  "bones that are hollow (pneumatized) with struts");
+check("a parenthetical with no year and no et al is kept",
+  clean("adapts deep LMs (in particular, BERT) for retrieval"),
+  "adapts deep LMs (in particular, BERT) for retrieval");
+
+/* "Appendix D." ends a sentence. The abbreviation rule read the single capital
+   as an initial, glued two sentences into one, and the mark then landed on a
+   clause about previous work rather than on the sentence being asked about. */
+check("a labelled single capital ends a sentence",
+  splitSentences("for every task we studied in Appendix D. Our text-to-text framework follows previous work.").length,
+  2);
+check("an initial in a name still does not end a sentence",
+  splitSentences("Introduced by Vaswani, A. Barret and others in 2017.").length,
+  1);
+
+/* A sentence that names the thing asked about beats one that merely contains
+   the same words apart. Asked what late interaction is, the mark landed on
+   "a novel ranking model that adapts deep LMs ... for efficient retrieval"
+   and left "ColBERT introduces a late interaction architecture" unmarked. */
+{
+  const passage = "To tackle this, we present ColBERT, a novel ranking model that "
+    + "adapts deep LMs (in particular, BERT) for efficient retrieval. ColBERT "
+    + "introduces a late interaction architecture that independently encodes "
+    + "the query and the document using BERT and then employs a cheap yet "
+    + "powerful interaction step that models their fine-grained similarity.";
+  // Truncated at 260, which is where the excerpt used to stop and where the
+  // defect appeared: with the second sentence cut short the scorer preferred
+  // the first, which merely contains "retrieval" and "model". A complete
+  // sentence is chosen correctly by either version, so testing the whole
+  // passage would pass against the code this check exists to catch.
+  const out = markAnswer(passage.slice(0, 260),
+                         "What is late interaction in a retrieval model?");
+  const run = marked(out)[0] || "";
+  check("the mark lands on the sentence naming the phrase asked about",
+    run.includes("late interaction"), true);
+}
+
+/* A mark is a pointer into a passage, so it cannot be the passage. On a
+   passage that is one short sentence every absolute bound was satisfied and
+   the mark still covered all of it. */
+{
+  const passage = "Though models like GPT-3 consume significant resources during training";
+  const out = markAnswer(passage, "How many resources does GPT-3 consume during training?");
+  const run = marked(out)[0] || "";
+  check("a mark never covers more than half its passage",
+    run.length <= passage.length * MAX_MARK_SHARE, true);
+}
 
 const dump = join(HERE, "..", "eval", "top-passages.json");
 if (!existsSync(dump)) {

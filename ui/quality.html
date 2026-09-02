@@ -237,6 +237,17 @@ details[open] summary::before{content:"- ";}
       Its divisor is <span id="div-gap" class="num"></span> larger. The scores
       are honest within a corpus and misleading between them.</p>
       <div id="divisor" style="max-width:520px"></div>
+      <p class="note" style="margin-top:20px"><b>Every other figure on this page
+      counts a question answered when the answer is anywhere in the five
+      returned.</b> "Answer first" counts it only when the passage shown first is
+      one that answers, which is what a reader meets before scrolling. The gap
+      between the two is the ordering cost, and it is large: across the three
+      sets 83 of 125 questions open with a passage that answers and 114 of 125
+      hold one somewhere. Asked "which passage ranking dataset is used for
+      evaluation", the system returns the ColBERT passage naming MS MARCO
+      second and an appendix about a reading-comprehension set first. The hit
+      rate calls that a hit and the reader has to read past a wrong answer to
+      reach the right one.</p>
       <p class="note" style="margin-top:20px"><b>What the scoring could get
       wrong here, and what it does.</b> A question counts as answered when a
       passage comes back from a page the labels mark correct. A paper's title
@@ -720,6 +731,15 @@ if (!A || !A.corpora?.length) {
       note: `${c.documents} documents`,
     })), { max: 1, padLeft: 132 });
   }
+
+  /* Every bar above is @5. This one is @1, and it is the one a reader
+     experiences: the passage that opens the answer. */
+  hbars(cross, "Answer first", "the passage shown first is one that answers",
+    A.corpora.map(c => ({
+      k: c.label, v: c.answer_first.rate, c: HUE[c.i],
+      note: `${c.answer_first.first} of ${c.answer_first.answerable} questions,` +
+            ` against ${c.answer_first.found} answered somewhere in the five`,
+    })), { max: 1, padLeft: 132 });
 
   const lo = Math.min(...A.corpora.map(c => c.gold_divisor));
   const hi = Math.max(...A.corpora.map(c => c.gold_divisor));

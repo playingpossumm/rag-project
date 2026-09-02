@@ -13,6 +13,12 @@
    "calibrated": true,
    "n_answerable": 67,
    "n_adversarial": 17,
+   "answer_first": {
+    "answerable": 67,
+    "found": 61,
+    "first": 46,
+    "rate": 0.6866
+   },
    "ladder": [
     {
      "config": "dense, no rerank",
@@ -408,6 +414,12 @@
    "calibrated": true,
    "n_answerable": 25,
    "n_adversarial": 7,
+   "answer_first": {
+    "answerable": 25,
+    "found": 22,
+    "first": 13,
+    "rate": 0.52
+   },
    "ladder": [
     {
      "config": "dense, no rerank",
@@ -748,6 +760,12 @@
    "calibrated": true,
    "n_answerable": 33,
    "n_adversarial": 8,
+   "answer_first": {
+    "answerable": 33,
+    "found": 31,
+    "first": 24,
+    "rate": 0.7273
+   },
    "ladder": [
     {
      "config": "dense, no rerank",
@@ -1081,7 +1099,7 @@
   }
  ],
  "inputs": {
-  "corpora_json": "sha256:bb6bcecce74915dc",
+  "corpora_json": "sha256:647fd5f3df817e57",
   "answers": "sha256:a5406553fe8df4f3",
   "per_corpus": {
    "llm": {

@@ -59,7 +59,44 @@ def _terms(text: str) -> set:
             if w not in _STOP}
 
 
-def _brief(chunk: dict, query: str = "", limit: int = 260) -> str:
+# Citation apparatus, stripped before the window is measured rather than after
+# it is displayed. ui/answer-mark.js removes the same three things on the way to
+# the screen, and doing it only there meant the 260-character budget was spent
+# on "(Houlsby et al., 2019; Rebuffi et al., 2017)" and the reader saw 122
+# characters of prose. Kept in step with `clean` in that file.
+_CITE_YEAR = re.compile(r"\s*\((?=[^)]*(?:\b(?:19|20)\d{2}[a-z]?\b|\bet\s+al\b))[^)]{0,200}\)")
+_CITE_PART = re.compile(
+    r"\s*\((?:see\s+)?(?:Section|Sec\.|Figure|Fig\.|Table|Tab\.|Appendix|Eq\.|Equation)"
+    r"\s*[\d.A-Z]+\s*\)", re.I)
+_CITE_NUM = re.compile(r"\s*\[\s*\d+(?:\s*[,;\u2013-]\s*\d+)*\s*\]")
+
+
+def _strip_apparatus(text: str) -> str:
+    for pattern in (_CITE_NUM, _CITE_YEAR, _CITE_PART):
+        text = pattern.sub("", text)
+    return re.sub(r"\s+([,.;:])", r"\1", re.sub(r"\s+", " ", text)).strip()
+
+
+def _to_sentence_end(text: str, start: int, limit: int) -> str:
+    """The window from `start`, ended at a sentence boundary where there is one.
+
+    Cutting at exactly `limit` leaves the reader mid-clause, and a paragraph
+    that stops at a full stop reads as a statement rather than as a truncation.
+    A boundary is only used when it keeps at least 60% of the budget, because
+    ending at the first full stop after ten words is a worse excerpt than a
+    complete one that runs to the limit.
+    """
+    window = text[start:start + limit]
+    if start + limit >= len(text):
+        return window
+    ends = [m.end() for m in re.finditer(r"[.!?](?=\s|$)", window)]
+    for at in reversed(ends):
+        if at >= limit * 0.6:
+            return window[:at]
+    return window
+
+
+def _brief(chunk: dict, query: str = "", limit: int = 420) -> str:
     """The part of a passage worth showing, not simply its first 260 characters.
 
     Taking the head is right whenever the passage opens with its substance, and
@@ -73,12 +110,12 @@ def _brief(chunk: dict, query: str = "", limit: int = 260) -> str:
     passage whose opening already answers is unchanged, because its first
     sentence wins on the same test.
     """
-    text = " ".join(chunk["text"].split())
+    text = _strip_apparatus(" ".join(chunk["text"].split()))
     if len(text) <= limit:
         return text
     wanted = _terms(query)
     if not wanted:
-        return text[:limit]
+        return _to_sentence_end(text, 0, limit)
 
     # Sentence starts, with the offset each one begins at.
     starts, at = [0], 0
@@ -97,8 +134,8 @@ def _brief(chunk: dict, query: str = "", limit: int = 260) -> str:
         if score > best_score:
             best, best_score = start, score
     if best_score <= 0:
-        return text[:limit]
-    return text[best:best + limit]
+        return _to_sentence_end(text, 0, limit)
+    return _to_sentence_end(text, best, limit)
 
 
 def _identity(chunk: dict, query: str = "") -> dict:
