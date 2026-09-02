@@ -810,6 +810,19 @@ limitation.
    after the corrections, returns exactly the five above, which is the harness
    agreeing with the reading rather than repeating it.
 
+   **Six approaches have been measured against those five and none ships.**
+   Four of the five never reach the reranker, because RRF rewards agreement and
+   the two retrievers disagree sharply on them: BM25 ranks `wmt14`'s answer
+   11th and the embedder ranks it 138th, so it loses to chunks both rank in the
+   middle. Only `bird-hollow-bones` reaches the pool and is dropped afterwards,
+   and not by the diversity cap, which leaves the top five identical. Refuted
+   on the corrected labels: a deeper pool, every rerank blend, three
+   cross-encoders, window-level scoring, and retrieving on a hypothetical
+   answer (`src/sweep_hyde.py`), which recovers three of the five and costs
+   nine questions on the papers while tripling the adversarial cases that slip
+   the gate. Do not reach for any of these again without reading
+   `docs/engineering-log.md` under 2026-09-01 first.
+
    The account this replaces, written 2026-08-27: the seven on the ML papers
    were cross-document confusion, where the topic matches a dozen documents
    and the distinguishing clause is ignored, and the five on birds and quant
@@ -1053,6 +1066,7 @@ disclaim current work.
 | `src/test_generate_local.py` | that path over a real socket, against a fake Ollama |
 | `src/sweep_ensemble.py` | two embedders fused; the first change to move the fixture |
 | `src/sweep_decompose.py` | rewriting and decomposing the question, scored against the cases nothing else reaches |
+| `src/sweep_hyde.py` | retrieving on a generated hypothetical answer, scored on every case and on the gate |
 | `src/query_rewrite.py` | the rewrite and decompose strategies themselves, against a local model or the API |
 | `src/test_serve.py` | request handling, the offered questions, and the folder intake |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |

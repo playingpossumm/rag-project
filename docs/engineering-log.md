@@ -2323,6 +2323,94 @@ ensemble are all where they were.
 
 ---
 
+## 2026-09-01 — Five failures, diagnosed by stage, and four levers refuted
+
+The five that survive every configuration were treated as one problem. Asking
+where each loses the answer splits them, and the split decides what could
+possibly help.
+
+**Where the answer is lost.** For each case, the first gold chunk's rank in the
+dense ranking, in BM25, in the pool the reranker is handed, and in the final
+five:
+
+| case | dense | BM25 | shipped pool | final |
+|---|---|---|---|---|
+| `wmt14` | 138 | **11** | absent | missed |
+| `gpt3-params` | 23 | 16 | absent | missed |
+| `roberta-nsp-drop` | 35 | 167 | absent | missed |
+| `bird-precocial` | 12 | 55 | absent | missed |
+| `bird-hollow-bones` | 7 | 20 | **8** | missed |
+
+**Four of the five never reach the reranker**, and the reason is visible in
+`wmt14`: BM25 ranks the answer 11th and dense ranks it 138th, and RRF rewards
+agreement, so a chunk one retriever likes and the other does not loses to
+chunks both rank in the middle. That is the same correlation dilution recorded
+when a second embedder was fused. Only `bird-hollow-bones` is in the pool and
+dropped afterwards, and the diversity cap is not what drops it: capped and
+uncapped return an identical top five.
+
+**Four levers, re-measured on the corrected labels, and all four refuted.**
+Every one of these had been ruled out before against labels now known to be
+wrong, so none of the earlier rulings could be quoted.
+
+1. **A deeper candidate pool.** 28 candidates scores 0.895 on the ML papers
+   against 0.910 at 16, and buys nothing on the other two while their pool
+   ceilings reach 1.000. A fifth instance of pool recall being a ceiling and
+   not a proxy. At 40 the pool does recover `gpt3-params`, and loses
+   `lora-frozen`, for 60 of 67 either way.
+2. **The rerank blend.** The shipped values are already the best available:
+   0.00 on the papers, 0.20 on birds, 0.00 on quant.
+3. **Another cross-encoder.** `bge-reranker-base` costs 0.045 any-hit on the
+   papers and 0.080 on birds. `ms-marco-MiniLM-L-12-v2` gains 0.015 on the
+   papers and loses 0.040 on birds. Two gate-only combinations move nothing.
+4. **Scoring the best window inside a chunk rather than the whole chunk**, the
+   same idea that fixed the excerpt on screen. It raises the gold chunk's score
+   on `bird-hollow-bones` from -1.13 to -0.74 and moves it no places.
+
+**And one that came closer than anything before it.** Four of the five ask for
+a word the question does not contain, which is exactly why rewriting and
+decomposition failed: rewriting a question that lacks a word produces another
+question that lacks it. A hypothetical answer is different in kind. Asked to
+write the passage from memory, a model produces text containing the term, and
+the search runs on that. `src/sweep_hyde.py` measures it on every case.
+
+On the five it recovers three, `wmt14`, `roberta-nsp-drop` and
+`bird-hollow-bones`, which nothing else has moved. The mechanism is exactly
+visible: it hits when the generated passage contains the answer term and misses
+when it does not. llama3.2 writes "WMT 2014 English-German" and "hollow bones"
+correctly, and for the three it misses it writes about autoregressive models of
+order p, says masked language modelling was the objective removed from BERT,
+and invents "neonatal mobility" for precocial chicks.
+
+Measured on every case it is much worse:
+
+| | control | hypothetical | question and hypothetical |
+|---|---|---|---|
+| ML & NLP papers | **0.910** | 0.806, +2 -9 | 0.851, +3 -7 |
+| Ornithology | 0.880 | **0.920**, +2 -1 | **0.920**, +2 -1 |
+| Quantitative finance | **0.939** | 0.788, -5 | 0.818, -4 |
+
+It also does the thing the sweep was written to watch for. A hypothetical
+answer is written just as confidently for a question the corpus cannot answer,
+so adversarial cases slip the gate more often: 8 of 17 becomes 11 on the
+papers, 1 of 7 becomes 3 on birds, and 1 of 8 becomes 6 on quant. And it costs
+about 14 seconds a query against 1.2.
+
+**Not shipped, including on the birds.** The bird corpus gains a question net,
+and triples the adversarial cases that slip the gate to get it. Refusing a
+question the corpus cannot answer is the property this project has spent the
+most measurement defending, and one question of any-hit on 25 cases is thinner
+evidence than three of seven slipping.
+
+**What is left, stated plainly.** Every lever in this repository has now been
+measured against these five on correct labels, and none of them ships. Three of
+the five are reachable by a language model that knows the answer already, which
+is a statement about the model and not about the retrieval. `gpt3-params` is
+reachable by a pool of 40 at the cost of another question. `bird-precocial` is
+reached by nothing.
+
+---
+
 ## 2026-08-27 — Smaller things
 
 - `compare_rerankers.py` crashed **after** writing its results, on
