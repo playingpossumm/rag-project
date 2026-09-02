@@ -389,12 +389,19 @@ parameters had to be re-derived when the corpus changed, and one conclusion
 reversed outright. Pointing this at different documents means re-running the
 harness.
 
-- **Five questions fail under every pipeline configuration**, and no fix for
-  them is known: query decomposition was measured on 2026-08-31 and reaches
-  none, and pseudo-relevance feedback reaches none either. They are
+- **Five questions fail under every pipeline configuration**, and six
+  approaches have now been measured against them without one shipping. They are
   `gpt3-params`, `roberta-nsp-drop` and `wmt14` on the papers, and
-  `bird-hollow-bones` and `bird-precocial` on the birds. The finance corpus has
-  none.
+  `bird-hollow-bones` and `bird-precocial` on the birds; the finance corpus has
+  none. Four of the five never reach the reranker at all, because RRF rewards
+  agreement between the two retrievers and on these the two disagree sharply:
+  BM25 ranks `wmt14`'s answer 11th and the embedder ranks it 138th. Refuted
+  against them on the corrected labels: a deeper candidate pool, every rerank
+  blend, three cross-encoders, scoring the best window inside a chunk, and
+  retrieving on a hypothetical answer. The last of those recovers three of the
+  five and loses nine other questions on the papers, which is the closest
+  anything has come and still not close. `docs/engineering-log.md` under
+  2026-09-01 has the per-stage diagnosis and every measurement.
 - **That number was twelve until the twelve were read one at a time.** Four were
   cases the pipeline answers and the label scored wrong, because a derived label
   marks every passage containing its answer string rather than every passage

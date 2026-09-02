@@ -15,14 +15,14 @@
      "model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
      "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
      "gate_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
-     "hit_rate": 0.8507,
-     "mrr": 0.7381,
-     "ndcg": 0.7539,
-     "src_recall": 0.76,
-     "auc": 0.9324,
+     "hit_rate": 0.9104,
+     "mrr": 0.7828,
+     "ndcg": 0.8025,
+     "src_recall": 0.7838,
+     "auc": 0.9342,
      "unreachable": 9,
-     "ms_per_query": 1072,
-     "seconds": 90.0,
+     "ms_per_query": 1103,
+     "seconds": 92.6,
      "cases": {
       "mha-def": {
        "hit": true,
@@ -77,8 +77,8 @@
        "confidence": 3.047
       },
       "dropout-rate": {
-       "hit": false,
-       "confidence": 3.998
+       "hit": true,
+       "confidence": 7.029
       },
       "residual": {
        "hit": true,
@@ -121,7 +121,7 @@
        "confidence": 3.793
       },
       "adam-bias": {
-       "hit": false,
+       "hit": true,
        "confidence": 3.473
       },
       "adam-adamax": {
@@ -197,7 +197,7 @@
        "confidence": 6.136
       },
       "gpt3-fewshot": {
-       "hit": false,
+       "hit": true,
        "confidence": 0.966
       },
       "ln-vs-bn": {
@@ -265,7 +265,7 @@
        "confidence": 3.698
       },
       "t5-text2text": {
-       "hit": false,
+       "hit": true,
        "confidence": 5.995
       },
       "t5-span": {
@@ -295,300 +295,17 @@
      }
     },
     {
-     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
-     "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "hit_rate": 0.8507,
-     "mrr": 0.7381,
-     "ndcg": 0.7539,
-     "src_recall": 0.76,
-     "auc": 0.9122,
-     "unreachable": 18,
-     "ms_per_query": 1094,
-     "seconds": 91.9,
-     "cases": {
-      "mha-def": {
-       "hit": true,
-       "confidence": 4.816
-      },
-      "scale-why": {
-       "hit": true,
-       "confidence": 3.327
-      },
-      "warmup": {
-       "hit": true,
-       "confidence": 7.132
-      },
-      "pos-enc-fn": {
-       "hit": true,
-       "confidence": 4.951
-      },
-      "pos-enc-why": {
-       "hit": true,
-       "confidence": 6.897
-      },
-      "moe-routing": {
-       "hit": true,
-       "confidence": 7.4
-      },
-      "path-length": {
-       "hit": true,
-       "confidence": 7.25
-      },
-      "bleu-ende": {
-       "hit": true,
-       "confidence": 8.574
-      },
-      "attn-uses": {
-       "hit": true,
-       "confidence": 8.236
-      },
-      "label-smooth": {
-       "hit": true,
-       "confidence": 6.699
-      },
-      "p100": {
-       "hit": true,
-       "confidence": 3.767
-      },
-      "adam": {
-       "hit": true,
-       "confidence": -2.208
-      },
-      "relu": {
-       "hit": true,
-       "confidence": 4.201
-      },
-      "dropout-rate": {
-       "hit": false,
-       "confidence": 5.099
-      },
-      "residual": {
-       "hit": true,
-       "confidence": 6.875
-      },
-      "wmt14": {
-       "hit": false,
-       "confidence": 5.553
-      },
-      "colbert-late": {
-       "hit": true,
-       "confidence": 5.369
-      },
-      "dpr-dual": {
-       "hit": true,
-       "confidence": 6.026
-      },
-      "lora-rank": {
-       "hit": true,
-       "confidence": 7.874
-      },
-      "bert-mlm": {
-       "hit": true,
-       "confidence": 9.772
-      },
-      "cot-prompt": {
-       "hit": true,
-       "confidence": 5.213
-      },
-      "sbert-siamese": {
-       "hit": true,
-       "confidence": 7.688
-      },
-      "vit-patches": {
-       "hit": true,
-       "confidence": 6.567
-      },
-      "faiss-pq": {
-       "hit": true,
-       "confidence": 3.691
-      },
-      "adam-bias": {
-       "hit": false,
-       "confidence": 3.66
-      },
-      "adam-adamax": {
-       "hit": true,
-       "confidence": 4.614
-      },
-      "bahdanau-fixed": {
-       "hit": true,
-       "confidence": 4.284
-      },
-      "bahdanau-align": {
-       "hit": true,
-       "confidence": 8.297
-      },
-      "bn-covariate": {
-       "hit": true,
-       "confidence": 5.38
-      },
-      "bn-minibatch": {
-       "hit": true,
-       "confidence": 6.653
-      },
-      "bert-nsp": {
-       "hit": true,
-       "confidence": 5.443
-      },
-      "bert-wordpiece": {
-       "hit": false,
-       "confidence": 4.349
-      },
-      "bert-glue": {
-       "hit": false,
-       "confidence": 6.221
-      },
-      "cot-gsm8k": {
-       "hit": true,
-       "confidence": 0.45
-      },
-      "cot-scale": {
-       "hit": true,
-       "confidence": 8.484
-      },
-      "colbert-maxsim": {
-       "hit": true,
-       "confidence": 7.41
-      },
-      "colbert-msmarco": {
-       "hit": true,
-       "confidence": 4.097
-      },
-      "dpr-bm25": {
-       "hit": true,
-       "confidence": 6.924
-      },
-      "dpr-nq": {
-       "hit": true,
-       "confidence": 7.435
-      },
-      "faiss-kselect": {
-       "hit": true,
-       "confidence": 5.378
-      },
-      "faiss-ivf": {
-       "hit": true,
-       "confidence": 3.205
-      },
-      "gpt3-params": {
-       "hit": false,
-       "confidence": 2.44
-      },
-      "gpt3-icl": {
-       "hit": true,
-       "confidence": 6.29
-      },
-      "gpt3-fewshot": {
-       "hit": false,
-       "confidence": 2.136
-      },
-      "ln-vs-bn": {
-       "hit": true,
-       "confidence": 6.754
-      },
-      "ln-stats": {
-       "hit": true,
-       "confidence": 3.125
-      },
-      "lora-latency": {
-       "hit": false,
-       "confidence": 6.498
-      },
-      "lora-frozen": {
-       "hit": true,
-       "confidence": 6.423
-      },
-      "rag-parametric": {
-       "hit": true,
-       "confidence": 7.243
-      },
-      "rag-marginalize": {
-       "hit": true,
-       "confidence": 3.81
-      },
-      "resnet-degradation": {
-       "hit": true,
-       "confidence": 4.059
-      },
-      "resnet-shortcut": {
-       "hit": true,
-       "confidence": 1.255
-      },
-      "resnet-152": {
-       "hit": true,
-       "confidence": 6.048
-      },
-      "roberta-dynamic": {
-       "hit": true,
-       "confidence": 4.362
-      },
-      "roberta-nsp-drop": {
-       "hit": false,
-       "confidence": 2.361
-      },
-      "sbert-cosine": {
-       "hit": true,
-       "confidence": 7.024
-      },
-      "sbert-speed": {
-       "hit": true,
-       "confidence": 3.423
-      },
-      "seq2seq-reverse": {
-       "hit": true,
-       "confidence": 3.188
-      },
-      "seq2seq-lstm": {
-       "hit": true,
-       "confidence": 5.679
-      },
-      "t5-c4": {
-       "hit": true,
-       "confidence": 4.764
-      },
-      "t5-text2text": {
-       "hit": false,
-       "confidence": 6.155
-      },
-      "t5-span": {
-       "hit": true,
-       "confidence": 6.991
-      },
-      "vit-jft": {
-       "hit": true,
-       "confidence": 6.315
-      },
-      "vit-inductive": {
-       "hit": true,
-       "confidence": 1.696
-      },
-      "w2v-cbow": {
-       "hit": true,
-       "confidence": 7.509
-      },
-      "w2v-skipgram": {
-       "hit": true,
-       "confidence": 6.298
-      },
-      "w2v-analogy": {
-       "hit": true,
-       "confidence": 6.269
-      }
-     }
-    },
-    {
      "model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
      "rank_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
      "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "hit_rate": 0.8657,
-     "mrr": 0.7415,
-     "ndcg": 0.7609,
-     "src_recall": 0.7741,
-     "auc": 0.9096,
+     "hit_rate": 0.9254,
+     "mrr": 0.7938,
+     "ndcg": 0.8139,
+     "src_recall": 0.798,
+     "auc": 0.9104,
      "unreachable": 17,
-     "ms_per_query": 2149,
-     "seconds": 180.5,
+     "ms_per_query": 3015,
+     "seconds": 253.3,
      "cases": {
       "mha-def": {
        "hit": true,
@@ -643,8 +360,8 @@
        "confidence": 4.201
       },
       "dropout-rate": {
-       "hit": false,
-       "confidence": 5.099
+       "hit": true,
+       "confidence": 7.351
       },
       "residual": {
        "hit": true,
@@ -687,7 +404,7 @@
        "confidence": 3.691
       },
       "adam-bias": {
-       "hit": false,
+       "hit": true,
        "confidence": 4.15
       },
       "adam-adamax": {
@@ -763,7 +480,7 @@
        "confidence": 6.29
       },
       "gpt3-fewshot": {
-       "hit": false,
+       "hit": true,
        "confidence": 2.136
       },
       "ln-vs-bn": {
@@ -831,7 +548,856 @@
        "confidence": 4.764
       },
       "t5-text2text": {
+       "hit": true,
+       "confidence": 6.155
+      },
+      "t5-span": {
+       "hit": true,
+       "confidence": 6.991
+      },
+      "vit-jft": {
+       "hit": true,
+       "confidence": 6.315
+      },
+      "vit-inductive": {
+       "hit": true,
+       "confidence": 1.696
+      },
+      "w2v-cbow": {
+       "hit": true,
+       "confidence": 7.509
+      },
+      "w2v-skipgram": {
+       "hit": true,
+       "confidence": 6.298
+      },
+      "w2v-analogy": {
+       "hit": true,
+       "confidence": 6.269
+      }
+     }
+    },
+    {
+     "model": "BAAI/bge-reranker-base",
+     "rank_model": "BAAI/bge-reranker-base",
+     "gate_model": "BAAI/bge-reranker-base",
+     "hit_rate": 0.8657,
+     "mrr": 0.7622,
+     "ndcg": 0.7808,
+     "src_recall": 0.7913,
+     "auc": 0.8736,
+     "unreachable": 28,
+     "ms_per_query": 12624,
+     "seconds": 1060.4,
+     "cases": {
+      "mha-def": {
+       "hit": true,
+       "confidence": 0.98
+      },
+      "scale-why": {
+       "hit": true,
+       "confidence": 0.729
+      },
+      "warmup": {
+       "hit": true,
+       "confidence": 0.996
+      },
+      "pos-enc-fn": {
+       "hit": true,
+       "confidence": 0.997
+      },
+      "pos-enc-why": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "moe-routing": {
+       "hit": true,
+       "confidence": 0.962
+      },
+      "path-length": {
+       "hit": true,
+       "confidence": 0.997
+      },
+      "bleu-ende": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "attn-uses": {
+       "hit": true,
+       "confidence": 1.0
+      },
+      "label-smooth": {
+       "hit": true,
+       "confidence": 0.987
+      },
+      "p100": {
+       "hit": true,
+       "confidence": 0.102
+      },
+      "adam": {
+       "hit": true,
+       "confidence": 0.577
+      },
+      "relu": {
+       "hit": true,
+       "confidence": 0.926
+      },
+      "dropout-rate": {
+       "hit": true,
+       "confidence": 1.0
+      },
+      "residual": {
+       "hit": true,
+       "confidence": 0.997
+      },
+      "wmt14": {
        "hit": false,
+       "confidence": 0.942
+      },
+      "colbert-late": {
+       "hit": true,
+       "confidence": 0.928
+      },
+      "dpr-dual": {
+       "hit": false,
+       "confidence": 0.974
+      },
+      "lora-rank": {
+       "hit": true,
+       "confidence": 0.992
+      },
+      "bert-mlm": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "cot-prompt": {
+       "hit": true,
+       "confidence": 0.979
+      },
+      "sbert-siamese": {
+       "hit": true,
+       "confidence": 0.996
+      },
+      "vit-patches": {
+       "hit": true,
+       "confidence": 0.943
+      },
+      "faiss-pq": {
+       "hit": true,
+       "confidence": 0.893
+      },
+      "adam-bias": {
+       "hit": true,
+       "confidence": 0.474
+      },
+      "adam-adamax": {
+       "hit": true,
+       "confidence": 0.983
+      },
+      "bahdanau-fixed": {
+       "hit": true,
+       "confidence": 0.989
+      },
+      "bahdanau-align": {
+       "hit": true,
+       "confidence": 0.997
+      },
+      "bn-covariate": {
+       "hit": true,
+       "confidence": 0.904
+      },
+      "bn-minibatch": {
+       "hit": true,
+       "confidence": 1.0
+      },
+      "bert-nsp": {
+       "hit": true,
+       "confidence": 0.95
+      },
+      "bert-wordpiece": {
+       "hit": false,
+       "confidence": 0.318
+      },
+      "bert-glue": {
+       "hit": false,
+       "confidence": 0.94
+      },
+      "cot-gsm8k": {
+       "hit": true,
+       "confidence": 0.924
+      },
+      "cot-scale": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "colbert-maxsim": {
+       "hit": true,
+       "confidence": 0.957
+      },
+      "colbert-msmarco": {
+       "hit": true,
+       "confidence": 0.412
+      },
+      "dpr-bm25": {
+       "hit": true,
+       "confidence": 0.985
+      },
+      "dpr-nq": {
+       "hit": true,
+       "confidence": 0.995
+      },
+      "faiss-kselect": {
+       "hit": true,
+       "confidence": 0.986
+      },
+      "faiss-ivf": {
+       "hit": true,
+       "confidence": 0.576
+      },
+      "gpt3-params": {
+       "hit": false,
+       "confidence": 0.71
+      },
+      "gpt3-icl": {
+       "hit": true,
+       "confidence": 0.309
+      },
+      "gpt3-fewshot": {
+       "hit": false,
+       "confidence": 0.492
+      },
+      "ln-vs-bn": {
+       "hit": true,
+       "confidence": 0.995
+      },
+      "ln-stats": {
+       "hit": true,
+       "confidence": 0.887
+      },
+      "lora-latency": {
+       "hit": true,
+       "confidence": 0.986
+      },
+      "lora-frozen": {
+       "hit": true,
+       "confidence": 0.982
+      },
+      "rag-parametric": {
+       "hit": true,
+       "confidence": 0.93
+      },
+      "rag-marginalize": {
+       "hit": true,
+       "confidence": 0.832
+      },
+      "resnet-degradation": {
+       "hit": true,
+       "confidence": 0.98
+      },
+      "resnet-shortcut": {
+       "hit": true,
+       "confidence": 0.285
+      },
+      "resnet-152": {
+       "hit": true,
+       "confidence": 0.931
+      },
+      "roberta-dynamic": {
+       "hit": true,
+       "confidence": 0.521
+      },
+      "roberta-nsp-drop": {
+       "hit": false,
+       "confidence": 0.155
+      },
+      "sbert-cosine": {
+       "hit": true,
+       "confidence": 0.907
+      },
+      "sbert-speed": {
+       "hit": true,
+       "confidence": 0.629
+      },
+      "seq2seq-reverse": {
+       "hit": false,
+       "confidence": 0.918
+      },
+      "seq2seq-lstm": {
+       "hit": true,
+       "confidence": 0.918
+      },
+      "t5-c4": {
+       "hit": true,
+       "confidence": 0.993
+      },
+      "t5-text2text": {
+       "hit": false,
+       "confidence": 0.08
+      },
+      "t5-span": {
+       "hit": true,
+       "confidence": 0.991
+      },
+      "vit-jft": {
+       "hit": true,
+       "confidence": 0.915
+      },
+      "vit-inductive": {
+       "hit": true,
+       "confidence": 0.46
+      },
+      "w2v-cbow": {
+       "hit": true,
+       "confidence": 0.995
+      },
+      "w2v-skipgram": {
+       "hit": true,
+       "confidence": 0.992
+      },
+      "w2v-analogy": {
+       "hit": true,
+       "confidence": 0.962
+      }
+     }
+    },
+    {
+     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|BAAI/bge-reranker-base",
+     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+     "gate_model": "BAAI/bge-reranker-base",
+     "hit_rate": 0.9104,
+     "mrr": 0.7828,
+     "ndcg": 0.8025,
+     "src_recall": 0.7838,
+     "auc": 0.9298,
+     "unreachable": 7,
+     "ms_per_query": 2011,
+     "seconds": 168.9,
+     "cases": {
+      "mha-def": {
+       "hit": true,
+       "confidence": 0.98
+      },
+      "scale-why": {
+       "hit": true,
+       "confidence": 0.729
+      },
+      "warmup": {
+       "hit": true,
+       "confidence": 0.99
+      },
+      "pos-enc-fn": {
+       "hit": true,
+       "confidence": 0.997
+      },
+      "pos-enc-why": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "moe-routing": {
+       "hit": true,
+       "confidence": 0.962
+      },
+      "path-length": {
+       "hit": true,
+       "confidence": 0.997
+      },
+      "bleu-ende": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "attn-uses": {
+       "hit": true,
+       "confidence": 1.0
+      },
+      "label-smooth": {
+       "hit": true,
+       "confidence": 0.987
+      },
+      "p100": {
+       "hit": true,
+       "confidence": 0.102
+      },
+      "adam": {
+       "hit": true,
+       "confidence": 0.034
+      },
+      "relu": {
+       "hit": true,
+       "confidence": 0.832
+      },
+      "dropout-rate": {
+       "hit": true,
+       "confidence": 1.0
+      },
+      "residual": {
+       "hit": true,
+       "confidence": 0.896
+      },
+      "wmt14": {
+       "hit": false,
+       "confidence": 0.007
+      },
+      "colbert-late": {
+       "hit": true,
+       "confidence": 0.928
+      },
+      "dpr-dual": {
+       "hit": true,
+       "confidence": 0.85
+      },
+      "lora-rank": {
+       "hit": true,
+       "confidence": 0.992
+      },
+      "bert-mlm": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "cot-prompt": {
+       "hit": true,
+       "confidence": 0.979
+      },
+      "sbert-siamese": {
+       "hit": true,
+       "confidence": 0.722
+      },
+      "vit-patches": {
+       "hit": true,
+       "confidence": 0.098
+      },
+      "faiss-pq": {
+       "hit": true,
+       "confidence": 0.893
+      },
+      "adam-bias": {
+       "hit": true,
+       "confidence": 0.154
+      },
+      "adam-adamax": {
+       "hit": true,
+       "confidence": 0.93
+      },
+      "bahdanau-fixed": {
+       "hit": true,
+       "confidence": 0.989
+      },
+      "bahdanau-align": {
+       "hit": true,
+       "confidence": 0.997
+      },
+      "bn-covariate": {
+       "hit": true,
+       "confidence": 0.904
+      },
+      "bn-minibatch": {
+       "hit": true,
+       "confidence": 0.986
+      },
+      "bert-nsp": {
+       "hit": true,
+       "confidence": 0.794
+      },
+      "bert-wordpiece": {
+       "hit": false,
+       "confidence": 0.318
+      },
+      "bert-glue": {
+       "hit": false,
+       "confidence": 0.892
+      },
+      "cot-gsm8k": {
+       "hit": true,
+       "confidence": 0.26
+      },
+      "cot-scale": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "colbert-maxsim": {
+       "hit": true,
+       "confidence": 0.937
+      },
+      "colbert-msmarco": {
+       "hit": true,
+       "confidence": 0.384
+      },
+      "dpr-bm25": {
+       "hit": true,
+       "confidence": 0.964
+      },
+      "dpr-nq": {
+       "hit": true,
+       "confidence": 0.995
+      },
+      "faiss-kselect": {
+       "hit": true,
+       "confidence": 0.048
+      },
+      "faiss-ivf": {
+       "hit": true,
+       "confidence": 0.252
+      },
+      "gpt3-params": {
+       "hit": false,
+       "confidence": 0.079
+      },
+      "gpt3-icl": {
+       "hit": true,
+       "confidence": 0.309
+      },
+      "gpt3-fewshot": {
+       "hit": true,
+       "confidence": 0.001
+      },
+      "ln-vs-bn": {
+       "hit": true,
+       "confidence": 0.965
+      },
+      "ln-stats": {
+       "hit": true,
+       "confidence": 0.887
+      },
+      "lora-latency": {
+       "hit": false,
+       "confidence": 0.085
+      },
+      "lora-frozen": {
+       "hit": true,
+       "confidence": 0.073
+      },
+      "rag-parametric": {
+       "hit": true,
+       "confidence": 0.93
+      },
+      "rag-marginalize": {
+       "hit": true,
+       "confidence": 0.718
+      },
+      "resnet-degradation": {
+       "hit": true,
+       "confidence": 0.39
+      },
+      "resnet-shortcut": {
+       "hit": true,
+       "confidence": 0.086
+      },
+      "resnet-152": {
+       "hit": true,
+       "confidence": 0.931
+      },
+      "roberta-dynamic": {
+       "hit": true,
+       "confidence": 0.003
+      },
+      "roberta-nsp-drop": {
+       "hit": false,
+       "confidence": 0.155
+      },
+      "sbert-cosine": {
+       "hit": true,
+       "confidence": 0.284
+      },
+      "sbert-speed": {
+       "hit": true,
+       "confidence": 0.377
+      },
+      "seq2seq-reverse": {
+       "hit": true,
+       "confidence": 0.005
+      },
+      "seq2seq-lstm": {
+       "hit": true,
+       "confidence": 0.918
+      },
+      "t5-c4": {
+       "hit": true,
+       "confidence": 0.993
+      },
+      "t5-text2text": {
+       "hit": true,
+       "confidence": 0.001
+      },
+      "t5-span": {
+       "hit": true,
+       "confidence": 0.991
+      },
+      "vit-jft": {
+       "hit": true,
+       "confidence": 0.704
+      },
+      "vit-inductive": {
+       "hit": true,
+       "confidence": 0.46
+      },
+      "w2v-cbow": {
+       "hit": true,
+       "confidence": 0.995
+      },
+      "w2v-skipgram": {
+       "hit": true,
+       "confidence": 0.992
+      },
+      "w2v-analogy": {
+       "hit": true,
+       "confidence": 0.962
+      }
+     }
+    },
+    {
+     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|cross-encoder/ms-marco-MiniLM-L-12-v2",
+     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+     "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
+     "hit_rate": 0.9104,
+     "mrr": 0.7828,
+     "ndcg": 0.8025,
+     "src_recall": 0.7838,
+     "auc": 0.9131,
+     "unreachable": 18,
+     "ms_per_query": 1401,
+     "seconds": 117.7,
+     "cases": {
+      "mha-def": {
+       "hit": true,
+       "confidence": 4.816
+      },
+      "scale-why": {
+       "hit": true,
+       "confidence": 3.327
+      },
+      "warmup": {
+       "hit": true,
+       "confidence": 7.132
+      },
+      "pos-enc-fn": {
+       "hit": true,
+       "confidence": 4.951
+      },
+      "pos-enc-why": {
+       "hit": true,
+       "confidence": 6.897
+      },
+      "moe-routing": {
+       "hit": true,
+       "confidence": 7.4
+      },
+      "path-length": {
+       "hit": true,
+       "confidence": 7.25
+      },
+      "bleu-ende": {
+       "hit": true,
+       "confidence": 8.574
+      },
+      "attn-uses": {
+       "hit": true,
+       "confidence": 8.236
+      },
+      "label-smooth": {
+       "hit": true,
+       "confidence": 6.699
+      },
+      "p100": {
+       "hit": true,
+       "confidence": 3.767
+      },
+      "adam": {
+       "hit": true,
+       "confidence": -2.208
+      },
+      "relu": {
+       "hit": true,
+       "confidence": 4.201
+      },
+      "dropout-rate": {
+       "hit": true,
+       "confidence": 7.351
+      },
+      "residual": {
+       "hit": true,
+       "confidence": 6.875
+      },
+      "wmt14": {
+       "hit": false,
+       "confidence": 5.553
+      },
+      "colbert-late": {
+       "hit": true,
+       "confidence": 5.369
+      },
+      "dpr-dual": {
+       "hit": true,
+       "confidence": 6.026
+      },
+      "lora-rank": {
+       "hit": true,
+       "confidence": 7.874
+      },
+      "bert-mlm": {
+       "hit": true,
+       "confidence": 9.772
+      },
+      "cot-prompt": {
+       "hit": true,
+       "confidence": 5.213
+      },
+      "sbert-siamese": {
+       "hit": true,
+       "confidence": 7.688
+      },
+      "vit-patches": {
+       "hit": true,
+       "confidence": 6.567
+      },
+      "faiss-pq": {
+       "hit": true,
+       "confidence": 3.691
+      },
+      "adam-bias": {
+       "hit": true,
+       "confidence": 3.66
+      },
+      "adam-adamax": {
+       "hit": true,
+       "confidence": 4.614
+      },
+      "bahdanau-fixed": {
+       "hit": true,
+       "confidence": 4.284
+      },
+      "bahdanau-align": {
+       "hit": true,
+       "confidence": 8.297
+      },
+      "bn-covariate": {
+       "hit": true,
+       "confidence": 5.38
+      },
+      "bn-minibatch": {
+       "hit": true,
+       "confidence": 6.653
+      },
+      "bert-nsp": {
+       "hit": true,
+       "confidence": 5.443
+      },
+      "bert-wordpiece": {
+       "hit": false,
+       "confidence": 4.349
+      },
+      "bert-glue": {
+       "hit": false,
+       "confidence": 6.221
+      },
+      "cot-gsm8k": {
+       "hit": true,
+       "confidence": 0.45
+      },
+      "cot-scale": {
+       "hit": true,
+       "confidence": 8.484
+      },
+      "colbert-maxsim": {
+       "hit": true,
+       "confidence": 7.41
+      },
+      "colbert-msmarco": {
+       "hit": true,
+       "confidence": 4.097
+      },
+      "dpr-bm25": {
+       "hit": true,
+       "confidence": 6.924
+      },
+      "dpr-nq": {
+       "hit": true,
+       "confidence": 7.435
+      },
+      "faiss-kselect": {
+       "hit": true,
+       "confidence": 5.378
+      },
+      "faiss-ivf": {
+       "hit": true,
+       "confidence": 3.205
+      },
+      "gpt3-params": {
+       "hit": false,
+       "confidence": 2.44
+      },
+      "gpt3-icl": {
+       "hit": true,
+       "confidence": 6.29
+      },
+      "gpt3-fewshot": {
+       "hit": true,
+       "confidence": 2.136
+      },
+      "ln-vs-bn": {
+       "hit": true,
+       "confidence": 6.754
+      },
+      "ln-stats": {
+       "hit": true,
+       "confidence": 3.125
+      },
+      "lora-latency": {
+       "hit": false,
+       "confidence": 6.498
+      },
+      "lora-frozen": {
+       "hit": true,
+       "confidence": 6.423
+      },
+      "rag-parametric": {
+       "hit": true,
+       "confidence": 7.243
+      },
+      "rag-marginalize": {
+       "hit": true,
+       "confidence": 3.81
+      },
+      "resnet-degradation": {
+       "hit": true,
+       "confidence": 4.059
+      },
+      "resnet-shortcut": {
+       "hit": true,
+       "confidence": 1.255
+      },
+      "resnet-152": {
+       "hit": true,
+       "confidence": 6.048
+      },
+      "roberta-dynamic": {
+       "hit": true,
+       "confidence": 4.362
+      },
+      "roberta-nsp-drop": {
+       "hit": false,
+       "confidence": 2.361
+      },
+      "sbert-cosine": {
+       "hit": true,
+       "confidence": 7.024
+      },
+      "sbert-speed": {
+       "hit": true,
+       "confidence": 3.423
+      },
+      "seq2seq-reverse": {
+       "hit": true,
+       "confidence": 3.188
+      },
+      "seq2seq-lstm": {
+       "hit": true,
+       "confidence": 5.679
+      },
+      "t5-c4": {
+       "hit": true,
+       "confidence": 4.764
+      },
+      "t5-text2text": {
+       "hit": true,
        "confidence": 6.155
       },
       "t5-span": {
@@ -866,21 +1432,21 @@
    "corpus": "birds",
    "label": "Ornithology",
    "blend": 0.2,
-   "n_answerable": 26,
-   "n_adversarial": 6,
+   "n_answerable": 25,
+   "n_adversarial": 7,
    "models": [
     {
      "model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
      "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
      "gate_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
-     "hit_rate": 0.8462,
-     "mrr": 0.6135,
-     "ndcg": 0.6709,
-     "src_recall": 0.7615,
-     "auc": 0.859,
+     "hit_rate": 0.88,
+     "mrr": 0.638,
+     "ndcg": 0.6978,
+     "src_recall": 0.792,
+     "auc": 0.8743,
      "unreachable": 2,
-     "ms_per_query": 1226,
-     "seconds": 39.2,
+     "ms_per_query": 1079,
+     "seconds": 34.5,
      "cases": {
       "bird-syrinx": {
        "hit": true,
@@ -929,10 +1495,6 @@
       "bird-flyway": {
        "hit": true,
        "confidence": 1.097
-      },
-      "bird-alula": {
-       "hit": false,
-       "confidence": -7.281
       },
       "bird-wing-loading": {
        "hit": true,
@@ -989,136 +1551,17 @@
      }
     },
     {
-     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
-     "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "hit_rate": 0.8462,
-     "mrr": 0.6135,
-     "ndcg": 0.6709,
-     "src_recall": 0.7615,
-     "auc": 0.8782,
-     "unreachable": 1,
-     "ms_per_query": 2178,
-     "seconds": 69.7,
-     "cases": {
-      "bird-syrinx": {
-       "hit": true,
-       "confidence": 6.163
-      },
-      "bird-keel": {
-       "hit": true,
-       "confidence": 4.623
-      },
-      "bird-barbules": {
-       "hit": true,
-       "confidence": 0.972
-      },
-      "bird-down": {
-       "hit": true,
-       "confidence": 3.919
-      },
-      "bird-airsacs": {
-       "hit": true,
-       "confidence": -1.643
-      },
-      "bird-brood-parasite": {
-       "hit": true,
-       "confidence": 6.96
-      },
-      "bird-altricial": {
-       "hit": true,
-       "confidence": 3.859
-      },
-      "bird-precocial": {
-       "hit": false,
-       "confidence": 1.075
-      },
-      "bird-furcula": {
-       "hit": true,
-       "confidence": 2.279
-      },
-      "bird-uropygial": {
-       "hit": true,
-       "confidence": 4.835
-      },
-      "bird-hollow-bones": {
-       "hit": false,
-       "confidence": 5.268
-      },
-      "bird-flyway": {
-       "hit": true,
-       "confidence": 2.561
-      },
-      "bird-alula": {
-       "hit": false,
-       "confidence": -7.89
-      },
-      "bird-wing-loading": {
-       "hit": true,
-       "confidence": -0.797
-      },
-      "bird-aspect-ratio": {
-       "hit": true,
-       "confidence": -2.338
-      },
-      "bird-melanin": {
-       "hit": true,
-       "confidence": 6.16
-      },
-      "bird-carotenoid": {
-       "hit": true,
-       "confidence": 5.572
-      },
-      "bird-iridescence": {
-       "hit": true,
-       "confidence": 5.215
-      },
-      "bird-tool-use": {
-       "hit": true,
-       "confidence": 0.099
-      },
-      "bird-mirror": {
-       "hit": true,
-       "confidence": 3.969
-      },
-      "bird-dialects": {
-       "hit": false,
-       "confidence": 0.196
-      },
-      "bird-dawn-chorus": {
-       "hit": true,
-       "confidence": -10.461
-      },
-      "bird-mimicry": {
-       "hit": true,
-       "confidence": 1.36
-      },
-      "bird-imprinting": {
-       "hit": true,
-       "confidence": -7.248
-      },
-      "bird-incubation": {
-       "hit": true,
-       "confidence": -2.859
-      },
-      "bird-fledging": {
-       "hit": true,
-       "confidence": 1.747
-      }
-     }
-    },
-    {
      "model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
      "rank_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
      "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "hit_rate": 0.8077,
-     "mrr": 0.5942,
-     "ndcg": 0.6562,
-     "src_recall": 0.7692,
-     "auc": 0.8782,
-     "unreachable": 1,
-     "ms_per_query": 3787,
-     "seconds": 121.2,
+     "hit_rate": 0.84,
+     "mrr": 0.618,
+     "ndcg": 0.6825,
+     "src_recall": 0.8,
+     "auc": 0.8914,
+     "unreachable": 2,
+     "ms_per_query": 2270,
+     "seconds": 72.6,
      "cases": {
       "bird-syrinx": {
        "hit": true,
@@ -1167,10 +1610,6 @@
       "bird-flyway": {
        "hit": true,
        "confidence": 2.561
-      },
-      "bird-alula": {
-       "hit": false,
-       "confidence": -7.184
       },
       "bird-wing-loading": {
        "hit": true,
@@ -1225,6 +1664,351 @@
        "confidence": 1.747
       }
      }
+    },
+    {
+     "model": "BAAI/bge-reranker-base",
+     "rank_model": "BAAI/bge-reranker-base",
+     "gate_model": "BAAI/bge-reranker-base",
+     "hit_rate": 0.8,
+     "mrr": 0.62,
+     "ndcg": 0.6543,
+     "src_recall": 0.714,
+     "auc": 0.9543,
+     "unreachable": 2,
+     "ms_per_query": 9625,
+     "seconds": 308.0,
+     "cases": {
+      "bird-syrinx": {
+       "hit": true,
+       "confidence": 0.982
+      },
+      "bird-keel": {
+       "hit": false,
+       "confidence": 0.94
+      },
+      "bird-barbules": {
+       "hit": true,
+       "confidence": 0.09
+      },
+      "bird-down": {
+       "hit": true,
+       "confidence": 0.984
+      },
+      "bird-airsacs": {
+       "hit": false,
+       "confidence": 0.133
+      },
+      "bird-brood-parasite": {
+       "hit": true,
+       "confidence": 0.98
+      },
+      "bird-altricial": {
+       "hit": true,
+       "confidence": 0.943
+      },
+      "bird-precocial": {
+       "hit": false,
+       "confidence": 0.081
+      },
+      "bird-furcula": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "bird-uropygial": {
+       "hit": true,
+       "confidence": 0.882
+      },
+      "bird-hollow-bones": {
+       "hit": false,
+       "confidence": 0.989
+      },
+      "bird-flyway": {
+       "hit": true,
+       "confidence": 0.007
+      },
+      "bird-wing-loading": {
+       "hit": true,
+       "confidence": 0.094
+      },
+      "bird-aspect-ratio": {
+       "hit": true,
+       "confidence": 0.639
+      },
+      "bird-melanin": {
+       "hit": true,
+       "confidence": 0.982
+      },
+      "bird-carotenoid": {
+       "hit": true,
+       "confidence": 0.959
+      },
+      "bird-iridescence": {
+       "hit": true,
+       "confidence": 0.375
+      },
+      "bird-tool-use": {
+       "hit": true,
+       "confidence": 0.03
+      },
+      "bird-mirror": {
+       "hit": true,
+       "confidence": 0.438
+      },
+      "bird-dialects": {
+       "hit": false,
+       "confidence": 0.965
+      },
+      "bird-dawn-chorus": {
+       "hit": true,
+       "confidence": 0.984
+      },
+      "bird-mimicry": {
+       "hit": true,
+       "confidence": 0.121
+      },
+      "bird-imprinting": {
+       "hit": true,
+       "confidence": 0.011
+      },
+      "bird-incubation": {
+       "hit": true,
+       "confidence": 0.768
+      },
+      "bird-fledging": {
+       "hit": true,
+       "confidence": 0.299
+      }
+     }
+    },
+    {
+     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|BAAI/bge-reranker-base",
+     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+     "gate_model": "BAAI/bge-reranker-base",
+     "hit_rate": 0.88,
+     "mrr": 0.638,
+     "ndcg": 0.6978,
+     "src_recall": 0.792,
+     "auc": 0.8686,
+     "unreachable": 2,
+     "ms_per_query": 1870,
+     "seconds": 59.8,
+     "cases": {
+      "bird-syrinx": {
+       "hit": true,
+       "confidence": 0.975
+      },
+      "bird-keel": {
+       "hit": true,
+       "confidence": 0.94
+      },
+      "bird-barbules": {
+       "hit": true,
+       "confidence": 0.023
+      },
+      "bird-down": {
+       "hit": true,
+       "confidence": 0.829
+      },
+      "bird-airsacs": {
+       "hit": true,
+       "confidence": 0.112
+      },
+      "bird-brood-parasite": {
+       "hit": true,
+       "confidence": 0.973
+      },
+      "bird-altricial": {
+       "hit": true,
+       "confidence": 0.943
+      },
+      "bird-precocial": {
+       "hit": false,
+       "confidence": 0.024
+      },
+      "bird-furcula": {
+       "hit": true,
+       "confidence": 0.035
+      },
+      "bird-uropygial": {
+       "hit": true,
+       "confidence": 0.579
+      },
+      "bird-hollow-bones": {
+       "hit": false,
+       "confidence": 0.989
+      },
+      "bird-flyway": {
+       "hit": true,
+       "confidence": 0.007
+      },
+      "bird-wing-loading": {
+       "hit": true,
+       "confidence": 0.094
+      },
+      "bird-aspect-ratio": {
+       "hit": true,
+       "confidence": 0.639
+      },
+      "bird-melanin": {
+       "hit": true,
+       "confidence": 0.982
+      },
+      "bird-carotenoid": {
+       "hit": true,
+       "confidence": 0.816
+      },
+      "bird-iridescence": {
+       "hit": true,
+       "confidence": 0.375
+      },
+      "bird-tool-use": {
+       "hit": true,
+       "confidence": 0.011
+      },
+      "bird-mirror": {
+       "hit": true,
+       "confidence": 0.438
+      },
+      "bird-dialects": {
+       "hit": false,
+       "confidence": 0.011
+      },
+      "bird-dawn-chorus": {
+       "hit": true,
+       "confidence": 0.001
+      },
+      "bird-mimicry": {
+       "hit": true,
+       "confidence": 0.121
+      },
+      "bird-imprinting": {
+       "hit": true,
+       "confidence": 0.001
+      },
+      "bird-incubation": {
+       "hit": true,
+       "confidence": 0.009
+      },
+      "bird-fledging": {
+       "hit": true,
+       "confidence": 0.299
+      }
+     }
+    },
+    {
+     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|cross-encoder/ms-marco-MiniLM-L-12-v2",
+     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+     "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
+     "hit_rate": 0.88,
+     "mrr": 0.638,
+     "ndcg": 0.6978,
+     "src_recall": 0.792,
+     "auc": 0.8971,
+     "unreachable": 1,
+     "ms_per_query": 1451,
+     "seconds": 46.4,
+     "cases": {
+      "bird-syrinx": {
+       "hit": true,
+       "confidence": 6.163
+      },
+      "bird-keel": {
+       "hit": true,
+       "confidence": 4.623
+      },
+      "bird-barbules": {
+       "hit": true,
+       "confidence": 0.972
+      },
+      "bird-down": {
+       "hit": true,
+       "confidence": 3.919
+      },
+      "bird-airsacs": {
+       "hit": true,
+       "confidence": -1.643
+      },
+      "bird-brood-parasite": {
+       "hit": true,
+       "confidence": 6.96
+      },
+      "bird-altricial": {
+       "hit": true,
+       "confidence": 3.859
+      },
+      "bird-precocial": {
+       "hit": false,
+       "confidence": 1.075
+      },
+      "bird-furcula": {
+       "hit": true,
+       "confidence": 2.279
+      },
+      "bird-uropygial": {
+       "hit": true,
+       "confidence": 4.835
+      },
+      "bird-hollow-bones": {
+       "hit": false,
+       "confidence": 5.268
+      },
+      "bird-flyway": {
+       "hit": true,
+       "confidence": 2.561
+      },
+      "bird-wing-loading": {
+       "hit": true,
+       "confidence": -0.797
+      },
+      "bird-aspect-ratio": {
+       "hit": true,
+       "confidence": -2.338
+      },
+      "bird-melanin": {
+       "hit": true,
+       "confidence": 6.16
+      },
+      "bird-carotenoid": {
+       "hit": true,
+       "confidence": 5.572
+      },
+      "bird-iridescence": {
+       "hit": true,
+       "confidence": 5.215
+      },
+      "bird-tool-use": {
+       "hit": true,
+       "confidence": 0.099
+      },
+      "bird-mirror": {
+       "hit": true,
+       "confidence": 3.969
+      },
+      "bird-dialects": {
+       "hit": false,
+       "confidence": 0.196
+      },
+      "bird-dawn-chorus": {
+       "hit": true,
+       "confidence": -10.461
+      },
+      "bird-mimicry": {
+       "hit": true,
+       "confidence": 1.36
+      },
+      "bird-imprinting": {
+       "hit": true,
+       "confidence": -7.248
+      },
+      "bird-incubation": {
+       "hit": true,
+       "confidence": -2.859
+      },
+      "bird-fledging": {
+       "hit": true,
+       "confidence": 1.747
+      }
+     }
     }
    ]
   },
@@ -1232,21 +2016,21 @@
    "corpus": "quant",
    "label": "Quantitative finance",
    "blend": 0.0,
-   "n_answerable": 35,
-   "n_adversarial": 6,
+   "n_answerable": 33,
+   "n_adversarial": 8,
    "models": [
     {
      "model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
      "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
      "gate_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
-     "hit_rate": 0.8857,
-     "mrr": 0.7143,
-     "ndcg": 0.749,
-     "src_recall": 0.741,
-     "auc": 0.9571,
-     "unreachable": 2,
-     "ms_per_query": 1756,
-     "seconds": 72.0,
+     "hit_rate": 0.9394,
+     "mrr": 0.7576,
+     "ndcg": 0.7944,
+     "src_recall": 0.7859,
+     "auc": 0.9962,
+     "unreachable": 0,
+     "ms_per_query": 110919,
+     "seconds": 4547.7,
      "cases": {
       "qf-garch": {
        "hit": true,
@@ -1316,14 +2100,6 @@
        "hit": true,
        "confidence": 1.19
       },
-      "qf-mean-reversion": {
-       "hit": false,
-       "confidence": -7.206
-      },
-      "qf-momentum": {
-       "hit": false,
-       "confidence": -8.61
-      },
       "qf-deep-learning": {
        "hit": true,
        "confidence": 1.272
@@ -1391,172 +2167,17 @@
      }
     },
     {
-     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
-     "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "hit_rate": 0.8857,
-     "mrr": 0.7143,
-     "ndcg": 0.749,
-     "src_recall": 0.741,
-     "auc": 0.9476,
-     "unreachable": 3,
-     "ms_per_query": 1699,
-     "seconds": 69.7,
-     "cases": {
-      "qf-garch": {
-       "hit": true,
-       "confidence": -0.872
-      },
-      "qf-var": {
-       "hit": true,
-       "confidence": 5.625
-      },
-      "qf-max-drawdown": {
-       "hit": true,
-       "confidence": 0.928
-      },
-      "qf-sortino": {
-       "hit": true,
-       "confidence": 3.552
-      },
-      "qf-mean-variance": {
-       "hit": true,
-       "confidence": 6.32
-      },
-      "qf-markowitz": {
-       "hit": true,
-       "confidence": 1.495
-      },
-      "qf-risk-parity": {
-       "hit": true,
-       "confidence": -0.363
-      },
-      "qf-lob": {
-       "hit": true,
-       "confidence": 3.403
-      },
-      "qf-order-flow": {
-       "hit": true,
-       "confidence": -1.694
-      },
-      "qf-market-making": {
-       "hit": true,
-       "confidence": -4.546
-      },
-      "qf-hft": {
-       "hit": true,
-       "confidence": -7.676
-      },
-      "qf-transaction-costs": {
-       "hit": true,
-       "confidence": 3.498
-      },
-      "qf-backtest": {
-       "hit": true,
-       "confidence": 4.405
-      },
-      "qf-heavy-tails": {
-       "hit": true,
-       "confidence": -0.593
-      },
-      "qf-stylized-facts": {
-       "hit": true,
-       "confidence": -0.905
-      },
-      "qf-copula": {
-       "hit": true,
-       "confidence": 0.499
-      },
-      "qf-black-scholes": {
-       "hit": true,
-       "confidence": 0.092
-      },
-      "qf-mean-reversion": {
-       "hit": false,
-       "confidence": -6.679
-      },
-      "qf-momentum": {
-       "hit": false,
-       "confidence": -9.785
-      },
-      "qf-deep-learning": {
-       "hit": true,
-       "confidence": 1.929
-      },
-      "qf-quant-4bit": {
-       "hit": true,
-       "confidence": 7.539
-      },
-      "qf-sparse-params": {
-       "hit": false,
-       "confidence": -0.211
-      },
-      "qf-structural-calibration": {
-       "hit": true,
-       "confidence": 6.657
-      },
-      "qf-aml-fusion": {
-       "hit": false,
-       "confidence": 0.733
-      },
-      "qf-news-taxonomy": {
-       "hit": true,
-       "confidence": 4.839
-      },
-      "qf-whale-attack": {
-       "hit": true,
-       "confidence": 4.226
-      },
-      "qf-degeneracy": {
-       "hit": true,
-       "confidence": 2.843
-      },
-      "qf-credit-stakeholders": {
-       "hit": true,
-       "confidence": 7.153
-      },
-      "qf-liquidity-policy": {
-       "hit": true,
-       "confidence": 5.089
-      },
-      "qf-cvar-interval": {
-       "hit": true,
-       "confidence": 3.886
-      },
-      "qf-verifiability-gap": {
-       "hit": true,
-       "confidence": 4.48
-      },
-      "qf-social-disclosure": {
-       "hit": true,
-       "confidence": 7.505
-      },
-      "qf-market-making-rl": {
-       "hit": true,
-       "confidence": 5.247
-      },
-      "qf-photonic-sharpe": {
-       "hit": true,
-       "confidence": 5.74
-      },
-      "qf-bvar-probabilistic": {
-       "hit": true,
-       "confidence": 4.728
-      }
-     }
-    },
-    {
      "model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
      "rank_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
      "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
-     "hit_rate": 0.8857,
-     "mrr": 0.739,
-     "ndcg": 0.7639,
-     "src_recall": 0.7576,
-     "auc": 0.9667,
-     "unreachable": 2,
-     "ms_per_query": 1950,
-     "seconds": 79.9,
+     "hit_rate": 0.9394,
+     "mrr": 0.7838,
+     "ndcg": 0.8102,
+     "src_recall": 0.8035,
+     "auc": 1.0,
+     "unreachable": 0,
+     "ms_per_query": 1993,
+     "seconds": 81.7,
      "cases": {
       "qf-garch": {
        "hit": false,
@@ -1626,14 +2247,6 @@
        "hit": true,
        "confidence": 0.092
       },
-      "qf-mean-reversion": {
-       "hit": false,
-       "confidence": -6.457
-      },
-      "qf-momentum": {
-       "hit": false,
-       "confidence": -8.972
-      },
       "qf-deep-learning": {
        "hit": true,
        "confidence": 2.186
@@ -1693,6 +2306,300 @@
       "qf-photonic-sharpe": {
        "hit": true,
        "confidence": 6.131
+      },
+      "qf-bvar-probabilistic": {
+       "hit": true,
+       "confidence": 4.728
+      }
+     }
+    },
+    {
+     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|BAAI/bge-reranker-base",
+     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+     "gate_model": "BAAI/bge-reranker-base",
+     "hit_rate": 0.9394,
+     "mrr": 0.7576,
+     "ndcg": 0.7944,
+     "src_recall": 0.7859,
+     "auc": 0.9205,
+     "unreachable": 0,
+     "ms_per_query": 1751,
+     "seconds": 71.8,
+     "cases": {
+      "qf-garch": {
+       "hit": true,
+       "confidence": 0.082
+      },
+      "qf-var": {
+       "hit": true,
+       "confidence": 0.985
+      },
+      "qf-max-drawdown": {
+       "hit": true,
+       "confidence": 0.367
+      },
+      "qf-sortino": {
+       "hit": true,
+       "confidence": 0.09
+      },
+      "qf-mean-variance": {
+       "hit": true,
+       "confidence": 0.973
+      },
+      "qf-markowitz": {
+       "hit": true,
+       "confidence": 0.044
+      },
+      "qf-risk-parity": {
+       "hit": true,
+       "confidence": 0.002
+      },
+      "qf-lob": {
+       "hit": true,
+       "confidence": 0.917
+      },
+      "qf-order-flow": {
+       "hit": true,
+       "confidence": 0.043
+      },
+      "qf-market-making": {
+       "hit": true,
+       "confidence": 0.023
+      },
+      "qf-hft": {
+       "hit": true,
+       "confidence": 0.996
+      },
+      "qf-transaction-costs": {
+       "hit": true,
+       "confidence": 0.013
+      },
+      "qf-backtest": {
+       "hit": true,
+       "confidence": 0.976
+      },
+      "qf-heavy-tails": {
+       "hit": true,
+       "confidence": 0.007
+      },
+      "qf-stylized-facts": {
+       "hit": true,
+       "confidence": 0.012
+      },
+      "qf-copula": {
+       "hit": true,
+       "confidence": 0.009
+      },
+      "qf-black-scholes": {
+       "hit": true,
+       "confidence": 0.007
+      },
+      "qf-deep-learning": {
+       "hit": true,
+       "confidence": 0.008
+      },
+      "qf-quant-4bit": {
+       "hit": true,
+       "confidence": 0.892
+      },
+      "qf-sparse-params": {
+       "hit": false,
+       "confidence": 0.001
+      },
+      "qf-structural-calibration": {
+       "hit": true,
+       "confidence": 0.115
+      },
+      "qf-aml-fusion": {
+       "hit": false,
+       "confidence": 0.007
+      },
+      "qf-news-taxonomy": {
+       "hit": true,
+       "confidence": 0.681
+      },
+      "qf-whale-attack": {
+       "hit": true,
+       "confidence": 0.918
+      },
+      "qf-degeneracy": {
+       "hit": true,
+       "confidence": 0.209
+      },
+      "qf-credit-stakeholders": {
+       "hit": true,
+       "confidence": 0.971
+      },
+      "qf-liquidity-policy": {
+       "hit": true,
+       "confidence": 0.93
+      },
+      "qf-cvar-interval": {
+       "hit": true,
+       "confidence": 0.067
+      },
+      "qf-verifiability-gap": {
+       "hit": true,
+       "confidence": 0.967
+      },
+      "qf-social-disclosure": {
+       "hit": true,
+       "confidence": 0.998
+      },
+      "qf-market-making-rl": {
+       "hit": true,
+       "confidence": 0.999
+      },
+      "qf-photonic-sharpe": {
+       "hit": true,
+       "confidence": 0.891
+      },
+      "qf-bvar-probabilistic": {
+       "hit": true,
+       "confidence": 0.752
+      }
+     }
+    },
+    {
+     "model": "cross-encoder/ms-marco-MiniLM-L-6-v2|cross-encoder/ms-marco-MiniLM-L-12-v2",
+     "rank_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+     "gate_model": "cross-encoder/ms-marco-MiniLM-L-12-v2",
+     "hit_rate": 0.9394,
+     "mrr": 0.7576,
+     "ndcg": 0.7944,
+     "src_recall": 0.7859,
+     "auc": 0.9811,
+     "unreachable": 1,
+     "ms_per_query": 1203,
+     "seconds": 49.3,
+     "cases": {
+      "qf-garch": {
+       "hit": true,
+       "confidence": -0.872
+      },
+      "qf-var": {
+       "hit": true,
+       "confidence": 5.625
+      },
+      "qf-max-drawdown": {
+       "hit": true,
+       "confidence": 0.928
+      },
+      "qf-sortino": {
+       "hit": true,
+       "confidence": 3.552
+      },
+      "qf-mean-variance": {
+       "hit": true,
+       "confidence": 6.32
+      },
+      "qf-markowitz": {
+       "hit": true,
+       "confidence": 1.495
+      },
+      "qf-risk-parity": {
+       "hit": true,
+       "confidence": -0.363
+      },
+      "qf-lob": {
+       "hit": true,
+       "confidence": 3.403
+      },
+      "qf-order-flow": {
+       "hit": true,
+       "confidence": -1.694
+      },
+      "qf-market-making": {
+       "hit": true,
+       "confidence": -4.546
+      },
+      "qf-hft": {
+       "hit": true,
+       "confidence": -7.676
+      },
+      "qf-transaction-costs": {
+       "hit": true,
+       "confidence": 3.498
+      },
+      "qf-backtest": {
+       "hit": true,
+       "confidence": 4.405
+      },
+      "qf-heavy-tails": {
+       "hit": true,
+       "confidence": -0.593
+      },
+      "qf-stylized-facts": {
+       "hit": true,
+       "confidence": -0.905
+      },
+      "qf-copula": {
+       "hit": true,
+       "confidence": 0.499
+      },
+      "qf-black-scholes": {
+       "hit": true,
+       "confidence": 0.092
+      },
+      "qf-deep-learning": {
+       "hit": true,
+       "confidence": 1.929
+      },
+      "qf-quant-4bit": {
+       "hit": true,
+       "confidence": 7.539
+      },
+      "qf-sparse-params": {
+       "hit": false,
+       "confidence": -0.211
+      },
+      "qf-structural-calibration": {
+       "hit": true,
+       "confidence": 6.657
+      },
+      "qf-aml-fusion": {
+       "hit": false,
+       "confidence": 0.733
+      },
+      "qf-news-taxonomy": {
+       "hit": true,
+       "confidence": 4.839
+      },
+      "qf-whale-attack": {
+       "hit": true,
+       "confidence": 4.226
+      },
+      "qf-degeneracy": {
+       "hit": true,
+       "confidence": 2.843
+      },
+      "qf-credit-stakeholders": {
+       "hit": true,
+       "confidence": 7.153
+      },
+      "qf-liquidity-policy": {
+       "hit": true,
+       "confidence": 5.089
+      },
+      "qf-cvar-interval": {
+       "hit": true,
+       "confidence": 3.886
+      },
+      "qf-verifiability-gap": {
+       "hit": true,
+       "confidence": 4.48
+      },
+      "qf-social-disclosure": {
+       "hit": true,
+       "confidence": 7.505
+      },
+      "qf-market-making-rl": {
+       "hit": true,
+       "confidence": 5.247
+      },
+      "qf-photonic-sharpe": {
+       "hit": true,
+       "confidence": 5.74
       },
       "qf-bvar-probabilistic": {
        "hit": true,

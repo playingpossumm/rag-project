@@ -129,6 +129,15 @@ and all of them are in `docs/engineering-log.md` with the measurements.
   filter destroys information rather than withdrawing a scoring artefact. It is
   off and it stays off. An audit that first reported those two as false credits
   was wrong for the reason recorded under 2026-08-31 in the log.
+- **Retrieving on a hypothetical answer.** Generating the passage from the
+  model's own memory and searching on that recovers three of the five remaining
+  failures, which nothing else has done, and costs 9 questions on the ML papers
+  and 4 on quant. It also triples the adversarial cases slipping the gate on
+  two corpora, because a hypothetical answer reads just as confident for a
+  question the documents cannot answer. `src/sweep_hyde.py`, measured
+  2026-09-01, off by default.
+- **A candidate pool of 28 or 40.** 28 scores 0.895 on the ML papers against
+  0.910 at 16. 40 recovers `gpt3-params` and loses `lora-frozen`.
 - **Pseudo-relevance feedback.** Recovers 0 of 12 structural cases, because the
   feedback documents do not contain the missing word either.
 - **Prefixing chunks with their document title.** Built, measured and then
