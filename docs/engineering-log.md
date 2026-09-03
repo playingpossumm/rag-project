@@ -2492,6 +2492,86 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — Three ways to reach the chunk next door, and one reason none works
+
+The answer sits one or two chunks from a retrieved one on 13 of the 23
+questions that return no passage containing it. Three arrangements aim at that,
+two of them without rebuilding anything:
+
+    neighbours   pull each candidate's immediate neighbours into the pool
+                 before reranking, so the cross-encoder can promote N+1 on its
+                 own merits. `src/sweep_neighbours.py`.
+    window       score each candidate on N-1 + N + N+1 while still returning N,
+                 so a chunk is ranked by the passage it sits in. Same file.
+    stride       chunk at an overlap of 105 tokens rather than 40, halving the
+                 stride so a boundary falls between every pair of today's
+                 chunks and a passage spanning one lands wholly inside a new
+                 chunk. `src/sweep_stride.py`, measured on the bird corpus.
+
+**All three are refuted, and the interesting part is that they fail together.**
+
+| | any-hit | MRR | answer shown | slips |
+|---|---|---|---|---|
+| **ML & NLP** control | **0.910** | **0.784** | **0.821** | 8 |
+| neighbours | 0.910 | 0.772 | 0.821 | 9 |
+| window | 0.881 | 0.743 | 0.746 | 5 |
+| **Ornithology** control | **0.880** | **0.638** | 0.760 | 1 |
+| neighbours | 0.880 | 0.638 | **0.800** | 1 |
+| window | 0.840 | 0.578 | 0.680 | 2 |
+| stride, pool scaled | 0.840 | 0.625 | 0.720 | 1 |
+| **Quantitative finance** control | **0.939** | **0.826** | **0.849** | 1 |
+| neighbours | 0.939 | 0.811 | 0.849 | 1 |
+| window | 0.818 | 0.615 | 0.697 | 0 |
+
+Neighbours in the pool gains exactly one question, on one corpus, and costs MRR
+on the other two, one more adversarial case slipping the gate on the papers,
+and two and a half times the latency. Window scoring is worse everywhere on
+everything except the gate. The finer stride adds 32% more chunks to the bird
+index and takes any-hit from 0.880 to 0.840 with the pool scaled to match, and
+answer shown from 0.760 to 0.720.
+
+**They recover the same question.** `bird-fledging` is the one thing neighbours
+gains and the one thing the finer stride gains. Three mechanisms, one shared
+result, which is what says they are all reaching the same small set and the
+rest is out of reach of the mechanism rather than of the particular
+implementation.
+
+**Why, and it is the finding that unifies most of this log.** The answering
+chunk does not contain the question's words. That is *why* it was not
+retrieved. Making it available changes nothing, because the reranker scores it
+against the same question and reaches the same conclusion the first stage did.
+The neighbours arm proves this cleanly: N+1 is in the pool, the cross-encoder
+reads it, and it still does not promote it.
+
+The same sentence explains the other refusals recorded today and before.
+Retrieving on a hypothetical answer works only when the model happens to supply
+the missing term. Choosing the excerpt over a wider window scores worse than
+choosing it over the chunk, because more room lets `_brief` follow the
+question's vocabulary further from the answer. The marking rule cannot fire on
+a definitional question. All four are the same shape: **a question that asks
+what something is called does not contain the word that finds it, so every
+mechanism that ranks, places or marks by question vocabulary walks away from
+the answer, and giving that mechanism more room makes it walk further.**
+
+**What would actually work, stated so it is not attempted again by accident.**
+Something has to supply the missing vocabulary. Only two things can: a model
+that already knows the answer, which `sweep_hyde.py` measured and which loses
+more than it gains, or a human writing better questions, which is not a
+retrieval result. This is a property of the query, not of the index, and no
+amount of chunk geometry or pool width addresses it.
+
+The window arm has one honest side-effect worth recording rather than
+celebrating. It reduces adversarial slips on all three corpora, 8 to 5 on the
+papers and 1 to 0 on quant, because scoring against a wider passage dilutes
+every match and lowers every score. That is a threshold shift wearing the
+costume of an improvement, and it costs 7 answerable questions on the papers to
+buy it.
+
+The scratch index built for the stride arm was deleted. `store-birds-stride` is
+reproducible from the command in `src/sweep_stride.py`.
+
+---
+
 ## 2026-09-03 — The answer is usually next door, and that is not a ranking problem
 
 Three things were being tracked separately: eleven scored misses, five
@@ -2569,8 +2649,19 @@ for the thirteen that sit within two chunks:
 ```
 
 Five sit further out, up to 1,979 characters, and no plausible chunk geometry
-reaches those. So the indicated experiment is chunk SIZE rather than overlap,
-and the counter-argument belongs in the same sentence: this pipeline's precision
+reaches those.
+
+> **The conclusion drawn from this was wrong and the entry above it has the
+> measurement.** It read "the indicated experiment is chunk SIZE rather than
+> overlap", on the reasoning that overlap cannot extend a chunk forwards. True
+> and beside the point: the answers at gap 1 are already inside chunk N+1, so
+> coverage was never missing. What is missing is a chunk holding BOTH the words
+> that find the passage and the words that answer, and a shorter stride
+> produces one exactly as a larger chunk does, without diluting precision. A
+> shorter stride was then measured and is refuted for a different reason
+> entirely.
+
+The counter-argument to a larger chunk belongs in the same sentence: this pipeline's precision
 rests on ranking small chunks, which is why `retrieve()` applies expansion last
 and says so, and a larger chunk trades that away. It also costs a re-ingest of
 three corpora, a re-derivation of three golden sets, and every number this

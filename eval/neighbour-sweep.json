@@ -1,0 +1,135 @@
+{
+ "generated_by": "src/sweep_neighbours.py",
+ "corpora": {
+  "llm": {
+   "label": "ML & NLP papers",
+   "arms": {
+    "control": {
+     "any_hit": 0.9104,
+     "mrr": 0.7841,
+     "ndcg": 0.8042,
+     "src_recall": 0.7846,
+     "answer_visible": 0.8209,
+     "slips": 8,
+     "seconds_per_query": 1.08
+    },
+    "neighbours": {
+     "any_hit": 0.9104,
+     "mrr": 0.7716,
+     "ndcg": 0.7984,
+     "src_recall": 0.7771,
+     "answer_visible": 0.8209,
+     "slips": 9,
+     "seconds_per_query": 2.64,
+     "gained": [],
+     "lost": []
+    },
+    "window": {
+     "any_hit": 0.8806,
+     "mrr": 0.7428,
+     "ndcg": 0.7695,
+     "src_recall": 0.7803,
+     "answer_visible": 0.7463,
+     "slips": 5,
+     "seconds_per_query": 2.6,
+     "gained": [
+      "cot-prompt",
+      "faiss-ivf"
+     ],
+     "lost": [
+      "adam-bias",
+      "dpr-dual",
+      "gpt3-icl",
+      "resnet-152",
+      "scale-why",
+      "seq2seq-lstm",
+      "t5-c4"
+     ]
+    }
+   }
+  },
+  "birds": {
+   "label": "Ornithology",
+   "arms": {
+    "control": {
+     "any_hit": 0.88,
+     "mrr": 0.638,
+     "ndcg": 0.6978,
+     "src_recall": 0.792,
+     "answer_visible": 0.76,
+     "slips": 1,
+     "seconds_per_query": 1.19
+    },
+    "neighbours": {
+     "any_hit": 0.88,
+     "mrr": 0.638,
+     "ndcg": 0.6918,
+     "src_recall": 0.792,
+     "answer_visible": 0.8,
+     "slips": 1,
+     "seconds_per_query": 2.75,
+     "gained": [
+      "bird-fledging"
+     ],
+     "lost": []
+    },
+    "window": {
+     "any_hit": 0.84,
+     "mrr": 0.578,
+     "ndcg": 0.6532,
+     "src_recall": 0.722,
+     "answer_visible": 0.68,
+     "slips": 2,
+     "seconds_per_query": 3.44,
+     "gained": [],
+     "lost": [
+      "bird-furcula",
+      "bird-keel"
+     ]
+    }
+   }
+  },
+  "quant": {
+   "label": "Quantitative finance",
+   "arms": {
+    "control": {
+     "any_hit": 0.9394,
+     "mrr": 0.8258,
+     "ndcg": 0.8332,
+     "src_recall": 0.8157,
+     "answer_visible": 0.8485,
+     "slips": 1,
+     "seconds_per_query": 1.04
+    },
+    "neighbours": {
+     "any_hit": 0.9394,
+     "mrr": 0.8106,
+     "ndcg": 0.8263,
+     "src_recall": 0.8308,
+     "answer_visible": 0.8485,
+     "slips": 1,
+     "seconds_per_query": 2.96,
+     "gained": [],
+     "lost": []
+    },
+    "window": {
+     "any_hit": 0.8182,
+     "mrr": 0.6146,
+     "ndcg": 0.6582,
+     "src_recall": 0.8444,
+     "answer_visible": 0.697,
+     "slips": 0,
+     "seconds_per_query": 4.26,
+     "gained": [],
+     "lost": [
+      "qf-garch",
+      "qf-heavy-tails",
+      "qf-social-disclosure",
+      "qf-structural-calibration",
+      "qf-transaction-costs"
+     ]
+    }
+   }
+  }
+ }
+}
