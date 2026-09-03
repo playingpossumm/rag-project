@@ -2492,6 +2492,52 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — The site now shows the metric, and every mechanism that failed
+
+Two gaps between what this repository knows and what the page says, closed.
+
+**The metric.** `evaluate.py` reports `answer_visible` beside `hit_rate` and
+`eval/RESULTS.md` carries the column, and `analytics.json` has carried it since
+that day because the ladder rows are copied wholesale. Nothing rendered it. So
+the repository disclosed that a hit means the right page rather than an answer
+the reader can see, and the site did not, which is the same shape of defect as
+the score claim corrected earlier today and milder only because it is an
+omission rather than an assertion.
+
+The analytics page now carries it in four places: a headline tile beside hit
+rate, a bar chart in the stage ladder, a column in the ladder table, and the
+cross-corpus comparison. Putting it beside hit rate is the point, since the
+pair is what says a location is not an answer. It also prices the diversity cap
+where a reader can see it: on the papers the cap costs 0.015 of hit rate and
+0.030 of answer shown.
+
+The tile row needed retuning to hold it. `auto-fit` at a 168px minimum fits six
+tiles in a panel that is about 1,076px inside, so the seventh wrapped onto a
+row of its own beside a large empty cell. 152px fits seven.
+
+**The mechanisms.** The "how it got here" list held eight rejected experiments
+and this session added four more without recording them. Now on the page:
+showing each passage with its neighbours, putting the neighbouring passage in
+the shortlist, scoring a passage on the passage around it, and cutting the
+documents into finer pieces. Each carries the figure that refuted it.
+
+The list is long enough now that the reason it is long is worth stating, and it
+is one reason rather than twelve. Nine of these aim at the same two dozen
+questions. The passage that answers does not contain the words of the question,
+which is why the search missed it, so putting it in front of the ranker changes
+nothing: the ranker reads the same question and reaches the same conclusion.
+Showing more of the document around it, cutting the document differently, and
+having a model invent an answer to search with are all ways of offering the same
+passage again. A question asking what something is *called* withholds the one
+word that would find it, and every part of this system that ranks, chooses or
+emphasises by the question's words moves away from the answer when given more
+room to look.
+
+Checked at three viewports on both pages: no horizontal overflow, no console
+errors, and the new table column does not clip.
+
+---
+
 ## 2026-09-03 — Three ways to reach the chunk next door, and one reason none works
 
 The answer sits one or two chunks from a retrieved one on 13 of the 23

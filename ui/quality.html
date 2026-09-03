@@ -98,7 +98,11 @@ h2.lab{margin:0;font-size:10px}
 .pill[aria-pressed="true"]{color:var(--ink);border-color:var(--faint);background:var(--sunk)}
 .pill .n{font-family:var(--mono);font-size:10px;color:var(--faint)}
 
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:1px;
+/* 152px, not 168px: the panel is capped at 1180 and pads to about 1076
+   inside, which fits six tiles at 168 and seven at 152. Adding the
+   answer-shown tile on 2026-09-03 made it seven, and at 168 the last one
+   wrapped onto a row of its own beside a large empty cell. */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:1px;
   background:var(--line)}
 /* One vertical rhythm for the page. Sections were spaced by whatever inline
    margin each one had picked up, so the gaps between them were all different. */
@@ -653,6 +657,8 @@ if (!A || !A.corpora?.length) {
        "Questions with known answers, used to score the system.|Adversarial ones are planted. The documents cannot answer them and the system should refuse."],
       ["Hit rate @5", f3(shipped.hit_rate), "a relevant passage returned",
        "How often a correct passage lands in the top five.|Says the answer was found. Says nothing about how far down it was."],
+      ["Answer shown", f3(shipped.answer_visible), "the answer is in the text returned",
+       "How often the answer is actually inside a passage handed back.|Lower than hit rate, and the gap is the point: a hit means the right page was reached, and a page can hold the answer in a paragraph that was not returned."],
       ["Source recall", f3(shipped.src_recall), "of the documents that answer",
        "Of the documents that answer a question, the share returned.|Hit rate can be perfect while three of four answering documents are missed."],
       ["Threshold", (c.threshold > 0 ? "+" : "") + c.threshold.toFixed(1),
@@ -696,10 +702,12 @@ if (!A || !A.corpora?.length) {
       "+ diversity 2/src": "+ cap 2 per doc",
       "+ diversity 1/src": "+ cap 1 per doc",
     };
-    for (const [key, title] of [["hit_rate", "Hit rate @5"], ["mrr", "MRR"],
+    for (const [key, title] of [["hit_rate", "Hit rate @5"],
+                                ["answer_visible", "Answer shown"], ["mrr", "MRR"],
                                 ["ndcg", "NDCG"], ["src_recall", "Source recall"]]) {
       hbars(host, title, key === "src_recall" ? "documents that answer, returned"
                        : key === "hit_rate" ? "any relevant passage in the top 5"
+                       : key === "answer_visible" ? "the answer is in the text returned"
                        : key === "mrr" ? "how high the first relevant passage sits"
                        : "rank quality over all relevant passages",
         c.ladder.map(r => ({
@@ -710,11 +718,13 @@ if (!A || !A.corpora?.length) {
     }
 
     $("#ladder-t").innerHTML =
-      `<tr><th>Configuration</th><th class="n">Hit rate</th><th class="n">MRR</th>
+      `<tr><th>Configuration</th><th class="n">Hit rate</th>
+       <th class="n">Answer shown</th><th class="n">MRR</th>
        <th class="n">NDCG</th><th class="n">Source recall</th></tr>` +
       c.ladder.map(r => `<tr><td>${esc(NAMES[r.config] || r.config)}${
         r.config === SHIP ? ' <span class="lab" style="color:var(--good)">shipped</span>' : ""}</td>
-        <td class="n">${f3(r.hit_rate)}</td><td class="n">${f3(r.mrr)}</td>
+        <td class="n">${f3(r.hit_rate)}</td>
+        <td class="n">${f3(r.answer_visible)}</td><td class="n">${f3(r.mrr)}</td>
         <td class="n">${f3(r.ndcg)}</td><td class="n">${f3(r.src_recall)}</td></tr>`).join("");
   }
 
@@ -723,6 +733,7 @@ if (!A || !A.corpora?.length) {
   const cross = $("#cross");
   for (const [key, title, sub] of [
     ["hit_rate", "Hit rate @5", "any relevant passage in the top 5"],
+    ["answer_visible", "Answer shown", "the answer is in the text returned"],
     ["mrr", "MRR", "how high the first relevant passage sits"],
     ["ndcg", "NDCG", "rank quality over all relevant passages"],
     ["src_recall", "Source recall", "documents that answer, returned"]]) {
