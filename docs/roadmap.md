@@ -18,7 +18,7 @@ is a snapshot.
 | Ornithology | 45 | 864 | 0.880 |
 | Quantitative finance | 35 | 6,184 | 0.939 |
 
-**447 checks**, none of which need a network or an API key:
+**456 checks**, none of which need a network or an API key:
 
 ```bash
 python src/test_metrics.py        # the scoring functions, hand-computed
@@ -28,6 +28,7 @@ python src/test_generate_local.py # generation, over a real socket
 python src/test_evaluate_answers.py  # the answer-quality judge, on answers it has scored wrongly
 python src/test_links.py          # the link checker, against the links that broke
 node  ui/test-answer-mark.mjs     # which words of a passage are set bold
+node  ui/test-passages.mjs        # whether a reader can see the passage that answers
 ```
 
 **Six guards**, each exiting non-zero rather than printing a warning nobody

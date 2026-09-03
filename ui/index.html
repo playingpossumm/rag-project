@@ -971,6 +971,7 @@ tr.out td{color:var(--faint)}
 <script type="module">
 import { buildCity, buildRun, drawScene, captions, shortDoc } from "/pipeline-map.js";
 import { clean, esc, fragment, markAnswer, STOP } from "/answer-mark.js";
+import { alsoFoundOrder, alsoFoundHint } from "/passages.js";
 
 const $ = s => document.querySelector(s);
 
@@ -1140,21 +1141,19 @@ function completed(item) {
    So the next passages from OTHER documents are offered underneath. Same
    documents are skipped: a second passage from the same file is usually the
    paragraph next door and adds nothing a reader could not have guessed. */
+/* The rest of the returned passages, listed under the answer.
+ *
+ * The selection and its wording are in ui/passages.js, which records the
+ * measurement that set them: the filters this used to apply hid the passage
+ * that answers on 15 of 79 recorded questions. */
 function alsoFound(sel, top, question, colour) {
-  const seen = new Set([top.source]);
-  const others = [];
-  for (const it of sel) {
-    if (seen.has(it.source)) continue;
-    seen.add(it.source);
-    others.push(it);
-    if (others.length === 2) break;
-  }
+  const others = alsoFoundOrder(sel, top);
   if (!others.length) return "";
+  const hint = alsoFoundHint(others, top);
 
   return `<details class="also"><summary>
       <span class="lab">Also found</span>
-      <span class="hint">${others.length} other document${
-        others.length > 1 ? "s" : ""} also matched this question</span>
+      <span class="hint">${hint}</span>
     </summary>
     ${others.map(it => `<div class="alt">
       <div class="ahead">
