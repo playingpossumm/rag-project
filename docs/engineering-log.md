@@ -2492,6 +2492,89 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — The page hid fifteen answers it had already retrieved
+
+Following the colon regression below, the same audit asked a wider question.
+For every confident recorded answer whose golden set names an
+`answer_contains` string, where does that string actually sit in the five
+passages retrieval returned?
+
+```
+  52  in the passage the page leads with
+  27  at rank 2 to 5, with the page leading with something else
+  42  nowhere in the five
+```
+
+The 42 are retrieval and are already counted. The 27 are a display question,
+and the display answered it badly. The page shows the lead in full and lists
+the rest under a disclosure, and that list applied two filters: one passage per
+document, and at most two of them. Each is defensible alone, since three
+passages of one paper is repetition and an unbounded list is not a summary.
+Together they put **15 of the 79 answers retrieval had returned on no part of
+the page at all**, neither as the lead nor in the list.
+
+Twelve of the fifteen were dropped for sitting in the same document as the
+lead, which is the case the per-document filter was least meant to cover. The
+reader is not being spared a repetitive second source there. They are being
+denied the paragraph of this document that answers, while the page leads with a
+paragraph of the same document that does not.
+
+**Measured, not argued.** Four candidate rules, all additive, since each keeps
+the lead and only adds entries beneath it:
+
+| rule | answers visible |
+|---|---|
+| one per document, at most two, shipped until today | 64 of 79 |
+| one per document, at most three | 65 of 79 |
+| plus one from the lead's own document, at most three | 76 of 79 |
+| the rest of the set, one per document then the remainder by rank | **79 of 79** |
+
+The second row is the one that settles the diagnosis. Raising the limit while
+keeping the per-document filter moves a single question, so the filter was the
+cause and the limit was not.
+
+The third row fails on `qf-social-disclosure`, whose five results are five
+passages of ONE document, because `diversify` backfills from what its own cap
+pushed aside rather than return fewer than k. A single same-document slot goes
+to rank 2 and the answer at rank 4 stays hidden. So the rest of the set is
+shown, ordered one per document first and then whatever that pass set aside, in
+rank order, which is the shape `diversify` itself uses. It is bounded at four
+because k is five, and the disclosure opens on request, so completeness costs
+the reader nothing until they ask for it.
+
+The wording moved with it. "2 other documents also matched this question"
+counted every entry as a document, and a second passage of the lead's own
+document is not one.
+
+**Nothing was reordered, and that was the point.** An earlier candidate did
+reorder: lead with the highest-ranked passage the marker can point at, on the
+argument that a passage carrying none of the question's words is unlikely to
+answer. Measured, it recovers 5 and breaks 3, and the trade is worse than net
++2 suggests, because all three broken cases swap a right passage with no
+highlight for a wrong passage with one. It is not shipped. The reranker's
+ordering stands and the fix is entirely in what the page is willing to show.
+
+**Now guarded.** The rule lived inside a 2,400-line HTML file where nothing
+could execute it, which is the same condition the answer highlight was in until
+2026-08-27 and for the same reason had never been tested. It is now
+`ui/passages.js` with `ui/test-passages.mjs` over it: 9 checks, the last of
+which sweeps every recorded answer in all three corpora and asserts that no
+answer retrieval returned is hidden from the reader. A passage the reader
+cannot reach is, to them, indistinguishable from one never retrieved.
+
+`check_docs.py` gained a second node suite, and adding it exposed a defect in
+the checker. It took the node count from the last suite it ran rather than
+summing them, so the stated total would have been 423 against 456 running and
+the drift would have been reported against the document instead of the code.
+Counts are summed now. 456 checks, 33 answer-highlight and 9 passage-selection.
+
+**A second test that failed against correct code**, the same shape as the one
+recorded below. The lone-result check passed a copy of the lead rather than the
+lead itself, and the selection identifies the lead by identity because
+`index.html` passes `sel[0]`. The check was wrong and the code was right.
+
+---
+
 ## 2026-09-03 — The colon rule threw away the definition it was pointing at
 
 Reported by reading the bird corpus: some answers show nothing in bold. Six of

@@ -683,7 +683,8 @@ SUITE_LABELS = {
     "test_ocr": "OCR",
 }
 # Counted in the same sentence and run by node, not python.
-NODE_SUITE = ("ui/test-answer-mark.mjs", "answer-highlight")
+NODE_SUITES = (("ui/test-answer-mark.mjs", "answer-highlight"),
+               ("ui/test-passages.mjs", "passage-selection"))
 # Documented as "plus the route suite" and deliberately outside the total,
 # because it starts its own server.
 UNCOUNTED = {"test_routes"}
@@ -767,25 +768,29 @@ def check_tests(problems: list[str], notes: list[str]) -> bool:
         else:
             notes.append(f"    ok    {label:<22} {count}")
 
-    node_path, node_label = NODE_SUITE
-    node_count, why = run_suite(["node", str(ROOT / node_path)], ROOT)
-    if node_count is None:
-        notes.append(f"    note  {node_label}: {why}")
-    else:
+    node_total = 0
+    for node_path, node_label in NODE_SUITES:
+        node_count, why = run_suite(["node", str(ROOT / node_path)], ROOT)
+        if node_count is None:
+            notes.append(f"    note  {node_label}: {why}")
+            continue
         m = re.search(label_pattern(node_label), text)
         if m and int(m.group(1)) != node_count:
             problems.append(f"'{node_label}' is written as {m.group(1)} and "
                             f"runs {node_count}")
         else:
             notes.append(f"    ok    {node_label:<22} {node_count}")
+        node_total += node_count
 
     # The two totals the sentence states: the python subtotal, and the headline
-    # that adds the node suite to it.
+    # that adds the node suites to it. Summed rather than taken from the last
+    # suite run, which is what a second node suite turned into a silent
+    # undercount on 2026-09-03.
     stated_sub = re.search(r"which is (\d+)", text)
     if stated_sub and int(stated_sub.group(1)) != subtotal:
         problems.append(f"the sentence says the suites sum to "
                         f"{stated_sub.group(1)} and they sum to {subtotal}")
-    total = subtotal + (node_count or 0)
+    total = subtotal + node_total
     for doc, pat in (("HANDOFF.md", r"\*\*(\d+) checks plus the route suite\*\*"),
                      ("docs/roadmap.md", r"\*\*(\d+) checks\*\*")):
         body = (ROOT / doc).read_text(encoding="utf-8")
