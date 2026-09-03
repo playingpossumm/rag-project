@@ -195,11 +195,37 @@ export function answerSpan(sentence, want, quantitative) {
   }
   if (hi - lo >= MAX_MARK_WORDS) hi = lo + MAX_MARK_WORDS - 1;
 
+  // What a range carries, which decides both the colon cut below and whether
+  // the span is worth marking at all.
+  const carriedIn = (a, b) => {
+    const got = new Set();
+    let fig = false;
+    for (const w of words.slice(a, b + 1)) {
+      for (const x of want) if (w.low.includes(x)) got.add(x);
+      if (/\d/.test(w.t)) fig = true;
+    }
+    return { n: got.size, fig };
+  };
+  const enough = r => r.n >= 2 || (r.n === 1 && r.fig);
+
   // A colon or a semicolon ends the clause, and a mark that runs past one
   // picks up whatever it introduces: "into a common format: McCann et al."
   // marked the clause and then two words of the citation after it.
+  //
+  // But a colon also introduces a DEFINITION, and there the half after it is
+  // the half worth marking. Cutting blindly, added 2026-09-02 for the citation
+  // above, broke that: "The chicks of passerines are altricial: blind,
+  // featherless, and helpless when hatched" was cut to end at "altricial:",
+  // which threw away "helpless" and "hatched" and left one query word, so the
+  // span failed the check below and the passage showed NO mark at all. Two
+  // answers in the bird corpus lost their highlight to it. The cut is applied
+  // only when the span survives it, since it exists to trim debris off a
+  // pointer rather than to destroy the pointer.
   for (let k = lo; k < hi; k++) {
-    if (/[:;]$/.test(words[k].t)) { hi = k; break; }
+    if (/[:;]$/.test(words[k].t)) {
+      if (enough(carriedIn(lo, k))) hi = k;
+      break;
+    }
   }
 
   // Trim from the end to fit the character bound, whole words only. A span
@@ -218,14 +244,7 @@ export function answerSpan(sentence, want, quantitative) {
   // called, the marked words were "this fused structure" -- one query word and
   // a pronoun standing in for the noun the question was about. Marking that
   // points at nothing. Two distinct query words, or one and a figure.
-  const span = words.slice(lo, hi + 1);
-  const carried = new Set();
-  let figure = false;
-  for (const w of span) {
-    for (const x of want) if (w.low.includes(x)) carried.add(x);
-    if (/\d/.test(w.t)) figure = true;
-  }
-  if (carried.size < 2 && !(carried.size === 1 && figure)) return null;
+  if (!enough(carriedIn(lo, hi))) return null;
 
   const startTok = words[lo].i;
   const endTok = words[hi].i;

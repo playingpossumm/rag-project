@@ -18,7 +18,7 @@ is a snapshot.
 | Ornithology | 45 | 864 | 0.880 |
 | Quantitative finance | 35 | 6,184 | 0.939 |
 
-**445 checks**, none of which need a network or an API key:
+**447 checks**, none of which need a network or an API key:
 
 ```bash
 python src/test_metrics.py        # the scoring functions, hand-computed

@@ -2492,6 +2492,72 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — The colon rule threw away the definition it was pointing at
+
+Reported by reading the bird corpus: some answers show nothing in bold. Six of
+the twenty-four confident bird answers had no highlight at all, and counting
+them together would have sent the fix to the wrong module, because "not bolded"
+is three faults wearing one appearance. The golden set records an
+`answer_contains` string for each case, so each passage on screen can be asked
+whether it holds the answer at all, which splits them:
+
+| what the page showed | cases | whose fault |
+|---|---|---|
+| the answer is on screen and not marked | 2 | `ui/answer-mark.js` |
+| the answer is not in the passage at all | 4 | ranking, already recorded |
+
+Only the first two are marking's to fix. Marking nothing is the correct
+response to a passage that does not contain the answer, and `bird-dialects` is
+one of the eleven misses recorded under 2026-09-03 above.
+
+**The first is a regression, introduced on 2026-09-02 by the entry two above
+this one.** That entry added a rule stopping a mark at a colon, because
+"...into a common format: McCann et al." had marked a clause and then two words
+of the citation the colon introduced. A colon introduces a definition at least
+as often as it introduces a citation, and there the half after it is the half
+worth marking:
+
+    The chicks of passerines are altricial: blind, featherless, and
+    helpless when hatched from their eggs.
+
+Asked what term describes chicks that hatch helpless, the cut landed at
+`altricial:` and threw away `helpless` and `hatched`, leaving `chicks` as the
+only query word in the span. The span then failed the two-distinct-words check
+below it, which returns null, so the passage showed no mark whatever. The rule
+did not merely shorten the mark, it deleted it, and it deleted it on exactly
+the sentence that answers.
+
+The cut is now applied only when the span survives it. That states what the
+rule was always for, which is trimming debris off a pointer rather than
+destroying the pointer, and it leaves the citation case cutting as before,
+since that span still carries four query words afterwards.
+
+**Measured over the sweep of 450 real passages**, marks rise from 327 to 338.
+The share of a passage set bold does not move at all -- median 3.5%, 90th 6.5%,
+max 20.0% before and after -- so the eleven recovered are marks that were being
+destroyed rather than marks now being made longer or looser.
+
+**A test that failed against correct code**, which is the opposite of the usual
+error and worth recording for it. The first draft of the two new checks used a
+trimmed version of the passage, where the answering sentence is 70% of what it
+was given. `MAX_MARK_SHARE` refuses that by design and the checks failed against
+code that is right. The recorded passage is used instead, where the sentence is
+28%, as on the page. Staged against the previous code both fail and against the
+current code both pass.
+
+**What is left, stated rather than rounded away.** Three of the 131 confident
+answers across the three corpora still show the answer without marking it, and
+they are three different shapes rather than one bug. `bird-incubation` is the
+instructive one. Asked what the period of sitting on eggs before hatching is
+called, the passage says "helping with the incubation of the eggs", and the only
+word shared with the question is "eggs". The rule requiring two distinct
+question words in a span cannot fire, and it cannot fire by construction: a
+question of the form "what is X called" is asking for the one word it does not
+contain. Loosening the rule globally would reintroduce the marks it was added
+to stop, so it stays and the limitation is recorded here instead.
+
+---
+
 ## 2026-09-03 — A fallback that fires on abstention never fires
 
 The proposal left open under 2026-09-01 was to run the hypothetical-answer

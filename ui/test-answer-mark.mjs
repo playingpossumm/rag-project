@@ -123,6 +123,30 @@ check("a real boundary still splits",
   check("and it does not end on a citation name", /et al\.?$/.test(run.trim()), false);
 }
 
+
+/* A colon introduces a definition as often as it introduces a citation, and
+   the definition is the half worth marking. Cutting at every colon threw away
+   the query words after it, left one behind, and failed the two-word check, so
+   the passage showed NO mark at all -- two bird answers lost their highlight
+   this way. Reported by reading the bird corpus, 2026-09-03. */
+{
+  // The recorded passage in full. A trimmed version made the answering
+  // sentence 70% of the passage, which MAX_MARK_SHARE refuses by design, so
+  // the check failed against correct code. Here it is 28%, as on the page.
+  const passage = "Eggs and nests The chicks of passerines are altricial: "
+    + "blind, featherless, and helpless when hatched from their eggs. Hence, "
+    + "the chicks require extensive parental care. Most passerines lay colored "
+    + "eggs, in Clutches vary considerably in size: some larger passerines of "
+    + "Australia such as lyrebirds and scrub-robins lay only a single egg, most "
+    + "smaller passerines in warmer climates lay between two a The family "
+    + "Viduidae do";
+  const q = "What term describes chicks that hatch helpless and wholly dependent on their parents?";
+  const runs = marked(markAnswer(passage, q));
+  check("a definitional colon does not suppress the mark entirely", runs.length > 0, true);
+  check("and the mark reaches past the colon to the words that define it",
+        /helpless|hatched/i.test(runs[0] || ""), true);
+}
+
 /* -------------------------------------------------------------- the sweep -- */
 
 /* ---- reported 2026-09-01, by reading the page -------------------------- */
