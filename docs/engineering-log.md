@@ -2492,6 +2492,76 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — A hit is a page, and the reader wanted an answer
+
+Two counts that ought to be close and are not. Eleven questions score as misses
+across the three corpora, and thirty-three score a hit while no passage the
+reader is shown contains the answer at all. Found by following the third bucket
+of the display audit below, which had been set aside as "retrieval, already
+counted". It was not already counted.
+
+The gap is in what `is_relevant` compares. `build_golden_set.derive_gold` takes
+a case's answer string, finds every chunk containing it, and records that
+chunk's LOCATOR, which is a source, a kind and a page. `is_relevant` then asks
+whether a result's locator is in that set. A page is longer than a chunk, so a
+page carrying the answer in one of its chunks marks **every** chunk of that page
+relevant, and a result from the right page scores a hit whether or not the
+answer is anywhere the reader can see it.
+
+**The obvious reading of that is the one this project has already got wrong**,
+which is why all thirty-three were read rather than counted. On 2026-08-31 an
+audit called two credits false because their chunks opened on a title block, and
+reading them in full showed both continue into an abstract that answers
+outright. A passage can answer without carrying one exact phrasing. So:
+
+```
+  21  the passage does not answer
+   7  the passage answers in different words, and the string test is too strict
+   5  arguable, recorded as arguable rather than pushed to a side
+```
+
+The seven are real credits and the test is what is wrong about them.
+`t5-span` returns "an objective that specifically corrupts contiguous, randomly
+spaced spans of tokens" against an answer string of "corrupted spans", and
+`w2v-cbow` returns "the CBOW architecture predicts the current word based on the
+context". Both answer. Neither contains the string.
+
+The twenty-one are not. `qf-markowitz` asks whose portfolio theory underpins
+modern allocation and returns a keywords block that never names Markowitz.
+`bird-melanin` asks which pigment gives feathers their black and brown colouring
+and returns "the colors of feathers are produced by pigments". `sbert-speed`
+returns the FAISS paper's 8.5x speedup, which is a different paper and a
+different quantity. Each is on a page that holds the answer somewhere, and each
+shows the reader a paragraph of that page that does not.
+
+**So roughly one answerable question in six is scored as found while the reader
+gets nothing.** any-hit@5 is not measuring the wrong thing. It measures whether
+retrieval reached a location that answers, and it does that correctly. It is
+simply not the question a reader asks, and the two have been reported as though
+they were the same. Nothing here says a published figure is wrong; it says a
+published figure means less than its name suggests.
+
+**Two measurement artefacts, both found by reading, both corrected before any
+count was quoted.** The corpus is converted from PDF and keeps markdown
+emphasis, so the batch-normalization paper renders "_internal_ _covariate_
+_shift,_" and an exact-string test called it absent where a reader plainly sees
+it -- the display path already strips these in `answer-mark.js`, so the test was
+measuring a text nobody is shown. En dashes did the same to "mean-variance".
+Between them the two moved two cases out of the population before anything was
+read, and quoting the first number this audit produced would have overstated it.
+
+`src/audit_page_credit.py` carries the verdicts with the reason for each, so a
+later reader who disagrees can see what was in front of the passage when it was
+judged, and it fails if the population moves, because a verdict list that has
+silently stopped describing its cases is worse than none.
+
+**Not changed here.** Reporting a second and stricter figure beside any-hit, or
+deriving gold on chunks rather than locators, are both larger than an audit and
+both change numbers that appear on the site, in `eval/RESULTS.md` and in three
+documents that `check_docs.py` holds to them. The measurement is recorded first.
+
+---
+
 ## 2026-09-03 — The page hid fifteen answers it had already retrieved
 
 Following the colon regression below, the same audit asked a wider question.
