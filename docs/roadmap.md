@@ -135,7 +135,13 @@ and all of them are in `docs/engineering-log.md` with the measurements.
   and 4 on quant. It also triples the adversarial cases slipping the gate on
   two corpora, because a hypothetical answer reads just as confident for a
   question the documents cannot answer. `src/sweep_hyde.py`, measured
-  2026-09-01, off by default.
+  2026-09-01, off by default. Running it **only** when the pipeline is already
+  below its abstention threshold, so that it cannot disturb a question that
+  works, was measured on 2026-09-03 and does not fire at all: every one of the
+  eleven questions the three corpora get wrong scores above its own corpus's
+  threshold, the highest at +6.36. Neither does any cheaper trigger, since
+  coverage, rerank margin and retriever agreement all put the failing questions
+  inside the range of the working ones. `src/hyde_trigger.py`.
 - **A candidate pool of 28 or 40.** 28 scores 0.895 on the ML papers against
   0.910 at 16. 40 recovers `gpt3-params` and loses `lora-frozen`.
 - **Pseudo-relevance feedback.** Recovers 0 of 12 structural cases, because the

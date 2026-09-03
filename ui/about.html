@@ -352,7 +352,10 @@ h2.lab{margin:0;font-size:10px}
             however far away they are. Ask the ornithology set about tax law
             and it returns five passages about birds. The threshold is set for
             each set of documents by measuring where its real answers stop and
-            its near-misses begin.</span></p>
+            its near-misses begin. What it catches is a question the documents
+            cannot answer. What it does not catch is a wrong passage, because
+            every question these three sets get wrong scores above its own
+            set's threshold, so the gate is never consulted about them.</span></p>
         </li>
       </ol>
 
@@ -363,9 +366,14 @@ h2.lab{margin:0;font-size:10px}
            location: a page for a PDF, a slide for a deck, a sheet for a
            spreadsheet.</p>
         <p><b>The score</b> comes from the cross-encoder and runs roughly
-           &minus;11 to +11. It is neither a probability nor a percentage. A
-           positive score means the passage answers the question. A strongly
-           negative one means the documents probably do not hold the answer.</p>
+           &minus;11 to +11. It is neither a probability nor a percentage, and
+           it does not say whether the passage is right. It says how strongly
+           the model matched this passage to this question, which is a
+           different quantity. Across the three sets there are eleven questions
+           where retrieval returns nothing correct, and nine of them score
+           positive, the highest at +6.36. A strongly negative score does mean
+           the documents probably do not hold the answer. A high one does not
+           mean they do.</p>
         <p><b>“Also found”</b> lists passages from <em>other</em> documents
            that matched. The top passage is sometimes the wrong one. Asked for
            a bird's fused collarbone, the cross-encoder ranks the pygostyle
@@ -504,6 +512,34 @@ h2.lab{margin:0;font-size:10px}
              named answer for those seven for months, on an argument rather
              than a measurement. <span class="num"><b>0 of 7</b>, at 21×
              the time</span></p>
+        </li>
+        <li class="gone">
+          <h4>Searching on an invented answer<span class="verdict">rejected</span></h4>
+          <p>The five questions no configuration reaches share a shape, in that
+             the word which would find the passage is absent from the question.
+             So a model was asked to answer from memory and the search was run
+             on its invented passage, which supplies the vocabulary while the
+             documents still supply the citation. Run on every question it is
+             worse. On the paper set it recovers three and breaks seven, and on
+             the finance set it recovers none and breaks four.
+             <span class="num">paper set <b>+3 / −7</b></span></p>
+          <p>The repair was to run it only when the system was already about to
+             decline, where it cannot disturb a question that works. That was
+             measured before it was built, and it does not fire. Every one of
+             the eleven questions these three sets get wrong scores
+             <em>above</em> its own set's refusal line, the highest at +6.36, so
+             the fallback would never once have run on the questions it was
+             written for. <span class="num">reaches <b>0 of 11</b></span></p>
+          <p>The reason is worth more than the experiment. The system is not
+             uncertain when it is wrong. It reads a plausible wrong passage and
+             scores it as highly as a right one, which is what makes these
+             failures permanent, and it is not something a confidence number can
+             expose. Three cheaper substitutes for the refusal line were tried
+             on the same reasoning, being how many of the question's words
+             appear in the passage, how far the top result leads the fifth, and
+             how much the two searches agree. On all three the questions that
+             fail sit inside the range of the questions that work, and catching
+             all eleven means firing on 90% of every question asked.</p>
         </li>
         <li class="gone">
           <h4>A second meaning-model searching alongside the first<span class="verdict">one set only</span></h4>
@@ -672,9 +708,10 @@ h2.lab{margin:0;font-size:10px}
           because it runs after selection.</dd>
 
         <dt>Abstention threshold</dt>
-        <dd>The score below which the system declines to answer. Calibrated per
-          corpus: the same number that costs one corpus a single question costs
-          another ten.
+        <dd>The score below which the system declines to answer, calibrated per
+          corpus, because the same number that costs one corpus a single
+          question costs another ten. It separates answerable questions from
+          unanswerable ones rather than right passages from wrong ones.
           <span class="aka">the gate · confidence threshold</span></dd>
 
         <dt>Golden set</dt>

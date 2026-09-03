@@ -825,6 +825,17 @@ limitation.
    the gate. Do not reach for any of these again without reading
    `docs/engineering-log.md` under 2026-09-01 first.
 
+   **Gating that last one on the abstention threshold does not work either**,
+   and the reason matters beyond it. Measured 2026-09-03 by
+   `src/hyde_trigger.py`: all eleven questions the three corpora get wrong score
+   ABOVE their own corpus's threshold, `lora-latency` at +6.36 against 0.0 and
+   `bird-hollow-bones` at +5.03 against -5.5, so a fallback fired on abstention
+   would run on four working questions and twenty-two correctly-refused
+   adversarial ones and on none of its targets. The system is not uncertain when
+   it is wrong. The gate separates answerable questions from unanswerable ones
+   and is not a wrongness detector, which rules out every design that treats a
+   low score as a signal of error.
+
    The account this replaces, written 2026-08-27: the seven on the ML papers
    were cross-document confusion, where the topic matches a dozen documents
    and the distinguishing clause is ignored, and the five on birds and quant
@@ -1069,6 +1080,7 @@ disclaim current work.
 | `src/sweep_ensemble.py` | two embedders fused; the first change to move the fixture |
 | `src/sweep_decompose.py` | rewriting and decomposing the question, scored against the cases nothing else reaches |
 | `src/sweep_hyde.py` | retrieving on a generated hypothetical answer, scored on every case and on the gate |
+| `src/hyde_trigger.py` | whether any signal can trigger that fallback selectively. None can |
 | `src/query_rewrite.py` | the rewrite and decompose strategies themselves, against a local model or the API |
 | `src/test_serve.py` | request handling, the offered questions, and the folder intake |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
