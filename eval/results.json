@@ -16,31 +16,36 @@
       "hit_rate": 0.866,
       "mrr": 0.613,
       "ndcg": 0.659,
-      "src_recall": 0.808
+      "src_recall": 0.808,
+      "answer_visible": 0.806
     },
     "rrf": {
       "hit_rate": 0.955,
       "mrr": 0.737,
       "ndcg": 0.754,
-      "src_recall": 0.809
+      "src_recall": 0.809,
+      "answer_visible": 0.925
     },
     "weighted a=0.3": {
       "hit_rate": 0.97,
       "mrr": 0.768,
       "ndcg": 0.782,
-      "src_recall": 0.811
+      "src_recall": 0.811,
+      "answer_visible": 0.955
     },
     "weighted a=0.5": {
       "hit_rate": 0.955,
       "mrr": 0.737,
       "ndcg": 0.759,
-      "src_recall": 0.807
+      "src_recall": 0.807,
+      "answer_visible": 0.925
     },
     "weighted a=0.7": {
       "hit_rate": 0.955,
       "mrr": 0.692,
       "ndcg": 0.721,
-      "src_recall": 0.798
+      "src_recall": 0.798,
+      "answer_visible": 0.925
     }
   },
   "end_to_end": {
@@ -48,37 +53,43 @@
       "hit_rate": 0.821,
       "mrr": 0.607,
       "ndcg": 0.657,
-      "src_recall": 0.678
+      "src_recall": 0.678,
+      "answer_visible": 0.746
     },
     "dense + rerank": {
       "hit_rate": 0.836,
       "mrr": 0.7,
       "ndcg": 0.72,
-      "src_recall": 0.712
+      "src_recall": 0.712,
+      "answer_visible": 0.776
     },
     "weighted + rerank": {
       "hit_rate": 0.925,
       "mrr": 0.788,
       "ndcg": 0.806,
-      "src_recall": 0.73
+      "src_recall": 0.73,
+      "answer_visible": 0.851
     },
     "rrf + rerank": {
       "hit_rate": 0.925,
       "mrr": 0.788,
       "ndcg": 0.808,
-      "src_recall": 0.745
+      "src_recall": 0.745,
+      "answer_visible": 0.851
     },
     "+ diversity 2/src": {
       "hit_rate": 0.91,
       "mrr": 0.784,
       "ndcg": 0.804,
-      "src_recall": 0.785
+      "src_recall": 0.785,
+      "answer_visible": 0.821
     },
     "+ diversity 1/src": {
       "hit_rate": 0.851,
       "mrr": 0.76,
       "ndcg": 0.776,
-      "src_recall": 0.816
+      "src_recall": 0.816,
+      "answer_visible": 0.776
     }
   },
   "expansion": {

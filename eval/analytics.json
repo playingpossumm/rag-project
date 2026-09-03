@@ -25,35 +25,40 @@
      "hit_rate": 0.821,
      "mrr": 0.607,
      "ndcg": 0.657,
-     "src_recall": 0.678
+     "src_recall": 0.678,
+     "answer_visible": 0.746
     },
     {
      "config": "dense + rerank",
      "hit_rate": 0.836,
      "mrr": 0.7,
      "ndcg": 0.72,
-     "src_recall": 0.712
+     "src_recall": 0.712,
+     "answer_visible": 0.776
     },
     {
      "config": "rrf + rerank",
      "hit_rate": 0.925,
      "mrr": 0.788,
      "ndcg": 0.808,
-     "src_recall": 0.745
+     "src_recall": 0.745,
+     "answer_visible": 0.851
     },
     {
      "config": "+ diversity 2/src",
      "hit_rate": 0.91,
      "mrr": 0.784,
      "ndcg": 0.804,
-     "src_recall": 0.785
+     "src_recall": 0.785,
+     "answer_visible": 0.821
     },
     {
      "config": "+ diversity 1/src",
      "hit_rate": 0.851,
      "mrr": 0.76,
      "ndcg": 0.776,
-     "src_recall": 0.816
+     "src_recall": 0.816,
+     "answer_visible": 0.776
     }
    ],
    "pool": [
@@ -62,35 +67,40 @@
      "hit_rate": 0.866,
      "mrr": 0.613,
      "ndcg": 0.659,
-     "src_recall": 0.808
+     "src_recall": 0.808,
+     "answer_visible": 0.806
     },
     {
      "config": "rrf",
      "hit_rate": 0.955,
      "mrr": 0.737,
      "ndcg": 0.754,
-     "src_recall": 0.809
+     "src_recall": 0.809,
+     "answer_visible": 0.925
     },
     {
      "config": "weighted a=0.3",
      "hit_rate": 0.97,
      "mrr": 0.768,
      "ndcg": 0.782,
-     "src_recall": 0.811
+     "src_recall": 0.811,
+     "answer_visible": 0.955
     },
     {
      "config": "weighted a=0.5",
      "hit_rate": 0.955,
      "mrr": 0.737,
      "ndcg": 0.759,
-     "src_recall": 0.807
+     "src_recall": 0.807,
+     "answer_visible": 0.925
     },
     {
      "config": "weighted a=0.7",
      "hit_rate": 0.955,
      "mrr": 0.692,
      "ndcg": 0.721,
-     "src_recall": 0.798
+     "src_recall": 0.798,
+     "answer_visible": 0.925
     }
    ],
    "dist": {
@@ -426,35 +436,40 @@
      "hit_rate": 0.8,
      "mrr": 0.603,
      "ndcg": 0.634,
-     "src_recall": 0.682
+     "src_recall": 0.682,
+     "answer_visible": 0.76
     },
     {
      "config": "dense + rerank",
      "hit_rate": 0.88,
      "mrr": 0.625,
      "ndcg": 0.681,
-     "src_recall": 0.745
+     "src_recall": 0.745,
+     "answer_visible": 0.8
     },
     {
      "config": "rrf + rerank",
      "hit_rate": 0.88,
      "mrr": 0.636,
      "ndcg": 0.694,
-     "src_recall": 0.772
+     "src_recall": 0.772,
+     "answer_visible": 0.84
     },
     {
      "config": "+ diversity 2/src",
      "hit_rate": 0.88,
      "mrr": 0.638,
      "ndcg": 0.698,
-     "src_recall": 0.792
+     "src_recall": 0.792,
+     "answer_visible": 0.76
     },
     {
      "config": "+ diversity 1/src",
      "hit_rate": 0.76,
      "mrr": 0.613,
      "ndcg": 0.648,
-     "src_recall": 0.805
+     "src_recall": 0.805,
+     "answer_visible": 0.64
     }
    ],
    "pool": [
@@ -463,35 +478,40 @@
      "hit_rate": 1.0,
      "mrr": 0.624,
      "ndcg": 0.664,
-     "src_recall": 0.894
+     "src_recall": 0.894,
+     "answer_visible": 0.96
     },
     {
      "config": "rrf",
      "hit_rate": 0.92,
      "mrr": 0.599,
      "ndcg": 0.641,
-     "src_recall": 0.875
+     "src_recall": 0.875,
+     "answer_visible": 0.88
     },
     {
      "config": "weighted a=0.3",
      "hit_rate": 0.92,
      "mrr": 0.465,
      "ndcg": 0.562,
-     "src_recall": 0.88
+     "src_recall": 0.88,
+     "answer_visible": 0.88
     },
     {
      "config": "weighted a=0.5",
      "hit_rate": 0.96,
      "mrr": 0.586,
      "ndcg": 0.646,
-     "src_recall": 0.888
+     "src_recall": 0.888,
+     "answer_visible": 0.92
     },
     {
      "config": "weighted a=0.7",
      "hit_rate": 1.0,
      "mrr": 0.56,
      "ndcg": 0.66,
-     "src_recall": 0.918
+     "src_recall": 0.918,
+     "answer_visible": 0.92
     }
    ],
    "dist": {
@@ -772,35 +792,40 @@
      "hit_rate": 0.697,
      "mrr": 0.432,
      "ndcg": 0.492,
-     "src_recall": 0.745
+     "src_recall": 0.745,
+     "answer_visible": 0.515
     },
     {
      "config": "dense + rerank",
      "hit_rate": 0.909,
      "mrr": 0.722,
      "ndcg": 0.731,
-     "src_recall": 0.784
+     "src_recall": 0.784,
+     "answer_visible": 0.727
     },
     {
      "config": "rrf + rerank",
      "hit_rate": 0.939,
      "mrr": 0.826,
      "ndcg": 0.816,
-     "src_recall": 0.789
+     "src_recall": 0.789,
+     "answer_visible": 0.848
     },
     {
      "config": "+ diversity 2/src",
      "hit_rate": 0.939,
      "mrr": 0.826,
      "ndcg": 0.833,
-     "src_recall": 0.816
+     "src_recall": 0.816,
+     "answer_visible": 0.848
     },
     {
      "config": "+ diversity 1/src",
      "hit_rate": 0.909,
      "mrr": 0.811,
      "ndcg": 0.816,
-     "src_recall": 0.844
+     "src_recall": 0.844,
+     "answer_visible": 0.818
     }
    ],
    "pool": [
@@ -809,35 +834,40 @@
      "hit_rate": 0.939,
      "mrr": 0.456,
      "ndcg": 0.544,
-     "src_recall": 0.849
+     "src_recall": 0.849,
+     "answer_visible": 0.788
     },
     {
      "config": "rrf",
      "hit_rate": 0.97,
      "mrr": 0.628,
      "ndcg": 0.656,
-     "src_recall": 0.847
+     "src_recall": 0.847,
+     "answer_visible": 0.909
     },
     {
      "config": "weighted a=0.3",
      "hit_rate": 0.939,
      "mrr": 0.62,
      "ndcg": 0.663,
-     "src_recall": 0.844
+     "src_recall": 0.844,
+     "answer_visible": 0.848
     },
     {
      "config": "weighted a=0.5",
      "hit_rate": 0.939,
      "mrr": 0.511,
      "ndcg": 0.611,
-     "src_recall": 0.844
+     "src_recall": 0.844,
+     "answer_visible": 0.848
     },
     {
      "config": "weighted a=0.7",
      "hit_rate": 0.97,
      "mrr": 0.509,
      "ndcg": 0.607,
-     "src_recall": 0.844
+     "src_recall": 0.844,
+     "answer_visible": 0.879
     }
    ],
    "dist": {
@@ -1113,7 +1143,7 @@
     },
     "results": {
      "path": "eval/results.json",
-     "digest": "sha256:a5046b4d0ef523a7"
+     "digest": "sha256:05c626ba23b07105"
     }
    },
    "birds": {
@@ -1127,7 +1157,7 @@
     },
     "results": {
      "path": "eval/results-birds.json",
-     "digest": "sha256:1c3e7771997a1361"
+     "digest": "sha256:0481a82cff0b491c"
     }
    },
    "quant": {
@@ -1141,7 +1171,7 @@
     },
     "results": {
      "path": "eval/results-quant.json",
-     "digest": "sha256:5fa5c2e1bd25cdb6"
+     "digest": "sha256:72d63b087c88fe00"
     }
    }
   }

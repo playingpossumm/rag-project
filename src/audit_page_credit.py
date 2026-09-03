@@ -19,19 +19,30 @@ title block, and reading them in full showed both continue into an abstract
 that answers outright. A passage can answer without carrying one exact
 phrasing, so the only way to settle this is to read the passages.
 
-All thirty-three were read on 2026-09-03. The verdicts are below, with the
-reason for each, and they split three ways rather than one:
+All were read rather than counted, and the population was corrected twice
+before the counts below meant anything.
 
-    21  the passage does not answer. The reader is shown a page that holds
-        the answer somewhere and a paragraph of it that does not.
-     7  the passage answers in different words, so the credit is right and the
+**The first reading was wrong about the cause, and the correction is the more
+useful finding.** It was taken off the DISPLAYED EXCERPT, which
+`pipeline_trace._brief` capped at 420 characters, so it reported 33 cases and
+blamed all of them on the locator. Twenty-one of the 33 had the answer in the
+retrieved chunk and lost it to that cap: the system found the answer and the
+page cut it off, which is a display defect and not a scoring one. The cap is
+720 from 2026-09-03 and answer-shown across the three corpora went 0.656 to
+0.808. What remains here is the population no display change can reach, because
+the answer is not in the retrieved chunk at all:
+
+     9  the passage does not answer. The reader is shown a page that holds the
+        answer somewhere and a paragraph of it that does not.
+     2  the passage answers in different words, so the credit is right and the
         string test is what is too strict.
-     5  arguable, recorded as arguable rather than pushed to either side.
+     3  arguable, recorded as arguable rather than pushed to either side.
 
-So roughly one answerable question in six is scored as found while the reader
-gets nothing. any-hit@5 is not measuring the wrong thing -- it measures whether
-retrieval reached a location that answers, and it does -- but it is not the
-question a reader asks, and the two were being reported as though they were.
+So 9 of 125 answerable questions are scored as found while the reader gets
+nothing, not the 21 first reported. any-hit@5 is not measuring the wrong thing.
+It measures whether retrieval reached a location that answers, and it does that
+correctly. It is simply not the question a reader asks, and the two were being
+reported as though they were the same. `evaluate.py` now reports both.
 
 **Two measurement artefacts, both found by reading and both corrected here.**
 The corpus is converted from PDF and keeps markdown emphasis, so the
@@ -72,47 +83,36 @@ def norm(text) -> str:
                   MARKUP.sub("", DASH.sub("-", str(text)))).strip().lower()
 
 
-# Read individually on 2026-09-03. The reason matters more than the verdict:
-# a later reader disagreeing with one of these should be able to see what was
-# in front of the passage when it was judged.
+# Read individually on 2026-09-03, and re-sorted the same day after the
+# population was corrected. The first reading of these was taken off the
+# DISPLAYED EXCERPT, which was capped at 420 characters, so it conflated two
+# causes and blamed both on the locator. Twenty-one of the thirty-three had the
+# answer in the retrieved chunk and lost it to that cap; raising the cap to 720
+# in pipeline_trace._brief fixed those. What is left below is the population
+# that survives it: the answer is not in the retrieved chunk at all, so no
+# display change can reach them.
+#
+# The reason matters more than the verdict. A later reader who disagrees with
+# one of these should be able to see what was in front of the passage.
 DOES_NOT_ANSWER = {
     "bird-flyway": "names migration routes, never the word flyway",
     "bird-imprinting": "mallard clutch timing, unrelated to imprinting",
-    "bird-aspect-ratio": "wing chord measurements, not the ratio asked for",
     "bird-fledging": "chick development by week, never names the stage",
-    "bird-melanin": "says colours come from pigments without naming one",
-    "attn-uses": "gives h = 8 heads, not the three uses asked for",
-    "lora-frozen": "describes full fine-tuning, the opposite arrangement",
-    "faiss-ivf": "describes searching partitions without naming the index",
-    "t5-c4": "denoising objectives, not the corpus",
-    "sbert-speed": "the FAISS paper's 8.5x, a different paper and quantity",
-    "cot-gsm8k": "a figure caption naming no benchmark",
     "cot-scale": "asks why scale helps and gives no scale",
-    "dpr-nq": "describes open-domain QA and names no dataset",
-    "qf-news-taxonomy": "states that layers are built, gives no count",
-    "qf-market-making": "defines lots and ticks, not the activity",
-    "qf-max-drawdown": "Rachev and Sharpe ratios, not drawdown",
-    "qf-market-making-rl": "a title block and keywords",
+    "faiss-ivf": "describes searching partitions without naming the index",
+    "lora-frozen": "describes full fine-tuning, the opposite arrangement",
     "qf-deep-learning": "probabilistic estimation, names no method family",
-    "qf-cvar-interval": "convex cost criteria, not the interval",
-    "qf-bvar-probabilistic": "forecasting accuracy in general terms",
-    "qf-markowitz": "a keywords block that never names Markowitz",
+    "qf-market-making": "defines lots and ticks, not the activity",
+    "pos-enc-fn": "explains why the function was chosen, never gives it",
 }
 ANSWERS_IN_OTHER_WORDS = {
-    "bird-mirror": "'mirror self-recognition ... in European magpies'",
-    "adam": "a hyperparameter table giving AdamW and beta .9/.999",
-    "seq2seq-lstm": "names the LSTM architecture outright",
     "w2v-cbow": "'the CBOW architecture predicts the current word'",
-    "t5-span": "'corrupts contiguous, randomly spaced spans of tokens'",
-    "qf-transaction-costs": "'blockchain frictions, such as gas fees'",
     "qf-order-flow": "names the weighted volume imbalance signal",
 }
 ARGUABLE = {
     "cot-prompt": "says equation-only prompting helps, not the full effect",
     "resnet-degradation": "discusses deep plain nets without saying saturated",
-    "pos-enc-fn": "explains why the function was chosen, not the function",
     "qf-degeneracy": "the right paper, and the name is in its title only",
-    "qf-liquidity-policy": "allocation under uncertainty, not by mispricing",
 }
 READ = {**DOES_NOT_ANSWER, **ANSWERS_IN_OTHER_WORDS, **ARGUABLE}
 

@@ -19,14 +19,14 @@
 ## Headline
 
 <!-- generated:end-to-end -->
-| pipeline | any-hit@5 | MRR | NDCG | src recall |
-|---|---|---|---|---|
-| dense, no rerank | 0.821 | 0.607 | 0.657 | 0.678 |
-| dense + rerank | 0.836 | 0.700 | 0.720 | 0.712 |
-| weighted + rerank | 0.925 | 0.788 | 0.806 | 0.730 |
-| rrf + rerank | 0.925 | 0.788 | 0.808 | 0.745 |
-| + diversity 2/src | 0.910 | 0.784 | 0.804 | 0.785 |
-| + diversity 1/src | 0.851 | 0.760 | 0.776 | 0.816 |
+| pipeline | any-hit@5 | MRR | NDCG | src recall | answer shown |
+|---|---|---|---|---|---|
+| dense, no rerank | 0.821 | 0.607 | 0.657 | 0.678 | 0.746 |
+| dense + rerank | 0.836 | 0.700 | 0.720 | 0.712 | 0.776 |
+| weighted + rerank | 0.925 | 0.788 | 0.806 | 0.730 | 0.851 |
+| rrf + rerank | 0.925 | 0.788 | 0.808 | 0.745 | 0.851 |
+| + diversity 2/src | 0.910 | 0.784 | 0.804 | 0.785 | 0.821 |
+| + diversity 1/src | 0.851 | 0.760 | 0.776 | 0.816 | 0.776 |
 <!-- /generated:end-to-end -->
 
 Each row adds one stage to the row above it. `+ diversity cap 2/src` is what

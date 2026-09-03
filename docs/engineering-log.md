@@ -2492,6 +2492,83 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — The excerpt was hiding answers the system had found
+
+The entry below reported 33 questions scored as hits whose passage does not
+contain the answer, and attributed them to gold being derived per locator. That
+was measured off the excerpt the page displays, not off the passage retrieval
+returned, and the two are not the same text: `pipeline_trace._brief` capped the
+excerpt at 420 characters while chunks run to 1,310. Separating them splits the
+33 nearly two to one the other way.
+
+| | birds | ML & NLP | quant |
+|---|---|---|---|
+| any-hit@5, the locator | 0.880 | 0.910 | 0.939 |
+| answer in the retrieved chunk | 0.760 | 0.821 | 0.848 |
+| answer in the excerpt shown | 0.640 | 0.701 | 0.576 |
+
+The first gap is the one the entry below describes and it is real. The second is
+larger and is a display defect: **the system retrieved the answer and the page
+cut it off**, on 21 questions. `bird-melanin`, `qf-markowitz`, `dpr-nq` and
+`sbert-speed` were all read as "the passage does not answer" and all four had
+the answer in the passage, past the edge of what was shown.
+
+**Why the window loses it.** The excerpt opens at the sentence carrying most of
+the question's words, which is the best signal available and is precisely wrong
+for a definitional question. "What is X called" asks for the one word it does
+not contain, so the window centres on the question's vocabulary and the answer
+term sits outside it.
+
+**Two defects found by raising the limit, neither of which is the limit.**
+
+The first: `_brief` returned any passage shorter than the limit whole, without
+windowing it. At 420 that was rare. At 720 a 498-character chunk opening on a
+title block and author addresses fitted inside the limit and was handed back
+intact, which is the exact defect windowing exists to prevent. Four checks in
+`test_excerpt.py` caught it.
+
+The second is the more interesting. `_brief`'s docstring says the window opens
+at the sentence with the most question words *in it*, and the code scored
+everything the window would show. While the limit was small the two nearly
+agreed. Raising it pulled them apart, because a window starting at offset 0 then
+contains every question term the passage has, so the title block wins on every
+question. The implementation had never matched its own docstring and a small
+limit was hiding it. Placement and size are separate concerns now: placement is
+scored over a fixed 420 characters, and the limit decides only how much is shown.
+
+**Measured after both were fixed**, because the first table produced here came
+from the version that still scored placement over the limit and understated
+every row above 420:
+
+```
+  limit    birds     llm   quant     all   mean chars shown
+    420    0.640   0.701   0.576   0.656        359
+    520    0.680   0.821   0.727   0.768        444
+    620    0.720   0.821   0.818   0.800        520
+    720    0.760   0.821   0.818   0.808        591
+    900    0.760   0.821   0.848   0.816        687
+  whole    0.760   0.821   0.848   0.816        853
+```
+
+**720 ships.** It shows 99% of what the whole chunk offers at 591 characters on
+average, which is the paragraph this excerpt was always meant to be. Answer
+shown across the three corpora moves 0.656 to 0.808, which is 19 questions, and
+birds and the paper set now reach their chunk ceiling exactly. Retrieval was not
+touched: any-hit, MRR, NDCG and source recall are unchanged on all three sets.
+
+**Reported rather than left implicit.** `evaluate.py` computes `answer_visible`
+beside `hit_rate` for every end-to-end row and `eval/RESULTS.md` carries the
+column. The two measure different things and had been read as one. any-hit asks
+whether retrieval reached a location that answers, which is what it says and
+what it does; answer shown asks whether the answer is in the text handed to the
+reader. On the shipped configuration they are 0.910 and 0.821 on the paper set.
+
+It also prices the diversity cap more honestly. On the bird corpus the cap costs
+nothing in any-hit, 0.880 either way, and takes answer shown from 0.840 to
+0.760. That cost was invisible in every column the project published until now.
+
+---
+
 ## 2026-09-03 — A hit is a page, and the reader wanted an answer
 
 Two counts that ought to be close and are not. Eleven questions score as misses
@@ -2519,6 +2596,15 @@ outright. A passage can answer without carrying one exact phrasing. So:
    7  the passage answers in different words, and the string test is too strict
    5  arguable, recorded as arguable rather than pushed to a side
 ```
+
+> **Corrected the same day, and the correction is the more useful finding.**
+> Every passage above was read off the DISPLAYED EXCERPT, which
+> `pipeline_trace._brief` capped at 420 characters, and the split therefore
+> blamed the locator for something the display was doing. Re-measured against
+> the retrieved chunk rather than the excerpt, 21 of the 33 hold the answer and
+> lose it to that cap. Only 14 survive it, of which 9 do not answer. The
+> entry below has the numbers; what stands here is the shape of the problem and
+> not its size.
 
 The seven are real credits and the test is what is wrong about them.
 `t5-span` returns "an objective that specifically corrupts contiguous, randomly
