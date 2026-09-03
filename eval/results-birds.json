@@ -16,31 +16,36 @@
       "hit_rate": 1.0,
       "mrr": 0.624,
       "ndcg": 0.664,
-      "src_recall": 0.894
+      "src_recall": 0.894,
+      "answer_visible": 0.96
     },
     "rrf": {
       "hit_rate": 0.92,
       "mrr": 0.599,
       "ndcg": 0.641,
-      "src_recall": 0.875
+      "src_recall": 0.875,
+      "answer_visible": 0.88
     },
     "weighted a=0.3": {
       "hit_rate": 0.92,
       "mrr": 0.465,
       "ndcg": 0.562,
-      "src_recall": 0.88
+      "src_recall": 0.88,
+      "answer_visible": 0.88
     },
     "weighted a=0.5": {
       "hit_rate": 0.96,
       "mrr": 0.586,
       "ndcg": 0.646,
-      "src_recall": 0.888
+      "src_recall": 0.888,
+      "answer_visible": 0.92
     },
     "weighted a=0.7": {
       "hit_rate": 1.0,
       "mrr": 0.56,
       "ndcg": 0.66,
-      "src_recall": 0.918
+      "src_recall": 0.918,
+      "answer_visible": 0.92
     }
   },
   "end_to_end": {
@@ -48,37 +53,43 @@
       "hit_rate": 0.8,
       "mrr": 0.603,
       "ndcg": 0.634,
-      "src_recall": 0.682
+      "src_recall": 0.682,
+      "answer_visible": 0.76
     },
     "dense + rerank": {
       "hit_rate": 0.88,
       "mrr": 0.625,
       "ndcg": 0.681,
-      "src_recall": 0.745
+      "src_recall": 0.745,
+      "answer_visible": 0.8
     },
     "weighted + rerank": {
       "hit_rate": 0.92,
       "mrr": 0.607,
       "ndcg": 0.681,
-      "src_recall": 0.772
+      "src_recall": 0.772,
+      "answer_visible": 0.88
     },
     "rrf + rerank": {
       "hit_rate": 0.88,
       "mrr": 0.636,
       "ndcg": 0.694,
-      "src_recall": 0.772
+      "src_recall": 0.772,
+      "answer_visible": 0.84
     },
     "+ diversity 2/src": {
       "hit_rate": 0.88,
       "mrr": 0.638,
       "ndcg": 0.698,
-      "src_recall": 0.792
+      "src_recall": 0.792,
+      "answer_visible": 0.76
     },
     "+ diversity 1/src": {
       "hit_rate": 0.76,
       "mrr": 0.613,
       "ndcg": 0.648,
-      "src_recall": 0.805
+      "src_recall": 0.805,
+      "answer_visible": 0.64
     }
   },
   "expansion": {

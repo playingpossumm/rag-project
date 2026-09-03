@@ -128,6 +128,28 @@ def normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
+# Emphasis markers, heading hashes and the short bracketed markers the PDF
+# conversion leaves behind. Stripping them matters because the corpus keeps
+# them: the batch-normalization paper renders "_internal_ _covariate_ _shift,_"
+# and a comparison that does not strip them calls the phrase absent from a
+# passage where the reader plainly sees it -- the display path already strips
+# the same things in ui/answer-mark.js, so a test that does not is measuring a
+# text nobody is shown. En dashes do the same to "mean-variance". Found
+# 2026-09-03; between them the two overstated the shortfall by two cases.
+_MARKUP = re.compile(r"[_*`#]+|\[[^\]]{0,3}\]")
+_DASH = re.compile("[‐-―−]")
+
+
+def answer_normalize(text: str) -> str:
+    """`normalize`, plus the conversion artefacts that hide a phrase.
+
+    Separate from `normalize` deliberately. That one is shared with the
+    answer-quality judge and the title-credit audit, which compare different
+    things, and widening it under them would change numbers they are not about.
+    """
+    return normalize(_MARKUP.sub("", _DASH.sub("-", str(text))))
+
+
 def context_recall(results, answer: str) -> float:
     """Does the text actually returned contain the answer?
 
@@ -135,11 +157,16 @@ def context_recall(results, answer: str) -> float:
     the right *page* was returned; a chunk can satisfy that while being cut
     before the sentence carrying the answer. Context recall asks the question
     that decides whether a model could answer at all.
+
+    Measured across all three corpora on 2026-09-03, the difference is not
+    small: 33 of 125 answerable questions score a hit whose returned text does
+    not contain the answer, and reading all 33 found 21 where the passage does
+    not answer at all. See src/audit_page_credit.py.
     """
     if not answer:
         return float("nan")
-    needle = normalize(answer)
-    return 1.0 if any(needle in normalize(r["text"]) for r in results) else 0.0
+    needle = answer_normalize(answer)
+    return 1.0 if any(needle in answer_normalize(r["text"]) for r in results) else 0.0
 
 
 def context_tokens(results, tokenizer) -> int:
@@ -149,6 +176,10 @@ def context_tokens(results, tokenizer) -> int:
 
 def score_run(cases, retrieve_fn, k: int = 5) -> tuple[dict, list[dict]]:
     totals = {"hit_rate": 0.0, "mrr": 0.0, "ndcg": 0.0, "src_recall": 0.0}
+    # Averaged over the cases that declare an answer string rather than over
+    # every case, because a case without one is not evidence either way and
+    # folding it in as a zero would report a shortfall that is missing labels.
+    visible_sum, visible_n = 0.0, 0
     per_case = []
     for case in cases:
         results = retrieve_fn(case["question"])
@@ -161,6 +192,11 @@ def score_run(cases, retrieve_fn, k: int = 5) -> tuple[dict, list[dict]]:
         }
         for key in totals:
             totals[key] += m[key]
+        visible = context_recall(results, case.get("answer_contains", ""))
+        if visible == visible:                          # not nan
+            visible_sum += visible
+            visible_n += 1
+            m["answer_visible"] = visible
         per_case.append({
             "id": case["id"], "kind": case.get("kind", "-"),
             "gold_sources": sorted(gold_sources(case)),
@@ -168,7 +204,14 @@ def score_run(cases, retrieve_fn, k: int = 5) -> tuple[dict, list[dict]]:
             **m,
         })
     n = len(cases) or 1
-    return {name: total / n for name, total in totals.items()}, per_case
+    summary = {name: total / n for name, total in totals.items()}
+    # Reported beside hit_rate, not instead of it. hit_rate asks whether
+    # retrieval reached a location that answers and answers that correctly;
+    # this asks whether the answer is in the text the reader is handed. They
+    # are different questions and were being read as one.
+    if visible_n:
+        summary["answer_visible"] = visible_sum / visible_n
+    return summary, per_case
 
 
 def main():
@@ -330,7 +373,8 @@ def main():
     ]
 
     print(f"\nEND TO END @ {args.k}")
-    print(f"{'pipeline':<20}{'any-hit':>9}{'MRR':>9}{'NDCG':>9}{'src recall':>12}")
+    print(f"{'pipeline':<20}{'any-hit':>9}{'MRR':>9}{'NDCG':>9}{'src recall':>12}"
+          f"{'answer shown':>14}")
     runs = {}
     for label, cfg in finals:
         summary, per_case = score_run(answerable, lambda q, c=cfg: retrieve(
@@ -340,7 +384,8 @@ def main():
         emitted["end_to_end"][label.strip()] = {
             k2: round(v, 3) for k2, v in summary.items()}
         print(f"{label:<20}{summary['hit_rate']:>9.3f}{summary['mrr']:>9.3f}"
-              f"{summary['ndcg']:>9.3f}{summary['src_recall']:>12.3f}")
+              f"{summary['ndcg']:>9.3f}{summary['src_recall']:>12.3f}"
+              f"{summary.get('answer_visible', float('nan')):>14.3f}")
 
     if args.per_case:
         for label, (_, per_case) in runs.items():

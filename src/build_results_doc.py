@@ -57,7 +57,17 @@ def blocks(r: dict) -> dict[str, str]:
 
     metrics = [("any-hit@5", "hit_rate"), ("MRR", "mrr"),
                ("NDCG", "ndcg"), ("src recall", "src_recall")]
-    end_to_end = table(r["end_to_end"], metrics, "pipeline")
+    # "answer shown" is reported for the end-to-end pipeline only, and beside
+    # any-hit rather than instead of it. any-hit asks whether retrieval reached
+    # a LOCATION that answers; gold is derived per locator, so a page holding
+    # the answer in one chunk marks every chunk of that page relevant. This
+    # asks whether the answer is in the text the reader is handed. Measured
+    # 2026-09-03, the two differ on 14 of 125 answerable questions. The
+    # candidate pool keeps the old columns, because a pool is not shown to
+    # anyone.
+    end_to_end = table(r["end_to_end"],
+                       metrics + [("answer shown", "answer_visible")],
+                       "pipeline")
     pool = table(r["candidate_pool"], metrics[:2] + metrics[3:], "first stage")
     exp = table(r["expansion"],
                 [("context recall", "context_recall"),
