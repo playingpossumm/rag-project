@@ -2492,6 +2492,109 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — A fallback that fires on abstention never fires
+
+The proposal left open under 2026-09-01 was to run the hypothetical-answer
+search only when the pipeline is already below its abstention threshold. The
+unconditional form is measured there and is net negative on two of three
+corpora, so the entire value of the proposal was that gating it would delete
+the losing half of the trade. A question about to be refused cannot be made
+worse by searching again.
+
+It was measured before it was built, and it does not fire.
+
+**Every miss scores above its corpus's gate. All eleven, on all three corpora.**
+
+```
+                    hits      hits     misses    misses     adv      adv
+                   above     below     above     below     above    below
+ML & NLP  (0.0)       60         1         6         0         8        9
+birds    (-5.5)       20         2         3         0         1        6
+quant    (-4.0)       30         1         2         0         1        7
+```
+
+Not marginally above. `lora-latency` reaches +6.36, `bert-glue` +5.32 and
+`bird-hollow-bones` +5.03 against a threshold of -5.5. What the fallback would
+have run on is four questions that already work and twenty-two adversarial
+questions the gate is catching correctly, which is exactly the population where
+it can only do harm, and none of the questions it was written for.
+
+**Why the zero is trusted**, since this project's rule is that a zero deserves
+suspicion and it is how `rank1.py` was caught returning 0 for everything. The
+counts reconcile against numbers calibrated months earlier by a different
+script and recorded in `corpora.json`. One answerable question below the gate on
+the papers against "wrongly refuses 1 of 67", two on birds against "wrongly
+refuses two of twenty-five", one on quant against "the same one of thirty-three".
+Three exact matches, answerable totals included. The gate was deliberately
+calibrated to almost never refuse, so almost nothing answerable falls below it,
+and that includes the misses. The zero follows from a calibration choice already
+recorded rather than from a bug.
+
+**The mistake was mine and it is worth stating plainly.** The proposal assumed a
+retrieval failure looks like low confidence. It does not. The cross-encoder
+reads a plausible wrong passage and scores it as highly as a right one, which is
+what makes these five permanent rather than merely unlucky. Confidence and
+correctness are separate quantities here and the design treated them as one.
+
+**The general form is the part worth keeping.** The abstention gate is not a
+wrongness detector and cannot be made into one. It separates answerable
+questions from unanswerable ones, which is the job it was calibrated for and the
+job it does, and it says nothing about whether the passage returned is right.
+
+### No cheaper trigger separates either
+
+`src/hyde_trigger.py` tests the three cheapest signals available before any
+generation. How many of the question's content words appear in the top passage,
+how far the top rerank score leads the fifth, and how many of the top five both
+retrievers ranked. The third is the direct test of RRF correlation dilution,
+which is this project's recorded failure mode for these cases.
+
+```
+  signal                    min    p25    med    max
+  coverage          hits    0.00   0.43   0.60   1.00
+                  misses    0.17   0.40   0.50   0.83
+  margin            hits    0.49   3.48   6.00  16.58
+                  misses    0.76   2.26   4.98  12.29
+  agreement         hits    0.00   2.00   2.00   5.00
+                  misses    0.00   1.00   2.00   5.00
+  top score         hits  -10.68   1.70   4.31   9.58
+                  misses   -1.09   0.40   2.49   6.36
+```
+
+Every miss distribution sits inside its hit distribution. A cut loose enough to
+catch all eleven misses fires on 90% of every question asked on coverage and on
+margin, and on 100% on agreement. The sharpest number is the last row, where the
+lowest-scoring hit is -10.68 and the lowest-scoring miss is -1.09, so at the
+bottom of the scale a low score predicts a correct answer slightly better than a
+wrong one. Two runs agreed exactly, which is the check that matters for a result
+this negative.
+
+**Verdict.** Hypothetical-answer retrieval is rejected on this corpus both
+unconditionally and selectively. The unconditional form loses more than it
+gains and the selective form has no trigger. Nothing was built.
+
+### The claim this refuted on screen
+
+The measurement refuted something the site had been asserting on every result.
+`reading()` in `ui/index.html` labelled any score at or above +5 as "the passage
+answers the question directly" and anything from +1 as "the passage is on topic
+and carries the answer". Of the eleven questions where retrieval returns nothing
+correct, nine score positive and three land in that top band. The label stated
+as fact what is only the cross-encoder's judgement.
+
+The bands now attribute the claim to the model, and the sentence following the
+score says that the judgement compares question and passage without checking
+that the passage is right. `about.html` carried the same claim in "reading what
+comes back" and now carries the count instead, its description of the gate says
+what the gate does not catch, and the glossary entry says the threshold
+separates answerable from unanswerable rather than right from wrong.
+
+Worth noting the direction. Retrieval work refuted an interface claim, which is
+the reverse of the usual traffic in this log, and the claim had been sitting on
+every answer the site has ever shown.
+
+---
+
 ## 2026-09-02 — The question list called eight answerable questions decoys
 
 Reported by reading the picker, immediately after the marking defects above:

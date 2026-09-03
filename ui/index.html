@@ -1246,14 +1246,24 @@ function where(item) {
    probability and does not run 0..1 -- ms-marco-MiniLM puts it roughly between
    -11 and +11. The bands below are read off that scale, so they mean the same
    thing on every set of documents. The refusal line is separate and per-set,
-   which is why it is not what the bands are measured against. */
+   which is why it is not what the bands are measured against.
+
+   Every band attributes its claim to the model rather than stating it. Until
+   2026-09-03 the top two read "the passage answers the question directly" and
+   "the passage is on topic and carries the answer", which measurement showed
+   to be false as written. Of the eleven questions across the three sets where
+   retrieval returns nothing correct, nine score positive: lora-latency at
+   +6.36, bert-glue at +5.32 and bird-hollow-bones at +5.03 all land in the top
+   band, and wmt14 at +4.93 in the second. A high score is the cross-encoder's
+   judgement about the match and not a check that the passage is right, and
+   these bands now say so. */
 function reading(score, threshold) {
   if (score >= 5) return { band: "strong",
-    text: "the passage answers the question directly" };
+    text: "the cross-encoder reads this as a direct answer" };
   if (score >= 1) return { band: "clear",
-    text: "the passage is on topic and carries the answer" };
+    text: "the cross-encoder reads this as on topic and carrying the answer" };
   if (score >= -2) return { band: "weak",
-    text: "on topic, but the answer may be partial or implied" };
+    text: "the cross-encoder reads this as on topic, with the answer partial or implied" };
   return { band: "marginal",
     text: `only just past this set’s cut-off of ${threshold.toFixed(1)}` };
 }
@@ -1881,10 +1891,10 @@ function renderTurn(turn, question, data, opts) {
        unranked by confidence.`
     : v.confident
       ? `The best passage scored <b>${sig(v.confidence)}</b>. At that score,
-         ${reading(v.confidence, v.threshold).text}. The number is a relevance
-         judgement from the cross-encoder, which reads the question and the
-         passage together. It runs roughly −11 to +11 and is not a
-         probability.`
+         ${reading(v.confidence, v.threshold).text}. That judgement compares the
+         question and the passage and does not check that the passage is right,
+         so a high score can sit on a wrong one. The number runs roughly −11 to
+         +11 and is not a probability.`
       : `Nothing scored high enough to answer with. The closest passage reached
          <b>${sig(v.confidence)}</b>, and everything below that scored lower
          still. The candidates are listed below for inspection.`;
