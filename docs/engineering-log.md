@@ -2492,6 +2492,55 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — The stages are drawn now, and they show the thing the prose claimed
+
+The Stages tab under Detail was the one panel in this app that explained a
+process and did not draw it. Each stage got a paragraph of description, a note
+about the run, and a table of the first six of its sixteen passages. So the
+shape of a stage -- how the scores fall away, which passages it carried and
+which it dropped -- was the one thing it never showed, and the fall-off after
+sixth is where a stage's character actually is.
+
+Each stage now draws every passage it held: a row per passage, the score as a
+bar, the document as colour and as a name, and the passages that reach the
+answer at full strength while the rest recede. Sixteen rows fit in less height
+than the six-row table did.
+
+**The reveal is that the prose was right and now you can see it.** The dense
+stage falls away smoothly and is mostly one document. BM25 reorders it
+completely, which is the "exact inverse profile" its own description claims and
+which no table of six rows conveyed. Fusion draws a plateau of seven and then a
+drop, and seven is exactly the number its note reports as found by both
+retrievers. The cross-encoder pulls a long tail down to -11. And the passages
+drawn at full strength climb from block to block, so the pipeline working is
+visible as motion up the list rather than as a claim.
+
+**One constraint governed the whole design and it was already recorded in this
+file.** The comment above the attention grid says the grid shades by rank and
+not by score, because "the scores underneath are in four different units --
+cosine, BM25 weight, RRF, a cross-encoder logit -- and shading by them would
+make rows incomparable". A bar chart of scores invites exactly that comparison.
+So each stage is scaled to its own range and names its own unit underneath, and
+the tab's note says once that a length in one block means nothing against a
+length in another. That is a set of small multiples with independent scales
+rather than one chart, which is the honest form for four incomparable measures.
+
+The first draft printed the caveat under every stage. Five copies of one
+sentence, in a column narrow enough to wrap each onto three lines, is not
+emphasis. It is said once now, where the tab is introduced.
+
+Colour is unchanged and deliberately so. It comes from the same map the rest of
+the answer uses, so a passage keeps its colour everywhere, and the palette was
+validated all-pairs for colourblind separation when it was chosen. Nothing here
+adds a hue. Identity is not left to colour alone either: every row carries its
+document name in text beside the swatch, and on a phone, where the name does not
+fit, the row keeps rank and score and the hover carries the rest.
+
+Checked at 1600 and 390 with the tab open: no bar wider than its track, no page
+overflow, no console errors, five unit captions on both.
+
+---
+
 ## 2026-09-03 — The site now shows the metric, and every mechanism that failed
 
 Two gaps between what this repository knows and what the page says, closed.

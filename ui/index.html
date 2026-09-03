@@ -805,6 +805,47 @@ tr.out td{color:var(--faint)}
 .snip{color:var(--mute);font-size:12px;line-height:1.5;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .scroll{overflow-x:auto}
+/* A stage drawn rather than tabulated.
+ *
+ * Bar length is the score's position within THIS stage's own range, and that
+ * is the only reading it supports. The scores are in four different units --
+ * cosine, a BM25 weight, an RRF score, a cross-encoder logit -- so a bar in
+ * one stage means nothing against a bar in another, which is the same reason
+ * the attention grid above shades by rank and not by score. Each stage
+ * therefore names its unit and its range underneath, and the bars are a set of
+ * small multiples with independent scales rather than one chart.
+ *
+ * Colour is the document, taken from the same map the rest of the answer uses,
+ * so a passage keeps its colour everywhere. It is never chosen per stage and
+ * never encodes rank. Identity is not left to colour alone: every row carries
+ * its document name in text beside the swatch.
+ *
+ * Passages that reach the answer are drawn at full strength and the rest
+ * recede, which is what makes "what did this stage do" visible at a glance --
+ * the answer's passages climb the list as the stages proceed. */
+.prof{display:grid;gap:2px;margin:2px 0 0}
+.prow{display:grid;grid-template-columns:20px minmax(76px,124px) 1fr 50px;
+  align-items:center;gap:9px;opacity:.42;transition:opacity 120ms ease-out}
+.prow.in{opacity:1}
+.prof:hover .prow{opacity:.3}
+.prof:hover .prow:hover{opacity:1}
+.prow .pr{font-family:var(--mono);font-size:9.5px;color:var(--faint);
+  text-align:right;font-variant-numeric:tabular-nums}
+.prow .pd{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mute);
+  white-space:nowrap;overflow:hidden}
+.prow .pd span{overflow:hidden;text-overflow:ellipsis}
+.prow .pd i{width:6px;height:6px;border-radius:50%;flex:none}
+.prow .pb{height:7px;background:var(--card);border-radius:2px}
+.prow .pb i{display:block;height:100%;min-width:2px;border-radius:2px 4px 4px 2px}
+.prow .ps{font-family:var(--mono);font-size:10px;color:var(--mute);text-align:right;
+  font-variant-numeric:tabular-nums}
+.punit{margin:9px 0 0;font-family:var(--mono);font-size:9.5px;color:var(--faint);
+  letter-spacing:.05em}
+@media(max-width:560px){
+  .prow{grid-template-columns:18px 1fr 44px;gap:7px}
+  .prow .pd{display:none}
+}
+
 .stage{border-top:1px solid var(--hair);padding:16px 0}
 .stage:first-child{border-top:0;padding-top:4px}
 .stage h4{margin:0 0 4px;font-size:13.5px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
@@ -1146,6 +1187,55 @@ function completed(item) {
  * The selection and its wording are in ui/passages.js, which records the
  * measurement that set them: the filters this used to apply hid the passage
  * that answers on 15 of 79 recorded questions. */
+/* The unit each stage's score is in. Named on the drawing because the four are
+   not comparable and a bar invites comparing them. */
+const STAGE_UNIT = {
+  dense: "cosine similarity",
+  sparse: "BM25 weight",
+  fused: "reciprocal rank fusion score",
+  reranked: "cross-encoder logit",
+  selected: "cross-encoder logit",
+};
+
+/* One stage, drawn: every passage it held, in its own order, with the score as
+   a bar scaled to this stage's own range. Not the first six of sixteen, which
+   is what the table showed -- the fall-off after sixth is where a stage's
+   character actually is. */
+function profile(stage, sel, colour) {
+  const kept = new Set(sel.map(x => x.chunk_id));
+  const nums = stage.items.map(i => i.score)
+    .filter(n => typeof n === "number");
+  const lo = nums.length ? Math.min(...nums) : 0;
+  const hi = nums.length ? Math.max(...nums) : 1;
+  const span = (hi - lo) || 1;
+  const fmt = n => Math.abs(n) >= 100 || Number.isInteger(n)
+    ? n.toFixed(1) : Math.abs(n) >= 1 ? n.toFixed(2) : n.toFixed(4);
+
+  const rows = stage.items.map(i => {
+    const has = typeof i.score === "number";
+    const pct = has ? (100 * (i.score - lo) / span) : 0;
+    const inAnswer = kept.has(i.chunk_id);
+    const title = `${docName(i.source)} · ${i.locator}` +
+      (has ? ` · ${fmt(i.score)}` : "") +
+      (inAnswer ? " · in the answer" : "") + `\n${clean(i.text).slice(0, 220)}`;
+    return `<div class="prow${inAnswer ? " in" : ""}" title="${esc(title)}">
+      <span class="pr">${i.rank}</span>
+      <span class="pd"><i style="background:${colour(i.source)}"></i><span>${
+        esc(docName(i.source))}</span></span>
+      <span class="pb"><i style="width:${Math.max(1.5, pct).toFixed(1)}%;background:${
+        colour(i.source)}"></i></span>
+      <span class="ps">${has ? fmt(i.score) : ""}</span>
+    </div>`;
+  }).join("");
+
+  const unit = STAGE_UNIT[stage.name] || "score";
+  // The caveat about incomparable units is stated once, in the tab's note. Five
+  // copies of it was five copies of the same sentence in a column narrow enough
+  // to wrap each one onto three lines.
+  return `<div class="prof">${rows}</div>
+    <p class="punit">${esc(unit)} · ${fmt(lo)} to ${fmt(hi)}</p>`;
+}
+
 function alsoFound(sel, top, question, colour) {
   const others = alsoFoundOrder(sel, top);
   if (!others.length) return "";
@@ -2073,8 +2163,15 @@ function renderTurn(turn, question, data, opts) {
       <div class="pane" data-pane="words" hidden><div class="stack"></div></div>
       <div class="pane" data-pane="steps" hidden><div class="inner">
         <p class="pnote">The same run again, one stage at a time. Each block
-        says what the stage does, what it produced on this question, and the
-        first few passages as they stood when it finished.</p>
+        says what the stage does, what it produced on this question, and every
+        passage it held when it finished, drawn in the order that stage put
+        them in. <b>Passages that reach the answer are drawn at full
+        strength</b>, so watching them climb from one block to the next is
+        watching the pipeline work. Hover a row for the passage itself. Each
+        block names its own unit, and a bar is only as long as that stage's
+        range allows: cosine, a BM25 weight, an RRF score and a cross-encoder
+        logit are four different things, so a length in one block says nothing
+        against a length in another.</p>
         ${(() => {
           const widest = Math.max(...data.stages.map(x => x.items.length), 1);
           return data.stages.map((s, n) => `
@@ -2086,15 +2183,7 @@ function renderTurn(turn, question, data, opts) {
           <p class="what">${esc(s.detail)}</p>
           <p class="got"><span class="k">On this question</span>
             ${esc(s.skipped || s.note)}</p>
-          ${s.items.length ? `<div class="scroll"><table>
-            <thead><tr><th class="r">Rank</th><th>Document</th><th>Passage</th><th class="r">Score</th></tr></thead>
-            <tbody>${s.items.slice(0, 6).map(i => `
-              <tr><td class="r num">${i.rank}</td>
-                <td><div class="src"><span class="dot" style="background:${colour(i.source)}"></span>${esc(docName(i.source))}</div>
-                    <div class="loc">${esc(i.locator)}</div></td>
-                <td><div class="snip">${esc(clean(i.text))}</div></td>
-                <td class="r num">${typeof i.score === "number" ? i.score : ""}</td></tr>`).join("")}
-            </tbody></table></div>` : ""}
+          ${s.items.length ? profile(s, sel, colour) : ""}
         </div>`).join("");
         })()}</div></div>
     </details>
