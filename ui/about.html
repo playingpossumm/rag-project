@@ -542,6 +542,62 @@ h2.lab{margin:0;font-size:10px}
              all eleven means firing on 90% of every question asked.</p>
         </li>
         <li class="gone">
+          <h4>Showing each passage with its neighbours<span class="verdict">rejected</span></h4>
+          <p>When the answer is missing from what is shown it is usually close
+             by, so the obvious repair is to show more. Each passage can carry
+             the pieces either side of it, and the system already knows how.
+             Everything shown, it puts the answer on screen for 9 more
+             questions and multiplies the text by more than three, which is not
+             a page anyone reads. Restricted to what the page would really
+             render, which extends a passage backwards and not forwards, it is
+             4 questions for nearly twice the text.
+             <span class="num">0.808 &rarr; <b>0.840</b>, at 591 &rarr; 1,073
+             characters a passage</span></p>
+          <p>A refinement of it measured <em>worse</em> than doing nothing.
+             Choosing which part to show from the enlarged passage rather than
+             from the original scores 0.792 against 0.808, because the choice
+             is made by where the question's words fall, and given more room it
+             moves further from the answer.</p>
+        </li>
+        <li class="gone">
+          <h4>Neighbouring passages in the shortlist<span class="verdict">rejected</span></h4>
+          <p>Rather than show the neighbour, offer it to the model that ranks.
+             The piece holding the answer is put in front of the reranker
+             alongside the piece that was found, and the reranker decides. It
+             gains one question on one set of documents, costs ranking quality
+             on the other two, lets one more unanswerable question through the
+             gate, and takes two and a half times as long.
+             <span class="num">one question gained, <b>MRR &minus;0.012 and
+             &minus;0.015</b></span></p>
+        </li>
+        <li class="gone">
+          <h4>Scoring a passage on the passage around it<span class="verdict">rejected</span></h4>
+          <p>The same idea from the other end: rank each passage by the piece
+             it sits in, while still returning the piece itself, so a paragraph
+             is judged in context. Worse on every set of documents and on every
+             measure but one. It does let fewer unanswerable questions through,
+             and that is not an improvement: scoring against more text lowers
+             every score at once, which moves the refusal line rather than
+             improving the ranking, and it costs 7 answerable questions on the
+             papers to buy.
+             <span class="num">0.910 &rarr; <b>0.881</b> on the papers,
+             0.939 &rarr; <b>0.818</b> on finance</span></p>
+        </li>
+        <li class="gone">
+          <h4>Cutting the documents into finer pieces<span class="verdict">rejected</span></h4>
+          <p>If no single passage holds both the words that find it and the
+             words that answer, cut the documents so that one does. The pieces
+             stay the same length and start closer together, which is 32% more
+             of them to search. Measured on the ornithology set with the
+             shortlist widened to match, it is worse at finding the answer and
+             worse at showing it.
+             <span class="num">0.880 &rarr; <b>0.840</b> found,
+             0.760 &rarr; <b>0.720</b> shown</span></p>
+          <p>It recovers exactly the one question the shortlist experiment
+             above recovers, which is what says these are all reaching the same
+             small set.</p>
+        </li>
+        <li class="gone">
           <h4>A second meaning-model searching alongside the first<span class="verdict">one set only</span></h4>
           <p>Two different models reading the passages, their results combined.
              On a candidate shortlist it looked better on all three document
@@ -595,6 +651,22 @@ h2.lab{margin:0;font-size:10px}
       </ol>
 
       <div class="prose" style="margin-top:26px">
+        <p><b>The second pattern, and the reason the list above is long.</b>
+           Nine of these aim at the same two dozen questions, and they fail for
+           one reason. The passage that answers does not contain the words of
+           the question &mdash; that is <em>why</em> the search missed it. So
+           putting it in front of the ranker changes nothing, because the
+           ranker reads the same question and reaches the same conclusion, and
+           showing more of the document around it, or cutting the document
+           differently, or having a model invent an answer to search with, are
+           all ways of offering the same passage again. A question that asks
+           what something is <em>called</em> withholds the one word that would
+           find it, and every part of this system that ranks, chooses or
+           emphasises by the question's words moves away from the answer when
+           given more room to look. That is a property of the question rather
+           than of the documents, and no arrangement of the documents
+           addresses it.</p>
+
         <p><b>The pattern worth taking away.</b> Four separate experiments
            improved what the first search finds and made the finished answer
            worse. Finding the answer and returning it are different problems,
