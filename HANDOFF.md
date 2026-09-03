@@ -1082,6 +1082,7 @@ disclaim current work.
 | `src/sweep_decompose.py` | rewriting and decomposing the question, scored against the cases nothing else reaches |
 | `src/sweep_hyde.py` | retrieving on a generated hypothetical answer, scored on every case and on the gate |
 | `src/hyde_trigger.py` | whether any signal can trigger that fallback selectively. None can |
+| `src/audit_page_credit.py` | how often a hit credits the right page while showing the reader no answer |
 | `src/query_rewrite.py` | the rewrite and decompose strategies themselves, against a local model or the API |
 | `src/test_serve.py` | request handling, the offered questions, and the folder intake |
 | `docs/engineering-log.md` | every attempt in full, including the refuted ones — the why behind §4's table |
