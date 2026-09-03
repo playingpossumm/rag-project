@@ -1,0 +1,56 @@
+{
+ "generated_by": "src/sweep_stride.py",
+ "corpus": "birds",
+ "arms": [
+  {
+   "label": "shipped stride",
+   "chunks": 864,
+   "candidate_k": 20,
+   "any_hit": 0.88,
+   "mrr": 0.638,
+   "ndcg": 0.6978,
+   "src_recall": 0.792,
+   "answer_visible": 0.76,
+   "slips": 1,
+   "seconds_per_query": 1.32
+  },
+  {
+   "label": "finer stride",
+   "chunks": 1140,
+   "candidate_k": 20,
+   "any_hit": 0.8,
+   "mrr": 0.5733,
+   "ndcg": 0.6339,
+   "src_recall": 0.7193,
+   "answer_visible": 0.72,
+   "slips": 1,
+   "seconds_per_query": 1.32,
+   "gained": [
+    "bird-fledging"
+   ],
+   "lost": [
+    "bird-dawn-chorus",
+    "bird-keel"
+   ]
+  },
+  {
+   "label": "finer, pool scaled",
+   "chunks": 1140,
+   "candidate_k": 26,
+   "any_hit": 0.84,
+   "mrr": 0.6247,
+   "ndcg": 0.6711,
+   "src_recall": 0.706,
+   "answer_visible": 0.72,
+   "slips": 1,
+   "seconds_per_query": 1.62,
+   "gained": [
+    "bird-fledging"
+   ],
+   "lost": [
+    "bird-dawn-chorus",
+    "bird-keel"
+   ]
+  }
+ ]
+}
