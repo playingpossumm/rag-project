@@ -2492,6 +2492,96 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-03 — The answer is usually next door, and that is not a ranking problem
+
+Three things were being tracked separately: eleven scored misses, five
+permanent failures, and nine questions where gold credits the page while the
+passage returned does not answer. They are one problem. In every one of them
+the chunk holding the answer exists in the corpus and was not returned, which
+is twenty-three questions across the three corpora once the display defects
+fixed earlier today are out of the way.
+
+Every ranking lever in this repository has been measured against these and none
+ships. So the question asked here is not which lever is next but how far away
+the answering chunk actually was.
+
+```
+  10  one chunk away, in a document that was retrieved
+   3  two chunks away
+   8  further off in a retrieved document, 3 to 37 chunks
+   2  in another document entirely
+```
+
+**Thirteen of twenty-three sit next door.** The retriever is not choosing the
+wrong document or the wrong page. It is choosing a neighbouring piece of the
+right page, and that is a statement about chunk geometry rather than about
+ranking, which is a plausible reason the levers keep failing.
+
+### Display cannot fix it, and that was measured before it was concluded
+
+The pipeline can attach neighbouring chunks to each result and the demo is not
+using it. `api.ask` defaults expansion to "window" and
+`pipeline_trace.trace_pipeline` defaults it to "none", so the page has been
+showing chunks without their neighbours. Turning it on and showing the raw
+expanded window reaches 0.880 against 0.808 and multiplies the text on screen by
+3.2, which is not a trade this interface makes.
+
+What the page would actually render is much less, because `completed()` does not
+show the window. It locates the excerpt inside it and returns a slice starting
+up to 300 characters earlier, so expansion adds a lead-in and never adds text
+after the chunk:
+
+| arrangement | answer on the page | characters a passage |
+|---|---|---|
+| the chunk alone, shipped | 0.808 | 591 |
+| expansion on, as `completed()` renders | 0.832 | 836 |
+| the same with a symmetric lead-out | 0.840 | 1,073 |
+| a 600-character lead-out | 0.840 | 1,275 |
+
+Four questions for nearly twice the text on every answer, and the last row buys
+nothing over the one above it. Not shipped.
+
+**And one idea of mine that measured worse than doing nothing.** Expansion and
+excerpting are separable, so the obvious refinement is to expand for context and
+then choose the 720 characters over the expanded window rather than over the
+chunk, which should reach the neighbour without the extra text. It scores 0.792
+against 0.808. Given more room to place the window, `_brief` places it by where
+the question's words fall and moves away from the chunk that was actually
+ranked. That is the same root cause as the marking limitation recorded above: a
+question asking what something is called does not contain the word that finds
+it, so more freedom to follow the question's vocabulary is freedom to walk away
+from the answer.
+
+**The display is at its ceiling.** 0.808 of answers are on the page and 0.816
+are in the retrieved chunks at all, so the excerpt now shows 99% of what
+retrieval hands it. Nothing further is available on this side.
+
+### What the distances say about the next experiment
+
+Characters from the retrieved chunk's nearer edge to where the answer begins,
+for the thirteen that sit within two chunks:
+
+```
+   3 of 13 within 160 characters, which is today's 40-token overlap
+   4 of 13 within 320
+   7 of 13 within 480
+   8 of 13 within 640
+```
+
+Five sit further out, up to 1,979 characters, and no plausible chunk geometry
+reaches those. So the indicated experiment is chunk SIZE rather than overlap,
+and the counter-argument belongs in the same sentence: this pipeline's precision
+rests on ranking small chunks, which is why `retrieve()` applies expansion last
+and says so, and a larger chunk trades that away. It also costs a re-ingest of
+three corpora, a re-derivation of three golden sets, and every number this
+project publishes. It is recorded as the indicated experiment and not attempted,
+because a prediction written down is worth more than a large change made late
+and half-measured.
+
+`src/answer_distance.py` holds the measurement.
+
+---
+
 ## 2026-09-03 — The excerpt was hiding answers the system had found
 
 The entry below reported 33 questions scored as hits whose passage does not
