@@ -977,11 +977,11 @@ reads the same words. Query decomposition was the fix that addressed it on
 paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
 `docs/engineering-log.md`.
 
-Test counts, as of 2026-09-02: **445 checks plus the route suite**: 80 trace,
+Test counts, as of 2026-09-03: **447 checks plus the route suite**: 80 trace,
 66 answer-quality judge, 20 excerpt, 18 links, 33 loaders, 33 freshness, 25
 serve, 24 local generation, 22 metrics, 19 generate, 17 golden-set audit, 17
 analytics, 13 api, 10 reranker cache, 9 ingest cache and 8 OCR, which is 414,
-plus 31 answer-highlight checks under `node ui/test-answer-mark.mjs`.
+plus 33 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 These are counted by running the suites. They were wrong until 2026-08-30,
 when the total read 384 because the list still said 28 loaders, a figure five
