@@ -68,7 +68,13 @@ def sweep(ans: list[float], adv: list[float], lo=-8.0, hi=4.0, step=0.5):
 KIND_LABEL = {
     "fact": "answered in one place",
     "multi": "spread over several documents",
-    "cross-doc": "decoys that look right",
+    # "decoys that look right" until 2026-09-02, which described the passages
+    # these questions compete against and read on screen as a label on the
+    # QUESTION. A reader picking one was told it was a decoy while the same row
+    # said it should be answered. The golden set calls these cross-document
+    # because similar papers have to be told apart, which is what the reader
+    # is being shown.
+    "cross-doc": "similar documents to tell apart",
 }
 ADVERSARIAL = "not in these documents"
 

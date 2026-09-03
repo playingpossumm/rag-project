@@ -58,7 +58,13 @@ check("ten questions offered in total", len(out), 10)
 
 check("three of the one-figure kind", len(by_label[KIND_LABEL["fact"]]), 3)
 check("three spread over several documents", len(by_label[KIND_LABEL["multi"]]), 3)
-check("two decoys", len(by_label[KIND_LABEL["cross-doc"]]), 2)
+check("two where similar documents must be told apart",
+      len(by_label[KIND_LABEL["cross-doc"]]), 2)
+# The label is what a reader acts on, so it is asserted rather than only
+# looked up. It read "decoys that look right" until 2026-09-02, which said
+# the opposite of what the golden set means by cross-document.
+check("and the label does not call an answerable question a decoy",
+      "decoy" in KIND_LABEL["cross-doc"].lower(), False)
 check("two that are not in the documents", len(by_label[ADVERSARIAL]), 2)
 
 # Shortest first, because a suggestion has to be readable at a glance and the
