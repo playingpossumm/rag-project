@@ -266,9 +266,10 @@ already reading. The snapshot stays in `archive/`.
 
 Flow: headline → what RAG is → the pipeline diagram → **pick a document set**
 (dropdown, each with an isometric mark, counts and formats) → ask. Clicking the
-field opens the example questions, grouped by what each exercises: *one figure
-in one place*, *spread over several documents*, *decoys that look right*, *not
-in these documents*. Those come from `eval/analytics.json`. **Regenerate it
+field opens the example questions, grouped by what each exercises: *answered in
+one place*, *spread over several documents*, *similar documents to tell apart*,
+*not in these documents*. The third read *decoys that look right* until
+2026-09-02, which labelled eight answerable questions per corpus as traps. Those come from `eval/analytics.json`. **Regenerate it
 after any golden-set change, or the page offers questions the corpus cannot
 answer.**
 
@@ -965,10 +966,10 @@ reads the same words. Query decomposition was the fix that addressed it on
 paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
 `docs/engineering-log.md`.
 
-Test counts, as of 2026-09-01: **444 checks plus the route suite**: 80 trace,
+Test counts, as of 2026-09-02: **445 checks plus the route suite**: 80 trace,
 66 answer-quality judge, 20 excerpt, 18 links, 33 loaders, 33 freshness, 25
-serve, 24 local generation, 22 metrics, 19 generate, 17 golden-set audit, 16
-analytics, 13 api, 10 reranker cache, 9 ingest cache and 8 OCR, which is 413,
+serve, 24 local generation, 22 metrics, 19 generate, 17 golden-set audit, 17
+analytics, 13 api, 10 reranker cache, 9 ingest cache and 8 OCR, which is 414,
 plus 31 answer-highlight checks under `node ui/test-answer-mark.mjs`.
 
 These are counted by running the suites. They were wrong until 2026-08-30,

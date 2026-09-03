@@ -361,13 +361,13 @@
     },
     {
      "q": "What is late interaction in a retrieval model?",
-     "label": "decoys that look right",
+     "label": "similar documents to tell apart",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What is in-context learning without gradient updates?",
-     "label": "decoys that look right",
+     "label": "similar documents to tell apart",
      "adversarial": false,
      "expect": "should be answered"
     },
@@ -710,13 +710,13 @@
     },
     {
      "q": "Which corvid behaviour involves shaping objects into implements?",
-     "label": "decoys that look right",
+     "label": "similar documents to tell apart",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What term describes chicks able to move and feed themselves soon after hatching?",
-     "label": "decoys that look right",
+     "label": "similar documents to tell apart",
      "adversarial": false,
      "expect": "should be answered"
     },
@@ -1065,7 +1065,7 @@
     },
     {
      "q": "Which framework trades expected return against portfolio variance?",
-     "label": "decoys that look right",
+     "label": "similar documents to tell apart",
      "adversarial": false,
      "expect": "should be answered"
     },

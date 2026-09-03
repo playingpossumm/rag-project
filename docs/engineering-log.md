@@ -2483,10 +2483,52 @@ of 11 fail. The ones that pass against both are the mirror-image cases, where
 an ordinary parenthetical is kept and an initial still does not end a sentence,
 and they pass because that behaviour was already right.
 
-**One thing reported that is not a defect.** The late-interaction question was
-read as a decoy that the system answered wrongly. It is `colbert-late`, an
-ordinary answerable case, and the passage returned was always correct. What was
-wrong was which sentence of it the page emphasised.
+**And the reason it was read as a decoy, which is a defect of its own.** The
+late-interaction question was reported as a decoy the system had answered
+wrongly. It is `colbert-late`, an ordinary answerable case, and the passage was
+always correct. The interface said otherwise: the question list groups its
+suggestions by kind and printed **"decoys that look right"** over the
+cross-document group. See the entry below.
+
+---
+
+## 2026-09-02 — The question list called eight answerable questions decoys
+
+Reported by reading the picker, immediately after the marking defects above:
+the late-interaction question sits under a heading that calls it a decoy, and
+it is not one.
+
+`KIND_LABEL` in `src/build_analytics.py` turns the golden set's own vocabulary
+into something a reader can act on, and mapped `cross-doc` to **"decoys that
+look right"**. The golden set means the opposite of that. Its comment reads
+"cross-document: the point is that similar papers must be told apart", so the
+decoys are the *competing* passages the question has to be resolved against,
+never the question. Eight questions per corpus were labelled as traps while
+`expect` on the same row said "should be answered", so the two halves of one
+suggestion contradicted each other.
+
+`cross-doc` now reads "similar documents to tell apart", which is what the
+reader is being shown. `fact` and `multi` were already accurate, and the
+adversarial group already said "not in these documents".
+
+**The scope is one string, and answering that was the point of checking.** The
+label is derived in one place and rendered in one place, `#chips` in
+`ui/index.html`, which groups consecutive suggestions sharing a label and
+prints it above them. Nothing else reads it, no styling keys off it, and the
+`adversarial` flag that drives the group's appearance was already false for
+these. The interface needed no change at all.
+
+**What it did need was a re-record.** `examples` is baked into the recorded
+`corpus.json` for each corpus, which `record_static.py` writes by asking the
+running server, so `--site-only` rebuilds the page around it and leaves it
+stale. That is correct behaviour and it is worth knowing: a change to anything
+`/api/corpus` returns needs a full run, not a page rebuild.
+
+**Where it came from.** The label was written when the cross-document cases
+were the newest thing in the golden set and the interesting property was that
+similar papers compete. "Decoys that look right" describes that competition
+accurately and describes the question wrongly, and the two are easy to confuse
+while writing the map and impossible to confuse while reading the page.
 
 ---
 
