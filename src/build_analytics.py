@@ -119,8 +119,10 @@ def answer_quality() -> dict:
     """What `src/evaluate_answers.py` measured, per corpus, if anything.
 
     Optional on purpose. Answer quality costs about a minute per question on a
-    CPU, so it is sampled and may not exist for a corpus at all; a missing
-    block means the section is not drawn, rather than drawn empty.
+    CPU, so the script samples by default and the block may not exist for a
+    corpus at all; a missing block means the section is not drawn, rather than
+    drawn empty. Since 2026-09-05 the shipped file holds every case, 157
+    answers in 3.9 hours, rather than the 45-answer sample it held before.
     """
     if not ANSWERS.exists():
         return {}
@@ -146,6 +148,11 @@ def answer_quality() -> dict:
             # "not read from the file".
             "malformed_citations": sm.get("malformed_citations", 0),
             "correct": sm.get("correct", 0),
+            # The strict test is a substring match and a floor. This one credits
+            # an answer carrying 80% of the labelled string's content words in
+            # any order, and is an upper bound of the same kind. Both are
+            # carried so the page can show the pair; either alone misleads.
+            "correct_loose": sm.get("correct_loose", sm.get("correct", 0)),
             "unmatched": len(sm.get("unmatched", [])),
             "refused_rightly": sm.get("refused_rightly", 0),
             "refused_wrongly": sm.get("refused_wrongly", 0),

@@ -147,6 +147,187 @@ check("a real boundary still splits",
         /helpless|hatched/i.test(runs[0] || ""), true);
 }
 
+/* ---- measured 2026-09-05, by ui/audit-marks.mjs ------------------------- */
+
+/* The span started 1 word before the first question word and ran 6 words
+   past it, so where the answer FOLLOWS the question words the mark stopped
+   short. Of the 30 audit misses under that code, 19 marks sat in the sentence
+   that contains the answer, and in 15 of those the answer began at or after
+   the point where the mark stopped (11 wholly after it, 4 overlapping its
+   end). An earlier version of this comment gave 16, a count made by reading
+   the list rather than by locating each mark in its sentence. The span now
+   runs on to the end of its phrase. In each passage below the sentence that
+   answers is the recorded one; the sentences around it are written for the
+   test, so that the answering sentence stays under half the passage and the
+   scorer has a choice to make. */
+{
+  const passage = "Our main results are as follows. We show that the CVaR "
+    + "threshold can be restricted to a common compact interval and establish "
+    + "existence of a primal optimizer. The proof uses a compactness argument "
+    + "on the feasible set of thresholds together with a continuity bound on "
+    + "the objective, and neither step depends on the choice of confidence level.";
+  const run = marked(markAnswer(passage, "Can the CVaR threshold be restricted to a bounded range?"))[0] || "";
+  check("the mark runs on to the end of the answering phrase",
+        run.includes("common compact interval"), true);
+  check("and does not end on a stopword", /\b(and|the|of|to|a)$/i.test(run), false);
+}
+{
+  const passage = "Bayesian methods have a long history in macroeconomic "
+    + "forecasting. BVAR, when complemented with machine learning, enables "
+    + "probabilistic forecasts instead of singlepoint estimates, while AI-driven "
+    + "sentiment analysis improves real-time responsiveness to economic signals. "
+    + "Both directions are pursued in the sections that follow, with the data "
+    + "described first.";
+  const run = marked(markAnswer(passage, "What does combining BVAR with machine learning make possible?"))[0] || "";
+  check("a run-on reaches an answer 5 words past the last question word",
+        run.includes("probabilistic forecasts instead of singlepoint"), true);
+}
+{
+  const passage = "Several ratios summarise the risk side of a strategy, and "
+    + "each answers a different question about the path of returns. The Calmar "
+    + "ratio compares the selected return measure with the worst peak-to-trough "
+    + "decline, i.e., maximum drawdown (MDD), capturing path-dependent downside "
+    + "risk. The Sortino ratio instead penalises only downside deviation.";
+  const run = marked(markAnswer(passage, "Which measure reports the largest peak-to-trough decline of a strategy?"))[0] || "";
+  check("a run-on crosses an \"i.e.,\" to reach the term it introduces",
+        run.includes("maximum drawdown"), true);
+}
+
+/* A question of the form "what is X called" asks for the one word it does not
+   contain, so the sentence that answers often carries a single question word,
+   and the two-word rule refused it: asked what the period of sitting on eggs
+   is called, "helping with the incubation of the eggs" matched only on "eggs"
+   and nothing was marked. For a definitional question the clause around the
+   one word is now marked, subject to the guards tested after it. The two-word
+   rule itself stays, and the "this fused structure" check above still holds.
+
+   The passage is the recorded lead passage for birds/bird-incubation without
+   its last 2 sentences. On the full passage the scorer picks "After hatching,
+   the chicks (called "eyases") are covered with creamy-white down", because
+   that sentence carries 2 question words, "hatching" and "called", so the
+   audit still classifies the recorded case as a MISS. The clause rule fixes
+   the span, not the choice of sentence. */
+{
+  const passage = "They are incubated for 29 to 33 days, mainly by the female, "
+    + "with the male also helping with the incubation of the eggs during the "
+    + "day, but only the female incubating them at night. The average number of "
+    + "young found in nests is 2.5, and the average number that fledge is about "
+    + "1.5, due to the occasional production of infertile eggs and various "
+    + "natural losses of nestlings.";
+  const q = "What is the period of sitting on eggs before hatching called?";
+  const run = marked(markAnswer(passage, q))[0] || "";
+  check("a definitional question marks the clause around its one question word",
+        run.includes("incubation"), true);
+  check("and that clause does not open on a pronoun",
+        /^(this|that|these|those|it|its|they|them|such)\b/i.test(run), false);
+}
+
+/* The guards on that exception. Each was measured on 2026-09-05 by disabling
+   it and sweeping the 450 real passages. The marker guard stopped 1 mark,
+   "also called the preen gland." for the dawn-chorus question; the 5-word
+   floor stopped 1, "brown-blotched eggs." for the incubation question; the
+   whole-word check stopped 2, "naked, unable to lift their head and totally
+   helpless" for the precocial question ("able" inside "unable") and the
+   snipes' "display flight" clause for the dawn-chorus question ("light"
+   inside "flight"); and the participle guard stopped 2 for the flyway
+   question, "so the established Linnean system is followed here." and a
+   clause about brent geese "migrating between the Taymyr Peninsula". The
+   passages here are written to carry the same shapes; they are not the
+   recorded text. */
+check("the question's own marker word is not a pointer",
+  markAnswer("The gland sits at the base of the tail, also called the preen "
+             + "gland. It secretes an oil that birds spread with the bill across "
+             + "the feathers while preening, which keeps them flexible and dry.",
+             "What is the burst of collective singing at first light called?").includes("<mark>"),
+  false);
+check("a fragment carrying one question word is not marked",
+  markAnswer("The nest is a scrape on a ledge, lined with a few stems, holding "
+             + "three or four cream, brown-blotched eggs. The female does most of "
+             + "the work and the male brings food to the ledge through the day.",
+             "What is the period of sitting on eggs before hatching called?").includes("<mark>"),
+  false);
+check("a substring match does not count as the one question word",
+  markAnswer("The drumming of woodpeckers and the winnowing of snipes' wings in "
+             + "display flight are mechanical sounds rather than song. Both carry "
+             + "over long distances in open country and serve the same purpose.",
+             "What is the burst of collective singing at first light called?").includes("<mark>"),
+  false);
+check("a participle is not the one question word",
+  markAnswer("Some recent sources apply the phylogenetic taxon Spheniscidae to "
+             + "what is here referred to as Spheniscinae, and the two arrangements "
+             + "differ only in rank, so the established Linnean system is followed "
+             + "here. The relationships of the subfamilies to each other remain "
+             + "unresolved, and the arrangement below is provisional.",
+             "What is the established route a migrating population follows called?").includes("<mark>"),
+  false);
+
+/* ---- reported 2026-09-05, by review of the run-on ----------------------- */
+
+/* The first run-on trimmed trailing stopwords by their letters alone and had
+   no rule for what it ran into. Over the 450 sweep passages it raised marks
+   with an unbalanced bracket from 4 to 8, marks ending on an operator from 2
+   to 5 and marks carrying a URL from 1 to 2. In each passage below the
+   sentence that carries the defect is recorded in eval/top-passages.json and
+   the sentences around it are written. */
+{
+  // qf-mean-variance#2. "at)." closes a bracket, so it stays whatever its
+  // letters say; the first trim stripped it and left "(α =" open. The second
+  // sentence is written without the recorded "covariance", which carries
+  // "variance" as a substring and would win the sentence for itself.
+  const passage = "Conversely, for Dirac-3 and Gurobi, the policy network acts as a "
+    + "signal generator whose continuous action vector represents an expected "
+    + "return forecast (α = at). This expected return signal, along with the "
+    + "shrinkage matrix Σ t and the preceding binary allocation vector x prev, "
+    + "is assembled into a sparse Quadratic Unconstrained Binary Optimization "
+    + "(QUBO) matrix Q.";
+  const run = marked(markAnswer(passage, "Which framework trades expected return against portfolio variance?"))[0] || "";
+  check("a stopword that closes a bracket is kept", run.includes("(α = at)"), true);
+}
+{
+  // qf-max-drawdown#1. The run-on reached "(β2 =" and stopped on it.
+  const passage = "Results Overview Exhibit 2 reports peak metrics per pipeline "
+    + "across the β1 sweep (β2 = 0 throughout). The results reveal "
+    + "differentiated performance profiles that vary by metric and "
+    + "configuration. No single pipeline dominates on all metrics simultaneously.";
+  const run = marked(markAnswer(passage, "Which measure reports the largest peak-to-trough decline of a strategy?"))[0] || "";
+  check("a mark does not end on a bracket it opens or on an operator",
+        /[(\[=]$/.test(run.trim()), false);
+  check("and it leaves no bracket open",
+        run.split("(").length > run.split(")").length, false);
+}
+{
+  // adv-latency-ms#0. The chunk ends in a footnote URL and a rule of dashes.
+  const passage = "For the mostly CPU-based retrieval experiments in §4.3 and the "
+    + "indexing experiments in §4.5, we use another server with the same CPU "
+    + "and system memory specifications but which has four Titan V GPUs "
+    + "attached, each with 12 GiBs of memory. Across all experiments, only one "
+    + "GPU is dedicated per query for 5htps://github.com/huggingface/transformers -----";
+  const run = marked(markAnswer(passage, "What is the end-to-end latency in milliseconds per query?"))[0] || "";
+  check("a run-on stops before a URL", /:\/\/|-----/.test(run), false);
+}
+{
+  // vit-inductive#0. A footnote marker fused to the next sentence's first word.
+  const passage = "When trained on mid-sized datasets such as ImageNet without strong "
+    + "regularization, these models yield modest accuracies of a few percentage "
+    + "points below ResNets of comparable size. This seemingly discouraging "
+    + "outcome may be expected: Transformers lack some of the inductive biases "
+    + "1Fine-tuning code and pre-trained models are available at github.";
+  const run = marked(markAnswer(passage, "What inductive biases do convolutional networks have that transformers lack?"))[0] || "";
+  check("a run-on stops before a fused footnote marker", /\d[A-Z][a-z]/.test(run), false);
+  check("and still reaches the phrase it was after", run.includes("inductive biases"), true);
+}
+{
+  // roberta-dynamic#1. The 12-word cap cut the span before its last question
+  // word, and with the trim's floor beyond the end nothing was trimmed.
+  const passage = "C.2 Ablation for Different Masking Procedures In Section 3.1, we "
+    + "mention that BERT uses a mixed strategy for masking the target tokens "
+    + "when pre-training with the masked language model (MLM) objective. We "
+    + "compare the procedures on the development sets in Table 8.";
+  const run = marked(markAnswer(passage, "What masking strategy is applied differently at each epoch?"))[0] || "";
+  check("a span cut by the word cap is still trimmed of a trailing stopword",
+        /\b(a|the|of|to|and)$/i.test(run), false);
+}
+
 /* -------------------------------------------------------------- the sweep -- */
 
 /* ---- reported 2026-09-01, by reading the page -------------------------- */

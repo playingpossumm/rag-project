@@ -321,6 +321,69 @@ check("correctness is not scored on an unanswerable case",
       judge("Not in these documents.", case("adv", unanswerable=True),
             PASSAGES)["correct"], None)
 
+# ---------------------------------------------------------- loose correctness
+# `correct_loose` sits beside `correct` and is the looser of the two: at least
+# 80% of the label's content words present in the answer, in any order. It is
+# a word-overlap test and not a judge, so it can credit an answer that has the
+# right words in the wrong relation, and it is reported beside the strict
+# figure rather than instead of it.
+check("the labelled string present is loosely correct too",
+      hit.get("correct_loose"), True)
+
+# The right answer with the label's words in another order.
+reordered = judge("Flying birds have a sternum that is keeled, which anchors "
+                  "the flight muscles.", case("q", "keeled sternum"), PASSAGES)
+check("a reordering fails the strict test", reordered["correct"], False)
+check("and passes the loose one", reordered.get("correct_loose"), True)
+
+# The label from moe-routing, hyphenated, against an answer that spaces it.
+split = judge("The auxiliary loss free load balancing strategy is adopted.",
+              case("q", "auxiliary-loss-free load balancing"), PASSAGES)
+check("hyphens against spaces fail the strict test", split["correct"], False)
+check("and pass the loose one", split.get("correct_loose"), True)
+
+# An answer about something else fails both.
+unrelated = judge("Birds have hollow bones.", case("q", "keeled sternum"), PASSAGES)
+check("an unrelated answer fails the strict test", unrelated["correct"], False)
+check("and the loose one", unrelated.get("correct_loose"), False)
+
+# Stopwords are removed before the share is taken, so an answer that shares
+# only the label's stopwords shares nothing. The label here has 5 runs of 3 or
+# more characters and 4 of them are stopwords, so an answer holding those 4
+# and not "sternum" would pass at exactly 80% if the filter were missing, and
+# fails because it is there. The first version of this check used "the keeled
+# sternum" against an answer with neither content word, which was False
+# whether or not the filter ran, so it proved nothing about the filter.
+only_stop = judge("The wing that is used for this.",
+                  case("q", "sternum that is used for this"), PASSAGES)
+check("sharing only the label's stopwords is not a loose match",
+      only_stop.get("correct_loose"), False)
+
+# A label with no content words at all cannot pass on nothing.
+no_content = judge("The text does not say.", case("q", "not in the text"), PASSAGES)
+check("a label with no content words cannot pass the loose test",
+      no_content.get("correct_loose"), False)
+
+# The threshold is 80%, so 4 of 5 content words pass and 3 of 5 do not. The
+# label is real, from the quant golden set.
+GAS = "gas cost paid for interacting with the blockchain"
+four_of_five = judge("Each interaction with the blockchain carries a gas cost, "
+                     "paid by the agent.", case("q", GAS), PASSAGES)
+check("4 of 5 content words pass the loose test",
+      four_of_five.get("correct_loose"), True)
+three_of_five = judge("The blockchain charges a gas cost.", case("q", GAS), PASSAGES)
+check("3 of 5 do not", three_of_five.get("correct_loose"), False)
+
+# A strict hit is a loose hit, even where the word test alone would say no:
+# "28.4" is a real label and has no run of 3 characters once the point splits it.
+bleu = judge("The Transformer achieves 28.4 BLEU.", case("q", "28.4"), PASSAGES)
+check("a strict hit with no content words is still a loose hit",
+      (bleu["correct"], bleu.get("correct_loose")), (True, True))
+
+check("loose correctness is not scored on an unanswerable case",
+      judge("Not in these documents.", case("adv", unanswerable=True),
+            PASSAGES).get("correct_loose"), None)
+
 # -------------------------------------------------------------- groundedness
 grounded = judge("Down feathers lack barbicels so the barbules trap air.",
                  case("q"), PASSAGES)

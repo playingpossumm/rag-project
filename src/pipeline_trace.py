@@ -27,6 +27,22 @@ from diversify import DEFAULT_MAX_PER_SOURCE
 from hybrid import RRF_K, _minmax, bm25_search, tokenize
 from retrieve import CANDIDATE_K, DEFAULT_FUSION, TOP_K, search
 
+# This differs from api.DEFAULT_EXPANSION ("window") on purpose. The two
+# defaults serve two consumers. The serving path hands its passages to a
+# generator, and for that consumer window +/-1 lifted context recall from 0.742
+# to 0.833 at 2371 tokens a query, which is why api.py defaults to it. The trace
+# hands its passages to a reader, on a page that renders each one as a lead-in
+# only, and that case was measured separately on 2026-09-03. Showing the
+# neighbouring chunk moved answer-on-page from 0.808 to 0.832 while growing a
+# passage from 591 to 836 characters, a symmetric lead-out reached 0.840 at 1073
+# characters, and a 600-character lead-out bought nothing more. A reader pays
+# for every character on the page in a way a generator does not, so neighbours
+# were rejected for display and the trace keeps raw chunks. Until 2026-09-05
+# nothing recorded this, and a reader of either file would have taken the other
+# for a mistake. test_trace.py asserts both values so that a change to either
+# is a decision rather than an accident.
+DISPLAY_EXPANSION = "none"
+
 
 @dataclass
 class Stage:
@@ -213,7 +229,7 @@ def trace_pipeline(
     use_reranker: bool = True,
     fusion: str = DEFAULT_FUSION,
     alpha: float = 0.5,
-    expansion: str = "none",
+    expansion: str = DISPLAY_EXPANSION,
     threshold: float | None = None,
     # How much of the first stage's ordering survives reranking, per corpus.
     rerank_blend: float | None = None,

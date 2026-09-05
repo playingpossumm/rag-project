@@ -151,6 +151,40 @@ finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ---- the warm-up runs through the loaded corpus, and never fails startup ---
+# Until 2026-09-06 main() called ask("warmup") bare, which opens retrieve's
+# default store rather than RES's: a second index locally, and in the Docker
+# image, which bakes in the ornithology corpus only, a missing directory and a
+# server that died before it bound the port.
+_ask, _res = serve.ask, serve.RES
+try:
+    calls = []
+
+    class _Loaded:
+        index, metadata, model, bm25 = "I", "M", "E", "B"
+
+        def rerank_blend(self):
+            return 0.2
+
+    serve.RES = _Loaded()
+    serve.ask = lambda q, **kw: calls.append(kw)
+    ran = serve.warm_up()
+    check("the warm-up runs through the loaded corpus, not a second index",
+          calls[0].get("resources") if calls else None, ("I", "M", "E", "B"))
+    check("and carries that corpus's rerank blend",
+          calls[0].get("rerank_blend") if calls else None, 0.2)
+    check("and reports that it ran", ran, True)
+
+    def _missing(q, **kw):
+        raise FileNotFoundError("vector_store/index.faiss")
+
+    serve.ask = _missing
+    check("a warm-up that cannot run does not stop the server coming up",
+          serve.warm_up(), False)
+finally:
+    serve.ask, serve.RES = _ask, _res
+
+
 def main() -> int:
     width = max(len(n) for n, *_ in CHECKS)
     failed = 0

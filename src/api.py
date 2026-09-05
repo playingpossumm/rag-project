@@ -47,6 +47,15 @@ DEFAULT_MIN_CONFIDENCE = ABSTAIN_THRESHOLD
 # Page remains available and is the right choice where a citation must point at
 # a complete unit a reader can verify in one place -- a contract clause read
 # half-in and half-out of context is worse than useless.
+#
+# The numbers above were measured for a GENERATOR reading the context.
+# pipeline_trace.DISPLAY_EXPANSION is "none" because the trace feeds a reader
+# instead, and that case was measured separately on 2026-09-03 as the page
+# renders it, a lead-in only. Neighbours moved answer-on-page from 0.808 to
+# 0.832 for 591 to 836 characters a passage, a symmetric lead-out reached 0.840
+# at 1073, and a 600-character lead-out gained nothing further, so display kept
+# raw chunks. The two defaults disagree on purpose, and test_trace.py holds
+# both so that neither can drift into the other unnoticed.
 DEFAULT_EXPANSION = "window"
 
 

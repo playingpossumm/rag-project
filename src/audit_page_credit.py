@@ -1,8 +1,9 @@
 """Does a hit mean the reader got the answer, or only the right page?
 
-Two counts that ought to be close and are not. Eleven questions score as misses
-across the three corpora, and thirty-three score a hit while no passage the
-reader is shown contains the answer. The gap is in what `is_relevant` compares.
+Across the three corpora, 11 questions score as misses and 14 score a hit while
+no returned passage carries the answer string. A first reading on 2026-09-03
+put that second figure at 33, and the correction is recorded below. The gap is
+in what `is_relevant` compares.
 
 Gold is derived by `build_golden_set.derive_gold`: a case declares an answer
 string, every chunk containing it is found, and its LOCATOR is recorded, which
@@ -25,7 +26,7 @@ before the counts below meant anything.
 **The first reading was wrong about the cause, and the correction is the more
 useful finding.** It was taken off the DISPLAYED EXCERPT, which
 `pipeline_trace._brief` capped at 420 characters, so it reported 33 cases and
-blamed all of them on the locator. Twenty-one of the 33 had the answer in the
+blamed all of them on the locator. 21 of the 33 had the answer in the
 retrieved chunk and lost it to that cap: the system found the answer and the
 page cut it off, which is a display defect and not a scoring one. The cap is
 720 from 2026-09-03 and answer-shown across the three corpora went 0.656 to
@@ -53,6 +54,22 @@ path already strips these in `answer-mark.js`. En dashes do the same to
 moved two cases out of the population before anything was read.
 
     .venv\\Scripts\\python.exe src\\audit_page_credit.py
+
+Exit 0 means every case credited on the locator alone has a verdict above.
+Exit 1 means that population moved, so a verdict is missing or stale. Exit 2
+means the guard did not run, because the recorded payloads it reads live in
+`static-demo/`, which is gitignored, and `src/record_static.py --all` has not
+produced them for every corpus on this machine. A recording for some corpora
+and not others is also exit 2. Until 2026-09-05 the script audited whichever
+corpora were recorded, so with quant absent it reported the 4 quant verdicts
+above as stale and exited 1 for a reason that was not drift.
+
+This is the seventh guard listed in README.md. `build_corpus_manifest.py
+--check` depends on a gitignored input in the same way, since it reads the
+built index and returns 2 when there is none, and `check_golden.py` skips a
+corpus whose index is missing. A draft of this paragraph on 2026-09-05 called
+this the only guard of the seven that needs a file the repository does not
+carry, which was wrong.
 """
 import json
 import re
@@ -86,7 +103,7 @@ def norm(text) -> str:
 # Read individually on 2026-09-03, and re-sorted the same day after the
 # population was corrected. The first reading of these was taken off the
 # DISPLAYED EXCERPT, which was capped at 420 characters, so it conflated two
-# causes and blamed both on the locator. Twenty-one of the thirty-three had the
+# causes and blamed both on the locator. 21 of the 33 had the
 # answer in the retrieved chunk and lost it to that cap; raising the cap to 720
 # in pipeline_trace._brief fixed those. What is left below is the population
 # that survives it: the answer is not in the retrieved chunk at all, so no
@@ -123,15 +140,35 @@ def locator_triple(item: dict) -> tuple:
     return (item["source"], kind, value)
 
 
+RECORD_CMD = ".venv\\Scripts\\python.exe src\\record_static.py --all"
+
+
+def not_run(reason: str) -> int:
+    """Exit 2, distinct from 0 and 1, so a caller cannot read it as a pass.
+
+    The verdicts above are only checked against a recording, and a missing
+    recording says nothing about whether they still describe their cases.
+    """
+    print(f"  NOT RUN  {reason}\n"
+          f"  The credits were not audited. Produce the recording first with\n"
+          f"      {RECORD_CMD}")
+    return 2
+
+
 def main() -> int:
     rows = []
+    missing = [c for c in GOLDEN if not (ROOT / "static-demo" / c).is_dir()]
+    if missing:
+        # A partial recording is treated the same as none. Until 2026-09-05
+        # this loop audited whichever corpora were recorded and reported the
+        # absent corpus's verdicts as stale with exit 1, which is the wrong
+        # answer to a different question.
+        return not_run(f"static-demo/ holds no recording for "
+                       f"{', '.join(missing)}.")
     for corpus, gpath in GOLDEN.items():
         cases = {c["question"]: c for c in json.loads(
             (ROOT / gpath).read_text(encoding="utf-8"))["cases"]}
         recorded = ROOT / "static-demo" / corpus
-        if not recorded.is_dir():
-            print(f"  {corpus}: no recorded payloads; run src/record_static.py")
-            continue
         for f in sorted(recorded.glob("*.json")):
             d = json.loads(f.read_text(encoding="utf-8"))
             if not isinstance(d, dict) or "query" not in d:
@@ -152,7 +189,8 @@ def main() -> int:
             })
 
     if not rows:
-        return 2
+        return not_run("static-demo/ holds no payload that matches an "
+                       "answerable golden case.")
     both = [r for r in rows if r["scored"] and r["visible"]]
     page_only = [r for r in rows if r["scored"] and not r["visible"]]
     missed = [r for r in rows if not r["scored"]]
