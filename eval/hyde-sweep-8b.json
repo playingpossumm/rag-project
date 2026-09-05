@@ -1,0 +1,203 @@
+{
+ "generated_by": "src/sweep_hyde.py",
+ "generator": "ollama",
+ "model": "llama3.1:8b",
+ "corpora": {
+  "llm": {
+   "label": "ML & NLP papers",
+   "n_answerable": 67,
+   "n_adversarial": 17,
+   "modes": {
+    "none": {
+     "any_hit": 0.9104,
+     "gained": [],
+     "lost": [],
+     "slips": [
+      "adv-context-window",
+      "adv-diffusion",
+      "adv-latency-ms",
+      "adv-mamba",
+      "adv-quantize-4bit",
+      "adv-rlhf",
+      "adv-salary",
+      "adv-seed"
+     ],
+     "seconds_per_query": 1.87
+    },
+    "hypothetical": {
+     "any_hit": 0.7164,
+     "gained": [
+      "bert-wordpiece"
+     ],
+     "lost": [
+      "colbert-maxsim",
+      "cot-gsm8k",
+      "cot-prompt",
+      "dpr-dual",
+      "gpt3-fewshot",
+      "lora-frozen",
+      "lora-rank",
+      "mha-def",
+      "resnet-degradation",
+      "resnet-shortcut",
+      "seq2seq-reverse",
+      "vit-inductive",
+      "vit-jft",
+      "w2v-cbow"
+     ],
+     "slips": [
+      "adv-carbon",
+      "adv-compute-budget",
+      "adv-context-window",
+      "adv-energy",
+      "adv-flash",
+      "adv-mamba",
+      "adv-price",
+      "adv-quantize-4bit",
+      "adv-rlhf",
+      "adv-seed"
+     ],
+     "seconds_per_query": 32.65
+    },
+    "both": {
+     "any_hit": 0.806,
+     "gained": [
+      "bert-wordpiece",
+      "gpt3-params"
+     ],
+     "lost": [
+      "colbert-maxsim",
+      "cot-gsm8k",
+      "dpr-dual",
+      "gpt3-fewshot",
+      "lora-rank",
+      "resnet-degradation",
+      "seq2seq-reverse",
+      "vit-jft",
+      "w2v-cbow"
+     ],
+     "slips": [
+      "adv-carbon",
+      "adv-compute-budget",
+      "adv-context-window",
+      "adv-diffusion",
+      "adv-energy",
+      "adv-flash",
+      "adv-latency-ms",
+      "adv-price",
+      "adv-quantize-4bit",
+      "adv-rlhf",
+      "adv-seed"
+     ],
+     "seconds_per_query": 198.99
+    }
+   }
+  },
+  "birds": {
+   "label": "Ornithology",
+   "n_answerable": 25,
+   "n_adversarial": 7,
+   "modes": {
+    "none": {
+     "any_hit": 0.88,
+     "gained": [],
+     "lost": [],
+     "slips": [
+      "adv-bird-count-2024"
+     ],
+     "seconds_per_query": 1.95
+    },
+    "hypothetical": {
+     "any_hit": 0.92,
+     "gained": [
+      "bird-dialects",
+      "bird-hollow-bones"
+     ],
+     "lost": [
+      "bird-keel"
+     ],
+     "slips": [
+      "adv-bird-count-2024",
+      "adv-bird-insulin",
+      "adv-bird-price",
+      "bird-alula"
+     ],
+     "seconds_per_query": 29.97
+    },
+    "both": {
+     "any_hit": 0.88,
+     "gained": [
+      "bird-dialects",
+      "bird-hollow-bones"
+     ],
+     "lost": [
+      "bird-imprinting",
+      "bird-keel"
+     ],
+     "slips": [
+      "adv-bird-count-2024",
+      "adv-bird-insulin",
+      "adv-bird-price",
+      "bird-alula"
+     ],
+     "seconds_per_query": 30.01
+    }
+   }
+  },
+  "quant": {
+   "label": "Quantitative finance",
+   "n_answerable": 33,
+   "n_adversarial": 8,
+   "modes": {
+    "none": {
+     "any_hit": 0.9394,
+     "gained": [],
+     "lost": [],
+     "slips": [
+      "adv-qf-broker-fee"
+     ],
+     "seconds_per_query": 3.87
+    },
+    "hypothetical": {
+     "any_hit": 0.8485,
+     "gained": [],
+     "lost": [
+      "qf-cvar-interval",
+      "qf-heavy-tails",
+      "qf-whale-attack"
+     ],
+     "slips": [
+      "adv-qf-author-pay",
+      "adv-qf-broker-fee",
+      "adv-qf-mortgage-rate",
+      "adv-qf-photosynth",
+      "adv-qf-syrinx",
+      "adv-qf-ticker-close",
+      "qf-mean-reversion"
+     ],
+     "seconds_per_query": 36.87
+    },
+    "both": {
+     "any_hit": 0.8182,
+     "gained": [],
+     "lost": [
+      "qf-cvar-interval",
+      "qf-market-making",
+      "qf-social-disclosure",
+      "qf-whale-attack"
+     ],
+     "slips": [
+      "adv-qf-author-pay",
+      "adv-qf-broker-fee",
+      "adv-qf-mortgage-rate",
+      "adv-qf-photosynth",
+      "adv-qf-syrinx",
+      "adv-qf-ticker-close",
+      "qf-mean-reversion"
+     ],
+     "seconds_per_query": 36.96
+    }
+   }
+  }
+ }
+}

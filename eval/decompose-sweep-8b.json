@@ -1,0 +1,1073 @@
+{
+ "generated_by": "src/sweep_decompose.py",
+ "scope": "all answerable cases",
+ "structural_only": false,
+ "note": "End to end at the served configuration, scored over all answerable cases. A pool is a ceiling and not a proxy here. A mode measured only on the cases it was built for cannot show what it costs the rest, which is why this is the whole set.",
+ "corpora": {
+  "llm": {
+   "label": "ML & NLP papers",
+   "modes": {
+    "none": {
+     "hit_rate": 0.9104,
+     "mrr": 0.7828,
+     "ndcg": 0.8025,
+     "src_recall": 0.7838,
+     "seconds_per_query": 9.3,
+     "structural_hit": 0,
+     "structural_total": 3,
+     "rewritten": {}
+    },
+    "rewrite": {
+     "hit_rate": 0.8657,
+     "mrr": 0.7567,
+     "ndcg": 0.7806,
+     "src_recall": 0.7968,
+     "seconds_per_query": 26.32,
+     "structural_hit": 0,
+     "structural_total": 3,
+     "rewritten": {
+      "mha-def": [
+       "What is multi-head attention and why use multiple attention heads instead of a single attention head in deep learning models?"
+      ],
+      "scale-why": [
+       "Why is the dot product scaled by the square root of the dimension of the key vector?"
+      ],
+      "warmup": [
+       "Which learning rate schedule increases linearly for the first steps then decays by inverse square root of the step number?"
+      ],
+      "pos-enc-fn": [
+       "What sinusoidal function is used to compute positional encodings in a technical context?"
+      ],
+      "pos-enc-why": [
+       "Why does a model without recurrence and without convolution need positional encodings?"
+      ],
+      "moe-routing": [
+       "What load balancing technique is used for routing to experts?"
+      ],
+      "path-length": [
+       "How does the maximum path length between positions compare for self-attention and recurrent neural network layers?"
+      ],
+      "bleu-ende": [
+       "Which model achieved a BLEU score of 28.4 on the English-to-German translation task in the 2014 Workshop on Machine Translation (WMT 2014)?"
+      ],
+      "attn-uses": [
+       "In which three different ways is multi-head attention used in an encoder-decoder Transformer architecture?"
+      ],
+      "label-smooth": [
+       "What label smoothing value was used during training of the model?"
+      ],
+      "p100": [
+       "What GPU hardware models were used for training, and how many units of each model were used?"
+      ],
+      "adam": [
+       "Which optimizer was used in the technical paper, and what were the specific beta values used in the optimization process?"
+      ],
+      "relu": [
+       "Which activation function is applied between the two linear layers of a feed-forward block in a neural network architecture?"
+      ],
+      "dropout-rate": [
+       "dropout rate used for English-to-French model instead of default 0.3"
+      ],
+      "residual": [
+       "How are residual connections and layer normalization applied around each sub-layer in deep neural networks?"
+      ],
+      "wmt14": [
+       "Which translation dataset was used for the English-to-German language experiments in the technical papers?"
+      ],
+      "colbert-late": [
+       "What is late interaction in a retrieval model, excluding early interaction techniques such as query expansion and relevance feedback?"
+      ],
+      "dpr-dual": [
+       "How is a dual-encoder retriever trained with in-batch negatives, specifically when the negatives are generated from the same batch of documents as the positives?"
+      ],
+      "lora-rank": [
+       "How does low-rank adaptation reduce the number of trainable parameters in a model?"
+      ],
+      "bert-mlm": [
+       "What is the masked language model pre-training objective in natural language processing?"
+      ],
+      "cot-prompt": [
+       "How does prompting a model with intermediate reasoning steps in arithmetic problems affect its accuracy?"
+      ],
+      "sbert-siamese": [
+       "How are Siamese network structures used to derive sentence embeddings in natural language processing?"
+      ],
+      "vit-patches": [
+       "How are images split into spatial patches and fed into a Transformer architecture?"
+      ],
+      "faiss-pq": [
+       "How does product quantization compress vectors for similarity search in the context of nearest neighbor search and high-dimensional data?"
+      ],
+      "adam-bias": [
+       "How does the optimizer correct for bias in its moment estimates of variance and covariance?"
+      ],
+      "adam-adamax": [
+       "What variant based on the infinity norm is proposed in the literature?"
+      ],
+      "bahdanau-fixed": [
+       "What bottleneck does encoding a sentence into a fixed-length vector create in natural language processing?"
+      ],
+      "bahdanau-align": [
+       "How does the model learn to jointly align and translate source and target sentences in a single pass?"
+      ],
+      "bn-covariate": [
+       "What problem does normalizing layer inputs address in deep neural networks?"
+      ],
+      "bn-minibatch": [
+       "What are the steps involved in computing normalization statistics during training of a machine learning model?"
+      ],
+      "bert-nsp": [
+       "What sentence-level pre-training task is used alongside masked prediction in language models?"
+      ],
+      "bert-wordpiece": [
+       "What subword tokenization scheme is used in the technical papers?"
+      ],
+      "bert-glue": [
+       "What benchmark suite is used to evaluate language understanding in natural language processing?"
+      ],
+      "cot-gsm8k": [
+       "Which grade-school math benchmark, such as fractions or algebra, is used to evaluate reasoning skills in students?"
+      ],
+      "cot-scale": [
+       "At what model scale does chain-of-thought reasoning emerge in artificial intelligence models?"
+      ],
+      "colbert-maxsim": [
+       "What operator computes the similarity between query and document embeddings in vector space models?"
+      ],
+      "colbert-msmarco": [
+       "Which passage ranking dataset is used for evaluation of passage ranking systems?"
+      ],
+      "dpr-bm25": [
+       "How does dense retrieval compare with BM25 in terms of top-20 accuracy?"
+      ],
+      "dpr-nq": [
+       "Which open-domain question answering dataset is used in the field of natural language processing?"
+      ],
+      "faiss-kselect": [
+       "How is top-k selection implemented efficiently on Graphics Processing Units (GPUs)?"
+      ],
+      "faiss-ivf": [
+       "What index structures partition vectors into cells for search?"
+      ],
+      "gpt3-params": [
+       "What are the largest autoregressive models and what are their parameter counts?"
+      ],
+      "gpt3-icl": [
+       "What is in-context learning without explicit gradient updates?"
+      ],
+      "gpt3-fewshot": [
+       "How does task performance change with the number of examples in the prompt, specifically in the context of technical papers?"
+      ],
+      "ln-vs-bn": [
+       "Why is layer normalization preferred over batch normalization for recurrent networks, especially in scenarios where the batch size is small or the model is trained on a stream of sequential data?"
+      ],
+      "ln-stats": [
+       "How are normalization statistics computed across features rather than examples, specifically in the context of machine learning or data analysis?"
+      ],
+      "lora-latency": [
+       "Does the adaptation method introduce additional inference latency?"
+      ],
+      "lora-frozen": [
+       "Are the pre-trained weights updated during the adaptation process?"
+      ],
+      "rag-parametric": [
+       "How are parametric memory models combined with non-parametric memory models?"
+      ],
+      "rag-marginalize": [
+       "How are documents retrieved by a system marginalized during the generation of search results?"
+      ],
+      "resnet-degradation": [
+       "What happens to accuracy when plain neural networks get deeper?"
+      ],
+      "resnet-shortcut": [
+       "What connections allow gradients to flow through very deep neural networks?"
+      ],
+      "resnet-152": [
+       "What is the maximum depth of the deepest neural network architecture that has been evaluated on the ImageNet dataset?"
+      ],
+      "roberta-dynamic": [
+       "What masking strategy is applied differently at each training epoch?"
+      ],
+      "roberta-nsp-drop": [
+       "What pre-training objectives were found unnecessary and removed from the model?"
+      ],
+      "sbert-cosine": [
+       "How are sentence similarities computed from the derived vector embeddings?"
+      ],
+      "sbert-speed": [
+       "How much faster is the approach compared to a cross-encoder for similarity search in a technical context?"
+      ],
+      "seq2seq-reverse": [
+       "What input transformation improved translation performance significantly?"
+      ],
+      "seq2seq-lstm": [
+       "What recurrent neural network architecture maps sequences to a fixed-dimensional vector?"
+      ],
+      "t5-c4": [
+       "What is the name of the pre-trained corpus that is a cleaned version of a web-scraped dataset?"
+      ],
+      "t5-text2text": [
+       "How are all Natural Language Processing tasks cast into a single format, such as sequence-to-sequence or classification?"
+      ],
+      "t5-span": [
+       "What corruption objective masks adjacent spans of tokens?"
+      ],
+      "vit-jft": [
+       "Which large private dataset, as opposed to a public dataset, is used for pre-training?"
+      ],
+      "vit-inductive": [
+       "What inductive biases do convolutional neural networks have that transformers lack in computer vision applications?"
+      ],
+      "w2v-cbow": [
+       "What architecture predicts a word from its surrounding context in natural language processing?"
+      ],
+      "w2v-skipgram": [
+       "What architecture predicts surrounding words from a target word in a text?"
+      ],
+      "w2v-analogy": [
+       "How are syntactic and semantic regularities measured in word vectors, specifically in models that represent words as vectors in a high-dimensional space?"
+      ]
+     }
+    },
+    "decompose": {
+     "hit_rate": 0.8955,
+     "mrr": 0.7157,
+     "ndcg": 0.7498,
+     "src_recall": 0.759,
+     "seconds_per_query": 55.7,
+     "structural_hit": 0,
+     "structural_total": 3,
+     "rewritten": {
+      "mha-def": [
+       "What is multi-head attention in deep learning?",
+       "What are the benefits of using multiple attention heads instead of a single head in a transformer model?"
+      ],
+      "scale-why": [
+       "What is the purpose of scaling the dot product in the retrieval system?",
+       "Why is the square root of the key dimension used as the scaling factor?"
+      ],
+      "warmup": [
+       "What learning rate schedule increases linearly for the first steps then decays by inverse square root?"
+      ],
+      "pos-enc-fn": [
+       "What sinusoidal function is used to compute positional encodings in transformer models?",
+       "What type of function is used to compute positional encodings in transformer models?"
+      ],
+      "pos-enc-why": [
+       "What is the purpose of positional encodings in a model without recurrence or convolution?",
+       "Why are positional encodings necessary in a model that does not use recurrence or convolution?"
+      ],
+      "moe-routing": [
+       "What load balancing loss is used for expert routing?",
+       "What is the load balancing loss used in expert routing?"
+      ],
+      "path-length": [
+       "What is the maximum path length between positions in self-attention layers?",
+       "What is the maximum path length between positions in recurrent layers?"
+      ],
+      "bleu-ende": [
+       "Which model achieved 28.4 BLEU on WMT 2014 English-to-German?"
+      ],
+      "attn-uses": [
+       "Multi-head attention is used in the encoder to attend to different parts of the input sequence in parallel.",
+       "Multi-head attention is used in the decoder to attend to different parts of the input sequence and the output sequence in parallel.",
+       "Multi-head attention is used in the decoder to attend to different parts of the input sequence and the output sequence in parallel, and also to attend to the output of the previous decoder layer in parallel."
+      ],
+      "label-smooth": [
+       "What label smoothing value was used during training of the model?"
+      ],
+      "p100": [
+       "What GPU hardware was used for training the model?",
+       "How many GPUs were used for training the model?"
+      ],
+      "adam": [
+       "What optimizer was used in the paper?",
+       "What are the beta values used by the optimizer in the paper?"
+      ],
+      "relu": [
+       "What is the activation function used between the two linear layers of a feed-forward block?",
+       "What activation function is typically used in the middle layer of a feed-forward neural network?"
+      ],
+      "dropout-rate": [
+       "What dropout rate was used for the English-to-French model?",
+       "What was the dropout rate used in the English-to-French model instead of 0.3?"
+      ],
+      "residual": [
+       "How are residual connections applied around each sub-layer?",
+       "How is layer normalization applied around each sub-layer?"
+      ],
+      "wmt14": [
+       "What translation dataset was used for the English-to-German experiments in the paper?",
+       "Which dataset was used for the English-to-German translation experiments?"
+      ],
+      "colbert-late": [
+       "What is late interaction in a retrieval model?",
+       "How is late interaction different from early interaction in a retrieval model?",
+       "What are the implications of late interaction on retrieval model performance?"
+      ],
+      "dpr-dual": [
+       "How is a dual-encoder retriever trained?",
+       "What is the role of in-batch negatives in training a dual-encoder retriever?"
+      ],
+      "lora-rank": [
+       "What is low-rank adaptation in the context of neural networks?",
+       "How does low-rank adaptation reduce the number of trainable parameters in a neural network?"
+      ],
+      "bert-mlm": [
+       "What is the masked language model pre-training objective?",
+       "What is the objective of pre-training a masked language model?"
+      ],
+      "cot-prompt": [
+       "How does prompting a model with intermediate reasoning steps affect arithmetic accuracy?",
+       "What are the intermediate reasoning steps that can be used to improve arithmetic accuracy in models?"
+      ],
+      "sbert-siamese": [
+       "What is a Siamese network structure?",
+       "How are Siamese network structures used to derive sentence embeddings?",
+       "What is the role of the encoder in a Siamese network for sentence embeddings?"
+      ],
+      "vit-patches": [
+       "What is the process of splitting an image into patches?",
+       "How are the patches resized and formatted for input into a Transformer model?",
+       "What is the typical size of the patches and the sequence length for an image fed to a Transformer?"
+      ],
+      "faiss-pq": [
+       "What is product quantization and how does it compress vectors for similarity search?",
+       "How does product quantization reduce the dimensionality of vectors for efficient similarity search?"
+      ],
+      "adam-bias": [
+       "How does the optimizer correct for bias in its moment estimates?",
+       "What methods does the optimizer use to reduce bias in its moment estimates?",
+       "How does the optimizer handle biased moment estimates in its optimization process?"
+      ],
+      "adam-adamax": [
+       "What variant of the infinity norm is proposed?",
+       "What is the proposed variant based on the infinity norm?"
+      ],
+      "bahdanau-fixed": [
+       "Information loss due to dimensionality reduction",
+       "Difficulty in capturing nuanced semantic relationships between words",
+       "Inability to represent long-range dependencies and context",
+       "Potential for overfitting and underfitting due to fixed vector length"
+      ],
+      "bahdanau-align": [
+       "What is the process of joint learning in the model?",
+       "How does the model align and translate simultaneously?",
+       "What are the key components involved in joint learning in the model?"
+      ],
+      "bn-covariate": [
+       "What is the problem that normalizing layer inputs addresses?",
+       "How does normalizing layer inputs address the problem of differing input scales?"
+      ],
+      "bn-minibatch": [
+       "What is the formula for computing normalization statistics?",
+       "How are normalization statistics used during training?",
+       "What is the purpose of normalization statistics in training a retrieval system?"
+      ],
+      "bert-nsp": [
+       "What sentence-level pre-training task is used alongside masked prediction?"
+      ],
+      "bert-wordpiece": [
+       "What subword tokenization scheme is used in the retrieval system?"
+      ],
+      "bert-glue": [
+       "What benchmark suite is used to evaluate language understanding?",
+       "What benchmark suite is used to evaluate language understanding in the context of natural language processing?",
+       "What benchmark suite is used to evaluate language understanding in the context of machine learning?"
+      ],
+      "cot-gsm8k": [
+       "What is the grade-school math benchmark used to evaluate reasoning?",
+       "What is the math benchmark used to evaluate reasoning in grade school?"
+      ],
+      "cot-scale": [
+       "What model scale is typically associated with the emergence of chain-of-thought reasoning?",
+       "At what scale do models start to exhibit chain-of-thought reasoning behavior?"
+      ],
+      "colbert-maxsim": [
+       "What operator computes the similarity between query and document embeddings?",
+       "What operator is used to compare query and document embeddings?",
+       "What operator measures the similarity between query and document embeddings?"
+      ],
+      "colbert-msmarco": [
+       "What is the name of the passage ranking dataset used for evaluation?",
+       "Which dataset is used to evaluate passage ranking models?"
+      ],
+      "dpr-bm25": [
+       "What is the top-20 accuracy of dense retrieval compared to BM25?",
+       "How does the top-20 accuracy of dense retrieval compare to BM25 in terms of precision?",
+       "What is the difference in top-20 accuracy between dense retrieval and BM25 in a retrieval system over technical papers?"
+      ],
+      "dpr-nq": [
+       "Which open-domain question answering dataset is used?"
+      ],
+      "faiss-kselect": [
+       "What is the GPU implementation of top-k selection?",
+       "How is the GPU implementation of top-k selection optimized for performance?",
+       "What are the key data structures used in the GPU implementation of top-k selection?"
+      ],
+      "faiss-ivf": [
+       "What index structure partitions vectors into cells for search?",
+       "What data structures are used to partition vectors into cells for search?"
+      ],
+      "gpt3-params": [
+       "What is the number of parameters in the largest autoregressive model?",
+       "How many parameters does the largest autoregressive model have in terms of model size?"
+      ],
+      "gpt3-icl": [
+       "What is in-context learning?",
+       "What is the role of gradient updates in machine learning?"
+      ],
+      "gpt3-fewshot": [
+       "What is the effect of increasing the number of examples in the prompt on task performance?",
+       "How does the number of examples in the prompt impact the model's ability to generalize and adapt to new tasks?",
+       "What are the implications of using a large number of examples in the prompt on the model's performance and efficiency?"
+      ],
+      "ln-vs-bn": [
+       "What are the differences between layer normalization and batch normalization in recurrent neural networks?",
+       "Why is layer normalization preferred over batch normalization in recurrent networks?",
+       "What are the advantages of using layer normalization over batch normalization in recurrent neural networks?"
+      ],
+      "ln-stats": [
+       "How are normalization statistics computed across features?",
+       "What is the difference between computing normalization statistics across examples versus features?"
+      ],
+      "lora-latency": [
+       "What is the average inference latency added by the adaptation method?",
+       "How does the adaptation method impact the overall inference latency of the system?"
+      ],
+      "lora-frozen": [
+       "Are the pretrained weights updated during adaptation?",
+       "Are the weights of the pre-trained model modified during adaptation?"
+      ],
+      "rag-parametric": [
+       "How are parametric and non-parametric memory combined in a hybrid memory architecture?",
+       "What are the advantages and disadvantages of combining parametric and non-parametric memory?",
+       "How do parametric and non-parametric memory interact with each other in a memory system?"
+      ],
+      "rag-marginalize": [
+       "How are retrieved documents marginalized during the generation process?",
+       "What is the role of retrieved documents in the generation process?",
+       "How do retrieved documents influence the output of the generation process?"
+      ],
+      "resnet-degradation": [
+       "What happens to accuracy when plain networks get deeper?",
+       "How does the depth of a plain network affect its accuracy?"
+      ],
+      "resnet-shortcut": [
+       "What are the types of connections that allow gradients to flow through very deep networks?",
+       "How do skip connections enable gradients to flow through very deep networks?",
+       "What is the role of residual connections in allowing gradients to flow through very deep networks?"
+      ],
+      "resnet-152": [
+       "What is the maximum depth of the network evaluated on ImageNet?",
+       "What is the depth of the deepest network evaluated on ImageNet?"
+      ],
+      "roberta-dynamic": [
+       "What masking strategy is applied differently at each epoch?",
+       "What is the masking strategy applied at each epoch?"
+      ],
+      "roberta-nsp-drop": [
+       "What pre-training objectives were used in the original BERT model?",
+       "What pre-training objective was found unnecessary and removed from the BERT model?"
+      ],
+      "sbert-cosine": [
+       "How are sentence embeddings computed from the derived embeddings?",
+       "What is the process of computing sentence similarity from the derived embeddings?"
+      ],
+      "sbert-speed": [
+       "How does the approach compare to a cross-encoder in terms of search speed?",
+       "What are the key differences in architecture that contribute to the speed advantage of the approach over a cross-encoder?"
+      ],
+      "seq2seq-reverse": [
+       "What input transformation improved translation performance?",
+       "What input transformation improved translation performance markedly?"
+      ],
+      "seq2seq-lstm": [
+       "What recurrent architectures map sequences to a fixed-dimensional vector?",
+       "What is the relationship between recurrent architectures and fixed-dimensional vector representations?"
+      ],
+      "t5-c4": [
+       "What is the cleaned web-scraped corpus used for pre-training?",
+       "What corpus is used for pre-training in the retrieval system?"
+      ],
+      "t5-text2text": [
+       "What is the input text?",
+       "What is the task type (e.g. classification, entity recognition)?",
+       "What is the task-specific input (e.g. text to classify, entities to recognize)?"
+      ],
+      "t5-span": [
+       "What corruption objective masks contiguous spans of tokens?",
+       "What corruption objectives mask contiguous spans of tokens?",
+       "What corruption objectives mask contiguous spans of tokens in a sequence?"
+      ],
+      "vit-jft": [
+       "What is the name of the large private dataset used for pre-training?",
+       "What dataset is used for pre-training in the field of [specific field or application]?"
+      ],
+      "vit-inductive": [
+       "What spatial inductive biases do convolutional networks have that transformers lack?",
+       "How do convolutional networks' spatial inductive biases differ from transformers' lack thereof?"
+      ],
+      "w2v-cbow": [
+       "What architecture predicts a word from its surrounding context?",
+       "What neural network architecture predicts a word from its surrounding context?",
+       "What language model architecture predicts a word from its surrounding context?"
+      ],
+      "w2v-skipgram": [
+       "What architecture predicts surrounding words from a target word?",
+       "What language models use contextual information to predict surrounding words?",
+       "What neural network architecture is used for predicting surrounding words in a sentence?"
+      ],
+      "w2v-analogy": [
+       "How are syntactic regularities measured in word vectors?",
+       "How are semantic regularities measured in word vectors?"
+      ]
+     }
+    }
+   },
+   "changed": {
+    "rewrite": {
+     "gained": [],
+     "lost": [
+      "lora-frozen",
+      "resnet-shortcut",
+      "seq2seq-reverse"
+     ]
+    },
+    "decompose": {
+     "gained": [
+      "lora-latency"
+     ],
+     "lost": [
+      "gpt3-fewshot",
+      "vit-jft"
+     ]
+    }
+   },
+   "model": "llama3.1:8b"
+  },
+  "birds": {
+   "label": "Ornithology",
+   "modes": {
+    "none": {
+     "hit_rate": 0.88,
+     "mrr": 0.638,
+     "ndcg": 0.6978,
+     "src_recall": 0.792,
+     "seconds_per_query": 4.4,
+     "structural_hit": 0,
+     "structural_total": 2,
+     "rewritten": {}
+    },
+    "rewrite": {
+     "hit_rate": 0.88,
+     "mrr": 0.72,
+     "ndcg": 0.7601,
+     "src_recall": 0.7553,
+     "seconds_per_query": 18.98,
+     "structural_hit": 0,
+     "structural_total": 2,
+     "rewritten": {
+      "bird-syrinx": [
+       "What organ do birds use to produce song, specifically excluding vocalizations used for alarm or contact calls?"
+      ],
+      "bird-keel": [
+       "Which breastbone feature anchors the muscles that power flight in birds?"
+      ],
+      "bird-barbules": [
+       "What interlocking structures hold the vane of a feather together, specifically in birds?"
+      ],
+      "bird-down": [
+       "Which type of bird feather provides insulation rather than serving as a flight surface?"
+      ],
+      "bird-airsacs": [
+       "What structures make airflow through a bird's lungs unidirectional?"
+      ],
+      "bird-brood-parasite": [
+       "What is the term for the behavior where a bird lays its eggs in the nest of another species?"
+      ],
+      "bird-altricial": [
+       "What term describes chicks that hatch helpless and wholly dependent on their parents for survival?"
+      ],
+      "bird-precocial": [
+       "What term describes chicks that are able to move and feed themselves shortly after hatching?"
+      ],
+      "bird-furcula": [
+       "What is the fused collarbone of a bird called, specifically in ornithology?"
+      ],
+      "bird-uropygial": [
+       "Which gland supplies the oil a bird spreads while preening, specifically the oil used for preening?"
+      ],
+      "bird-hollow-bones": [
+       "Which skeletal adaptation reduces a bird's weight for flight, specifically in birds?"
+      ],
+      "bird-flyway": [
+       "What is the established migratory route followed by a migrating population called?"
+      ],
+      "bird-wing-loading": [
+       "Which ratio of body mass to wing area governs the flight performance of birds and other flying animals?"
+      ],
+      "bird-aspect-ratio": [
+       "Which wing measurement compares wing span against wing width?"
+      ],
+      "bird-melanin": [
+       "Which melanin pigment gives feathers their black and brown coloration?"
+      ],
+      "bird-carotenoid": [
+       "Which dietary pigments produce red and yellow feather coloration?"
+      ],
+      "bird-iridescence": [
+       "What optical effect produces structural rather than pigment-based color in feathers?"
+      ],
+      "bird-tool-use": [
+       "Which corvid behavior involves shaping objects into tools?"
+      ],
+      "bird-mirror": [
+       "Which self-recognition experiment, specifically the mirror self-recognition test, have magpies been shown to pass?"
+      ],
+      "bird-dialects": [
+       "What regional variations in song patterns appear within a single species of songbird?"
+      ],
+      "bird-dawn-chorus": [
+       "What is the collective singing phenomenon occurring at dawn called?"
+      ],
+      "bird-mimicry": [
+       "What is the term for the phenomenon where a bird mimics the vocalizations of other bird species?"
+      ],
+      "bird-imprinting": [
+       "Which early-life attachment process, specifically imprinting, was famously studied in ducklings?"
+      ],
+      "bird-incubation": [
+       "What is the duration of incubation of eggs before hatching called in avian biology?"
+      ],
+      "bird-fledging": [
+       "What is the stage of avian development at which young birds grow flight feathers and vacate their nest?"
+      ]
+     }
+    },
+    "decompose": {
+     "hit_rate": 0.84,
+     "mrr": 0.6613,
+     "ndcg": 0.6946,
+     "src_recall": 0.7427,
+     "seconds_per_query": 44.34,
+     "structural_hit": 1,
+     "structural_total": 2,
+     "rewritten": {
+      "bird-syrinx": [
+       "What organ do birds use to produce song?"
+      ],
+      "bird-keel": [
+       "What is the function of the keel in the breastbone of birds?",
+       "Which breastbone feature provides an anchor point for the pectoral muscles in birds?"
+      ],
+      "bird-barbules": [
+       "What are the interlocking structures that hold the vane of a feather together?",
+       "What is the material composition of the interlocking structures that hold the vane of a feather together?",
+       "How do the interlocking structures that hold the vane of a feather together contribute to its overall strength and durability?"
+      ],
+      "bird-down": [
+       "What type of feathers provides insulation rather than flight surface?"
+      ],
+      "bird-airsacs": [
+       "What are the anatomical features of a bird's lungs that prevent airflow from reversing direction?",
+       "How do the parabronchi and air sacs in a bird's respiratory system contribute to one-directional airflow?"
+      ],
+      "bird-brood-parasite": [
+       "What is the term for a bird laying its eggs in another species' nest?",
+       "What is the behavior called when a bird lays its eggs in another species' nest?"
+      ],
+      "bird-altricial": [
+       "What term describes chicks that hatch helpless and wholly dependent on their parents?",
+       "What is the term for chicks that are born unable to fend for themselves?"
+      ],
+      "bird-precocial": [
+       "What term describes chicks that can move and feed themselves soon after hatching?"
+      ],
+      "bird-furcula": [
+       "What is the fused collarbone of a bird called?",
+       "What is the name of the fused collarbone in birds?"
+      ],
+      "bird-uropygial": [
+       "What is the gland that produces the oil a bird spreads while preening called?",
+       "What is the function of the uropygial gland in birds?"
+      ],
+      "bird-hollow-bones": [
+       "What is the skeletal adaptation that reduces a bird's weight for flight?",
+       "How does hollow bones contribute to a bird's ability to fly?",
+       "What is the effect of pneumatization on a bird's skeletal system?"
+      ],
+      "bird-flyway": [
+       "What is the established route a migrating population follows called?",
+       "What is the term for the established route a migrating population follows?"
+      ],
+      "bird-wing-loading": [
+       "What is the relationship between body mass and wing area in flight performance?",
+       "How does wing area affect the flight performance of an aircraft?",
+       "What is the optimal ratio of body mass to wing area for efficient flight?"
+      ],
+      "bird-aspect-ratio": [
+       "What is the aspect ratio of an airplane wing?",
+       "How does the wing span compare to the wing width in terms of aspect ratio?"
+      ],
+      "bird-melanin": [
+       "What pigment is responsible for the black colouring of feathers?",
+       "What pigment is responsible for the brown colouring of feathers?"
+      ],
+      "bird-carotenoid": [
+       "What dietary pigments produce red feather color?",
+       "What dietary pigments produce yellow feather color?"
+      ],
+      "bird-iridescence": [
+       "What optical effect produces structural rather than pigment colour in feathers?"
+      ],
+      "bird-tool-use": [
+       "What corvid behaviour involves shaping objects into implements?",
+       "What examples of corvids have been observed shaping objects into tools?"
+      ],
+      "bird-mirror": [
+       "What self-recognition experiment have magpies been shown to pass?",
+       "What experiment demonstrated magpies' ability to recognize themselves?"
+      ],
+      "bird-dialects": [
+       "What regional variation appears in the songs of a single species?",
+       "What is the species of songbird being studied?",
+       "What specific characteristics of the song vary regionally?"
+      ],
+      "bird-dawn-chorus": [
+       "What is the burst of collective singing at first light called?",
+       "What is the phenomenon of birds singing together at dawn?"
+      ],
+      "bird-mimicry": [
+       "What is the term for a bird mimicking the sounds of other species?",
+       "What is the definition of vocal mimicry in birds?"
+      ],
+      "bird-imprinting": [
+       "What is the early-life attachment process famously studied in ducklings?",
+       "What is the name of the early-life attachment process studied in ducklings?"
+      ],
+      "bird-incubation": [
+       "What is the period of sitting on eggs before hatching called in birds?"
+      ],
+      "bird-fledging": [
+       "What is the stage at which a young bird develops flight feathers?",
+       "At what stage does a young bird leave the nest?"
+      ]
+     }
+    }
+   },
+   "changed": {
+    "rewrite": {
+     "gained": [
+      "bird-dialects"
+     ],
+     "lost": [
+      "bird-keel"
+     ]
+    },
+    "decompose": {
+     "gained": [
+      "bird-hollow-bones"
+     ],
+     "lost": [
+      "bird-flyway",
+      "bird-keel"
+     ]
+    }
+   },
+   "model": "llama3.1:8b"
+  },
+  "quant": {
+   "label": "Quantitative finance",
+   "modes": {
+    "none": {
+     "hit_rate": 0.9394,
+     "mrr": 0.7576,
+     "ndcg": 0.7944,
+     "src_recall": 0.7859,
+     "seconds_per_query": 3.21,
+     "structural_hit": 0,
+     "structural_total": 0,
+     "rewritten": {}
+    },
+    "rewrite": {
+     "hit_rate": 0.8485,
+     "mrr": 0.6308,
+     "ndcg": 0.6733,
+     "src_recall": 0.7995,
+     "seconds_per_query": 18.49,
+     "structural_hit": 0,
+     "structural_total": 0,
+     "rewritten": {
+      "qf-garch": [
+       "Which model family captures time-varying conditional variance in stock returns?"
+      ],
+      "qf-var": [
+       "Which risk measure reports the loss threshold exceeded with a specified probability?"
+      ],
+      "qf-max-drawdown": [
+       "What is the technical measure that quantifies the greatest decrease from the highest to lowest point of a strategy's performance?"
+      ],
+      "qf-sortino": [
+       "Which performance ratio penalizes only downside deviation?"
+      ],
+      "qf-mean-variance": [
+       "Which framework trades off expected return against portfolio variance?"
+      ],
+      "qf-markowitz": [
+       "What portfolio selection theory developed by Markowitz underpins modern allocation methods?"
+      ],
+      "qf-risk-parity": [
+       "Which asset allocation method minimizes the variance of each asset's contribution to the total portfolio risk?"
+      ],
+      "qf-lob": [
+       "Which data structure records outstanding buy and sell orders at each price point?"
+      ],
+      "qf-order-flow": [
+       "Which signal captures the imbalance of buying against selling pressure in financial markets?"
+      ],
+      "qf-market-making": [
+       "Which activity involves quoting both sides of a book to earn the bid-ask spread?"
+      ],
+      "qf-hft": [
+       "Which style of trading operates at timescales less than one second?"
+      ],
+      "qf-transaction-costs": [
+       "What does the fixed rebalancing cost represent in the liquidity-provision model, specifically in the context of a model that explicitly accounts for liquidity provision?"
+      ],
+      "qf-backtest": [
+       "Why does the controller act only occasionally rather than continuously, and what are the implications of this behavior on system performance?"
+      ],
+      "qf-heavy-tails": [
+       "Which property of return distributions makes extreme moves more likely than a normal distribution model implies?"
+      ],
+      "qf-stylized-facts": [
+       "What are the empirical regularities observed across virtually all financial return series, excluding those from commodity futures and currency markets, called?"
+      ],
+      "qf-copula": [
+       "Which tool models the dependence structure between assets separately from their margins?"
+      ],
+      "qf-black-scholes": [
+       "Which classical formula prices a European option under constant volatility?"
+      ],
+      "qf-deep-learning": [
+       "Which family of methods is applied to forecasting from raw market data that is not based on historical prices or financial statements?"
+      ],
+      "qf-quant-4bit": [
+       "At what precision does activation function calibration become the primary factor influencing model performance?"
+      ],
+      "qf-sparse-params": [
+       "By how much does the dependence-informed architecture reduce the parameter count compared to other architectures at the same width?"
+      ],
+      "qf-structural-calibration": [
+       "How does the structural model's calibration slope compare with the market's calibration slope?"
+      ],
+      "qf-aml-fusion": [
+       "What are the effects of data source fusion on alert volume and recall in the money-laundering study?"
+      ],
+      "qf-news-taxonomy": [
+       "How many news tags does the news-pricing taxonomy define?"
+      ],
+      "qf-whale-attack": [
+       "What happens to whale rewards once a detectability threshold is introduced in whale tracking systems?"
+      ],
+      "qf-degeneracy": [
+       "What is the failure called where calibration activates mappings without improving results in machine learning or data analysis?"
+      ],
+      "qf-credit-stakeholders": [
+       "Do professional and non-professional stakeholders judge credit explanations similarly or differently?"
+      ],
+      "qf-liquidity-policy": [
+       "What does the learned liquidity-provision policy allocate assets according to?"
+      ],
+      "qf-cvar-interval": [
+       "Can the Conditional Value-at-Risk (CVaR) threshold be restricted to a bounded range?"
+      ],
+      "qf-verifiability-gap": [
+       "What is the shortfall between demanded verification and retained explainability in technical papers called?"
+      ],
+      "qf-social-disclosure": [
+       "What happens to firm risk when a company makes its first social disclosure through Securities and Exchange Commission (SEC) filings?"
+      ],
+      "qf-market-making-rl": [
+       "What does the reinforcement-learning market-making algorithm try to maximize?"
+      ],
+      "qf-photonic-sharpe": [
+       "What peak Sharpe ratio does the photonic approach report in the literature?"
+      ],
+      "qf-bvar-probabilistic": [
+       "What does combining Bayesian Vector Autoregression (BVAR) with machine learning techniques make possible?"
+      ]
+     }
+    },
+    "decompose": {
+     "hit_rate": 0.9091,
+     "mrr": 0.7056,
+     "ndcg": 0.7343,
+     "src_recall": 0.7869,
+     "seconds_per_query": 49.12,
+     "structural_hit": 0,
+     "structural_total": 0,
+     "rewritten": {
+      "qf-garch": [
+       "Which model family captures time-varying conditional variance in returns?",
+       "What models capture time-varying conditional variance in returns?",
+       "Which models capture time-varying conditional variance in returns?"
+      ],
+      "qf-var": [
+       "What is the definition of a Value-at-Risk (VaR) measure in finance?",
+       "How does a Conditional Value-at-Risk (CVaR) measure differ from VaR in terms of reporting loss thresholds?"
+      ],
+      "qf-max-drawdown": [
+       "What is the measure that reports the largest peak-to-trough decline of a strategy?"
+      ],
+      "qf-sortino": [
+       "What is the performance ratio that penalises only downside deviation?"
+      ],
+      "qf-mean-variance": [
+       "Which framework trades expected return against portfolio variance?",
+       "What is the name of the framework that balances expected return and portfolio variance?"
+      ],
+      "qf-markowitz": [
+       "What is the portfolio selection theory that underpins modern allocation methods?",
+       "Who is the author of the portfolio selection theory that underpins modern allocation methods?"
+      ],
+      "qf-risk-parity": [
+       "What is the allocation method that equalises each asset's contribution to total risk?",
+       "Which allocation method minimises the risk of each asset?"
+      ],
+      "qf-lob": [
+       "What data structure is used to record outstanding buy and sell orders at each price?",
+       "What data structure is used to store orders at different prices?"
+      ],
+      "qf-order-flow": [
+       "What is the signal that captures the imbalance of buying against selling pressure?",
+       "What is the name of the technical indicator that measures the difference between buying and selling pressure?"
+      ],
+      "qf-market-making": [
+       "What activities involve quoting both sides of the book to earn the spread?",
+       "What is the spread in the context of trading or financial transactions?",
+       "What are the different types of activities that involve quoting both sides of the book?"
+      ],
+      "qf-hft": [
+       "What are the characteristics of high-frequency trading?",
+       "How does algorithmic trading operate at sub-second timescales?",
+       "What are the key features of electronic market making?"
+      ],
+      "qf-transaction-costs": [
+       "What is the fixed rebalancing cost in the liquidity-provision model?",
+       "How is the fixed rebalancing cost calculated in the liquidity-provision model?"
+      ],
+      "qf-backtest": [
+       "What is the purpose of the controller in the system?",
+       "How does the controller interact with other components in the system?",
+       "What are the conditions under which the controller is activated?"
+      ],
+      "qf-heavy-tails": [
+       "What property of return distributions makes extreme moves more likely than a normal model implies?",
+       "How does the property of fat tails in return distributions differ from a normal model?"
+      ],
+      "qf-stylized-facts": [
+       "What are the empirical regularities observed across virtually all financial return series?",
+       "What are the common patterns observed in financial return series?"
+      ],
+      "qf-copula": [
+       "What tool models the dependence structure between assets separately from their margins?"
+      ],
+      "qf-black-scholes": [
+       "What is the Black-Scholes formula?",
+       "What is the Cox-Ross-Rubinstein formula?"
+      ],
+      "qf-deep-learning": [
+       "What family of methods is applied to forecasting from raw market data?",
+       "Which methods are used for forecasting from raw market data?",
+       "What techniques are used to forecast from raw market data?"
+      ],
+      "qf-quant-4bit": [
+       "At what precision does activation calibration become the main determinant of performance in deep neural networks?",
+       "How does the precision of activation calibration affect the overall performance of a deep neural network?"
+      ],
+      "qf-sparse-params": [
+       "What is the parameter count of the dependence-informed architecture at matched width?",
+       "How does the parameter count of the dependence-informed architecture compare to other architectures at matched width?"
+      ],
+      "qf-structural-calibration": [
+       "What is the structural model's calibration slope?",
+       "How does the market's calibration slope differ from the structural model's?",
+       "What is the relationship between the structural model's calibration slope and market calibration slope?"
+      ],
+      "qf-aml-fusion": [
+       "What was the effect of fusing data sources on alert volume in the money-laundering study?",
+       "What was the effect of fusing data sources on recall in the money-laundering study?"
+      ],
+      "qf-news-taxonomy": [
+       "How many news tags does the news-pricing taxonomy define?"
+      ],
+      "qf-whale-attack": [
+       "What is the effect of introducing a detectability threshold on whale rewards?",
+       "How does the detectability threshold impact the whale rewards mechanism?"
+      ],
+      "qf-degeneracy": [
+       "What is the failure called where calibration activates mappings without improving results?"
+      ],
+      "qf-credit-stakeholders": [
+       "Do professional stakeholders judge credit explanations the same way as non-professional stakeholders?",
+       "How do professional stakeholders judge credit explanations compared to non-professional stakeholders?",
+       "Are there any differences in how professional and non-professional stakeholders evaluate credit explanations?"
+      ],
+      "qf-liquidity-policy": [
+       "What does the learned liquidity-provision policy allocate?",
+       "According to what criteria does the learned liquidity-provision policy allocate?"
+      ],
+      "qf-cvar-interval": [
+       "Can the Conditional Value-at-Risk (CVaR) threshold be restricted to a bounded range?",
+       "How can the CVaR threshold be restricted to a bounded range in a risk management framework?"
+      ],
+      "qf-verifiability-gap": [
+       "What is the shortfall between demanded verification and retained explainability?",
+       "What is the concept of demanded verification in technical papers?",
+       "What is the concept of retained explainability in technical papers?"
+      ],
+      "qf-social-disclosure": [
+       "What is the impact of a first-time social disclosure on a firm's risk profile?",
+       "How does the SEC's disclosure framework affect a firm's risk assessment for social issues?",
+       "What are the potential consequences of a firm's first-time social disclosure on its financial risk?"
+      ],
+      "qf-market-making-rl": [
+       "What is the primary objective of the reinforcement-learning market-making algorithm?",
+       "What does the reinforcement-learning market-making algorithm aim to optimize?"
+      ],
+      "qf-photonic-sharpe": [
+       "What is the peak Sharpe ratio reported by the photonic approach?",
+       "Where is the peak Sharpe ratio reported by the photonic approach documented?"
+      ],
+      "qf-bvar-probabilistic": [
+       "What are the benefits of combining Bayesian Vector Autoregression (BVAR) with machine learning?",
+       "How does combining BVAR with machine learning enable more accurate forecasting and prediction in economic systems?"
+      ]
+     }
+    }
+   },
+   "changed": {
+    "rewrite": {
+     "gained": [
+      "qf-aml-fusion"
+     ],
+     "lost": [
+      "qf-degeneracy",
+      "qf-hft",
+      "qf-market-making",
+      "qf-social-disclosure"
+     ]
+    },
+    "decompose": {
+     "gained": [],
+     "lost": [
+      "qf-risk-parity"
+     ]
+    }
+   },
+   "model": "llama3.1:8b"
+  }
+ }
+}

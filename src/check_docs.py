@@ -879,6 +879,72 @@ def one_line(text: str) -> str:
     return " ".join(text.split())
 
 
+# The About page's kept ladder: five rows under "Kept" in ui/about.html, each
+# carrying its figure in a <span class="num">. Until 2026-09-05 nothing read
+# them. Three were typed on 2026-08-30 from the results file as it then stood,
+# the results file moved on 2026-09-01, only the fourth row was updated, and the
+# page's own ladder disagreed with itself -- the BM25 row ending at 0.866 and
+# the diversity row beginning at 0.925 -- on the live site for four days, while
+# check_readme held the README's copy of the same figures the whole time.
+#
+# Keys are the row's <h4> title. Values are the results rows the "from" and
+# "to" figures come from. The fifth kept row, the excerpt window, is not here on
+# purpose: its figure is answer-on-the-page from the excerpt sweep, which
+# results.json does not carry (results.json's answer_visible is answer-in-the-
+# returned-chunk, a different quantity), so there is nothing to hold it to.
+ABOUT_LADDER = {
+    "Dense retrieval": (None, "dense, no rerank"),
+    "Cross-encoder reranking": ("dense, no rerank", "dense + rerank"),
+    "BM25 beside dense retrieval": ("dense + rerank", "rrf + rerank"),
+    "Diversity cap": ("rrf + rerank", SHIPPED_ROW),
+}
+
+
+def check_about_ladder(measured: dict, problems: list[str], notes: list[str]) -> bool:
+    doc = (ROOT / "ui" / "about.html").read_text(encoding="utf-8")
+    ml = measured.get("llm")
+    if not ml:
+        problems.append("ui/about.html: the ML corpus has no results.json to check against")
+        return False
+
+    seen = 0
+    pattern = re.compile(
+        r'<li class="kept">\s*<h4>(.*?)<span class="verdict">.*?'
+        r'<span class="num">(.*?)</span>', re.S)
+    for m in pattern.finditer(doc):
+        title = re.sub(r"<[^>]+>", "", m.group(1)).strip()
+        rows = ABOUT_LADDER.get(title)
+        if rows is None:
+            continue
+        seen += 1
+        found = re.findall(r"\d\.\d+", re.sub(r"<[^>]+>", "", m.group(2)))
+        from_row, to_row = rows
+        # Every row carries any-hit; the diversity row also carries source
+        # recall, from the same two results rows, after the any-hit pair.
+        want = [(r, "hit_rate") for r in (from_row, to_row) if r]
+        if title == "Diversity cap":
+            want += [(from_row, "src_recall"), (to_row, "src_recall")]
+        if len(found) < len(want):
+            problems.append(f"ui/about.html ladder, {title!r}: expected "
+                            f"{len(want)} numbers, found {len(found)}")
+            continue
+        for value, (row, metric) in zip(found, want):
+            real = ml["ladder"].get(row, {}).get(metric)
+            if real is None:
+                problems.append(f"ui/about.html ladder: results.json has no "
+                                f"{row!r} / {metric}")
+                continue
+            if not close(float(value), real, written_places(value)):
+                problems.append(f"ui/about.html ladder, {title} / {row} "
+                                f"{metric}: says {value}, measured {real:.3f}")
+        notes.append(f"  about.html ladder {title}")
+    if seen != len(ABOUT_LADDER):
+        problems.append(f"ui/about.html: found {seen} of {len(ABOUT_LADDER)} "
+                        f"kept-ladder rows -- the block this checks has moved or "
+                        f"been renamed")
+    return True
+
+
 def check_tallies(problems: list[str], notes: list[str]) -> bool:
     """The number word, against the list it introduces and its other copies."""
     listed: dict[str, int] = {}
@@ -985,6 +1051,7 @@ def main() -> int:
     notes: list[str] = []
     ok = check_handoff(measured, problems, notes)
     ok = check_readme(measured, problems, notes) and ok
+    ok = check_about_ladder(measured, problems, notes) and ok
     ok = check_defaults(problems, notes) and ok
     ok = check_notes(measured, problems, notes) and ok
     ok = check_routes(problems, notes) and ok
