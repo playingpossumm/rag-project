@@ -945,6 +945,56 @@ def check_about_ladder(measured: dict, problems: list[str], notes: list[str]) ->
     return True
 
 
+# The README's threshold table: three fenced lines, each "<label>  N of M (P%)",
+# under the heading "wrongly refused at 0.0". Until 2026-09-06 nothing read it,
+# and it quoted 10 of 26 and 19 of 35 for sixteen days after the golden sets it
+# described had been rewritten -- while this checker held the README's ladder
+# and corpora table, two blocks away, to the same results files. Labels map to
+# corpora.json labels case-insensitively by their first word.
+THRESHOLD_TABLE_HEADING = "wrongly refused at 0.0"
+
+
+def check_readme_threshold_table(measured: dict, problems: list[str],
+                                 notes: list[str]) -> bool:
+    doc = (ROOT / "README.md").read_text(encoding="utf-8")
+    at = doc.find(THRESHOLD_TABLE_HEADING)
+    if at < 0:
+        problems.append("README.md: the threshold table under 'wrongly refused at "
+                        "0.0' is gone or renamed")
+        return False
+    block = doc[at:doc.find("```", at)]
+    by_first_word = {m["label"].split()[0].lower(): (n, m) for n, m in measured.items()}
+    seen = 0
+    for line in block.splitlines()[1:]:
+        m = re.match(r"\s*([A-Za-z&][A-Za-z& ]*?)\s+(\d+)\s+of\s+(\d+)", line)
+        if not m:
+            continue
+        label, refused, total = m.group(1).strip(), int(m.group(2)), int(m.group(3))
+        hit = by_first_word.get(label.split()[0].lower())
+        if not hit:
+            problems.append(f"README.md threshold table: {label!r} matches no corpus")
+            continue
+        name, rec = hit
+        res = load_results(corpora.registry()[name])
+        want_total = rec["answerable"]
+        want_refused = None
+        for row in (res or {}).get("abstention", {}).get("sweep", []):
+            if abs(float(row.get("threshold", row.get("t", 99))) - 0.0) < 1e-9:
+                want_refused = row.get("false_abstain", row.get("refused"))
+        seen += 1
+        if total != want_total:
+            problems.append(f"README.md threshold table, {label}: says of {total}, "
+                            f"the set holds {want_total} answerable cases")
+        if want_refused is not None and refused != want_refused:
+            problems.append(f"README.md threshold table, {label}: says {refused} "
+                            f"refused at 0.0, measured {want_refused}")
+        notes.append(f"  README threshold table {label}")
+    if seen != len(measured):
+        problems.append(f"README.md threshold table: matched {seen} of "
+                        f"{len(measured)} corpora")
+    return True
+
+
 def check_tallies(problems: list[str], notes: list[str]) -> bool:
     """The number word, against the list it introduces and its other copies."""
     listed: dict[str, int] = {}
@@ -1052,6 +1102,7 @@ def main() -> int:
     ok = check_handoff(measured, problems, notes)
     ok = check_readme(measured, problems, notes) and ok
     ok = check_about_ladder(measured, problems, notes) and ok
+    ok = check_readme_threshold_table(measured, problems, notes) and ok
     ok = check_defaults(problems, notes) and ok
     ok = check_notes(measured, problems, notes) and ok
     ok = check_routes(problems, notes) and ok

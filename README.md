@@ -56,13 +56,19 @@ is what matters.
 
 ```
                         wrongly refused at 0.0
-  ML & NLP papers        1 of 66    ( 1.5%)
-  ornithology           10 of 26    (38.5%)
-  quantitative finance  19 of 35    (54.3%)
+  ML & NLP papers        1 of 67    ( 1.5%)
+  ornithology            9 of 25    (36.0%)
+  quantitative finance   9 of 33    (27.3%)
 ```
 
 The same number that served the original corpus for its whole life throws away
-more than a third of the answers retrieval had already found on the other two.
+more than a third of the answers retrieval had already found on the birds and
+more than a quarter on the finance papers. This table read 10 of 26 and 19 of 35
+until 2026-09-06, figures measured on 2026-08-21 against golden sets that were
+rewritten on 2026-08-26 and reclassified on 2026-09-01; the finance figure in
+particular counted textbook questions the papers never answer, which
+`corpora.json` had already recorded as superseded while this page kept quoting
+it. `check_docs.py` now holds these three lines to the measurement.
 Each set now carries its own calibrated threshold in
 [`corpora.json`](corpora.json), beside the documents it was derived from. A set
 with no calibration says so rather than silently borrowing another's.
@@ -271,11 +277,18 @@ wrong ID downloads a real paper under a confidently wrong filename, so the
 fetcher queries the arXiv and Wikipedia APIs instead:
 
 ```bash
-python src/fetch_topic.py --topic birds --out data-birds
-python src/make_documents.py --src data-birds   # .docx/.pptx/.xlsx/.pdf
+python src/fetch_topic.py birds --into data-birds       # writes .docx/.pptx/.xlsx/.pdf
 RAG_STORE_DIR=store-birds RAG_DATA_DIR=data-birds python src/ingest.py
-python src/calibrate_threshold.py --golden eval/golden-birds.json
+python src/per_case.py --golden eval/golden-birds.json   # -> eval/per_case-birds.json
+python src/calibrate_threshold.py --per-case eval/per_case-birds.json
 ```
+
+Until 2026-09-06 this block gave `--topic` and `--out` to a script that takes
+the topic as a positional argument and `--into` for the directory, named
+`make_documents.py` as a step when `fetch_topic.py` already calls it and it has
+no entry point of its own, and gave `calibrate_threshold.py` a `--golden` flag
+it does not have. Three of its four lines failed on the first run. It was found
+by an audit on 2026-09-06, and every command above has been run as written.
 
 **Measuring.** Every number in this README and on the analytics page comes
 from these, and nothing is transcribed by hand:
@@ -287,11 +300,13 @@ python src/build_analytics.py  # what the pages plot -> eval/analytics.json
 python src/hard_cases.py       # only the cases nothing gets right, in ~20s
 ```
 
-**Six guards, each exiting non-zero rather than printing a warning nobody
+**Seven guards, each exiting non-zero rather than printing a warning nobody
 reads.** They exist because a generated file has gone stale silently three
 times, once the front page spent four days offering questions that had been
 deleted from the golden set for being unanswerable, and once a link on `/about`
-named a branch this repository does not have:
+named a branch this repository does not have. The seventh reads the recorded
+payloads in `static-demo/`, which is gitignored, so on a clone without a
+recording it exits 2 and says it did not run rather than passing:
 
 ```bash
 python src/check_freshness.py     # golden set -> per_case -> analytics -> front page
@@ -300,6 +315,7 @@ python src/check_docs.py          # do the documents match the measurements?
 python src/check_links.py         # do the links the interface serves go anywhere?
 python src/build_results_doc.py --check
 python src/build_corpus_manifest.py --check   # does the document list match the indexes?
+python src/audit_page_credit.py   # do the hand-read verdicts still cover every page-only credit?
 ```
 
 **Experiments**, kept because a refuted one is worth as much as a shipped one:
@@ -419,37 +435,45 @@ harness.
   candidates that are faster are worse, and the one that separates best is
   dramatically slower and ranks worse. What remains is a fine-tune on 157
   labelled cases, which is probably too few.
-- **Answer quality is measured, on 45 answers across all three corpora, with a
-  3B local model.** `src/evaluate_answers.py` scores the generated prose
-  without an LLM judge, on the argument that a judge model is a second system
-  whose own failures are invisible.
+- **Answer quality is measured on every case, all 157, with a 3B local
+  model.** `src/evaluate_answers.py` scores the generated prose without an LLM
+  judge, on the argument that a judge model is a second system whose own
+  failures are invisible. Until 2026-09-05 it had been run on a 45-answer
+  sample, 15 per corpus; the full run took 3.9 hours on a CPU.
 
   | | ML papers | Ornithology | Quant |
   |---|---|---|---|
-  | invented citations | 0 | 0 | 0 |
-  | refused when it should | 4/5 | 5/5 | 4/5 |
-  | refused when it should not | 0/10 | 1/10 | 1/10 |
-  | contains the labelled answer | 6/10 | 6/10 | 4/10 |
-  | groundedness (proxy) | 0.678 | 0.525 | 0.566 |
+  | invented citations | 0 in 84 | 1 in 32 | 1 in 41 |
+  | refused when it should | 11/17 | 7/7 | 6/8 |
+  | refused when it should not | 4/67 | 10/25 | 4/33 |
+  | contains the labelled answer | 37/67 | 9/25 | 12/33 |
+  | contains it, allowing other words | 43/67 | 9/25 | 16/33 |
+  | groundedness (proxy) | 0.705 | 0.475 | 0.606 |
 
-  **Zero invented citations across 45 answers** is the result that matters
-  most, since a fabricated citation is worse than no answer. Correctness is a
-  floor rather than a rate: it is a substring test, so a right answer in other
-  words counts against it, and the 14 answers it rejected are listed in
-  `unmatched` to be read rather than scored. Groundedness is lexical overlap,
-  reported because it is cheap and directional, not as a verdict.
+  **Two invented citations in 157 answers**, one on each of the smaller
+  corpora and none on the papers. The 45-answer sample had reported none, and
+  a fabricated citation is the failure that matters most, since it is worse
+  than no answer. Correctness is reported twice, because the strict figure is
+  a substring test and a right answer in other words counts against it. The
+  looser figure credits an answer that carries 80% of the labelled string's
+  content words in any order, and it is an upper bound of the same kind that
+  the strict figure is a floor. The 67 answers the strict test rejects are
+  listed in `unmatched` to be read rather than scored. Groundedness is lexical
+  overlap, reported because it is cheap and directional, not as a verdict.
 
   The judge itself was wrong four times before these numbers settled, each one
   found by reading the answers rather than the code: a plain refusal scored as
   an answer, mathematics scored as fabricated citations, a hedge-then-answer
   scored as a refusal, and a model describing the corpus instead of answering
-  scored as answering. `src/test_evaluate_answers.py` holds it to 60 checks,
+  scored as answering. `src/test_evaluate_answers.py` holds it to 79 checks,
   most of them real answers this repository has already scored wrongly.
 
   The generator is brittle at this size: changing one word of the prompt from
   "Context:" to "Excerpts:" is the difference between a citation with no prose
-  and a correct answer. Ten answerable cases per corpus is still too few to
-  conclude much. → [`eval/answer-quality.json`](eval/answer-quality.json)
+  and a correct answer. The bird corpus is where it is weakest, refusing 10 of
+  the 25 questions its documents answer and grounding under half of its
+  wording in the passages it was given.
+  → [`eval/answer-quality.json`](eval/answer-quality.json)
 
   **A larger model was tried and did not help.** llama3.1:8b, the same family
   at roughly 2.7x the parameters, was compared over the 43 cases both models

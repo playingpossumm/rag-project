@@ -22,6 +22,10 @@ a citation is what a reader checks *instead of* the source.
 **2. Correctness.** The golden sets already carry `answer_contains` -- the string
 a correct answer must include, written when the case was labelled and used for
 context recall. So correctness needs no judge: does the answer contain it?
+Beside it, since 2026-09-04, `correct_loose` accepts an answer that holds at
+least 80% of the label's content words in any order, so a right answer in
+other words is counted as well as listed. It is the looser of the two and is
+reported as such; the strict figure is unchanged.
 
 **3. Refusal.** On adversarial questions the corpus cannot answer, does the model
 say so? A system that confabulates fluently here is worse than one that
@@ -268,6 +272,38 @@ def stem(word: str) -> str:
     return word
 
 
+# The looser correctness test. `correct` is containment of the labelled
+# string, so "a sternum that is keeled" fails it against "keeled sternum".
+# `correct_loose` asks instead whether the label's content words are in the
+# answer, in any order, and passes at this share of them. A content word is an
+# alphanumeric run of at least LOOSE_MIN_LEN characters that is not in STOP,
+# taken after the same normalisation the strict test uses. It is a word test
+# and not a judge: "dialect" still misses "dialects", and an answer that names
+# the right words in the wrong relation passes.
+LOOSE_SHARE = 0.8
+LOOSE_MIN_LEN = 3
+
+
+def loose_tokens(text: str) -> set[str]:
+    """The content words of `text` as the loose correctness test sees them."""
+    return {w for w in re.findall(r"[a-z0-9]+", normalize(text))
+            if len(w) >= LOOSE_MIN_LEN and w not in STOP}
+
+
+def matches_loosely(wanted: str, answer: str) -> bool:
+    """Does the answer hold at least LOOSE_SHARE of the label's content words?
+
+    A label with no content words cannot pass, rather than passing on nothing.
+    "28.4" is one: the point splits it into two runs of digits and both are
+    under LOOSE_MIN_LEN. Stopwords never carry it either, because they are
+    removed before the share is taken.
+    """
+    want = loose_tokens(wanted)
+    if not want:
+        return False
+    return len(want & loose_tokens(answer)) / len(want) >= LOOSE_SHARE
+
+
 def cited_sources(answer: str, supplied_stems: set[str] | None = None) -> list[str]:
     """The bracket groups that claim to name a document, as source strings.
 
@@ -317,14 +353,25 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
     # `correct` is containment of the labelled string and nothing looser. On
     # the first real run it called `bird-keel` wrong for answering "the keel on
     # their breastbone" where the label says "keeled sternum": the right answer
-    # in the wrong words. Loosening the test would trade that false negative
-    # for false positives and inflate the number, so the test is unchanged and
-    # the rejects are surfaced instead. `near` says which of them share the
+    # in the wrong words. Loosening this test would trade that false negative
+    # for false positives and inflate the number, so it is unchanged and the
+    # rejects are surfaced in `unmatched`. `near` says which of them share the
     # label's content words and are therefore worth reading first.
+    #
+    # Surfacing alone left the right-in-other-words answers uncounted, which
+    # was the gap. Since 2026-09-04 `correct_loose`, below, counts them as a
+    # second measure labelled as the looser of the two, beside the strict
+    # figure rather than in place of it.
     wanted = case.get("answer_contains")
-    correct, near = None, None
+    correct, correct_loose, near = None, None, None
     if wanted and not case.get("unanswerable"):
         correct = normalize(wanted) in normalize(answer)
+        # A strict hit is a loose hit. Left to the word test alone, "28.4"
+        # (no run of 3 characters) and a label word that appears inside a
+        # longer word would pass the strict test and fail the looser one, and
+        # a measure reported as the looser of the two cannot reject what the
+        # strict one accepts.
+        correct_loose = correct or matches_loosely(wanted, answer)
         if not correct:
             want_stems = {stem(w) for w in words(wanted)}
             have_stems = {stem(w) for w in words(answer)}
@@ -333,7 +380,8 @@ def judge(answer: str, case: dict, passages: list[dict]) -> dict:
     return {"citations": len(cites), "invented": invented,
             "malformed": malformed,
             "grounded": round(grounded, 3), "refused": refused,
-            "correct": correct, "near": near, "chars": len(answer)}
+            "correct": correct, "correct_loose": correct_loose, "near": near,
+            "chars": len(answer)}
 
 
 def main() -> int:
@@ -438,7 +486,8 @@ def main() -> int:
             flag = ("INVENTED" if row["invented"] else
                     "refused" if row["refused"] else
                     "correct" if row["correct"] else
-                    "" if row["correct"] is None else "wrong")
+                    "" if row["correct"] is None else
+                    "loose only" if row["correct_loose"] else "wrong")
             print(f"    {case['id']:<22} grounded {row['grounded']:.2f}  "
                   f"{row['citations']} cites  {flag}")
 
@@ -461,6 +510,9 @@ def main() -> int:
             # cannot mislead a reader towards one; it is uncheckable instead.
             "malformed_citations": sum(len(r.get("malformed", [])) for r in rows),
             "correct": sum(1 for r in ans if r["correct"]),
+            # The looser test beside it: LOOSE_SHARE of the label's content
+            # words present, in any order. Never below `correct`.
+            "correct_loose": sum(1 for r in ans if r["correct_loose"]),
             "n_answerable": len(ans),
             # Every answerable case the string test rejected. Some are wrong
             # answers and some are right answers in other words, and this
@@ -480,8 +532,16 @@ def main() -> int:
         if summary["malformed_citations"]:
             print(f"    malformed citations  {summary['malformed_citations']}"
                   f"   (a bare reference number, naming no document)")
+        # Both figures on one line, so a reader sees the strict count and the
+        # looser one together. A first version printed the loose figure on a
+        # row of its own under the strict one, which separated the two figures
+        # this line exists to set beside each other. With two-digit counts
+        # the line is 155 characters and wraps on a narrow terminal.
         print(f"    correct              {summary['correct']}/{summary['n_answerable']}"
-              f"   (contains the labelled answer string)")
+              f"   (contains the labelled answer string)   "
+              f"loose {summary['correct_loose']}/{summary['n_answerable']}"
+              f"   (the looser of the two: {LOOSE_SHARE:.0%} of the label's "
+              f"content words, any order)")
         if unmatched:
             print(f"    unmatched            {len(unmatched)} to read by hand: "
                   f"{', '.join(unmatched)}")
@@ -528,7 +588,11 @@ def write(dest: Path, report: dict) -> None:
                  "`correct` is containment of the labelled answer string, so a "
                  "right answer in other words counts against it; the cases it "
                  "rejected are listed in `unmatched` to be read rather than "
-                 "scored.",
+                 "scored. `correct_loose` is the looser test beside it, true "
+                 f"when {LOOSE_SHARE:.0%} of the label's content words appear "
+                 "in the answer in any order. It credits a paraphrase at the "
+                 "cost of accepting an answer that names the right words in "
+                 "the wrong relation.",
          "corpora": report}, indent=1) + "\n", encoding="utf-8")
 
 

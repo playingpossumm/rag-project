@@ -619,9 +619,15 @@ if (!A || !A.corpora?.length) {
        "Questions the documents do answer, declined anyway.|The cost of " +
        "refusing, measured on the prose rather than on the gate's score."],
       ["Contains the answer", `${a.correct} / ${a.n_answerable}`,
-       a.unmatched ? `${a.unmatched} more to read by hand` : "of answerable questions",
+       a.correct_loose != null && a.correct_loose !== a.correct
+         ? `${a.correct_loose} / ${a.n_answerable} allowing other words`
+         : (a.unmatched ? `${a.unmatched} to read by hand` : "of answerable questions"),
        "The answer holds the labelled answer string.|A floor, not a rate: a " +
-       "correct answer in different words counts against it."],
+       "correct answer in different words counts against it. The second " +
+       "figure credits an answer carrying 80% of the string's content words " +
+       "in any order, which is an upper bound of the same kind" +
+       (a.unmatched ? `; ${a.unmatched} answers the strict test rejects are ` +
+                      "listed to be read by hand." : ".")],
       ["Groundedness", a.grounded_mean == null ? "\u2014" : f3(a.grounded_mean),
        "of content words came from the passages",
        "How much of the answer's vocabulary appears in the passages given.|A " +

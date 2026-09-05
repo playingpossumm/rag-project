@@ -11,8 +11,17 @@
      - at most ONE sentence is ever marked, and never the whole passage
      - the mark is a contiguous run of at most MAX_MARK_WORDS words
      - a mark has to carry at least two distinct question words, or one and a
-       figure, or there is no mark at all
+       figure, or there is no mark at all; the one exception is a definitional
+       question ("what is X called"), where a clause of 5 or more words around
+       a single whole-word hit may be marked when it does not open on a pronoun
+       or a demonstrative, the hit is neither a participle nor one of the
+       question's own marker words, and the clause carries a content word the
+       question lacks
      - the text outside the mark comes back escaped and unchanged
+
+   Whether the mark lands ON the answer is measured separately, by
+   ui/audit-marks.mjs, against the golden answer_contains strings. The suite
+   here checks the shape of the mark; the audit checks its aim.
 */
 /* The parser emits Markdown, so a passage carries the extractor's own marks:
    <br> where it found a line break, ### where it inferred a heading, ** around
@@ -59,8 +68,23 @@ export const esc = s => String(s).replace(/[&<>"]/g, c =>
    the words of the question, rare words counting for more than common ones.
    It is a highlight, not a claim -- the surrounding sentences stay readable at
    normal weight, so a wrong pick costs nothing but a misplaced emphasis. */
+/* Function words, which count for nothing in the overlap. "than", "rather",
+   "before" and "each" were added on 2026-09-05, after the sweep marked "lower
+   than the emperor penguin's average body temperature of 39 °C" for a question
+   about insulating feathers, scored on "than" and a figure, and "For several
+   days before they are ready to leave the nest" for the incubation question,
+   scored on "before". Measured on their own against the rest of this file as
+   of 2026-09-05, the 4 words left the audit at 38 of 68, moved 12 of the 450
+   sweep marks (4 gained, 3 lost, 5 changed) and brought the 90th-percentile
+   share from 6.7% to 6.5%. The one loss of aim was sbert-speed#0, where "8.5×
+   faster than prior GPU" gave way to a sentence chosen on the phrase
+   "similarity search" once "than" stopped counting; and with "before" gone
+   the incubation passage's pick moved to " The chicks are altricial, hatching
+   nearly naked with closed eyes.", which the short-sentence rule in
+   answerSpan marks whole without asking what it carries. */
 export const STOP = new Set(("a an and are as at be by do does for from has have how in is it its of on or "
-  + "that the this to was were what when where which who why with your you").split(" "));
+  + "that the this to was were what when where which who why with your you "
+  + "than rather before each").split(" "));
 
 /* Questions that turn on a figure. For these the highlight is anchored on the
    number, because that is the thing being asked for -- everything else in the
@@ -144,9 +168,64 @@ export function splitSentences(text) {
    For a question about a figure this anchors on the number nearest a query
    term and takes the few words in front of it, so "we employed label smoothing
    of value 0.1" is marked rather than the whole sentence it sits in. For
-   everything else it spans the query terms themselves. Capped at twelve words:
-   past that it stops being a highlight and becomes a second paragraph. */
-export function answerSpan(sentence, want, quantitative) {
+   everything else it spans the query terms and runs on to the end of the
+   phrase they sit in. Capped at twelve words: past that it stops being a
+   highlight and becomes a second paragraph. */
+
+/* Questions that ask for a name. "What is X called", "what term describes",
+   "known as": the answer is the one word the question does not contain, so
+   the sentence that answers often carries a single question word, and the
+   two-word rule below refused it. Asked what the period of sitting on eggs
+   is called, the passage said "helping with the incubation of the eggs";
+   only "eggs" matched, and nothing was marked.
+
+   The lookbehind keeps "term" inside "long-term" from counting, since a hyphen
+   is a word boundary to \b. All 11 golden questions that match are
+   definitional, so this changes no measured case. */
+export const DEFINITIONAL = /(?<![a-z-])(?:called|term|termed|known as|name for|referred to as)\b/i;
+/* The marker words themselves, which are not pointers. "also called the
+   preen gland" carried one question word, "called", and was marked for a
+   question about the dawn chorus.
+
+   They still count when the sentence is chosen. Dropping them from the
+   question's words was measured on 2026-09-05: bird-incubation went from a
+   MISS to a NONE in the audit, the sweep gained "Melanin is often involved in
+   the absorption of light" for the dawn-chorus question, and bird-furcula#2
+   moved off "a three-pronged bone called the intermaxillary", because "called"
+   is what picks out a sentence that names something. */
+const DEF_MARKERS = new Set("called term termed known name referred".split(" "));
+// A span that opens on one of these refers back to the previous sentence,
+// and the thing it refers to is what the reader wanted marked.
+const ANAPHORIC = new Set("this that these those it its they them such".split(" "));
+// A clause shorter than this carrying one question word is a list item or a
+// table cell. "brown-blotched eggs." was marked for the incubation question.
+const MIN_RELAXED_WORDS = 5;
+/* A definitional question asks for the name of a thing, so the one question
+   word a clause is accepted on has to be a thing, and a word ending in -ed or
+   -ing is a participle more often than a noun. Without this the clause path
+   marked "so the established Linnean system is followed here." and "brent
+   geese Branta bernicla bernicla migrating between the Taymyr Peninsula" for
+   the flyway question, anchored on "established" and "migrating", neither of
+   which is what the question is about. Nouns in -ing ("training",
+   "embedding") cannot anchor a one-word clause either, which costs no mark
+   the sweep had. */
+const PARTICIPLE = /(?:ed|ing)$/;
+/* Words of context in front of the first question word. A width of 2 was
+   measured on 2026-09-05 against the sweep of 450 real passages: it lost 5
+   marks, because the extra word pushed the last question word past the
+   12-word cap, and opened 2, one on a section number ("3.4 Multi-objective
+   Reward Function Inspired by") and one on a count ("14 neck vertebrae—humans
+   have only seven"). In the audit it turned 2 misses into hits and 1 hit into
+   a miss. */
+const LEAD_WORDS = 1;
+/* How far past the last question word a span may run to finish its phrase.
+   The quantitative path runs 4; 5 is the smallest count that reaches
+   "singlepoint" in "enables probabilistic forecasts instead of singlepoint
+   estimates", which was the answer the audit found cut off, and 4 fails that
+   check. */
+const RUN_ON_WORDS = 5;
+
+export function answerSpan(sentence, want, quantitative, definitional = false) {
   const toks = sentence.split(/(\s+)/);
   const words = [];
   toks.forEach((t, i) => { if (t.trim()) words.push({ i, t, low: t.toLowerCase() }); });
@@ -160,11 +239,88 @@ export function answerSpan(sentence, want, quantitative) {
     return [0, sentence.length];
   }
 
-
   const hits = [];
   words.forEach((w, k) => { if (want.some(x => w.low.includes(x))) hits.push(k); });
 
-  let lo = -1, hi = -1;
+  // What a range carries, which decides whether it may run on, the colon cut
+  // below, and whether the span is worth marking at all.
+  const carriedIn = (a, b) => {
+    const got = new Set();
+    let fig = false;
+    for (const w of words.slice(a, b + 1)) {
+      for (const x of want) if (w.low.includes(x)) got.add(x);
+      if (/\d/.test(w.t)) fig = true;
+    }
+    return { n: got.size, fig, got };
+  };
+  const strong = r => r.n >= 2 || (r.n === 1 && r.fig);
+
+  /* Run on from `from` for up to `n` words, so a span reads as a clause
+     rather than stopping mid-thought: "h = 8 parallel attention layers, or
+     heads" instead of "h = 8 parallel". It stops ON the word that closes the
+     phrase -- one ending in a full stop, a comma, a colon, a semicolon or a
+     closing bracket, the same convention as the colon cut below -- and BEFORE
+     a word that is not prose: a URL, or a footnote marker fused to the first
+     word of the next sentence ("1Fine-tuning"). The first run-on (2026-09-05)
+     had no BEFORE rule and ran "only one GPU is dedicated per query" into
+     "for 5htps://github.com/huggingface/transformers -----" and "Transformers
+     lack some of the inductive biases" into "1Fine-tuning code and
+     pre-trained". Stopping before a colon instead was measured against
+     stopping on it and differed in 2 of 450 sweep marks: it dropped
+     "component" from "clearly resolved shifted component" and dropped the
+     extractor's label from "array of se Section", and the phrase mattered
+     more than the label. */
+  const runOn = (from, n) => {
+    let end = from;
+    for (let k = from + 1; k <= Math.min(words.length - 1, from + n); k++) {
+      const t = words[k].t;
+      if (/:\/\/|^www\./.test(t) || /^\d+[A-Z][a-z]/.test(t)) break;
+      end = k;
+      if (/[.,;:)]$/.test(t)) break;
+    }
+    return end;
+  };
+
+  /* Trim the end of a span back to the last word that belongs to it. A span
+     may not end on a function word, on a symbol ("=", "-----", "…"), on a
+     bracket it opens and does not close ("(β2", "[Hou"), or on a one- or
+     two-letter lowercase fragment ("se", "mt"), and it may not leave a
+     bracket open. A word that closes a bracket ends the trimming whatever
+     else it is. The first version of this trim (2026-09-05) judged "at)." by
+     its letters alone, stripped it as a stopword, and left "an expected
+     return forecast (α =" where "an expected return forecast (α = at)." had
+     been; over the 450 sweep passages it raised marks with an unbalanced
+     bracket from 4 to 8 and marks ending on an operator from 2 to 5, while
+     cutting marks ending on a stopword from 51 to 29. Nothing at or below
+     `floor` -- the last question word, or the figure -- is trimmed. */
+  const tidy = (a, b, floor) => {
+    // The 12-word cap can cut a span short of its last question word, and
+    // then the floor is the last question word still inside the span. With
+    // the floor beyond the end nothing was trimmed, and "we mention that BERT
+    // uses a" kept its "a".
+    if (floor > b) floor = hits.filter(h => h <= b).reduce((m, h) => Math.max(m, h), a);
+    const core = k => words[k].low.replace(/[^a-z]/g, "");
+    const closes = k => /[)\]]/.test(words[k].t);
+    const junk = k => /^[^a-zA-Z0-9]*$/.test(words[k].t)
+      || STOP.has(core(k))
+      || (/^[(\[]/.test(words[k].t) && !closes(k))
+      || /^[a-z]{1,2}[^a-zA-Z0-9]*$/.test(words[k].t);
+    for (let pass = 0; pass < 2; pass++) {
+      while (b > floor && !closes(b) && junk(b)) b -= 1;
+      let depth = 0, opened = -1;
+      for (let k = a; k <= b; k++) {
+        for (const c of words[k].t) {
+          if (c === "(" || c === "[") { if (depth === 0) opened = k; depth += 1; }
+          else if ((c === ")" || c === "]") && depth > 0) depth -= 1;
+        }
+      }
+      if (depth === 0 || opened <= floor) break;
+      b = opened - 1;
+    }
+    return b;
+  };
+
+  let lo = -1, hi = -1, floor = -1;
   if (quantitative) {
     const figs = [];
     words.forEach((w, k) => { if (/\d/.test(w.t)) figs.push(k); });
@@ -172,14 +328,8 @@ export function answerSpan(sentence, want, quantitative) {
       const near = f => (hits.length ? Math.min(...hits.map(h => Math.abs(h - f))) : 0);
       const anchor = figs.reduce((bestF, f) => (near(f) < near(bestF) ? f : bestF), figs[0]);
       lo = Math.max(0, anchor - 7);
-      // Run on a little past the figure to the end of its phrase, so a span
-      // reads as a clause rather than stopping mid-thought: "h = 8 parallel
-      // attention layers, or heads" instead of "h = 8 parallel".
-      hi = anchor;
-      for (let k = anchor + 1; k <= Math.min(words.length - 1, anchor + 4); k++) {
-        hi = k;
-        if (/[.,;:)]$/.test(words[k].t)) break;
-      }
+      hi = runOn(anchor, 4);
+      floor = anchor;
     }
   }
   if (lo < 0) {
@@ -190,23 +340,87 @@ export function answerSpan(sentence, want, quantitative) {
     // the same rule as the two-distinct-words check below, applied earlier:
     // when there is nothing to point at, point at nothing.
     if (!hits.length) return null;
-    lo = Math.max(0, hits[0] - 1);
-    hi = Math.min(words.length - 1, Math.max(hits[hits.length - 1], hits[0] + 6));
+    const first = hits[0], last = hits[hits.length - 1];
+    floor = last;
+    const distinct = new Set();
+    for (const w of words) for (const x of want) if (w.low.includes(x)) distinct.add(x);
+    if (distinct.size === 1 && definitional) {
+      /* A single question word, and a question that asks for a name. There
+         is no second word to span to, so the clause around the one word is
+         the unit. It grows back to the punctuation before the word and
+         forward to the punctuation after it, then shrinks to the word bound
+         from whichever end is farther from the hit. On "with the male also helping with the
+         incubation of the eggs during the day," that keeps "incubation".
+
+         This clause rule was first tried (2026-09-05) for EVERY span, not only
+         this case, and it cost 6 answers in the audit of 68: growing back to
+         the clause start and trimming from the far end pulled "interval" off
+         "restricted to a common compact interval", and a comma stopped the
+         growth at "machine learning," before "probabilistic forecasts". The
+         span between two question words is a better anchor than a clause
+         boundary, so the clause is used only when there is one word. */
+      const CLAUSE = /[,;:]$/;
+      lo = first;
+      while (lo > 0 && !CLAUSE.test(words[lo - 1].t)) lo -= 1;
+      hi = last;
+      while (hi < words.length - 1 && !CLAUSE.test(words[hi].t)) hi += 1;
+      while (hi - lo + 1 > MAX_MARK_WORDS) {
+        if (first - lo >= hi - last) lo += 1; else hi -= 1;
+      }
+    } else {
+      lo = Math.max(0, first - LEAD_WORDS);
+      hi = Math.min(words.length - 1, Math.max(last, first + 6));
+      /* Run on to the end of the phrase, as the quantitative path above
+         does. The answer to "what does X enable" or "can X be restricted"
+         follows the question words. Of the 30 audit misses under the code
+         before this run-on (ui/audit-marks.mjs, 2026-09-05), 19 marks sat in
+         the sentence that contains the answer, and in 15 of those the answer
+         began at or after the point where the mark stopped; "The CVaR
+         threshold can be restricted to a" and "BVAR, when complemented with
+         machine learning, enables" were 2 of them.
+
+         Only a span that already qualifies may run on. The run-on finishes a
+         phrase; it is not allowed to be what qualifies the span, which the
+         first version permitted: "index prices the premium at a mean t of
+         +1.14 with standard" carried one question word, "prices", and was
+         accepted on the figure the run-on had reached. */
+      if (strong(carriedIn(lo, hi))) hi = runOn(hi, RUN_ON_WORDS);
+    }
   }
   if (hi - lo >= MAX_MARK_WORDS) hi = lo + MAX_MARK_WORDS - 1;
+  hi = tidy(lo, hi, floor);
 
-  // What a range carries, which decides both the colon cut below and whether
-  // the span is worth marking at all.
-  const carriedIn = (a, b) => {
-    const got = new Set();
-    let fig = false;
-    for (const w of words.slice(a, b + 1)) {
-      for (const x of want) if (w.low.includes(x)) got.add(x);
-      if (/\d/.test(w.t)) fig = true;
-    }
-    return { n: got.size, fig };
+  /* The exception to the two-word rule, for definitional questions only. A
+     span carrying one question word is accepted when the word is matched
+     whole rather than as a substring ("light" inside "flight" and "able"
+     inside "unable" each produced a mark in the sweep before this check),
+     the word is not one of the question's own markers and not a participle,
+     the span is a clause rather than a fragment, it does not open on a
+     pronoun, and it carries at least one content word of 4 or more letters
+     that the question lacks. "This fused structure" fails on the pronoun;
+     "the male also helping with the incubation of the eggs during the day"
+     passes on "incubation". */
+  const novel = (a, b) => words.slice(a, b + 1).some(w => {
+    const core = w.low.replace(/[^a-z]/g, "");
+    return core.length >= 4 && !STOP.has(core) && !want.some(x => core.includes(x) || x.includes(core));
+  });
+  const opensPlain = a => {
+    const w0 = words[a].low.replace(/[^a-z]/g, "");
+    const w1 = words[a + 1] ? words[a + 1].low.replace(/[^a-z]/g, "") : "";
+    return !ANAPHORIC.has(w0) && !(w0 === "the" && w1 === "same");
   };
-  const enough = r => r.n >= 2 || (r.n === 1 && r.fig);
+  const wholeWord = (a, b, x) => words.slice(a, b + 1)
+    .some(w => w.low.split(/[^a-z0-9]+/).includes(x));
+  // The colon cut below uses `strong` and not `enough`. With the relaxed
+  // rule it cut "The chicks of passerines are altricial: blind, featherless,
+  // and helpless" back to "altricial", because the front half carried one
+  // question word and the question had "term" in it, and the definition the
+  // colon introduced was lost again.
+  const enough = (r, a, b) => strong(r)
+    || (definitional && r.n === 1 && !DEF_MARKERS.has([...r.got][0])
+        && !PARTICIPLE.test([...r.got][0])
+        && wholeWord(a, b, [...r.got][0])
+        && b - a + 1 >= MIN_RELAXED_WORDS && opensPlain(a) && novel(a, b));
 
   // A colon or a semicolon ends the clause, and a mark that runs past one
   // picks up whatever it introduces: "into a common format: McCann et al."
@@ -223,7 +437,7 @@ export function answerSpan(sentence, want, quantitative) {
   // pointer rather than to destroy the pointer.
   for (let k = lo; k < hi; k++) {
     if (/[:;]$/.test(words[k].t)) {
-      if (enough(carriedIn(lo, k))) hi = k;
+      if (strong(carriedIn(lo, k))) hi = k;
       break;
     }
   }
@@ -243,8 +457,9 @@ export function answerSpan(sentence, want, quantitative) {
   // A span has to carry something. Asked what a bird's fused collarbone is
   // called, the marked words were "this fused structure" -- one query word and
   // a pronoun standing in for the noun the question was about. Marking that
-  // points at nothing. Two distinct query words, or one and a figure.
-  if (!enough(carriedIn(lo, hi))) return null;
+  // points at nothing. Two distinct query words, or one and a figure. The
+  // definitional exception, and its guards, are in `enough` above.
+  if (!enough(carriedIn(lo, hi), lo, hi)) return null;
 
   const startTok = words[lo].i;
   const endTok = words[hi].i;
@@ -300,7 +515,7 @@ export function markAnswer(text, question) {
   // Then the answering WORDS inside that sentence. A whole sentence set bold
   // is most of the passage shouting; the reader still has to find the figure
   // inside it, which is the job the highlight was meant to do.
-  const span = answerSpan(parts[best], want, QUANT.test(question));
+  const span = answerSpan(parts[best], want, QUANT.test(question), DEFINITIONAL.test(question));
   if (!span) return esc(text);            // nothing worth pointing at
   const [a, b] = span;
 

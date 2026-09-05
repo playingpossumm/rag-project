@@ -18,7 +18,7 @@ is a snapshot.
 | Ornithology | 45 | 864 | 0.880 |
 | Quantitative finance | 35 | 6,184 | 0.939 |
 
-**456 checks**, none of which need a network or an API key:
+**491 checks**, none of which need a network or an API key:
 
 ```bash
 python src/test_metrics.py        # the scoring functions, hand-computed
@@ -31,9 +31,12 @@ node  ui/test-answer-mark.mjs     # which words of a passage are set bold
 node  ui/test-passages.mjs        # whether a reader can see the passage that answers
 ```
 
-**Six guards**, each exiting non-zero rather than printing a warning nobody
+**Seven guards**, each exiting non-zero rather than printing a warning nobody
 reads. They exist because a generated file has gone stale silently three times,
-and because a link on `/about` named a branch this repository does not have:
+and because a link on `/about` named a branch this repository does not have.
+The seventh reads the recorded payloads in `static-demo/`, which is gitignored,
+so on a clone without a recording it exits 2 and says it did not run rather
+than passing:
 
 ```bash
 python src/check_freshness.py     # golden set -> per_case -> analytics -> front page
@@ -42,6 +45,7 @@ python src/check_docs.py          # do the documents match the measurements?
 python src/check_links.py         # do the links name this repository, and resolve in it?
 python src/build_results_doc.py --check
 python src/build_corpus_manifest.py --check   # does the document list match the indexes?
+python src/audit_page_credit.py   # do the hand-read verdicts still cover every page-only credit?
 ```
 
 One thing is deliberately outside the count: `python src/smoke_routes.py` asks
@@ -84,18 +88,59 @@ A stronger model may do better, and the harness is in place to find out:
 `RAG_GENERATOR=ollama python src/sweep_decompose.py --corpus llm`. What is no
 longer available is citing decomposition as the answer without running it.
 
-**3. The frontier is five questions.** It was twelve until they were read one
-at a time on 2026-09-01. Four were answered by the pipeline and scored wrong,
-because a derived label marks passages containing the answer string rather than
-passages that answer, and three were questions the documents do not answer.
-Those seven were corrected and reclassified the same day, and
-`src/failure_overlap.py`, re-derived from six configurations on each corpus,
-returns the same five that reading identified: `gpt3-params`,
-`roberta-nsp-drop` and `wmt14` on the papers, `bird-hollow-bones` and
-`bird-precocial` on the birds, and none on quant. Nothing reaches these five.
-`wmt14` is the sharpest, returning English-to-French passages for a question
-about English-to-German, so the single word that decides the answer is the one
-ignored.
+**3. The frontier is 23 questions with one cause.** Until 2026-09-03 this item
+said the frontier was 5 questions, and that was too narrow. It counted only the
+questions that fail under every configuration, which `src/failure_overlap.py`
+returns from 6 configurations on each corpus, and treated the misses on the
+shipped configuration as retrieval already counted elsewhere and the questions
+credited on the locator alone as a scoring detail. All three groups are the
+same failure. On 23 questions across the three corpora the chunk that answers
+exists in the corpus and is in no retrieved chunk, and `src/answer_distance.py`
+lists them. They are the 11 questions the shipped configuration scores as
+misses, among them the 5 that fail everywhere, `gpt3-params`,
+`roberta-nsp-drop` and `wmt14` on the papers and `bird-hollow-bones` and
+`bird-precocial` on the birds, and 12 questions scored as hits because the page
+returned holds the answer in a chunk that was not returned.
+`src/audit_page_credit.py` reads every hit whose excerpt in the recorded
+payload lacks the answer string, 14 by that comparison, records that 9 do not
+answer, 2 answer in other words and 3 are arguable, and fails if the population
+moves. Its 14 and the 12 above differ because the audit compares against the
+excerpt the page shows and `answer_visible` against the retrieved chunk, and on
+`pos-enc-fn` and `qf-degeneracy` the chunk holds the answer past the end of the
+excerpt. Until 2026-09-05 this item, following the log entry of 2026-09-03 it
+was written from, gave the 23 as the misses and the 9 that do not answer, and
+those groups sum to 20.
+
+The passage that answers does not contain the words of the question, which is
+why the search missed it, so every mechanism that ranks, places or marks by
+question vocabulary moves away from it, and giving that mechanism more room to
+look moves it further. `wmt14` is the sharpest case, returning
+English-to-French passages for a question about English-to-German, so the
+single word that decides the answer is the one ignored. `src/answer_distance.py`
+measures where the answering chunk sits. On 10 of the 23 it is 1 chunk from a
+retrieved chunk, on 3 it is 2 chunks away, on 8 it is 3 to 37 chunks off in a
+retrieved document, and on 2 it is in another document. `src/sweep_neighbours.py`
+and `src/sweep_stride.py` reach the neighbouring chunk by 3 arrangements.
+Neighbours in the pool and the finer stride each gain 1 question, the same one,
+`bird-fledging`, and window scoring is worse on every metric but the gate,
+because the reranker reads the answering chunk against the same question and
+reaches the conclusion the first stage did. `src/hyde_trigger.py` measures the
+11 scored misses, not the locator-only credits, and shows that no cheap signal
+separates them from the questions that work. What is left is supplying the
+missing vocabulary, which only a model that already knows the answer or a
+person writing a different question can do, and neither is a retrieval result.
+
+The measurement moved with the framing. `src/evaluate.py` reports
+`answer_visible` beside `hit_rate`, because a hit credits the locator, and a
+page can hold the answer in a paragraph that was not returned. On the shipped
+configuration the answer is in a retrieved chunk on 0.821 of the papers'
+questions, 0.760 of the birds' and 0.848 of quant's, against any-hit of 0.910,
+0.880 and 0.939. The excerpt the page shows is capped at 720 characters, raised
+from 420 on 2026-09-03, which took the share of answers on the page across the
+three corpora from 0.656 to 0.808 with retrieval untouched. At 420 the page
+was cutting off answers the system had retrieved on 21 questions, and the 4
+that had been read as "the passage does not answer" all had the answer in the
+passage past the edge of what was shown.
 
 **4. The hero diagram.** All seven stages are drawn as the same sheet-of-cells,
 which is wrong in one specific place: dense retrieval and BM25 have identical
@@ -108,8 +153,50 @@ index-as-a-field is right and should stay.
 ## Ruled out, with numbers
 
 These are kept because a refuted experiment is worth as much as a shipped one,
-and all of them are in `docs/engineering-log.md` with the measurements.
+and all of them are in `docs/engineering-log.md` with the measurements. The
+first 4 were measured on 2026-09-03 against the 23 questions of item 3, and the
+3 that put the neighbouring chunk in front of the ranker fail for the reason
+given there.
 
+- **Neighbours in the candidate pool.** Pulling each candidate's adjacent
+  chunks into the pool before reranking, so the cross-encoder can promote the
+  chunk next door on its own merits, gains 1 question, `bird-fledging`, which
+  takes answer shown on the birds from 0.760 to 0.800. Any-hit is unchanged on
+  all three corpora, MRR falls from 0.784 to 0.772 on the papers and from 0.826
+  to 0.811 on quant, 1 more adversarial case slips the gate on the papers, 8
+  to 9, and latency is 2.5 times what it was. The answering chunk was in the
+  pool and the cross-encoder read it and did not promote it. The measurement is
+  `src/sweep_neighbours.py`, run on 2026-09-03.
+- **Scoring a chunk on the window around it.** Ranking each candidate on the
+  chunk before, the chunk itself and the chunk after, while still returning the
+  chunk, takes any-hit from 0.910 to 0.881 on the papers, from 0.880 to 0.840
+  on the birds and from 0.939 to 0.818 on quant. It cuts adversarial slips on
+  the papers from 8 to 5 because a wider passage dilutes every match and lowers
+  every score, which is a threshold shift rather than an improvement, and it
+  costs 7 answerable questions on the papers to buy it. `src/sweep_neighbours.py`
+  holds this arm as well, measured on 2026-09-03.
+- **A finer stride.** Chunking the bird corpus at an overlap of 105 tokens
+  rather than 40 adds 32% more chunks and, with the pool scaled to match,
+  takes any-hit from 0.880 to 0.840 and answer shown from 0.760 to 0.720. It
+  recovers the same question the neighbours arm recovers. The scratch index
+  was deleted and `src/sweep_stride.py` rebuilds it. The distance measurement
+  first named a larger chunk rather than a shorter stride as the indicated
+  experiment, on the reasoning that overlap cannot extend a chunk forwards,
+  which was true and beside the point, because the answers 1 chunk away were
+  already inside the next chunk and what is missing is a chunk holding both the
+  words that find the passage and the words that answer.
+- **Showing each passage with its neighbours.** The pipeline can attach the
+  adjacent chunks to each result and the page does not use it. Turning it on
+  and rendering it as `completed()` does takes the share of answers on the page
+  from 0.808 to 0.832 at 591 to 836 characters a passage, and a symmetric
+  lead-out reaches 0.840 at 1,073 characters, so 4 questions cost nearly twice
+  the text on every answer. Showing the raw expanded window reaches 0.880 and
+  multiplies the text on screen by 3.2. Choosing the 720-character excerpt over
+  the expanded window rather than over the chunk scores 0.792 against 0.808,
+  because with more room `_brief` places the window by where the question's
+  words fall and moves away from the chunk that was ranked. The page shows
+  0.808 against 0.816 in the retrieved chunks, so the display is at its
+  ceiling and none of these arrangements shipped.
 - **A better cross-encoder.** Of the three compared, MiniLM-L12 ranks better on
   the ML papers and worse on birds, while BGE-reranker-base ranks worst and
   separates best, so neither is shippable.
@@ -139,7 +226,7 @@ and all of them are in `docs/engineering-log.md` with the measurements.
   2026-09-01, off by default. Running it **only** when the pipeline is already
   below its abstention threshold, so that it cannot disturb a question that
   works, was measured on 2026-09-03 and does not fire at all: every one of the
-  eleven questions the three corpora get wrong scores above its own corpus's
+  11 questions the three corpora get wrong scores above its own corpus's
   threshold, the highest at +6.36. Neither does any cheaper trigger, since
   coverage, rerank margin and retriever agreement all put the failing questions
   inside the range of the working ones. `src/hyde_trigger.py`.
@@ -206,8 +293,16 @@ Three limits on that measurement, none of which is a missing rubric:
 - **Correctness is a substring test**, so it cannot credit a right answer in
   other words. It is a floor rather than a rate, and the cases it rejects are
   reported in `unmatched` to be read rather than silently scored as wrong.
-- **The sample is small.** Answer quality costs about a minute per question on
-  a CPU, which is why it samples by default rather than running all 157 cases.
+  Since 2026-09-05 a second figure, `correct_loose`, is reported beside it and
+  credits an answer carrying 80% of the labelled string's content words in any
+  order; on the full run it moves the papers from 37 to 43 of 67 and finance
+  from 12 to 16 of 33, and the birds not at all.
+- **The sample was small, and is not any more.** Answer quality costs about a
+  minute per question on a CPU, so the script samples by default, and until
+  2026-09-05 every published figure came from 15 answers per corpus. The full
+  run of all 157 took 3.9 hours and is what `eval/answer-quality.json` and the
+  analytics page now carry. It found two invented citations where the sample
+  had found none.
 
 `src/test_evaluate_answers.py` holds the judge to answers it has already got
 wrong, which is how both of its first-run defects were found: a plain refusal

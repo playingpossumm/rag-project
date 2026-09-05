@@ -609,6 +609,11 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .cite i{width:7px;height:7px;border-radius:2px;flex:none}
 .note{margin:18px 0 0;color:var(--mute);font-size:13.5px;max-width:62ch}
 .note b{color:var(--dim);font-weight:600}
+/* Under a confident answer whose lead passage carries no mark. It qualifies the
+   passage rather than replacing it, so it sits below the answer in the muted
+   register and uses no colour the page does not already have. */
+.unsure{margin:14px 0 0;font-size:12.5px;line-height:1.6;color:var(--mute);max-width:62ch}
+.unsure b{color:var(--dim);font-weight:600}
 
 .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
 .pill{display:inline-flex;align-items:center;gap:7px;background:var(--nest);
@@ -1997,6 +2002,34 @@ function renderTurn(turn, question, data, opts) {
 
   const cells = top && v.confident !== false ? tabular(clean(top.text)) : null;
 
+  // The mark lands on the sentence that carries the question's words. When no
+  // sentence in the lead passage qualifies, the passage is more likely than
+  // the average lead to lack the answer. Measured in a browser on 2026-09-06
+  // over the 120 recorded confident questions whose answer renders as prose
+  // and has a golden answer string (a 121st, bird-syrinx, renders as a
+  // spreadsheet row and is not counted), the shown passage lacked the answer
+  // in 7 of the 10 cases with no mark and in 46 of the 110 with one. The
+  // figure this note was designed against put the wrong-lead rate at about
+  // 19%, and by the criterion used here, the golden string present in the
+  // shown text, it is 53 of 120. Which passage comes first is retrieval's
+  // decision and cannot be changed here, so the page says that the lead may
+  // be wrong and points at the rest of the list. The note appears only on the
+  // confident path, because the refused path already states that the corpus
+  // lacks the answer, and not under a thin passage, because the Retrieval
+  // result block already says that a passage that short has little to answer
+  // with.
+  const leadHTML = top && v.confident !== false && !cells
+    ? markAnswer(fragment(completed(top)), question) : "";
+  const unsure = gated && v.confident && !thin && leadHTML
+    && !/<mark>/.test(leadHTML);
+  const unsureHTML = unsure
+    ? `<p class="unsure">No sentence in this passage repeats the words of the
+         question, so it may not be the one that answers.${
+         alsoFoundOrder(sel, top).length
+           ? ` The passages under <b>Also found</b> are the next candidates.`
+           : ""}</p>`
+    : "";
+
   const answerHTML = gen.state === "ok"
     ? `<div class="answer prose">${gen.text.split(/\n{2,}/)
         .map(p => `<p>${esc(p.trim())}</p>`).join("")}</div>`
@@ -2018,7 +2051,7 @@ function renderTurn(turn, question, data, opts) {
                <td>${i === best ? markAnswer(String(val), question) : esc(val)}</td>
              </tr>`).join("");
         })()}</tbody></table>`
-      : `<p class="answer">${markAnswer(fragment(completed(top)), question)}</p>`;
+      : `<p class="answer">${leadHTML}</p>${unsureHTML}`;
 
   turn.querySelector(".slot").innerHTML = `
     <div class="pad">

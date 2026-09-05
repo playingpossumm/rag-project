@@ -396,17 +396,18 @@
    ],
    "answers": {
     "model": "llama3.2",
-    "n": 15,
-    "n_answerable": 10,
-    "n_adversarial": 5,
+    "n": 84,
+    "n_answerable": 67,
+    "n_adversarial": 17,
     "invented_citations": 0,
     "answers_with_invented": 0,
     "malformed_citations": 0,
-    "correct": 6,
-    "unmatched": 4,
-    "refused_rightly": 4,
-    "refused_wrongly": 0,
-    "grounded_mean": 0.678
+    "correct": 37,
+    "correct_loose": 43,
+    "unmatched": 30,
+    "refused_rightly": 11,
+    "refused_wrongly": 4,
+    "grounded_mean": 0.705
    }
   },
   {
@@ -755,17 +756,18 @@
    ],
    "answers": {
     "model": "llama3.2",
-    "n": 15,
-    "n_answerable": 10,
-    "n_adversarial": 5,
-    "invented_citations": 0,
-    "answers_with_invented": 0,
+    "n": 32,
+    "n_answerable": 25,
+    "n_adversarial": 7,
+    "invented_citations": 1,
+    "answers_with_invented": 1,
     "malformed_citations": 0,
-    "correct": 6,
-    "unmatched": 4,
-    "refused_rightly": 5,
-    "refused_wrongly": 1,
-    "grounded_mean": 0.525
+    "correct": 9,
+    "correct_loose": 9,
+    "unmatched": 16,
+    "refused_rightly": 7,
+    "refused_wrongly": 10,
+    "grounded_mean": 0.475
    }
   },
   {
@@ -1114,23 +1116,24 @@
    ],
    "answers": {
     "model": "llama3.2",
-    "n": 15,
-    "n_answerable": 10,
-    "n_adversarial": 5,
-    "invented_citations": 0,
-    "answers_with_invented": 0,
+    "n": 41,
+    "n_answerable": 33,
+    "n_adversarial": 8,
+    "invented_citations": 1,
+    "answers_with_invented": 1,
     "malformed_citations": 0,
-    "correct": 4,
-    "unmatched": 6,
-    "refused_rightly": 4,
-    "refused_wrongly": 1,
-    "grounded_mean": 0.566
+    "correct": 12,
+    "correct_loose": 16,
+    "unmatched": 21,
+    "refused_rightly": 6,
+    "refused_wrongly": 4,
+    "grounded_mean": 0.606
    }
   }
  ],
  "inputs": {
   "corpora_json": "sha256:647fd5f3df817e57",
-  "answers": "sha256:a5406553fe8df4f3",
+  "answers": "sha256:292cd38177509237",
   "per_corpus": {
    "llm": {
     "golden": {

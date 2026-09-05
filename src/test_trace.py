@@ -25,8 +25,9 @@ import sys
 
 from sentence_transformers import SentenceTransformer
 
+from api import DEFAULT_EXPANSION
 from hybrid import build_bm25
-from pipeline_trace import trace_pipeline
+from pipeline_trace import DISPLAY_EXPANSION, trace_pipeline
 from retrieve import EMBEDDING_MODEL, load_index, retrieve
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -52,6 +53,20 @@ OPTIONS = [
 
 def selected_ids(trace: dict) -> list[int]:
     return [i["chunk_id"] for i in trace["stages"][-1]["items"]]
+
+
+def expansion_defaults_diverge_on_purpose() -> bool:
+    """The serving and display defaults differ, and each was measured for its
+    own consumer.
+
+    api.DEFAULT_EXPANSION is "window" because a generator gained context recall
+    from neighbouring chunks. pipeline_trace.DISPLAY_EXPANSION is "none" because
+    on 2026-09-03 a reader of the rendered page gained too little from them for
+    the characters they cost. The comments beside each constant carry the
+    numbers. This pins both so that someone "fixing" one to match the other is
+    stopped here rather than in production.
+    """
+    return DEFAULT_EXPANSION == "window" and DISPLAY_EXPANSION == "none"
 
 
 def main() -> int:
@@ -100,6 +115,12 @@ def main() -> int:
         if trace["verdict"]["confident"] is not None:
             failures.append((query, {"use_reranker": False},
                              trace["verdict"]["confident"], None))
+
+    checked += 1
+    if not expansion_defaults_diverge_on_purpose():
+        failures.append(("expansion defaults", {"deliberate divergence": True},
+                         (DEFAULT_EXPANSION, DISPLAY_EXPANSION),
+                         ("window", "none")))
 
     for query, opts, got, want in failures:
         print(f"FAIL {opts}\n  query: {query}\n  trace: {got}\n  serve: {want}")

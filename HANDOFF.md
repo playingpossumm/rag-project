@@ -977,11 +977,11 @@ reads the same words. Query decomposition was the fix that addressed it on
 paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
 `docs/engineering-log.md`.
 
-Test counts, as of 2026-09-03: **456 checks plus the route suite**: 80 trace,
-66 answer-quality judge, 20 excerpt, 18 links, 33 loaders, 33 freshness, 25
+Test counts, as of 2026-09-06: **491 checks plus the route suite**: 81 trace,
+79 answer-quality judge, 20 excerpt, 18 links, 33 loaders, 33 freshness, 29
 serve, 24 local generation, 22 metrics, 19 generate, 17 golden-set audit, 17
-analytics, 13 api, 10 reranker cache, 9 ingest cache and 8 OCR, which is 414,
-plus 33 answer-highlight checks under `node ui/test-answer-mark.mjs` and 9
+analytics, 13 api, 10 reranker cache, 9 ingest cache and 8 OCR, which is 432,
+plus 50 answer-highlight checks under `node ui/test-answer-mark.mjs` and 9
 passage-selection checks under `node ui/test-passages.mjs`.
 
 These are counted by running the suites. They were wrong until 2026-08-30,
@@ -996,10 +996,13 @@ only measurement here whose input is prose, and prose is where a string test
 goes wrong quietly. Most of those checks are answers this repository has
 already scored wrongly, kept verbatim.
 
-Six guards now cover the things that have gone wrong silently before, and all
-six exit non-zero rather than printing a warning nobody reads. The count in
+Seven guards now cover the things that have gone wrong silently before, and all
+seven exit non-zero rather than printing a warning nobody reads. The count in
 this sentence disagreed with the list under it until 2026-08-30, which is the
-failure `check_docs.py` exists to stop, one level up:
+failure `check_docs.py` exists to stop, one level up. The seventh, added to the
+list on 2026-09-05, reads the recorded payloads in `static-demo/`, which is
+gitignored, so on a clone without a recording it exits 2 and says it did not
+run rather than passing:
 
 ```
 python src/check_freshness.py     # golden set -> per_case -> analytics -> front page
@@ -1008,6 +1011,7 @@ python src/check_docs.py          # do the documents match the measurements?
 python src/check_links.py         # do the links the interface serves go anywhere?
 python src/build_results_doc.py --check
 python src/build_corpus_manifest.py --check   # does the document list match the indexes?
+python src/audit_page_credit.py   # do the hand-read verdicts still cover every page-only credit?
 ```
 
 ---

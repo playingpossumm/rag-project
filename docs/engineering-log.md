@@ -2492,6 +2492,227 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-06 — The pending items, and whether the bold lands on the answer
+
+Six items had been listed as pending on 2026-09-04. They were worked as four
+independent chains at once, each change read by two reviewers, one for
+correctness against the checks and one for the writing and the claims, with a
+repair pass wherever a reviewer refuted. What follows is what shipped, in the
+order a reader of the page would meet it.
+
+**Whether the bold lands on the answer had never been measured.** Every earlier
+figure about the highlight said whether a mark existed, not whether it
+contained the answer. `ui/audit-marks.mjs` now asks the second question over
+every recorded confident answer whose lead passage carries the golden string:
+68 such cases, and on the code as it stood the mark contained the answer in
+**35** of them, 51.5%. Reading the 30 misses, 19 had chosen the right sentence
+and stopped short of the answer, 11 the answer wholly after the mark, because
+the span ran from one word before the first question word to six past it and
+the answer followed.
+
+Seven variants were measured. The candidate rule named in the task, a one-word
+span for a definitional question, changed nothing, 35 to 35, because it relaxed
+the acceptance test while the span was still placed on the wrong side of the
+hit. A clause-bounded span for every sentence cost 6 answers. The change that
+shipped is narrower: a span carrying two question words runs on up to five more
+words to the end of its phrase, stopping at punctuation and never on a
+stopword, and a definitional question whose sentence carries one question word
+marks the clause around it under five guards. Audit **38** of 68, 55.9%, the
+three gains all on finance; sweep marks 338 to 339 over 450 passages; median
+share 3.5% to 3.8%, 90th unchanged at 6.5%.
+
+The correctness reviewer then found that the run-on had introduced marks ending
+on an opening bracket, an operator, a URL and a fused footnote marker, 4 to 8
+unbalanced and 51 to 29 ending on a stopword, so the shape had got worse while
+the count got better. The repair replaced the trailing trim with one that keeps
+a word closing a bracket, cuts back to an unclosed one, and refuses one- and
+two-letter fragments: marks ending on a stopword 51 to **2**, unbalanced 4 to
+**0**, with the audit unchanged at 38. The suite went from 33 to **50** checks,
+six of which fail against the code of 2026-09-05. Two mistakes on the way are
+recorded in the module beside their fixes, a relaxed check that leaked into the
+colon cut and broke the altricial test, and a two-word lead context that gained
+one audit answer and lost five sweep marks.
+
+**When the lead passage probably does not answer, the page now says so, and the
+basis is thin.** 132 confident recorded questions were driven through the site
+in a browser. Of the 120 that reach the passage path with a golden string, the
+lead passage as shown lacked the answer in **53**, which is 44%; the 19% quoted
+elsewhere in this log counts any of the five passages, and this counts the lead
+alone. "No mark on the lead" fired on 10 of the 120 and the lead lacked the
+answer in 7 of those, a precision of 0.70 against a base rate of 0.44, which met
+the rule set for it, precision of at least 0.6 on at least 5 firings. A reviewer
+did not refute the change and recorded that 7 of 10 against a base rate of 0.44
+is inside what luck produces about one time in fourteen, and that the three
+cases where the note is wrong, `resnet-152`, `qf-risk-parity` and
+`qf-photonic-sharpe`, have the answer on screen and unmarked. The note is
+hedged accordingly, "may not be the one that answers", points at the passages
+beneath, and covers 7 of the 53 wrong leads, because the other 46 receive a
+mark the rule cannot see through. It is on the page as a provisional reading
+and this paragraph is the record of how provisional.
+
+**The two expansion defaults are now a decision rather than an accident.**
+`api.ask` defaults to "window", measured for a generator, and
+`pipeline_trace` to "none", measured for a reader on 2026-09-03. Each file now
+names the other's constant and the measurement behind its own, and a check in
+`test_trace.py` asserts both values so a change to either is deliberate.
+
+**Correctness of a written answer is reported twice.** Recorded under
+2026-09-05 with the full-sample run.
+
+**The seventh guard is wired.** `audit_page_credit.py` exits 1 when the
+hand-read population it describes moves, and 2 with a message naming the
+recording command when no recording is present, rather than passing silently.
+The three documents that list the guards say seven and say which one needs a
+recording. A reviewer refuted the first version of its docstring for claiming
+it was the only guard needing a file the repository does not carry, when
+`build_corpus_manifest --check` reads the built indexes too, and the claim is
+gone.
+
+**The roadmap is current.** Its frontier is 23 questions with one cause rather
+than five with none, the six mechanisms refuted since 2026-09-03 are in its
+ruled-out list with their figures, and the sentence saying a stronger model
+might rescue rewriting is replaced by the measurement that closed it.
+
+---
+
+## 2026-09-06 — An audit of the whole repository, and three findings that could not wait
+
+Eight read-only reviewers each took one lens over the repository at once: the
+Python in `src/`, the four pages and three modules in `ui/`, the tests and
+guards, the documents, repository and security hygiene, the evaluation data,
+the serving path, and the three pages driven in a browser at two widths. A
+ninth deduplicated and re-rated what they found under a fixed definition of
+dire, which is data loss, a security exposure, a false claim on the live site or
+in the README, a guard or test that cannot fail, or a broken build or deploy.
+Six more then tried to refute each dire finding, two to a finding. Every one
+held. The count came to 3 dire, 30 that a maintainer would fix within the week,
+and 22 items of polish.
+
+**What was found sound is worth stating first, because silence would be read as
+absence.** `.env` has never been in any commit and no key-shaped string exists
+anywhere in history. The server binds 127.0.0.1 by default, no route serves a
+caller-supplied path, oversize bodies get a 413 and bad options a 400 with no
+stack trace, and the interface loads nothing from a network. All 91 Python
+modules compile, all 17 Python suites and both node suites pass, every guard
+fails on a staged fault, and no assertion in any suite compares a value to
+itself except one in `test_metrics.py`, which is on the list. The 122 files the
+working copy shows with CRLF are stored as LF in the index; that was my own
+false alarm, made before the audit read `git ls-files --eol`.
+
+### The three that were fixed the same day
+
+**The Docker image could not start.** `serve.py`'s `main()` called
+`ask("warmup", k=1)` bare, and `api.ask` without `resources=` opens its own
+index from `retrieve`'s default store, which is the ML papers' `vector_store/`
+whatever `RAG_CORPUS` says. The image bakes in the ornithology corpus only, so
+in the container the call raised before the port was bound and the deployment
+that `docs/deploying.md` documents could not come up. Locally the same line
+loaded a second index, a second embedder and a second BM25 for a corpus nobody
+had selected, on every start, and cost the time it was written to save. Two
+lenses found it independently from the code and the Dockerfile; nobody had run
+the container since the corpus switch was added. `warm_up()` now asks its one
+question through `RES`'s own resources and blend, and a warm-up that cannot run
+prints why and lets the server come up cold, because a warm-up is never worth
+failing startup over. Four checks in `test_serve.py` hold both halves.
+
+**The README quickstart did not run.** Its four lines for building a second
+corpus gave `--topic` and `--out` to a script whose topic is positional and
+whose directory flag is `--into`, named `make_documents.py` as a step when
+`fetch_topic.py` already calls it and it has no entry point, and gave
+`calibrate_threshold.py` a `--golden` flag it does not have. Three of four lines
+failed on the first command. The block now reads as the scripts take their
+arguments, and every line in it was run on 2026-09-06, the fetch and the ingest
+into a scratch directory so the bird corpus was not touched, and `per_case.py`
+and `calibrate_threshold.py` against the real bird set.
+
+**The README threshold table quoted golden sets that no longer exist.** It read
+10 of 26 wrongly refused on the birds and 19 of 35 on finance, and the sentence
+beneath drew "more than a third" from them. Those were measured on 2026-08-21;
+the finance set was rewritten on 2026-08-26 because it asked textbook questions
+the papers never answer, and three more questions moved to the adversarial half
+on 2026-09-01. The measurements say 1 of 67, 9 of 25 and 9 of 33.
+`corpora.json`'s own note had recorded the 19 as superseded while the README two
+files away kept quoting it, and `check_docs.py` held the README's ladder and
+corpora table to the results but never this block. It reads it now, and was
+shown to fail when the old figure was put back.
+
+### What the three share
+
+Each is a claim about the project that the project itself no longer supported,
+sitting a few lines from a check that covered its neighbours and not it. The
+lesson this log has recorded before, that a number transcribed into prose goes
+stale silently, extends to commands and to deployment paths: the quickstart was
+a transcription of an interface that had since changed, and the Dockerfile was a
+transcription of a startup sequence that had since grown a step. A guard now
+reads the threshold table; the quickstart and the container are still
+transcriptions, and the roadmap carries the question of whether they should be
+exercised by something that runs.
+
+The 30 items rated should and the 22 rated could are in the audit's report and
+are the owner's to sequence. The ones the audit itself judged closest to dire
+were the static demo showing the ML papers' evaluation figures under every
+corpus, an unauthenticated reindex route that rebuilds the default store rather
+than the active one when the server is public, `/api/corpus` echoing absolute
+filesystem paths, and three evaluation inputs that carry no provenance and two
+of which already disagree with the golden sets they were derived from.
+
+---
+
+## 2026-09-05 — Answer quality on every case, and the two citations the sample had missed
+
+`src/evaluate_answers.py` samples by default, 15 answers a corpus, because a
+generated answer costs about a minute on a CPU, and every published figure
+about the written answers had come from that 45-answer sample. The roadmap
+listed the sample size as one of three limits on the measurement. All 157 cases
+have now been scored with llama3.2, which took 3.9 hours, and the results file
+and the analytics page carry the full set.
+
+| | ML papers | Ornithology | Quant |
+|---|---|---|---|
+| invented citations | 0 in 84 | 1 in 32 | 1 in 41 |
+| refused when it should | 11/17 | 7/7 | 6/8 |
+| refused when it should not | 4/67 | 10/25 | 4/33 |
+| contains the labelled answer | 37/67 | 9/25 | 12/33 |
+| allowing other words | 43/67 | 9/25 | 16/33 |
+| groundedness (proxy) | 0.705 | 0.475 | 0.606 |
+
+**The sample had said zero invented citations. The full run finds two**, one on
+each of the smaller corpora and none on the papers. The README had carried
+"Zero invented citations across 45 answers" in bold as the result that matters
+most, and it was true of the sample and is not true of the population, which is
+the plainest case this project has recorded of a sample being read as a rate.
+The README says two now, beside what the sample had said.
+
+**The second limit is addressed the same day.** Correctness is a substring test
+against the labelled answer string and cannot credit a right answer in other
+words, so it is a floor. A second figure, `correct_loose`, now sits beside it
+and credits an answer that carries 80% of the string's content words in any
+order, which is an upper bound of the same kind. There is still no LLM judge,
+because a judge is a second system whose failures are invisible, and the
+looser figure is arithmetic anyone can check. On the papers it moves 37 to 43
+of 67 and on finance 12 to 16 of 33; on the birds it moves nothing, because the
+nine bird answers the strict test rejects and the loose test also rejects are
+mostly refusals. The strict test rejects 67 answers across the three sets and
+they are listed in `unmatched` to be read. The judge's own suite grew from 66 to
+79 checks, 9 of which fail against the previous code.
+
+**Where the generator is weakest is now visible.** On the bird corpus it refuses
+10 of the 25 questions the documents answer, against 4 of 67 on the papers, and
+grounds under half of its wording in the passages it was given. That is the
+corpus whose passages are encyclopaedia prose rather than paper prose, and it is
+the same corpus whose retrieval threshold had to move furthest.
+
+**Two runs, by mistake.** The first full run was started in a chain behind two
+model sweeps, one of which failed on a transient server outage, and a process
+check written for Linux reported the chain dead when it was not, because
+Windows `ps` shows `python.exe` and never the script name. A second full run was
+queued alongside it, the two wrote interleaved lines to one log file, and the
+second was stopped once the first had written a complete file. Generation is
+deterministic here, temperature 0 and a fixed seed, so the outcome is the
+first run's file and nothing was lost but three hours of CPU.
+
+---
+
 ## 2026-09-05 — The About page, rewritten, and the wrong number that had sat on it for four days
 
 The page was reported as too long to read, hard to scan, and drifting from the

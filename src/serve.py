@@ -852,6 +852,39 @@ class Handler(BaseHTTPRequestHandler):
         sys.stderr.write(f"  {self.address_string()} {fmt % args}\n")
 
 
+def warm_up() -> bool:
+    """Run one question through the loaded corpus so the reranker is resident.
+
+    RES.load() has already opened the index, the embedder and BM25 for the
+    active corpus. The one thing it has not touched is the cross-encoder, which
+    `retrieve` loads on first use, and that is the ~20 s a first visitor would
+    otherwise wait. So this asks one question through RES's own resources.
+
+    Until 2026-09-06 this was a bare `ask("warmup", k=1)`, which ignores RES:
+    `api.ask` without `resources=` opens its own index from `retrieve`'s default
+    store, which is the ML papers' `vector_store/` regardless of RAG_CORPUS.
+    Locally that loaded a second index, a second embedder and a second BM25
+    for a corpus nobody had selected, and cost the time it was meant to save.
+    In the Docker image it was fatal: the image bakes in the ornithology
+    corpus only, `vector_store/` is not there, the call raised before the port
+    was bound, and the documented deployment could not start. Found by an
+    audit reading the code against the Dockerfile on 2026-09-06; the container
+    had never been run since the corpus switch was added.
+
+    Returns whether the warm-up ran. A warm-up is never worth failing startup
+    over, so a failure is printed and the server comes up cold.
+    """
+    try:
+        ask("warmup", k=1,
+            resources=(RES.index, RES.metadata, RES.model, RES.bm25),
+            rerank_blend=RES.rerank_blend())
+        return True
+    except Exception as exc:                                  # noqa: BLE001
+        print(f"  warm-up skipped ({type(exc).__name__}: {exc}); the first "
+              f"request will load the reranker instead")
+        return False
+
+
 def main():
     host = sys.argv[1] if len(sys.argv) > 1 else HOST
     port = int(sys.argv[2]) if len(sys.argv) > 2 else PORT
@@ -860,7 +893,7 @@ def main():
     # real request is not the one that pays ~30s of model loading.
     print("Loading index and models...")
     RES.load()
-    ask("warmup", k=1)
+    warm_up()
     stats = RES.stats()
     print(f"Ready on http://{host}:{port}")
     print(f"  inspector  http://{host}:{port}/")
