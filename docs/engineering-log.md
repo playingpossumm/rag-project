@@ -2492,6 +2492,140 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-05 — The About page, rewritten, and the wrong number that had sat on it for four days
+
+The page was reported as too long to read, hard to scan, and drifting from the
+writing rule, and it serves two readers who want different things from it: a
+recruiter who will give it two minutes, and someone who has just used the front
+page and wants to understand a result. It was rewritten under
+`docs/writing-style.md` and then read by four reviewers with different briefs,
+which is how the defect in the heading of this entry was found.
+
+**The structure.** Hero, a row of section anchors, then At a glance, Compared
+with a closed product, Reading a result, Pipeline, Development and Glossary.
+The live figures moved from the foot of the page to the top and gained the
+answer-shown range beside any-hit and a count of changes kept and not kept,
+both read from the page's own list rather than typed. Every heading is a noun
+phrase now: the six pipeline steps had been sentences, "The gate decides whether
+to answer at all", and the five rows of the comparison grid had been questions,
+"Why did it return that?", which the rule forbids and which the first draft of
+the rewrite carried over unchanged. The twenty experiments in Development sit
+under six group labels. The callout that said "Five changes that sounded
+obviously right" over a list of twelve, and "Eight changes" over the same list a
+screen later, is gone. "Also found" is described as it now behaves, one passage
+per further document and then the rest by rank.
+
+**Three mistakes of mine, caught before review.** The comparison grid said
+"Twelve were rejected" above a list of fifteen, so the count is read from the
+list now like the tiles are. The tile row wrapped its seventh tile onto a row of
+its own, the same defect fixed on the analytics page two days earlier and made
+again here. The page title was "Why this exists", which is a sentence.
+
+**What the reviewers found.** Style, eight defects, of which the heading
+"What the failures share" was the exact form the rule's own example forbids and
+is "The shared cause" now; the five question-form grid rows became "The choice
+of passage", "The effect of a change", "Unanswerable questions", "Disagreeing
+sources" and "Use inside another tool"; an opening line announcing what the
+section contained was cut; "twenty times longer" and "21×" in one entry became
+21; three fragments gained verbs. Audience, five: the `#corpora` anchor that the
+front page links to is a paragraph, so the section scroll margin did not apply
+and it landed under the sticky header; pseudo-relevance feedback sat under "what
+is shown" when it changes the question; "fifteen were measured and dropped"
+counted a change that ships on one corpus; a CSS comment counted sixteen
+experiments where the page holds twenty; and the page was 4,058 words and 9,841
+pixels tall at 1280 wide, which is fifteen laptop screens, so it had been
+reorganised and not shortened. Render, nothing, at three viewports, twice.
+
+**Facts, six, and the first is the reason for this entry's heading.** The kept
+ladder read any-hit 0.791, then 0.791 to 0.806, then 0.806 to 0.866. Every source
+says 0.821, 0.836 and 0.925. The three were typed on 2026-08-30 from the
+results file as it then stood, the results file moved on 2026-09-01, and only
+the fourth row was updated, so the page's own ladder was inconsistent with
+itself, the BM25 row ending at 0.866 and the diversity row beginning at 0.925,
+for four days on the live site. `check_docs.py` holds the README's copy of this
+ladder to the results file and never read this one. It reads it now, so the
+same drift fails the build instead of waiting for a reader. The other five: the
+larger-reranker entry mixed three models, "eight times" being BGE against
+MiniLM-L12 while "the same two questions" were L12's and "ten times as long" was
+against the shipped L6, and reads now as twelve times the shipped model's size,
+the same two questions a model 1.5 times the size recovered, and ten times as
+long; "the five questions no configuration reaches share a shape" was four of
+the five; "27 of the 121 recorded questions" was 27 of the 121 recorded answers
+that carry a labelled answer string, the recorded total being 157; the
+Development intro said every kept figure was any-hit on the papers while the
+fifth row is answer shown across all three sets; and the result of the three
+cheaper gate signals had been dropped from the invented-answer entry and is
+restored in one sentence.
+
+**Length, which the reviewers measured and left to the owner.** After the
+repair the page was 4,102 words and 9,841 pixels. The four rejected groups and
+the glossary are disclosures now, with the label and the count on the page and
+the entries a click away, which is the pattern the front page already uses for
+Detail and Also found, and the seven paragraphs over 95 words were cut by about
+a fifth with every figure kept. At 1280 wide the page is 5,730 pixels, which is
+8.7 screens, against 14.9; at 1600 it is 5,711 and at 390 it is 9,646. The body
+holds 3,984 words, most of them behind a disclosure, and nothing was deleted.
+
+---
+
+## 2026-09-05 — A stronger model does not supply the missing word
+
+Three of the rejected mechanisms rewrite the question before searching, and all
+three were measured with llama3.2, a 3B model. The roadmap recorded that a
+stronger model might differ and that the harness was in place to find out, and
+that was the last open door on the question side. llama3.1:8b, the largest model
+on this machine, has now been through the same three harnesses on all three
+corpora. It closes the door.
+
+**Retrieving on an invented answer**, `src/sweep_hyde.py`, emitted to
+`eval/hyde-sweep-8b.json`:
+
+| | control | hypothetical only | question and hypothetical |
+|---|---|---|---|
+| ML & NLP papers | **0.910**, 8 slips | 0.716, +1 −14, 10 slips | 0.806, +2 −9, 11 slips |
+| Ornithology | 0.880, 1 slip | **0.920**, +2 −1, 4 slips | 0.880, +2 −2, 4 slips |
+| Quantitative finance | **0.939**, 1 slip | 0.848, −3, 7 slips | 0.818, −4, 7 slips |
+
+The 3B result was 0.806 and 0.851 on the papers. The 8B model is worse on both
+arms, loses fourteen questions in the first, and takes 199 seconds a query in
+the second, against 1.9 for the control. It recovers `bird-dialects` and
+`bird-hollow-bones` on the birds, which the 3B model also reached, and pays for
+them with `bird-imprinting` and `bird-keel` and three more adversarial questions
+through the gate.
+
+**Rewriting and decomposition**, `src/sweep_decompose.py`, emitted to
+`eval/decompose-sweep-8b.json`:
+
+| | control | rewrite | decompose |
+|---|---|---|---|
+| ML & NLP papers, 3 structural | **0.910** | 0.866, −3, 0 of 3 | 0.895, +1 −2, 0 of 3 |
+| Ornithology, 2 structural | **0.880** | 0.880, +1 −1, 0 of 2 | 0.840, +1 −2, 1 of 2 |
+| Quantitative finance | **0.939** | 0.849, +1 −4 | 0.909, −1 |
+
+Rewriting gains nothing on the papers and loses `lora-frozen`, `resnet-shortcut`
+and `seq2seq-reverse`, at 26 seconds a query. Decomposition reaches
+`bird-hollow-bones`, one of the five permanent failures, and loses `bird-flyway`
+and `bird-keel` to do it, at 44 to 56 seconds a query.
+
+**What the larger model changes is the confidence of the invention, not its
+accuracy.** The mechanism recorded on 2026-09-01 holds: an invented answer helps
+exactly when the model happens to write the missing term, and a model three
+times the size does not happen to write it more often. It does write a longer
+and more assured passage, which pulls the search further from the question, and
+on the adversarial half it writes an assured passage for a question the corpus
+cannot answer, which is why slips rise on every corpus under every arm. Nothing
+here ships, the 3B results in `eval/hyde-sweep.json` and
+`eval/decompose-sweep.json` stand as the reference, and the roadmap's sentence
+about a stronger model is closed rather than open.
+
+Both runs died once. The model server stopped answering during the three-hour
+HyDE run and `sweep_decompose.py` then reported no model reachable, so it and the
+run behind it were queued again behind a check that waits for the server to
+answer before each starts. The check belongs in the sweep scripts and is not
+there yet.
+
+---
+
 ## 2026-09-03 — The stages are drawn now, and they show the thing the prose claimed
 
 The Stages tab under Detail was the one panel in this app that explained a
