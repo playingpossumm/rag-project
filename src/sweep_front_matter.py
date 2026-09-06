@@ -57,7 +57,8 @@ def score(cases, index, metadata, model, bm25, ensemble, cfg, drop):
         results = retrieve(case["question"], index, metadata, model, k=TOP_K,
                            candidate_k=cfg["candidate_k"], use_reranker=True,
                            fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2,
-                           ensemble=ensemble, drop_front_matter=drop)
+                           ensemble=ensemble, drop_front_matter=drop,
+                           rerank_blend=cfg["rerank_blend"])
         gold = gold_keys(case)
         m = {"hit_rate": hit_rate(results, gold),
              "mrr": reciprocal_rank(results, gold),
@@ -94,7 +95,6 @@ def main() -> int:
         index, metadata = load_index(cfg["store"])
         bm25 = build_bm25(metadata)
         ensemble = load_ensemble(cfg["store"])
-        rr.RERANK_BLEND = cfg["rerank_blend"]
 
         n_fm = sum(1 for c in metadata
                    if is_front_matter(c.get("text", ""), c.get("locator")))

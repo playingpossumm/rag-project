@@ -72,13 +72,12 @@ this the only guard of the seven that needs a file the repository does not
 carry, which was wrong.
 """
 import json
-import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from evaluate import gold_keys  # noqa: E402
+from evaluate import answer_normalize, gold_keys  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -88,16 +87,12 @@ ROOT = Path(__file__).parent.parent
 GOLDEN = {"birds": "eval/golden-birds.json", "llm": "eval/golden_set.json",
           "quant": "eval/golden-quant.json"}
 
-DASH = re.compile("[‐-―−]")
-# Emphasis markers, heading hashes, and the short bracketed markers the PDF
-# converter leaves behind. `answer-mark.js` strips the same things before the
-# reader sees a passage, so a test that does not is measuring a different text.
-MARKUP = re.compile(r"[_*`#]+|\[[^\]]{0,3}\]")
-
-
-def norm(text) -> str:
-    return re.sub(r"\s+", " ",
-                  MARKUP.sub("", DASH.sub("-", str(text)))).strip().lower()
+# The dash, markup and whitespace rule this audit reads passages with is
+# evaluate.answer_normalize, imported rather than copied. This file carried
+# an identical copy under the name `norm` until 2026-09-06; the counts it
+# prints were the same before and after the import (9 of 125 credited on the
+# locator alone, measured the same day).
+norm = answer_normalize
 
 
 # Read individually on 2026-09-03, and re-sorted the same day after the

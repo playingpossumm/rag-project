@@ -38,6 +38,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import corpora  # noqa: E402
+from check_freshness import stamp  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -145,11 +146,17 @@ def write_site(out: Path, manifest: dict) -> None:
         else:
             shutil.copy2(item, site / item.name)
 
-    # The recordings, beside the page that reads them.
+    # The recordings, beside the page that reads them. The deploy
+    # configuration stays out: until 2026-09-06 the copy took everything but
+    # `site`, which put static-demo/.vercel -- the project link, with its
+    # projectId and orgId -- inside the published output directory, where a
+    # deploy would serve it at /recorded/.vercel/project.json. The stray copy
+    # under site/recorded/ was deleted the same day.
     data = site / "recorded"
     if data.exists():
         shutil.rmtree(data)
-    shutil.copytree(out, data, ignore=shutil.ignore_patterns("site"))
+    shutil.copytree(out, data, ignore=shutil.ignore_patterns(
+        "site", ".vercel", ".vercelignore", "vercel.json", ".gitignore"))
 
     (site / "offline.js").write_text(OFFLINE_JS, encoding="utf-8")
 
@@ -168,18 +175,36 @@ def write_site(out: Path, manifest: dict) -> None:
             html = tag + "\n" + html
         page.write_text(html, encoding="utf-8")
 
-    # `immutable` is a promise that the bytes at this URL will never change, so
-    # it belongs only to the content-addressed payloads: an answer file is named
-    # for a hash of its question, so a changed answer is a changed URL.
-    #
-    # analytics.json and manifest.json live in the same directory under fixed
-    # names and are rewritten on every build. They were covered by the same rule
-    # until 2026-08-30, which pinned a returning visitor to the figures they
-    # first downloaded, for a year, while the HTML around them revalidated. The
-    # page then shipped new markup against old data, and nothing on screen said
-    # so. Scoped to the corpus directories, named from the manifest so a fourth
-    # corpus does not quietly fall outside the rule.
+    write_vercel_config(out, manifest)
+
+
+# What a deploy from static-demo/ must not upload. `.vercel` is the project
+# link (projectId, orgId); `*.local` is anything machine-local. Written by the
+# generator so it cannot drift from vercel.json beside it.
+VERCELIGNORE = """# Written by src/record_static.py beside vercel.json.
+# The project link and anything machine-local stay out of the upload.
+.vercel
+*.local
+"""
+
+
+def write_vercel_config(out: Path, manifest: dict) -> None:
+    """vercel.json and .vercelignore for a deploy run from `out`.
+
+    `immutable` is a promise that the bytes at this URL will never change, so
+    it belongs only to the content-addressed payloads: an answer file is named
+    for a hash of its question, so a changed answer is a changed URL.
+
+    analytics.json and manifest.json live in the same directory under fixed
+    names and are rewritten on every build. They were covered by the same rule
+    until 2026-08-30, which pinned a returning visitor to the figures they
+    first downloaded, for a year, while the HTML around them revalidated. The
+    page then shipped new markup against old data, and nothing on screen said
+    so. The rule is scoped to the corpus directories, which are named from
+    the manifest so that a fourth corpus does not fall outside it.
+    """
     recorded = "|".join(sorted(manifest.get("corpora") or {})) or "[^/]+"
+    (out / ".vercelignore").write_text(VERCELIGNORE, encoding="utf-8")
     (out / "vercel.json").write_text(json.dumps({
         "$schema": "https://openapi.vercel.sh/vercel.json",
         "outputDirectory": "site",
@@ -561,6 +586,14 @@ def main() -> int:
             "label": cfg["label"], "questions": len(index),
             **{k: v for k, v in corpora.describe(cfg).items()
                if k in ("documents", "chunks", "formats", "threshold")},
+            # Which golden set and which index these answers came from, so a
+            # later edit to either is detectable. Recorded from 2026-09-06;
+            # the manifest written on 2026-09-03 carried no such record and
+            # check_freshness reports it as unstamped until it is rewritten.
+            "inputs": {
+                "golden": stamp(cfg["golden"]),
+                "index": stamp(cfg["store"] / "metadata.json"),
+            },
         }
 
     if not manifest["corpora"]:
@@ -574,6 +607,9 @@ def main() -> int:
     manifest["corpora"] = {name: manifest["corpora"][name]
                            for name in reg if name in manifest["corpora"]}
     manifest["default"] = next(iter(manifest["corpora"]), None)
+    # The offered questions come from analytics.json, and the quality page
+    # in the static build draws a copy of it, so it is an input too.
+    manifest["inputs"] = {"analytics": stamp(ROOT / "eval" / "analytics.json")}
     (args.out / "manifest.json").write_text(
         json.dumps(manifest, indent=1), encoding="utf-8")
 

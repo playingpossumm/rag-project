@@ -6,9 +6,13 @@ the gold set and quietly makes the metric easier. Both are invisible once the
 case is in the file, so candidates are checked first.
 """
 import json
-import re
 import sys
 from pathlib import Path
+
+# The harness's own whitespace rule, so a string verified here is verified
+# the way evaluate.py will score it. This file carried its own copy of the
+# rule until 2026-09-06.
+from evaluate import normalize as norm  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -80,10 +84,6 @@ CANDIDATES = [
     ("w2v-skipgram", "What architecture predicts surrounding words from a target word?", "Skip-gram", "fact"),
     ("w2v-analogy", "How are syntactic and semantic regularities measured in word vectors?", "syntactic", "multi"),
 ]
-
-
-def norm(text: str) -> str:
-    return re.sub(r"\s+", " ", text).strip().lower()
 
 
 def main():

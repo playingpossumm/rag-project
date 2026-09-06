@@ -132,7 +132,6 @@ def main() -> int:
         index, metadata = load_index(cfg["store"])
         bm25 = build_bm25(metadata)
         ensemble = load_ensemble(cfg["store"])
-        rr.RERANK_BLEND = cfg["rerank_blend"]
         answerable, adversarial = load_cases(Path(cfg["golden"]))
         threshold = cfg["threshold"]
 

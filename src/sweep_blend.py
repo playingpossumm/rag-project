@@ -19,7 +19,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import corpora  # noqa: E402
 import rerank as rr  # noqa: E402
-from evaluate import gold_keys, load_cases, ndcg, source_recall  # noqa: E402
+from evaluate import (gold_keys, hit_rate, load_cases, ndcg,  # noqa: E402
+                      reciprocal_rank, source_recall)
 from hybrid import build_bm25  # noqa: E402
 from retrieve import EMBEDDING_MODEL, load_index, retrieve  # noqa: E402
 
@@ -40,20 +41,22 @@ def configured():
 
 
 def score(cases, index, metadata, model, bm25, blend, k, cand):
+    # The harness's own hit_rate and reciprocal_rank. This file carried its own
+    # arithmetic for both until 2026-09-06, keyed on a locator triple that
+    # defaulted a missing kind to "page" and fell back to a "page" field no
+    # result carries; on real results the two agreed, so the figures in
+    # eval/blend-sweep.json are unchanged by the import. The blend goes on the
+    # call rather than on the rerank module, which is the same figure by a
+    # route that cannot leak into the next importer.
     hits = mrr = nd = src = 0.0
     for c in cases:
         gold = gold_keys(c)
         gold_src = {g["source"] for g in c.get("gold", [])}
-        rr.RERANK_BLEND = blend
         res = retrieve(c["question"], index, metadata, model, k=k,
                        candidate_k=cand, use_reranker=True, fusion="rrf",
-                       bm25=bm25, max_per_source=2)
-        keys = [(r["source"], r["locator"].get("kind", "page"),
-                 str(r["locator"].get("value", r["locator"].get("page", ""))))
-                for r in res]
-        rel = [1 if kk in gold else 0 for kk in keys]
-        hits += 1.0 if any(rel) else 0.0
-        mrr += next((1 / (i + 1) for i, x in enumerate(rel) if x), 0.0)
+                       bm25=bm25, max_per_source=2, rerank_blend=blend)
+        hits += hit_rate(res, gold)
+        mrr += reciprocal_rank(res, gold)
         nd += ndcg(res, gold)
         src += source_recall(res, gold_src, k)
     n = max(len(cases), 1)

@@ -4,86 +4,42 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>About</title>
+<!-- The palette, the fonts, the reset and the header are shared with the
+     other pages: tokens.css and base.css, since 2026-09-06. Until then this
+     page carried its own copy of each under its own token names, and used
+     --dim without defining it. Relative paths, so the static build resolves
+     them from disk and under a subpath. -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
 <style>
-/* Same fonts, tokens and devices as the app and the analytics page. One system,
-   three views -- and nothing here is loaded from a network. */
-@font-face{font-family:Inter;src:url("/fonts/Inter-400_700.woff2") format("woff2");
-  font-weight:400 700;font-display:swap;font-style:normal}
-@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-400.woff2") format("woff2");
-  font-weight:400;font-display:swap;font-style:normal}
-@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-500.woff2") format("woff2");
-  font-weight:500;font-display:swap;font-style:normal}
-
-:root{
-  --bg:#0b0c0d; --panel:#141618; --sunk:#1b1e21;
-  --ink:#f4f6f7; --soft:#a9b0b5; --muted:#7d858b; --faint:#5b6368;
-  --line:#22262a; --rule:#2e3338;
-  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
-  --good:#3fb950; --critical:#f0685f; --serious:#d9a441;
-  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
-  --ease-out:cubic-bezier(0.23,1,0.32,1);
-  --max:1180px; --pad:clamp(1.25rem,4vw,3.25rem);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
-  font-size:15px;line-height:1.6;letter-spacing:-.006em;-webkit-font-smoothing:antialiased}
+:root{--max:1180px; --pad:clamp(1.25rem,4vw,3.25rem)}
+/* This page's own tracking, a thousandth of an em under base.css's. Kept
+   because the wider value moved a wrap point: with -.005em the paragraph
+   opening "Compared with a closed product" took a fourth line at 1280 wide
+   and everything below it moved down 24px. */
+body{letter-spacing:-.006em}
 h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.022em;line-height:1.15}
 a{color:inherit}
 h2.lab{margin:0;font-size:10px}
-.lab{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--faint)}
-.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
-
-.folio{border-bottom:1px solid var(--rule);background:var(--panel);
-  position:sticky;top:0;z-index:20}
-.folio-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:54px;
-  display:flex;align-items:center;gap:22px}
-/* The wordmark is a wordmark, not a nav label, so it does not take the
-   capitals the links take. It was rendering as RETRIEVAL VISUALIZED/ on this
-   page and as retrieval visualized/ on the front page. */
-.folio .name{font-family:var(--mono);font-size:13px;font-weight:500;
-  letter-spacing:-.01em;text-transform:none;white-space:nowrap;
-  color:var(--ink);text-decoration:none}
-.folio .name:hover{opacity:.72}
-.folio .name .slash{color:var(--faint)}
-.folio .here{font-family:var(--mono);font-size:10px;font-weight:500;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
-.folio .rule{flex:1;height:1px;background:var(--rule)}
-.folio a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
-.folio a:hover{color:var(--ink)}
-.ghlink{display:inline-flex;align-items:center;line-height:0;opacity:.62;
-  transition:opacity 140ms ease-out}
-.ghlink:hover{opacity:1}
-.folio a.here{color:var(--ink)}
-/* A phone header, matching the front page's. The wordmark and three links do
-   not fit at 390px with 22px between them: six items make five gaps, which is
-   where most of the overflow was. Without this both pages scrolled sideways. */
-@media (max-width:560px){
-  .folio-in{gap:11px}
-  .folio .name{font-size:11.5px}
-  .folio a,.folio .here{font-size:9.5px;letter-spacing:.09em}
-}
 
 /* ---- how it got here. A progression, not a dated log: each stage exists
    because the one before it was measured and found wanting. The dropped half
    is the half worth reading, so it is not tucked away in a footnote. */
 .tl{margin:0;padding:0;list-style:none}
-.tl li{position:relative;padding:0 0 20px 26px;border-left:1px solid var(--rule)}
+.tl li{position:relative;padding:0 0 20px 26px;border-left:1px solid var(--edge)}
 .tl li:last-child{padding-bottom:2px;border-left-color:transparent}
 .tl li::before{content:"";position:absolute;left:-4.5px;top:5px;width:8px;
-  height:8px;border-radius:50%;background:var(--panel);
+  height:8px;border-radius:50%;background:var(--card);
   border:1.5px solid var(--faint)}
-.tl li.kept::before{background:var(--series-1);border-color:var(--series-1)}
-.tl li.gone::before{background:var(--panel);border-color:var(--faint)}
+.tl li.kept::before{background:var(--s1);border-color:var(--s1)}
+.tl li.gone::before{background:var(--card);border-color:var(--faint)}
 .tl h4{margin:0 0 3px;font-size:14px;font-weight:600;letter-spacing:-.005em;
   color:var(--ink);display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
 .tl .verdict{font-family:var(--mono);font-size:9px;font-weight:500;
   letter-spacing:.14em;text-transform:uppercase;padding:2px 6px;border-radius:3px;
-  border:1px solid var(--rule);color:var(--muted);flex:none}
-.tl li.kept .verdict{color:var(--series-1);border-color:var(--series-1)}
-.tl p{margin:0;font-size:13px;line-height:1.62;color:var(--muted);max-width:74ch}
+  border:1px solid var(--edge);color:var(--mute);flex:none}
+.tl li.kept .verdict{color:var(--s1);border-color:var(--s1)}
+.tl p{margin:0;font-size:13px;line-height:1.62;color:var(--mute);max-width:74ch}
 /* One entry carries a second paragraph, where the first reading of a
    measurement is corrected by the second. Without this they run together. */
 .tl p + p{margin-top:9px}
@@ -95,85 +51,87 @@ h2.lab{margin:0;font-size:10px}
 
 .hero{max-width:70ch;margin:22px 0 8px}
 .hero h1{font-size:clamp(28px,4.2vw,44px)}
-.hero .sub{color:var(--muted);font-size:clamp(17px,2vw,21px);font-weight:600;
+.hero .sub{color:var(--mute);font-size:clamp(17px,2vw,21px);font-weight:600;
   letter-spacing:-.018em;margin-top:6px}
-.hero p{color:var(--soft);margin:18px 0 0}
+.hero p{color:var(--dim);margin:18px 0 0}
 
-.panel{border:1px solid var(--rule);background:var(--panel);margin-top:26px;
+.panel{border:1px solid var(--edge);background:var(--card);margin-top:26px;
   border-radius:12px;overflow:hidden}
 .phead{display:flex;align-items:baseline;gap:16px;padding:11px 18px;
-  border-bottom:1px solid var(--line);flex-wrap:wrap}
+  border-bottom:1px solid var(--hair);flex-wrap:wrap}
 .phead .right{margin-left:auto}
 .pbody{padding:22px 18px}
 .prose{max-width:74ch}
-.prose p{color:var(--soft);margin:0 0 15px}
+.prose p{color:var(--dim);margin:0 0 15px}
 .prose p:last-child{margin-bottom:0}
 .prose b,.prose strong{color:var(--ink);font-weight:600}
 .prose h3{font-size:16px;margin:26px 0 10px}
 .prose h3:first-child{margin-top:0}
-.prose code{font-family:var(--mono);font-size:.88em;background:var(--sunk);
-  border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--ink)}
+.prose code{font-family:var(--mono);font-size:.88em;background:var(--nest);
+  border:1px solid var(--hair);border-radius:4px;padding:1px 5px;color:var(--ink)}
 
 /* The comparison that states the thesis. Two columns, because the claim is a
    contrast and a list would flatten it. */
-.versus{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
-  border:1px solid var(--line);border-radius:9px;overflow:hidden;margin:4px 0 0}
-.versus>div{background:var(--panel);padding:14px 16px}
-.versus .q{grid-column:1/-1;background:var(--sunk);color:var(--ink);
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair);
+  border:1px solid var(--hair);border-radius:9px;overflow:hidden;margin:4px 0 0}
+.versus>div{background:var(--card);padding:14px 16px}
+.versus .q{grid-column:1/-1;background:var(--nest);color:var(--ink);
   font-weight:600;font-size:14px;padding:11px 16px}
-.versus .closed{color:var(--muted)}
-.versus .here-col{color:var(--soft)}
+.versus .closed{color:var(--mute)}
+.versus .here-col{color:var(--dim)}
 .versus .tag{display:block;margin-bottom:5px}
 @media(max-width:720px){.versus{grid-template-columns:1fr}}
 
 /* The pipeline walk-through: a numbered rail, because the order is the point. */
 .callout ul{margin:10px 0 12px;padding:0;list-style:none}
-.callout li{position:relative;padding:0 0 8px 18px;color:var(--muted);
+.callout li{position:relative;padding:0 0 8px 18px;color:var(--mute);
   font-size:13.5px;line-height:1.6}
 .callout li::before{content:"";position:absolute;left:2px;top:9px;
   width:5px;height:5px;border-radius:50%;background:var(--faint)}
 .callout li:last-child{padding-bottom:0}
 .steps{counter-reset:s;margin:0;padding:0;list-style:none}
 .steps li{counter-increment:s;position:relative;padding:0 0 20px 46px;
-  border-left:1px solid var(--rule);margin-left:12px}
+  border-left:1px solid var(--edge);margin-left:12px}
 .steps li:last-child{border-left-color:transparent;padding-bottom:0}
 .steps li::before{content:counter(s);position:absolute;
   left:-13px;top:0;width:26px;height:26px;border-radius:50%;
-  background:var(--sunk);border:1px solid var(--rule);color:var(--faint);
+  background:var(--nest);border:1px solid var(--edge);color:var(--faint);
   font-family:var(--mono);font-size:10px;display:grid;place-items:center}
 .steps h3{font-size:15px;margin:2px 0 6px}
-.steps p{color:var(--muted);font-size:13.5px;margin:0;max-width:70ch}
-.steps .why{color:var(--soft);display:block;margin-top:6px}
+.steps p{color:var(--mute);font-size:13.5px;margin:0;max-width:70ch}
+.steps .why{color:var(--dim);display:block;margin-top:6px}
 
 /* Glossary: a definition list that stays readable at phone width. */
 .gloss{display:grid;grid-template-columns:minmax(150px,210px) 1fr;
-  gap:1px;background:var(--line);border:1px solid var(--line);
+  gap:1px;background:var(--hair);border:1px solid var(--hair);
   border-radius:9px;overflow:hidden}
-.gloss dt{background:var(--sunk);padding:12px 15px;font-weight:600;font-size:14px}
-.gloss dd{background:var(--panel);padding:12px 16px;margin:0;color:var(--soft);
+.gloss dt{background:var(--nest);padding:12px 15px;font-weight:600;font-size:14px}
+.gloss dd{background:var(--card);padding:12px 16px;margin:0;color:var(--dim);
   font-size:13.5px}
 .gloss dd .aka{color:var(--faint);font-family:var(--mono);font-size:10.5px;
   letter-spacing:.1em;text-transform:uppercase;display:block;margin-top:5px}
 @media(max-width:640px){
   .gloss{grid-template-columns:1fr}
-  .gloss dt{padding-bottom:2px;background:var(--panel)}
+  .gloss dt{padding-bottom:2px;background:var(--card)}
   .gloss dd{padding-top:4px}
 }
 
 .stats{display:flex;flex-wrap:wrap;gap:10px}
-.stat{flex:1 1 150px;background:var(--sunk);border:1px solid var(--line);
+.stat{flex:1 1 150px;background:var(--nest);border:1px solid var(--hair);
   border-radius:9px;padding:13px 15px}
 .stat .v{font-family:var(--mono);font-size:22px;font-weight:500;
   font-variant-numeric:tabular-nums}
-.stat .k{color:var(--muted);font-size:12.5px;margin-top:3px}
+.stat .k{color:var(--mute);font-size:12.5px;margin-top:3px}
 .stat .v.rng{font-size:17px;letter-spacing:-.01em}
 
-.callout{border-left:2px solid var(--series-2);background:var(--sunk);
+.callout{border-left:2px solid var(--s2);background:var(--nest);
   padding:13px 16px;border-radius:0 8px 8px 0;margin:18px 0 0}
-.callout p{margin:0;color:var(--soft);font-size:13.5px}
+.callout p{margin:0;color:var(--dim);font-size:13.5px}
 
-.foot{color:var(--faint);font-size:12.5px;margin-top:30px;max-width:74ch}
-.foot a{color:var(--muted)}
+/* Sentences, not a label, so they take the body-text token. Until 2026-09-06
+   the footer sat in --faint at 2.96:1 on the card surface. */
+.foot{color:var(--mute);font-size:12.5px;margin-top:30px;max-width:74ch}
+.foot a{color:var(--dim)}
 
 /* ---- the rewrite of 2026-09-05. Three additions to the stylesheet.
    A row of section anchors under the hero, because the page is read by two
@@ -183,9 +141,9 @@ h2.lab{margin:0;font-size:10px}
    section and on the paragraph the front page links to, so an anchor does
    not land under the sticky header. */
 .toc{display:flex;flex-wrap:wrap;gap:6px 18px;margin:22px 0 4px;
-  padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  padding:12px 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
 .toc a{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--muted);text-decoration:none;white-space:nowrap}
+  text-transform:uppercase;color:var(--mute);text-decoration:none;white-space:nowrap}
 .toc a:hover{color:var(--ink)}
 section[id],#corpora{scroll-margin-top:70px}
 .tl + h3.grp,.prose + h3.grp{margin-top:24px}
@@ -200,7 +158,7 @@ h3.grp{margin:0 0 12px;color:var(--faint)}
    the front page already uses for Detail and Also found. Nothing is removed. */
 details.grp{margin:0 0 4px}
 details.grp>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;
-  gap:12px;padding:11px 0;border-top:1px solid var(--line);color:var(--muted)}
+  gap:12px;padding:11px 0;border-top:1px solid var(--hair);color:var(--mute)}
 details.grp>summary::-webkit-details-marker{display:none}
 details.grp>summary .lab{color:var(--faint)}
 details.grp>summary .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;

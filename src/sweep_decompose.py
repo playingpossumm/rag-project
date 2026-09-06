@@ -62,19 +62,14 @@ OUT = ROOT / "eval" / "decompose-sweep.json"
 MODES = ("none", "rewrite", "decompose")
 
 
-def fixture_ids(cfg: dict) -> set:
-    """The structural cases for this corpus, if a fixture has been written."""
-    from check_freshness import artefact_suffix
-    p = ROOT / "eval" / f"hard_cases{artefact_suffix(cfg['golden'])}.json"
-    if not p.exists():
-        return set()
-    data = json.loads(p.read_text(encoding="utf-8"))
-    return {c["id"] if isinstance(c, dict) else c
-            for c in data.get("structural", [])}
+def run_one(question, mode, index, metadata, model, bm25, k, cand, blend):
+    """One question under one mode, returning the results and what it cost.
 
-
-def run_one(question, mode, index, metadata, model, bm25, k, cand):
-    """One question under one mode, returning the results and what it cost."""
+    `blend` is the corpus's rerank blend, passed on every call rather than
+    set on the rerank module (which this file did until 2026-09-06), so the
+    setting cannot outlive the corpus it belongs to. `retrieve_decomposed`
+    forwards it to `retrieve` with the other keywords.
+    """
     import query_rewrite as qr
 
     started = time.perf_counter()
@@ -82,27 +77,29 @@ def run_one(question, mode, index, metadata, model, bm25, k, cand):
         asked = qr.rewrite(question)
         results = retrieve(asked, index, metadata, model, k=k,
                            candidate_k=cand, use_reranker=True,
-                           fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2)
+                           fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2,
+                           rerank_blend=blend)
         return results, time.perf_counter() - started, [asked]
     if mode == "decompose":
         subs = qr.decompose(question)
         results = qr.retrieve_decomposed(
             question, index, metadata, model, k=k, bm25=bm25,
             candidate_k=cand, use_reranker=True, fusion=DEFAULT_FUSION,
-            max_per_source=2)
+            max_per_source=2, rerank_blend=blend)
         return results, time.perf_counter() - started, subs
     results = retrieve(question, index, metadata, model, k=k, candidate_k=cand,
                        use_reranker=True, fusion=DEFAULT_FUSION, bm25=bm25,
-                       max_per_source=2)
+                       max_per_source=2, rerank_blend=blend)
     return results, time.perf_counter() - started, [question]
 
 
-def score(cases, index, metadata, model, bm25, mode, k, cand, verbose=False):
+def score(cases, index, metadata, model, bm25, mode, k, cand, blend,
+          verbose=False):
     totals = {"hit_rate": 0.0, "mrr": 0.0, "ndcg": 0.0, "src_recall": 0.0}
     per_case, asked, seconds = {}, {}, 0.0
     for case in cases:
         results, took, queries = run_one(case["question"], mode, index,
-                                         metadata, model, bm25, k, cand)
+                                         metadata, model, bm25, k, cand, blend)
         seconds += took
         gold = gold_keys(case)
         m = {"hit_rate": hit_rate(results, gold),
@@ -159,7 +156,6 @@ def main() -> int:
 
         index, metadata = load_index(cfg["store"])
         bm25 = build_bm25(metadata)
-        rr.RERANK_BLEND = cfg["rerank_blend"]
 
         print(f"\n  {cfg['label']}  ({len(answerable)} cases, "
               f"{len(structural)} structural, "
@@ -172,7 +168,8 @@ def main() -> int:
         for mode in MODES:
             rr.clear_cache()
             agg, per, asked = score(answerable, index, metadata, model, bm25,
-                                    mode, args.k, args.candidate_k)
+                                    mode, args.k, args.candidate_k,
+                                    cfg["rerank_blend"])
             if mode == "none":
                 base_per = per
             struck = sum(1 for i in structural if per.get(i))

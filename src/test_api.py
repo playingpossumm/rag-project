@@ -19,7 +19,9 @@ question.
 
     .venv\\Scripts\\python.exe src\\test_api.py
 """
+import inspect
 import sys
+import types
 
 import api
 
@@ -115,6 +117,50 @@ CALLS.clear()
 api.ask("q", min_confidence=-5.5)
 check("with no resources given, ask() still loads its own", seen.get("called"), True)
 check("and searches what it loaded", last()["index"], "bird-index")
+
+# The shipped expansion default. Until 2026-09-06 the library said "window"
+# while /ask and the CLI restated "page", so the three shells answered the
+# same question with different context. Both now read this one name.
+check("the library's expansion default is window", api.DEFAULT_EXPANSION, "window")
+check("and ask() reads it rather than restating it",
+      inspect.signature(api.ask).parameters["expansion"].default, api.DEFAULT_EXPANSION)
+
+# Generation as a second step over an Answer. The server needs the split so
+# retrieval can run under its lock and the model call outside it; the library
+# path ask(generate=True) must reach the same function. The backend is a stub
+# in sys.modules so nothing reads .env or loads a client.
+fake_generate = types.ModuleType("generate")
+SYNTH: list[tuple] = []
+
+
+def synthesize_with_backend(question, chunks):
+    SYNTH.append((question, chunks))
+    return "prose"
+
+
+fake_generate.synthesize_with_backend = synthesize_with_backend
+real_generate = sys.modules.get("generate")
+sys.modules["generate"] = fake_generate
+try:
+    generate_answer = getattr(api, "generate_answer", None)
+    check("api exposes generate_answer for a caller that retrieves first",
+          callable(generate_answer), True)
+    if callable(generate_answer):
+        answer = api.ask("q", resources=HELD, min_confidence=-5.5)
+        generate_answer(answer)
+        check("generate_answer writes the prose onto the Answer", answer.answer, "prose")
+        check("and marks its mode", answer.mode, "generated")
+        check("and hands the backend the passages the caller was shown",
+              [(c["source"], c["text"]) for c in SYNTH[-1][1]],
+              [("birds.pdf", PASSAGE["text"])])
+    answer = api.ask("q", resources=HELD, min_confidence=-5.5, generate=True)
+    check("ask(generate=True) goes through the same path",
+          (answer.answer, answer.mode, len(SYNTH)), ("prose", "generated", 2))
+finally:
+    if real_generate is None:
+        sys.modules.pop("generate", None)
+    else:
+        sys.modules["generate"] = real_generate
 
 
 def main() -> int:

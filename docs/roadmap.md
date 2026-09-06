@@ -1,6 +1,6 @@
 # Roadmap
 
-Current as of 2026-08-31. `HANDOFF.md` carries the reasoning behind every
+Current as of 2026-09-06. `HANDOFF.md` carries the reasoning behind every
 decision named here.
 
 ---
@@ -18,7 +18,7 @@ is a snapshot.
 | Ornithology | 45 | 864 | 0.880 |
 | Quantitative finance | 35 | 6,184 | 0.939 |
 
-**491 checks**, none of which need a network or an API key:
+**605 checks**, none of which need a network or an API key:
 
 ```bash
 python src/test_metrics.py        # the scoring functions, hand-computed
@@ -84,9 +84,24 @@ and lost nothing, because every case it breaks is outside the fixture. That is
 the trap `src/sweep_decompose.py` warns about in its own docstring, which is
 why it scores the whole set by default.
 
-A stronger model may do better, and the harness is in place to find out:
-`RAG_GENERATOR=ollama python src/sweep_decompose.py --corpus llm`. What is no
-longer available is citing decomposition as the answer without running it.
+This item said until 2026-09-06 that a stronger model might do better and that
+the harness was in place to find out. It was run on 2026-09-05 with
+llama3.1:8b, a model three times the size of the llama3.2 3B the earlier runs
+used, on all three corpora, and the larger model does not do better.
+Decomposition, in `eval/decompose-sweep-8b.json`, recovers 0 of the 3
+structural cases on the papers and takes any-hit from 0.910 to 0.895, recovers
+1 of 2 on the birds while taking any-hit from 0.880 to 0.840, at 44 to 56
+seconds a query across the three corpora, and takes quantitative finance
+from 0.939 to 0.909. Rewriting on the same run reaches
+0.866, 0.880 and 0.849 against the same controls. Retrieving on an invented
+answer, in `eval/hyde-sweep-8b.json`, reaches 0.716 and 0.806 on the papers
+against the 3B model's 0.806 and 0.851, gains 2 questions on the birds at
+0.920 while losing 1 and letting 3 more adversarial questions through the
+gate, and falls to 0.848 and 0.818 on quantitative finance. The larger model
+writes a longer and more assured invention, not a more accurate one, and the
+entry in `docs/engineering-log.md` under 2026-09-05 has every figure. What is
+no longer available is citing decomposition, or a larger model behind it, as
+the answer.
 
 **3. The frontier is 23 questions with one cause.** Until 2026-09-03 this item
 said the frontier was 5 questions, and that was too narrow. It counted only the

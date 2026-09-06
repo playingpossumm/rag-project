@@ -50,25 +50,14 @@ OUT = ROOT / "eval" / "query-expansion-sweep.json"
 MODES = ["none", "prf"]
 
 
-def fixture_ids(cfg: dict) -> set:
-    """The structural cases for this corpus, if a fixture has been written."""
-    from check_freshness import artefact_suffix
-    p = ROOT / "eval" / f"hard_cases{artefact_suffix(cfg['golden'])}.json"
-    if not p.exists():
-        return set()
-    data = json.loads(p.read_text(encoding="utf-8"))
-    return {c["id"] if isinstance(c, dict) else c
-            for c in data.get("structural", [])}
-
-
-def score(cases, index, metadata, model, bm25, mode, k, cand):
+def score(cases, index, metadata, model, bm25, mode, k, cand, blend):
     totals = {"hit_rate": 0.0, "mrr": 0.0, "ndcg": 0.0, "src_recall": 0.0}
     per_case = {}
     for case in cases:
         results = retrieve(case["question"], index, metadata, model, k=k,
                            candidate_k=cand, use_reranker=True,
                            fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2,
-                           query_expansion=mode)
+                           query_expansion=mode, rerank_blend=blend)
         gold = gold_keys(case)
         m = {"hit_rate": hit_rate(results, gold),
              "mrr": reciprocal_rank(results, gold),
@@ -104,7 +93,6 @@ def main() -> int:
         answerable, _ = load_cases(cfg["golden"])
         index, metadata = load_index(cfg["store"])
         bm25 = build_bm25(metadata)
-        rr.RERANK_BLEND = cfg["rerank_blend"]
         structural = fixture_ids(cfg)
 
         print(f"\n  {cfg['label']}  ({len(answerable)} answerable, "
@@ -115,8 +103,11 @@ def main() -> int:
         rows, hits = {}, {}
         for mode in MODES:
             rr.clear_cache()
+            # The corpus's blend travels on the call, not on the rerank
+            # module, so this script cannot leave one corpus's setting behind
+            # for the next.
             agg, per = score(answerable, index, metadata, model, bm25, mode,
-                             args.k, args.candidate_k)
+                             args.k, args.candidate_k, cfg["rerank_blend"])
             struck = sum(1 for i in structural if per.get(i))
             agg["structural_hit"] = f"{struck}/{len(structural)}" if structural else "-"
             rows[mode], hits[mode] = agg, per

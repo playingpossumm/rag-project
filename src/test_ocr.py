@@ -12,9 +12,14 @@ exactly what a scanner produces.
 
     python src/test_ocr.py
 
-Skips with a clear message if RapidOCR is not installed, rather than failing --
-the loader degrades to "these pages will be empty" in that case, and that is a
-supported configuration, not a broken one.
+Exit code is the contract: 0 every check passed, 1 a check failed, 2 the
+checks did not run because RapidOCR is not installed. The loader degrades to
+"these pages will be empty" without RapidOCR, which is a supported
+configuration and not a broken one, so the skip is not a failure. It is not a
+pass either. Until 2026-09-06 the skip path printed a message and returned
+None, so the process exited 0 with no N/N line and a machine without RapidOCR
+reported this suite as green while running none of it. `check_docs.py --tests`
+reads exit 2 as NOT RUN, distinct from a failed suite.
 """
 import sys
 import tempfile
@@ -26,6 +31,12 @@ import ocr  # noqa: E402
 from loaders import OCR_TRIGGER_WORDS, load_pdf  # noqa: E402
 
 PASS = FAIL = 0
+
+# How many checks a full run makes. Printed on the skip path as "0/8", so a
+# reader of check_docs --tests sees how many checks the document counts for a
+# suite that did not run, and asserted against PASS + FAIL at the end of a full
+# run so adding a check here without raising this number fails loudly.
+N_CHECKS = 8
 
 BODY = [
     "Quarterly Field Report",
@@ -98,15 +109,17 @@ def words(text: str) -> set[str]:
     return {w.strip(".,;:()").lower() for w in text.split()}
 
 
-def main() -> None:
+def main() -> int:
+    global FAIL
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     if not ocr.available():
-        print("  RapidOCR is not installed -- skipping.\n"
+        print("  NOT RUN  RapidOCR is not installed, so none of these checks ran.\n"
               "  The loader treats that as a supported configuration: pages with\n"
               "  no text layer stay empty and it says so. Install with:\n"
-              "      pip install rapidocr_onnxruntime")
-        return
+              "      pip install rapidocr_onnxruntime\n"
+              f"\n  0/{N_CHECKS} OCR checks ran -- RapidOCR not installed")
+        return 2
 
     # pymupdf keeps its file handles open on Windows, so the directory
     # cannot always be removed; that is cleanup, not a test result.
@@ -167,9 +180,16 @@ def main() -> None:
               len(empty[0]["text"].split()) < OCR_TRIGGER_WORDS,
               f"invented: {empty[0]['text'][:160]!r}")
 
+    if PASS + FAIL != N_CHECKS:
+        # A check was added or removed without moving N_CHECKS, so the skip
+        # path would announce the wrong count. Reported as a failure, because
+        # a suite that misstates its own size is what check_docs holds the
+        # documents to.
+        print(f"  FAIL N_CHECKS is {N_CHECKS} and the run made {PASS + FAIL} checks")
+        FAIL += 1
+
     print(f"\n  {PASS}/{PASS + FAIL} OCR checks passed")
-    if FAIL:
-        sys.exit(1)
+    return 1 if FAIL else 0
 
 
 def pdf_of_noise(tmp: Path) -> Path:
@@ -195,4 +215,4 @@ def pdf_of_noise(tmp: Path) -> Path:
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

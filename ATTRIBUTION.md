@@ -89,6 +89,22 @@ build time.
 | second embedder (quant corpus only) | `BAAI/bge-small-en-v1.5` | MIT |
 | local generation (optional) | whatever Ollama serves, default `llama3.2` | Meta Llama 3.2 Community Licence |
 
+## Fonts
+
+The interface bundles two typefaces in `ui/fonts/` rather than loading them
+from a CDN, because the corpus may be private and the server makes no external
+request. Both are published under the SIL Open Font License, Version 1.1,
+which permits bundling and redistribution provided the licence text travels
+with the fonts, and the text sits beside each face.
+
+| face | files | copyright | licence |
+|---|---|---|---|
+| Inter | `Inter-400_700.woff2` | Copyright 2016 The Inter Project Authors | SIL OFL 1.1, `ui/fonts/OFL-Inter.txt` |
+| DM Mono | `DMMono-400.woff2`, `DMMono-500.woff2` | Copyright 2020 The DM Mono Project Authors | SIL OFL 1.1, `ui/fonts/OFL-DMMono.txt` |
+
+The fonts shipped from 2026-08-19 without the licence text or this entry, which
+the OFL requires, and both were added on 2026-09-06.
+
 ## This project
 
 MIT, see `LICENSE`.

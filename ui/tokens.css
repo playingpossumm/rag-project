@@ -1,0 +1,68 @@
+/* The palette, shared by every page since 2026-09-06.
+
+   Until then index.html and versions.html carried one vocabulary (--ground,
+   --card, --nest, --hair, --edge, --dim, --mute) and about.html and
+   quality.html carried another (--bg, --panel, --sunk, --line, --rule,
+   --soft, --muted) whose values differed from the first by 1 to 7 units per
+   channel on the surfaces and by 1 to 14 on the text tones, so the four
+   pages were four near copies that drifted. The first version of this
+   comment put the range at 2 to 7 units, which was a guess; the figures
+   above come from subtracting the two :root blocks channel by channel. about.html used --dim,
+   which it never defined, and quality.html wrote var(--nest,#1f2022) to reach
+   a token that only the front page had. One set of names lives here, under
+   the front page's names because the pipeline drawing reads them, and the
+   older names are mapped onto them at the end of this file so nothing that
+   still uses them breaks.
+
+   Near-black ground, raised cards, generous radius. The three document hues
+   are the dark-stepped, all-pairs-validated set (CVD dE 9.4, normal 20.9).
+   Do not add a hue.
+
+   Contrast, measured with the WCAG 2 formula on the three surfaces. --mute
+   carries body text and is 6.00:1 on --ground, 5.53:1 on --card and 5.07:1
+   on --nest. --faint carries the 9.5px to 10.5px mono text that names
+   something stated in a stronger tone beside it, which is the uppercase
+   labels, the header links, the axis ticks, the glossary aliases on the
+   about page and the counts on the analytics filter pills, and is 4.43:1,
+   4.08:1 and 3.74:1. These stop at 3:1 rather than 4.5:1 because each is
+   letter-spaced monospace at weight 500 naming a block, an axis, a term or
+   a filter whose content is printed beside it in --dim or --ink; nothing is
+   stated only in --faint. Until 2026-09-06 the front page had --mute
+   #7c8082 and --faint #5a5e60, which put body text at 4.46:1 on --card and
+   labels at 2.49:1 on --nest, and the other two pages had --muted #7d858b
+   and --faint #5b6368, which put body text at 4.46:1 on their sunk surface
+   and labels at 2.73:1.
+   The order ink, dim, mute, faint, wire is kept. */
+:root{
+  --ground:#0e0e0f;
+  --card:#171819;
+  --nest:#1f2022;
+  --hair:#292b2d;
+  --edge:#35383a;
+
+  --ink:#f2f2f0;
+  --dim:#a2a5a7;
+  --mute:#8c9093;
+  --faint:#747a7d;
+  --wire:#43474a;
+
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --good:#3fb950; --bad:#f0685f; --warn:#d9a441;
+
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --ease:cubic-bezier(.23,1,.32,1);
+}
+
+/* Compatibility. The names about.html and quality.html used until
+   2026-09-06, each pointing at the token that replaced it. Both pages were
+   rewritten to the names above; this block is for anything still reading the
+   old ones and can go once nothing does. */
+:root{
+  --bg:var(--ground); --panel:var(--card); --sunk:var(--nest);
+  --line:var(--hair); --rule:var(--edge);
+  --soft:var(--dim); --muted:var(--mute);
+  --series-1:var(--s1); --series-2:var(--s2); --series-3:var(--s3);
+  --critical:var(--bad); --serious:var(--warn);
+  --ease-out:var(--ease);
+}

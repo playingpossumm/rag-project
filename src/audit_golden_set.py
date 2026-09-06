@@ -13,9 +13,14 @@ This audits both directions:
      because the same fact is discussed in several papers.
 """
 import json
-import re
 import sys
 from pathlib import Path
+
+# This file kept its own `norm` until 2026-09-06, and that copy did not strip
+# leading and trailing whitespace where evaluate.normalize does. The two agree
+# on every substring test here, because both sides of each test are collapsed
+# the same way; evaluate's behaviour is the one kept.
+from evaluate import normalize as norm  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -43,10 +48,6 @@ ADVERSARIAL_SUBJECT = {
     "adv-seed": ["random seed"],
     "adv-human-eval": ["human evaluation", "human evaluators"],
 }
-
-
-def norm(t: str) -> str:
-    return re.sub(r"\s+", " ", t).lower()
 
 
 ABSTAIN = 0.0

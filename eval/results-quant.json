@@ -7,7 +7,7 @@
     "adversarial_cases": 8,
     "k": 5,
     "candidate_k": 16,
-    "golden": "eval\\golden-quant.json",
+    "golden": "eval/golden-quant.json",
     "name": "quant",
     "rerank_blend": 0.0
   },

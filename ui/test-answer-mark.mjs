@@ -404,7 +404,11 @@ if (!existsSync(dump)) {
   console.log("  (no eval/top-passages.json -- run src/dump_top_passages.py "
     + "for the sweep over real passages)");
 } else {
-  const rows = JSON.parse(readFileSync(dump, "utf8"));
+  // dump_top_passages.py writes {generated_by, expansion, inputs, rows} since
+  // 2026-09-06, so check_freshness can tell a stale dump from a current one;
+  // the bare list is what it wrote before.
+  const loaded = JSON.parse(readFileSync(dump, "utf8"));
+  const rows = Array.isArray(loaded) ? loaded : loaded.rows;
   let n = 0, unmarked = 0, overLong = 0, crossed = 0, lost = 0;
   const shares = [];
   const worst = [];

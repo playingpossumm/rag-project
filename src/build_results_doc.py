@@ -16,13 +16,217 @@ be shared by every corpus, so whichever evaluation ran last owned it -- running
 the bird set left it describing 45 Wikipedia documents while this document
 described 36 arXiv papers. Each corpus writes its own file now, and this refuses
 to fill an ML document from a bird run.
+
+`--check` also reads the prose. The generated blocks cannot drift, but the
+sentences around them quote the same case counts by hand, and on 2026-09-06
+the prose said 66 answerable, 18 adversarial and 7 universal failures against
+generated blocks that said 67 and 17 and a hard-cases fixture that held 3,
+while `--check` diffed only the blocks and reported the document current. So
+every "N answerable", "N adversarial", "N structural" and "N ... fail under
+all" outside the markers is held to the results file and to
+eval/hard_cases.json, with 3 exemptions. A count that equals another
+configured corpus's total is accepted when the paragraph names that corpus,
+because the document compares corpora and "25 answerable cases" in a
+paragraph about the bird set is not a claim about this one. A count in a
+sentence that carries an absolute date and says what the set "held", how it
+"stood", what it "carried", or what was so "until", "before", "earlier" or
+"previously" is reported as a note and not checked, because those sentences
+record the earlier count beside the corrected one on purpose. A count
+introduced by a verb such as "misses" or "refuses" is a subset of the set and
+is reported as a note. The first version of the first 2 exemptions was
+wider, and a reviewer showed on 2026-09-07 that "The set then holds 66
+answerable cases" passed as history on the word "then" alone and that "8
+adversarial" passed in the ML document because the quant set counts 8, so the
+date and the corpus name are now required.
 """
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+
 ROOT = Path(__file__).parent.parent
+
+# The prose counts this holds to the results file, each as the pattern, the
+# key in the results' corpus block and the word used in the report. The
+# lookbehind keeps "3.9 answerable ones" from reading as 9 answerable, which
+# the first version of this pattern did.
+PROSE_COUNTS = (
+    (re.compile(r"(?<![\d.])(\d+) answerable\b"), "answerable_cases", "answerable"),
+    (re.compile(r"(?<![\d.])(\d+) adversarial\b"), "adversarial_cases", "adversarial"),
+)
+# The universal-failure count, written 3 ways in the same section: "**7
+# structural.**", "**7 (10.6%) fail under all six**" and "the cases that fail
+# under all six are **3 of 67**". Number words are read for the first form
+# because the prose also says "seven".
+UNIVERSAL = re.compile(
+    r"\b(?P<a>\w+)\*{0,2}\s+structural\b"
+    r"|\b(?P<b>\d+)\b[^\n]{0,25}?\bfail under all\b"
+    r"|\bfail under all \w+ are \*{0,2}(?P<c>\d+)\b")
+WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+         "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12}
+
+# A sentence that says what the set "held", how it "stood", or what was so
+# "until" or "before" a date is a record of an earlier count, kept on purpose
+# because the writing style asks for the mistake to be recorded beside the
+# correction, so "measured on 2026-08-27, when the set held 66 answerable and
+# 18 adversarial cases" is not drift. Such a sentence is reported as a note
+# and its counts are not held to the current file. The sentence must also
+# carry an absolute date, which the writing style requires of any record of
+# an earlier state. Until 2026-09-07 the word alone was enough and the list
+# held "then", so "The set then holds 66 answerable cases" passed as history.
+# The weakness that remains is a dated history sentence that also states a
+# current count, which is not checked either.
+HISTORY = re.compile(r"\b(?:held|stood|carried|earlier|previous(?:ly)?|until|before)\b")
+DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+SENTENCE_END = re.compile(r"[.!?:](?:\s|$)")
+
+# A count introduced by one of these verbs, as in "misses 6 answerable cases"
+# or "wrongly refuses 1", is a subset and not the population, and is skipped
+# with a note. "1 of 67 answerable" is still checked, because the number this
+# reads there is the 67 after "of". A verb missing from this set makes a
+# subset count read as a population claim and report drift against the
+# total, which is the loud failure rather than the quiet one.
+SUBSET_VERBS = frozenset((
+    "miss", "misses", "missed", "refuse", "refuses", "refused", "refusing",
+    "lose", "loses", "lost", "catch", "catches", "caught", "answer", "answers",
+    "answered", "rescue", "rescues", "rescued", "recover", "recovers",
+    "recovered", "fail", "fails", "failed", "cost", "costs", "trade", "trades",
+    "gain", "gains", "reach", "reaches", "reached"))
+PREVIOUS_WORD = re.compile(r"(\w+)[ \t*]+$")
+
+
+def sentence_around(text: str, pos: int) -> str:
+    starts = [m.end() for m in re.finditer(r"[.!?:]\s+|\n\n", text[:pos])]
+    start = starts[-1] if starts else 0
+    m = SENTENCE_END.search(text, pos)
+    return text[start:m.end() if m else len(text)]
+
+
+def as_count(token: str) -> int | None:
+    token = token.lower()
+    return int(token) if token.isdigit() else WORDS.get(token)
+
+
+def hard_cases_for(results: Path) -> Path:
+    """results-birds.json -> hard_cases-birds.json, in the same directory."""
+    return results.with_name("hard_cases" + results.stem[len("results"):] + ".json")
+
+
+def other_corpus_counts(this: str) -> dict[str, dict[int, list[str]]]:
+    """Case totals of every other configured corpus with a results file, as
+    {key: {total: [words that name the corpus]}}. The words are the corpus
+    name with a trailing "s" dropped, so "bird" covers "birds", "bird set"
+    and "bird corpus", and every word of its label, so "ornithology" and
+    "finance" count too."""
+    out: dict[str, dict[int, list[str]]] = {"answerable_cases": {},
+                                            "adversarial_cases": {}}
+    try:
+        import corpora
+        from check_freshness import artefact
+    except ImportError:
+        return out
+    for name, cfg in corpora.registry().items():
+        if name == this or not cfg["golden"]:
+            continue
+        p = artefact("results", cfg["golden"])
+        if not p.exists():
+            continue
+        c = json.loads(p.read_text(encoding="utf-8")).get("corpus", {})
+        words = [name.lower().rstrip("s")] + [
+            w.lower() for w in re.findall(r"[A-Za-z]+", cfg.get("label", ""))]
+        for key in out:
+            if key in c:
+                out[key].setdefault(int(c[key]), []).extend(words)
+    return out
+
+
+def paragraph_around(text: str, pos: int) -> str:
+    start = text.rfind("\n\n", 0, pos)
+    end = text.find("\n\n", pos)
+    return text[start + 2 if start >= 0 else 0:end if end >= 0 else len(text)]
+
+
+def names_other_corpus(text: str, pos: int, words: list[str]) -> bool:
+    """Whether the paragraph around `pos` uses one of the words that name
+    the corpus whose total the count equals. Until 2026-09-07 the total
+    alone was enough, so "8 adversarial" anywhere in the ML document passed
+    because the quant set counts 8."""
+    para = paragraph_around(text, pos).lower()
+    return any(re.search(r"\b" + re.escape(w), para) for w in words)
+
+
+def without_blocks(doc: str) -> str:
+    """The prose alone, with each generated block replaced by as many newlines
+    as it held so line numbers in the report still point into the file."""
+    return re.sub(r"<!-- generated:(\w+) -->.*?<!-- /generated:\1 -->",
+                  lambda m: "\n" * m.group(0).count("\n"), doc, flags=re.S)
+
+
+def check_prose(doc: str, r: dict, hard_cases: Path) -> tuple[list[str], list[str]]:
+    """Every hand-written case count outside the markers, against the files.
+    Returns (problems, notes); the notes list every count read as history or
+    as a subset."""
+    prose = without_blocks(doc)
+    c = r["corpus"]
+    others = other_corpus_counts(c.get("name", ""))
+    problems: list[str] = []
+    notes: list[str] = []
+
+    def line_of(pos: int) -> int:
+        return prose.count("\n", 0, pos) + 1
+
+    def history(pos: int, n: int, label: str) -> bool:
+        sentence = sentence_around(prose, pos)
+        if HISTORY.search(sentence) and DATE.search(sentence):
+            notes.append(f"line {line_of(pos)}: {n} {label}, read as a dated "
+                         f"record of an earlier set and not checked")
+            return True
+        return False
+
+    def other_corpus(pos: int, n: int, key: str) -> bool:
+        return names_other_corpus(prose, pos, others[key].get(n, []))
+
+    def subset(pos: int, n: int, label: str) -> bool:
+        before = PREVIOUS_WORD.search(prose, 0, pos)
+        if before and before.group(1).lower() in SUBSET_VERBS:
+            notes.append(f"line {line_of(pos)}: \"{before.group(1)} {n} "
+                         f"{label}\" counts a subset, not the set, and is not "
+                         f"checked")
+            return True
+        return False
+
+    for pat, key, label in PROSE_COUNTS:
+        for m in pat.finditer(prose):
+            n = int(m.group(1))
+            if (n == c[key] or other_corpus(m.start(), n, key)
+                    or history(m.start(), n, label)
+                    or subset(m.start(), n, label)):
+                continue
+            problems.append(
+                f"line {line_of(m.start())}: says {n} {label}; the results file "
+                f"counts {c[key]} and no other configured corpus named in the "
+                f"paragraph counts {n}")
+
+    claims = []
+    for m in UNIVERSAL.finditer(prose):
+        n = as_count(m.group("a") or m.group("b") or m.group("c"))
+        if n is not None:
+            claims.append((n, m.start()))
+    if claims and not hard_cases.exists():
+        problems.append(f"the prose counts universal failures and "
+                        f"{hard_cases.name} is not there to check it against")
+    elif claims:
+        want = len(json.loads(hard_cases.read_text(encoding="utf-8"))
+                   .get("structural", []))
+        for n, pos in claims:
+            if n != want and not history(pos, n, "universal failures"):
+                problems.append(f"line {line_of(pos)}: says {n} cases fail under "
+                                f"every configuration; {hard_cases.name} lists "
+                                f"{want}")
+    return problems, notes
 
 
 def table(rows: dict, cols: list[tuple[str, str]], first: str) -> str:
@@ -159,9 +363,21 @@ def main() -> int:
         print("no marker for: " + ", ".join(missing))
     if args.check:
         current = doc == args.doc.read_text(encoding="utf-8")
-        print("RESULTS.md is current" if current
-              else "RESULTS.md is STALE -- run src/build_results_doc.py")
-        return 0 if current else 1
+        print(f"{args.doc.name} generated blocks are current" if current
+              else f"{args.doc.name} is STALE -- run src/build_results_doc.py")
+        prose, notes = check_prose(args.doc.read_text(encoding="utf-8"), r,
+                                   hard_cases_for(args.results))
+        for n in notes:
+            print(f"  note     {n}")
+        for p in prose:
+            print(f"  DRIFTED  {p}")
+        if prose:
+            print(f"{len(prose)} count(s) in the prose disagree with the files "
+                  f"the generated blocks are built from. Edit the prose.")
+        else:
+            print("the prose's case counts agree with the results file and "
+                  "the hard-cases fixture")
+        return 0 if current and not prose else 1
 
     args.doc.write_text(doc, encoding="utf-8")
     print(f"{args.doc}: {written} block(s) rewritten from "

@@ -1,0 +1,63 @@
+/* The fonts, the reset and the page header, shared by every page since
+   2026-09-06. Each page carried its own copy before that. tokens.css must be
+   linked first, because everything here reads from it.
+
+   Inter and DM Mono are served from this repository. No CDN, no external
+   request: the corpus this indexes may be private, and a page about private
+   documents should not announce itself to a font host on load. That
+   constraint is also why the display face is DM Mono rather than a geometric
+   sans, since adding one would mean bundling another file, and a monospace
+   headline suits an instrument. The paths are relative to this file, so they
+   resolve wherever the site is served from, including a subpath and disk. */
+@font-face{font-family:Inter;src:url("fonts/Inter-400_700.woff2") format("woff2");
+  font-weight:400 700;font-display:swap;font-style:normal}
+@font-face{font-family:"DM Mono";src:url("fonts/DMMono-400.woff2") format("woff2");
+  font-weight:400;font-display:swap;font-style:normal}
+@font-face{font-family:"DM Mono";src:url("fonts/DMMono-500.woff2") format("woff2");
+  font-weight:500;font-display:swap;font-style:normal}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6;letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--s1);outline-offset:3px;border-radius:4px}
+
+.lab{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* The header of the about and analytics pages. The front page has its own
+   (.top), because it holds the corpus picker and a button rather than a link
+   for the wordmark. */
+.folio{border-bottom:1px solid var(--edge);background:var(--card);
+  position:sticky;top:0;z-index:20}
+.folio-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:54px;
+  display:flex;align-items:center;gap:22px}
+/* The wordmark is a wordmark, not a nav label, so it does not take the
+   capitals the links take. Before 2026-08-30 it rendered as RETRIEVAL
+   VISUALIZED/ on the about and analytics pages and as retrieval visualized/
+   on the front page. */
+.folio .name{font-family:var(--mono);font-size:13px;font-weight:500;
+  letter-spacing:-.01em;text-transform:none;white-space:nowrap;
+  color:var(--ink);text-decoration:none}
+.folio .name:hover{opacity:.72}
+.folio .name .slash{color:var(--faint)}
+.folio .here{font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.folio .rule{flex:1;height:1px;background:var(--edge)}
+.folio a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
+.folio a:hover{color:var(--ink)}
+.folio a.here{color:var(--ink)}
+.ghlink{display:inline-flex;align-items:center;line-height:0;opacity:.62;
+  transition:opacity 140ms ease-out}
+.ghlink:hover{opacity:1}
+/* A phone header, matching the front page's. The wordmark and three links do
+   not fit at 390px with 22px between them: six items make five gaps, which is
+   where most of the overflow was. Without this both pages scrolled sideways. */
+@media (max-width:560px){
+  .folio-in{gap:11px}
+  .folio .name{font-size:11.5px}
+  .folio a,.folio .here{font-size:9.5px;letter-spacing:.09em}
+}

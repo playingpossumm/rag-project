@@ -28,17 +28,17 @@ import sys
 import statistics as st
 from pathlib import Path
 
-from sentence_transformers import SentenceTransformer
-
-from abstain import ABSTAIN_THRESHOLD
-from hybrid import build_bm25
-from retrieve import (CANDIDATE_K, EMBEDDING_MODEL, TOP_K, load_ensemble,
-                      load_index, retrieve, shortlist)
+# The retrieval stack (faiss, sentence_transformers, the reranker) is imported
+# inside main(), not here. Until 2026-09-06 it was imported at module level,
+# so every script that wanted `normalize` or `gold_keys` from this file paid
+# about 10 seconds and needed the models installed. The metric and
+# normalisation functions below depend on none of it.
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-GOLDEN_SET = Path(__file__).parent.parent / "eval" / "golden_set.json"
+ROOT = Path(__file__).parent.parent
+GOLDEN_SET = ROOT / "eval" / "golden_set.json"
 
 
 def load_cases(path: Path = GOLDEN_SET) -> tuple[list[dict], list[dict]]:
@@ -72,9 +72,21 @@ def gold_sources(case: dict) -> set:
     return {entry["source"] for entry in case.get("gold", [])}
 
 
-def is_relevant(result: dict, gold: set) -> bool:
+def result_key(result: dict) -> tuple:
+    """A returned passage's location as the (source, kind, value) triple
+    `gold_keys` produces, so the two can be compared with `in`.
+
+    One definition. `sweep_blend.py` carried its own until 2026-09-06, which
+    defaulted a missing kind to "page" and fell back to a "page" field no
+    result has carried since locators gained kinds; on real results the two
+    agreed, and on a malformed one this raises where that one guessed.
+    """
     loc = result["locator"]
-    return (result["source"], loc["kind"], str(loc["value"])) in gold
+    return (result["source"], loc["kind"], str(loc["value"]))
+
+
+def is_relevant(result: dict, gold: set) -> bool:
+    return result_key(result) in gold
 
 
 def source_recall(results, sources: set, k: int) -> float:
@@ -174,6 +186,31 @@ def context_tokens(results, tokenizer) -> int:
     return sum(len(tokenizer.encode(r["text"], add_special_tokens=False)) for r in results)
 
 
+def relative_to_root(path: Path) -> str:
+    """`eval/golden_set.json` however the path was given, with forward slashes."""
+    try:
+        return Path(path).resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return Path(path).as_posix()
+
+
+def fixture_ids(cfg: dict) -> set:
+    """The structural cases for one corpus, from eval/hard_cases*.json.
+
+    Empty when no fixture has been written. Three sweeps and one comparison
+    script carried an identical copy of this until 2026-09-06
+    (sweep_decompose, sweep_ensemble, sweep_query_expansion and
+    compare_embedders); they import it from here now.
+    """
+    from check_freshness import artefact_suffix
+    p = ROOT / "eval" / f"hard_cases{artefact_suffix(cfg['golden'])}.json"
+    if not p.exists():
+        return set()
+    data = json.loads(p.read_text(encoding="utf-8"))
+    return {c["id"] if isinstance(c, dict) else c
+            for c in data.get("structural", [])}
+
+
 def score_run(cases, retrieve_fn, k: int = 5) -> tuple[dict, list[dict]]:
     totals = {"hit_rate": 0.0, "mrr": 0.0, "ndcg": 0.0, "src_recall": 0.0}
     # Averaged over the cases that declare an answer string rather than over
@@ -215,6 +252,14 @@ def score_run(cases, retrieve_fn, k: int = 5) -> tuple[dict, list[dict]]:
 
 
 def main():
+    from sentence_transformers import SentenceTransformer
+
+    from abstain import ABSTAIN_THRESHOLD
+    from hybrid import build_bm25
+    from retrieve import (CANDIDATE_K, EMBEDDING_MODEL, TOP_K, load_ensemble,
+                          load_index, retrieve, shortlist)
+    import rerank as _rr
+
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--k", type=int, default=TOP_K)
     # None means "whatever this corpus ships", resolved once the corpus is
@@ -244,20 +289,28 @@ def main():
     # The server reads rerank_blend per corpus from corpora.json. If the
     # harness ignored it the two would disagree about the same pipeline: birds
     # ships at 0.20 and would be measured at 0.00. Match on the golden set.
-    import rerank as _rr
+    #
+    # corpora.registry() answers from its built-in table when corpora.json is
+    # absent and raises when the file does not parse, which is the right
+    # outcome for a measurement run. This caught every exception until
+    # 2026-09-06, so a corpora.json with a syntax error was reported as "not
+    # in corpora.json" and the run scored at the module defaults for blend,
+    # pool and threshold without saying why; the 2026-09-06 version caught
+    # FileNotFoundError instead, which the registry never raises.
     corpus_cfg = None
-    try:
-        import corpora as _c
-        for _c_cfg in _c.registry().values():
-            if _c_cfg["golden"] and Path(_c_cfg["golden"]).name == args.golden.name:
-                corpus_cfg = _c_cfg
-                break
-    except Exception:
-        pass
+    import corpora as _c
+    for _c_cfg in _c.registry().values():
+        if _c_cfg["golden"] and Path(_c_cfg["golden"]).name == args.golden.name:
+            corpus_cfg = _c_cfg
+            break
+    # Passed to retrieve() on every call below rather than set on the rerank
+    # module, so this file cannot leave a blend behind for the next importer.
     if args.rerank_blend is not None:
-        _rr.RERANK_BLEND = args.rerank_blend
+        blend = args.rerank_blend
     elif corpus_cfg:
-        _rr.RERANK_BLEND = corpus_cfg["rerank_blend"]
+        blend = corpus_cfg["rerank_blend"]
+    else:
+        blend = _rr.RERANK_BLEND
 
     # The threshold is the other setting that does not transfer, and it was
     # still being read from the module constant here -- so a bird run recorded
@@ -270,11 +323,11 @@ def main():
                else ABSTAIN_THRESHOLD)
     if corpus_cfg:
         print(f"corpus {corpus_cfg['name']} ({corpus_cfg['label']}): threshold "
-              f"{shipped:+.1f}, rerank blend {_rr.RERANK_BLEND}, "
+              f"{shipped:+.1f}, rerank blend {blend}, "
               f"candidates {args.candidate_k}, index {corpus_cfg['store'].name}")
     else:
         print(f"{args.golden.name} is not in corpora.json -- module defaults: "
-              f"threshold {shipped:+.1f}, rerank blend {_rr.RERANK_BLEND}")
+              f"threshold {shipped:+.1f}, rerank blend {blend}")
 
     if args.emit is None:
         stem = args.golden.stem                      # golden_set / golden-birds
@@ -322,7 +375,10 @@ def main():
         "adversarial_cases": len(adversarial),
         "k": args.k,
         "candidate_k": args.candidate_k,
-        "golden": str(args.golden),
+        # Relative to the repository. /api/eval serves this file verbatim, and
+        # until 2026-09-07 the ML file carried the absolute path of the golden
+        # set, which is a home directory on a public server.
+        "golden": relative_to_root(args.golden),
     }
 
     # ---- Layer 1: candidate pool quality (no reranking) -------------------
@@ -379,7 +435,8 @@ def main():
     for label, cfg in finals:
         summary, per_case = score_run(answerable, lambda q, c=cfg: retrieve(
             q, index, metadata, model, k=args.k,
-            candidate_k=args.candidate_k, bm25=bm25, ensemble=ensemble, **c), k=args.k)
+            candidate_k=args.candidate_k, bm25=bm25, ensemble=ensemble,
+            rerank_blend=blend, **c), k=args.k)
         runs[label] = (summary, per_case)
         emitted["end_to_end"][label.strip()] = {
             k2: round(v, 3) for k2, v in summary.items()}
@@ -413,7 +470,7 @@ def main():
         for case in with_answers:
             res = retrieve(case["question"], index, metadata, model, k=args.k,
                            candidate_k=args.candidate_k, bm25=bm25, ensemble=ensemble,
-                           use_reranker=True, **cfg)
+                           use_reranker=True, rerank_blend=blend, **cfg)
             hits += context_recall(res, case["answer_contains"])
             toks += context_tokens(res, tok)
             blocks += len(res)
@@ -431,7 +488,8 @@ def main():
     # the tradeoff curve it should be picked from.
     def top1(case):
         res = retrieve(case["question"], index, metadata, model, k=args.k,
-                       candidate_k=args.candidate_k, bm25=bm25, ensemble=ensemble, use_reranker=True)
+                       candidate_k=args.candidate_k, bm25=bm25, ensemble=ensemble,
+                       use_reranker=True, rerank_blend=blend)
         return res[0]["rerank_score"] if res else float("-inf")
 
     ans_scores = [top1(c) for c in answerable]
@@ -505,8 +563,7 @@ def main():
     emitted["abstention"]["adversarial_median"] = st.median(adv_scores)
     if corpus_cfg:
         emitted["corpus"]["name"] = corpus_cfg["name"]
-        emitted["corpus"]["rerank_blend"] = _rr.RERANK_BLEND
-
+        emitted["corpus"]["rerank_blend"] = blend
 
     if args.emit:
         args.emit.parent.mkdir(exist_ok=True)

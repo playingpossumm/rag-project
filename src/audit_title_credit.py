@@ -78,7 +78,6 @@ def audit(name: str, cfg: dict, model) -> dict:
     index, metadata = load_index(cfg["store"])
     bm25 = build_bm25(metadata)
     ensemble = load_ensemble(cfg["store"])
-    rr.RERANK_BLEND = cfg["rerank_blend"]
 
     out = {"cases": len(answerable), "hits": 0, "structural": [],
            "answered_anyway": [], "unanswered": [],
@@ -89,7 +88,10 @@ def audit(name: str, cfg: dict, model) -> dict:
         results = retrieve(case["question"], index, metadata, model, k=TOP_K,
                            candidate_k=cfg["candidate_k"], use_reranker=True,
                            fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2,
-                           ensemble=ensemble)
+                           # Passed per call; set on the rerank module until
+                           # 2026-09-07, which left a blend behind for the
+                           # next importer.
+                           rerank_blend=cfg["rerank_blend"], ensemble=ensemble)
         if results and title_block(results[0]):
             out["showing"].append(case["id"])
 

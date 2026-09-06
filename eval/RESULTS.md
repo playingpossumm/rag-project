@@ -53,7 +53,7 @@ configuration.
 
 ## The diversity cap is a trade, not a free win
 
-An earlier 23-case golden set showed the cap costing nothing. With 66 cases it
+An earlier 23-case golden set showed the cap costing nothing. With 67 cases it
 plainly does:
 
 <!-- generated:diversity-cap -->
@@ -89,45 +89,86 @@ come from changing the pipeline.
 | no cap | 9 | 1 | 15.2% | 5 |
 
 † Not a gate failure. Without reranking there is no calibrated score, so the
-gate never runs and all 18 pass by construction. That is an absent gate, not
-a failing one. Excluded from the adversarial comparison below for that reason.
+gate never runs and every adversarial case passes by construction. That is an
+absent gate, not a failing one. Excluded from the adversarial comparison below
+for that reason.
 
-**The failures are not the same set.** 18 of 66 answerable cases (27%) fail
-under at least one configuration, but only **7 (10.6%) fail under all six**:
+The table above was measured on 2026-08-21, when the answerable half of the
+golden set held 66 cases and the adversarial half 18, and its counts and rates
+describe that set. On 2026-08-25 `adv-moe-routing` left the adversarial half
+and `moe-routing` joined the answerable one, so the set has held 67 answerable
+and 17 adversarial cases since that date, and the label corrections of
+2026-09-01 changed four labels without changing either count. On the current
+set the shipped configuration misses 6 of the answerable cases and wrongly
+refuses 1, which is 7 of 67 (10.4%), from `eval/per_case.json`. Until
+2026-09-06 this section quoted the 2026-08-21 counts as if they were current.
 
-- **7 structural.** No fusion, reranking or capping reaches them. Four are
-  labelled `cross-doc`, one `fact`, two `multi`, so cross-document confusion
-  describes most of the hard core but not all of it.
-- **11 contested.** Ranking work moves them, so a change can be scored on
-  them. Four are rescued by exactly one configuration, which is within the
-  noise this corpus supports and should not be read as that setting being
-  better.
+**The failures are not the same set.** Measured on 2026-08-21, 18 of the then 66
+cases in the answerable half (27%) failed under at least one configuration and
+7 (10.6%) under all six; measured again on 2026-08-27 on the 67-case set, 21
+(31%) failed under some configuration and the same 7 (10.4%) under all six.
+Re-derived after the 2026-09-01 corrections, and recorded in
+`eval/hard_cases.json`, the cases that fail under all six are **3 of 67
+(4.5%)**:
 
-So "15% cross-document confusion" is really a ~11% floor plus a shifting
-margin, and the floor is the part worth optimising against. It is a fixture:
-the same seven cases, reproducible from `src/per_case.py` under any settings.
+- **3 structural.** No fusion, reranking or capping reaches them. `gpt3-params`
+  and `roberta-nsp-drop` are labelled `cross-doc` and `wmt14` is labelled
+  `multi`, so cross-document confusion describes two of the three.
+- **Contested.** The rest of the failures move under ranking work, so a change
+  can be scored on them. The count was 11 on 2026-08-21, and the 2026-08-27
+  run put 21 cases under some configuration against 7 under all; the count has
+  not been re-derived since the label corrections, and the six
+  per-configuration runs it needs are not kept in the repository.
+
+Of the 7 that failed everywhere on 2026-08-21 and again on 2026-08-27, three (`adam-bias`,
+`gpt3-fewshot` and `t5-text2text`) were being answered and scored wrong by a
+label that marked every passage containing the answer string rather than every
+passage that answers, and one (`dropout-rate`) had a question that several
+papers answer. All four were corrected on 2026-09-01 and now pass. The account
+is in `docs/engineering-log.md` under that date.
+
+So "15% cross-document confusion" was really a ~11% floor plus a shifting
+margin on the earlier set, and is a ~4.5% floor on the current one. The floor
+is the part worth optimising against. It is a fixture: the same three cases,
+reproducible from `src/per_case.py` under any settings.
 
 ### A hypothesis this refuted
 
-Three of the seven return the **right document at rank 1** and are scored as
-misses because the gold page differs. `adam-bias` returns `adam_optimizer.pdf`
-pages 2–3 against gold pages 5, 8, 9. Page-level labelling is known to be
-coarse, and labels were derived from answer strings rather than independently
-authored, so the obvious reading is that the labels are incomplete and
-retrieval found a better passage than the label credits.
+On the 2026-08-21 set, three of the seven returned the **right document at
+rank 1** and were scored as misses because the gold page differed. `adam-bias`
+returned `adam_optimizer.pdf` pages 2–3 against gold pages 5, 8, 9. Page-level
+labelling is known to be coarse, and labels were derived from answer strings
+rather than independently authored, so the obvious reading was that the labels
+were incomplete and retrieval found a better passage than the label credited.
 
-That reading is wrong. Context recall, which asks whether the returned *text*
-contains the labelled answer string, is **0.000 for all seven**. The answer was
-genuinely not in what came back. These are real retrieval misses, and the
-coarse-labelling caveat does not excuse them.
+That reading was refuted as stated, and a different route later reached part
+of it. Context recall, which asks whether the returned *text* contains the
+labelled answer string, was **0.000 for all seven**, so the labelled string was
+genuinely not in what came back. Reading the seven one at a time on 2026-09-01
+found that for four of them the string was the wrong one to look for:
+`adam-bias`, `gpt3-fewshot` and `t5-text2text` are answered in the returned
+passages in other words, and `dropout-rate` asked a question several papers
+answer. Those four labels were corrected on 2026-09-01. The 2026-08-21 note did
+not name its three rank-1 cases beyond `adam-bias`, so the two findings are
+not matched case by case, and an earlier version of this paragraph on
+2026-09-06 wrongly said the reading had been right for those three. For the
+three that remain, `gpt3-params`, `roberta-nsp-drop` and `wmt14`, context
+recall is still 0.000 in `eval/per_case.json`, and reading the returned
+passages confirms that the answer is not there. These are real retrieval
+misses, and the coarse-labelling caveat does not excuse them.
 
 ### The abstention gate is stable
 
-Over the five gated configurations, **4 of 18 adversarial cases are answered
-under every one**, and one more (`adv-license-terms`, +0.17) sits close enough
-to the threshold to flip. The gate does not become better or worse as ranking
+Over the five gated configurations, **7 of 17 adversarial cases are answered
+under every one**: `adv-context-window`, `adv-latency-ms`, `adv-mamba`,
+`adv-quantize-4bit`, `adv-rlhf`, `adv-salary` and `adv-seed`, listed with their
+confidences in `eval/hard_cases.json`. On 2026-08-21, when the adversarial half
+held 18 cases, the count was 4 of 18 (`adv-context-window`, `adv-diffusion`,
+`adv-latency-ms` and `adv-seed`, in `eval/hard_cases.json` as committed that
+day), with `adv-license-terms` at +0.17 close enough to flip; by 2026-08-27
+that case scored -4.40 and was refused, and it still is. The gate does not become better or worse as ranking
 changes, because it reads the top rerank score and ranking configuration barely
-moves that score across zero. Those four are a threshold question, not a
+moves that score across zero. Those seven are a threshold question, not a
 retrieval one.
 
     .venv\Scripts\python.exe src\per_case.py --emit runs\default.json
@@ -140,44 +181,55 @@ retrieval one.
 run since the sweep was written, while the shipped threshold is **0.0**. The
 project's answer has been that false abstention is the costlier error, which
 is a policy stated against an aggregate. `src/calibrate_threshold.py` makes it
-concrete, and the aggregate turns out to have been the misleading half.
+concrete, and the aggregate turns out to have been the misleading half. The
+table below was re-run on 2026-09-06 with
+`python src/calibrate_threshold.py --per-case eval/per_case.json` over the
+current 67 answerable and 17 adversarial cases. Until that date it carried the
+figures measured on 2026-08-21, when the adversarial half held 18 cases and the
+answerable half 66, a set that stood until 2026-08-25, and read 12, 13, 15, 17
+and 18 refused down the second column and 1, 1, 4, 5 and 10 down the fourth.
 
 | threshold | refuses | of adversarial | wrongly refuses | of answerable |
 |---|---|---|---|---|
-| −1 | 12 | 67% | 1 | 1.5% |
-| **0.0** *(shipped)* | **13** | **72%** | **1** | **1.5%** |
-| +1 | 15 | 83% | 4 | 6.1% |
-| +2 | 17 | 94% | 5 | 7.6% |
-| +3 | 18 | 100% | 10 | 15.2% |
+| −1 | 7 | 41% | 1 | 1.5% |
+| **0.0** *(shipped)* | **9** | **53%** | **1** | **1.5%** |
+| +1 | 12 | 71% | 4 | 6.0% |
+| +2 | 13 | 76% | 5 | 7.5% |
+| +3 | 15 | 88% | 10 | 14.9% |
 
 **In cases, moving 0 → +2 trades 4 more caught for 4 more lost.** Exactly
 break-even before any cost weighting, rather than the clear win `net`
-reports.
+reports, and the same trade the earlier set showed.
 
 ### Why the sweep and the counts disagree
 
 `net = caught − false_abstain` is Youden's J. It is a legitimate statistic and
 the wrong one for this decision, because it subtracts two **rates** over
-populations of very different size: 18 adversarial against 66 answerable. That
-values one adversarial case at **3.7 answerable ones**, and users experience
+populations of very different size: 17 adversarial against 67 answerable. That
+values one adversarial case at **3.9 times an answerable one** (3.7 on the
+earlier set of 18 and 66), and users experience
 cases rather than rates. `evaluate.py` now prints a counts column beside the
 rates so the two readings can be compared instead of one hiding the other.
 
-Under counts, no threshold above 0.0 wins on its own terms:
+Under counts, no threshold above 0.0 wins on its own terms. The table is from
+the 2026-09-06 run; on the earlier set +1 read 2 more caught for 3 more lost
+(0.7×) and +3 read 5 for 9 (0.6×).
 
 | vs 0.0 | more caught | more lost | break-even weight |
 |---|---|---|---|
-| +1 | 2 | 3 | 0.7× |
+| +1 | 3 | 3 | 1.0× |
 | +2 | 4 | 4 | 1.0× |
-| +3 | 5 | 9 | 0.6× |
+| +3 | 6 | 9 | 0.7× |
 
 Read: 0.0 wins whenever a wrongly refused question costs more than that
-multiple of an unanswerable one slipping through. At +1 and +3 it wins even if
-the two cost the same.
+multiple of an unanswerable one slipping through. At +1 and +2 the trade is
+one for one, and at +3 it loses more than it catches even if the two cost the
+same.
 
 ### What +1 would actually cost
 
-Not "6.1% of answerable questions", but these three:
+Not "6.0% of answerable questions", but these three, on top of the one already
+refused at 0.0:
 
 | case | top score | question |
 |---|---|---|
@@ -186,9 +238,10 @@ Not "6.1% of answerable questions", but these three:
 | `resnet-shortcut` | +0.16 | What connections allow gradients to flow through very deep networks? |
 
 **Conclusion: 0.0 stays**, and now for a measured reason rather than a stated
-preference. The four adversarial cases that slip through under every gated
-configuration are not fixable by moving the threshold without losing answerable
-questions one for one; they need a different signal, not a different cut point.
+preference. The seven adversarial cases that slip through under every gated
+configuration (four on the set as it stood on 2026-08-21) are not fixable by
+moving the threshold without losing answerable questions one for one; they
+need a different signal, not a different cut point.
 
 ### The gate costs different things on different paths
 
@@ -270,14 +323,14 @@ answering any of them. That is the realistic growth pattern and the harder test
 | change | **0.000** | −0.005 | −0.008 | **−0.035** |
 
 **Ranking quality did not move.** Hit rate is identical, MRR and NDCG shift by
-less than one case (66 cases, so one case is worth ~1.5 points). Nothing here
+less than one case (67 cases, so one case is worth ~1.5 points). Nothing here
 justifies changing a default.
 
 ### Source recall fell for a measurement reason, not a retrieval one
 
 Gold locations are derived from answer strings, so adding documents that
-*contain* an answer string adds them to that question's gold set. Eleven of 66
-questions gained gold sources, and the mean source-recall divisor, which is
+*contain* an answer string adds them to that question's gold set. Eleven of the
+then 66 questions gained gold sources, and the mean source-recall divisor, which is
 `min(|gold|, k)`, rose from **2.12 to 2.30**.
 
 That divisor moving 8.5% is enough to account for the drop on its own. Returning
@@ -286,6 +339,10 @@ when five now answer scores 0.400, with retrieval having done nothing
 differently. The metric got harder, the system did not get worse.
 
 ### Abstention looks much worse, and it is the labels
+
+Both columns were measured on 2026-08-22, when the adversarial half held 18
+cases, a set that stood until 2026-08-25; the generated abstention table below
+reads 9 of 17 at the same threshold.
 
 | | 20 documents | 36 documents |
 |---|---|---|
@@ -395,8 +452,8 @@ adjusting one.
 
 | | answerable median | wrongly refused at 0.0 |
 |---|---|---|
-| ML papers | +4.93 | 1 of 66 — **1.5%** |
-| ornithology | +1.82 | 10 of 26 — **38.5%** |
+| ML papers | +4.93 | 1 of 67 — **1.5%** |
+| ornithology | +1.82 | 10 of 26 — **38.5%** *(26 bird cases as the set stood then; 25 since 2026-09-01)* |
 
 The shipped threshold refuses **more than a third** of the questions the bird
 corpus can answer. On its own sweep the best point is **−6**, six full points
@@ -423,7 +480,8 @@ the opposite direction. The plausible reason is that questions about birds and
 the text answering them share ordinary vocabulary, so BM25 promotes passages
 that merely repeat common words.
 
-**Treated as a lead, not a result.** 26 answerable cases means one case is worth
+**Treated as a lead, not a result.** With 26 bird cases as the set then stood
+(25 since 2026-09-01) one case is worth
 3.8 points, so this is a two-case difference and inside the noise this corpus can
 resolve. It is recorded because it points the opposite way to a settled default,
 and that is worth re-testing on a larger bird golden set rather than acting on
@@ -475,17 +533,25 @@ Shipped threshold: **+0.0**. Answerable questions score a median of +5.25.
 | answerable | 66 | -4.02 | +4.93 | +9.58 |
 | unanswerable | 18 | -9.52 | -2.33 | +2.76 |
 
-The distributions overlap. The shipped threshold is **0.0**, catching 72% of
-unanswerable questions while falsely refusing 1 of 66 answerable ones. Third
-recalibration of this constant; it is a property of the data, not the model.
+The table describes the set as it stood until 2026-08-25, and the earlier
+version of this paragraph read the figures from it as current. The set has
+held 67 answerable and 17 adversarial cases since that date. The
+distributions overlap. The
+shipped threshold is **0.0**, catching 9 of 17 unanswerable questions while
+falsely refusing 1 of 67 answerable ones, from the generated table above (13 of
+18 and 1 of 66 on the earlier set). Third recalibration of this constant; it
+is a property of the data, not the model.
 
 ## Caveats
 
-- **66 answerable cases.** Each is worth ~1.5 points; treat differences under
+- **67 answerable cases.** Each is worth ~1.5 points; treat differences under
   ~0.03 as noise. The previous 23-case set had 4.3-point resolution and produced
   three false conclusions.
-- **20 ML papers.** Deliberately similar, which is the hard case, but not
-  contracts or spreadsheets. Behaviour on those is untested.
+- **36 ML papers.** Deliberately similar, which is the hard case, but not
+  contracts or spreadsheets. Spreadsheets are covered by the bird corpus, whose
+  45 documents include `.xlsx` files, and contracts are not measured anywhere
+  in this repository. This caveat said 20 papers until 2026-09-06, the count
+  before the corpus grew.
 - **Cross-document confusion is unsolved.** Title prefixing was tried, measured,
   and reverted.
 - **Labels were authored by the same process that built the system**, mitigated
@@ -506,7 +572,8 @@ returns T5 saying *"we use an 'inverse square root' learning rate schedule"*,
 which is exactly what was asked, but the derived label credits only the paper
 containing the string `warmup_steps`. **Derived labels resist drift but are
 narrow: a document that answers in different words scores as wrong.** Real
-confusion is ~10/66 (15%).
+confusion is ~10 of the then 66 (15%), measured before the 2026-09-01 label
+corrections.
 
 ### The obvious fix does not work
 
@@ -534,7 +601,7 @@ bottleneck. These clauses are *contrastive*, defining the answer by what it
 excludes, and negation is a known transformer weakness that scale does not
 resolve.
 
-The reranker was left at MiniLM-L6: +3 points sits at the noise floor for 66
+The reranker was left at MiniLM-L6: +3 points sits at the noise floor for 67
 cases, and costs 2× latency.
 
 **Conclusion: this is a query-side problem.** The fix is decomposing the

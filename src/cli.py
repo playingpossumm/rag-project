@@ -10,7 +10,7 @@ import argparse
 import json
 import sys
 
-from api import ask
+from api import DEFAULT_EXPANSION, ask
 from loaders import locator_label
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -44,7 +44,12 @@ def main():
     ap.add_argument("question", nargs="+")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
     ap.add_argument("-k", type=int, default=5, help="passages to return")
-    ap.add_argument("--expansion", default="page", choices=["page", "window", "none"])
+    # The default is api.DEFAULT_EXPANSION, read rather than restated. Until
+    # 2026-09-06 this said "page" while the library shipped "window", so the
+    # CLI and the library answered the same question with different context.
+    ap.add_argument("--expansion", default=DEFAULT_EXPANSION,
+                    choices=["page", "window", "none"],
+                    help=f"context around each passage (default {DEFAULT_EXPANSION})")
     ap.add_argument("--min-confidence", type=float, default=-2.0)
     ap.add_argument("--quiet", action="store_true", help="citations only, no passage text")
     ap.add_argument("--generate", action="store_true",
