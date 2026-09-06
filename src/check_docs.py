@@ -26,7 +26,16 @@ because it reports success.
     .venv\\Scripts\\python.exe src\\check_docs.py
 
 Exit code is the contract: 0 the documents agree with the measurements, 1 they
-have drifted, 2 a table this expects to find is gone.
+have drifted, 2 this checked less than it claims to -- a table it expects to
+find is gone, or under `--tests` a suite exited 2 to say it did not run.
+
+A suite that did not run is neither passed nor failed. `test_ocr.py` exits 2
+without RapidOCR, and this reads the `0/N` on its last line as the number of
+checks the suite declares, holds the sentence to that number, counts it into
+the total so the arithmetic is still checked, and exits 2 because the checks
+themselves were not seen to pass. Until 2026-09-06 that suite exited 0 on the
+skip path with no count line, and `--tests` reported it as "no count on its
+last line", a failure it was not.
 """
 import argparse
 import json
@@ -399,11 +408,29 @@ def served_routes() -> set[str]:
             return out
         return []
 
+    # `route in QUALITY_FILES`, a module-level table. Until 2026-09-07 a
+    # comparator that was a name rather than a literal contributed nothing,
+    # so the three routes served through that table were invisible here
+    # and undocumented in HANDOFF §6 without this check noticing.
+    tables: dict[str, list[str]] = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                and isinstance(node.targets[0], ast.Name):
+            value = node.value
+            if isinstance(value, ast.Dict):
+                tables[node.targets[0].id] = [
+                    v for key in value.keys if key is not None for v in literals(key)]
+            else:
+                tables[node.targets[0].id] = literals(value)
+
     for node in ast.walk(tree):
         if isinstance(node, ast.Compare) and isinstance(node.left, ast.Name) \
                 and node.left.id == "route":
             for comp in node.comparators:
-                found.update(literals(comp))
+                if isinstance(comp, ast.Name) and comp.id in tables:
+                    found.update(tables[comp.id])
+                else:
+                    found.update(literals(comp))
         # `route.startswith("/fonts/")` -- a prefix route, recorded with its
         # wildcard so it reads the way the document writes it.
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) \
@@ -705,32 +732,62 @@ def label_pattern(label: str) -> str:
             + r"\b")
 
 
-def run_suite(cmd: list[str], cwd: Path) -> tuple[int | None, str]:
+def run_suite(cmd: list[str], cwd: Path) -> tuple[str, int | None, str]:
     """Run one suite and read the count off its last line.
 
-    Returns (count, note). A suite that fails returns None, because a count
-    from a failing suite is not a number anyone should compare against.
+    Returns (status, count, note). Status is "ok" with the number of checks
+    that passed, "failed" with count None, because a count from a failing suite
+    is not a number anyone should compare against, or "not run" for a suite
+    that exited 2 to say its checks did not execute -- test_ocr.py does so
+    without RapidOCR. For "not run" the count is the N of the `0/N` line the
+    suite printed, which is how many checks it declares, or None if it printed
+    no such line.
     """
     try:
         r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True,
                            timeout=900, encoding="utf-8", errors="replace")
     except (OSError, subprocess.SubprocessError) as exc:        # noqa: BLE001
-        return None, f"could not run: {exc}"
+        return "failed", None, f"could not run: {exc}"
     tail = [ln for ln in (r.stdout or "").splitlines() if ln.strip()]
     last = tail[-1] if tail else ""
-    if r.returncode != 0:
-        return None, f"FAILED ({last.strip()[:60]})"
     m = COUNT_LINE.match(last)
+    if r.returncode == 2:
+        declared = int(m.group(2)) if m else None
+        return "not run", declared, f"NOT RUN ({last.strip()[:60]})"
+    if r.returncode != 0:
+        return "failed", None, f"FAILED ({last.strip()[:60]})"
     if not m:
-        return None, f"no count on its last line: {last.strip()[:60]!r}"
+        return "failed", None, f"no count on its last line: {last.strip()[:60]!r}"
     passed, total = int(m.group(1)), int(m.group(2))
     if passed != total:
-        return None, f"{passed} of {total} passed"
-    return passed, ""
+        return "failed", None, f"{passed} of {total} passed"
+    return "ok", passed, ""
+
+
+# A per-suite count written beside the suite's name in the README's prose,
+# such as "`src/test_evaluate_answers.py` holds it to 79 checks", rather than
+# in HANDOFF's test-count sentence. Held to the run count the same way. Until
+# 2026-09-06 nothing read these, so a suite could grow and the README would
+# keep quoting the size it had when the paragraph was written.
+SUITE_COUNT_IN_PROSE = re.compile(
+    r"`src/(test_[a-z_]+)\.py`[^`]{0,120}?\b(\d+) checks\b")
+
+
+def suite_counts_in_prose(text: str) -> list[tuple[str, int]]:
+    """Every (module, count) the prose states beside a suite's file name."""
+    return [(mod, int(n)) for mod, n in SUITE_COUNT_IN_PROSE.findall(one_line(text))]
 
 
 def check_tests(problems: list[str], notes: list[str]) -> bool:
-    """Every count in HANDOFF's test-count sentence, against the suites."""
+    """Every count in HANDOFF's test-count sentence, against the suites.
+
+    Returns False when a suite did not run, so the run exits 2. Its declared
+    count is still held to the sentence and still summed into the total, and
+    the suite is reported as NOT RUN rather than as passed or failed. The
+    node suites are held exactly as the python ones are. Until 2026-09-06 a
+    node suite that failed, or whose file was gone, was appended to the notes
+    and the run still exited 0.
+    """
     handoff = (ROOT / "HANDOFF.md").read_text(encoding="utf-8")
     sentence = re.search(r"Test counts,[^\n]*(?:\n(?!\n)[^\n]*)*", handoff)
     if not sentence:
@@ -746,41 +803,73 @@ def check_tests(problems: list[str], notes: list[str]) -> bool:
         problems.append(f"src/{m}.py exists and the test-count sentence does "
                         f"not mention it")
 
+    def hold(label: str, count: int, verb: str) -> None:
+        """The sentence's number for `label` against `count`."""
+        m = re.search(label_pattern(label), text)
+        if not m:
+            problems.append(f"the sentence gives no number for '{label}', "
+                            f"which {verb} {count}")
+        elif int(m.group(1)) != count:
+            problems.append(f"'{label}' is written as {m.group(1)} and {verb} "
+                            f"{count}")
+        else:
+            notes.append(f"    {'ok   ' if verb == 'runs' else 'NOT RUN'} "
+                         f"{label:<22} {count}")
+
     subtotal = 0
+    ran: dict[str, int] = {}
+    not_run: list[str] = []
     for mod, label in SUITE_LABELS.items():
         path = ROOT / "src" / f"{mod}.py"
         if not path.exists():
             problems.append(f"the sentence counts '{label}' and "
                             f"src/{mod}.py does not exist")
             continue
-        count, why = run_suite([sys.executable, str(path)], ROOT)
-        if count is None:
+        status, count, why = run_suite([sys.executable, str(path)], ROOT)
+        if status == "not run":
+            not_run.append(f"src/{mod}.py {why}")
+            if count is None:
+                problems.append(f"src/{mod}.py {why} and printed no 0/N line, "
+                                f"so the sentence's number for '{label}' and "
+                                f"the total cannot be checked")
+                continue
+            subtotal += count
+            hold(label, count, "declares")
+            continue
+        if status == "failed":
             problems.append(f"src/{mod}.py {why}")
             continue
+        ran[mod] = count
         subtotal += count
-        m = re.search(label_pattern(label), text)
-        if not m:
-            problems.append(f"the sentence gives no number for '{label}', "
-                            f"which runs {count}")
-        elif int(m.group(1)) != count:
-            problems.append(f"'{label}' is written as {m.group(1)} and runs "
-                            f"{count}")
-        else:
-            notes.append(f"    ok    {label:<22} {count}")
+        hold(label, count, "runs")
 
     node_total = 0
     for node_path, node_label in NODE_SUITES:
-        node_count, why = run_suite(["node", str(ROOT / node_path)], ROOT)
-        if node_count is None:
-            notes.append(f"    note  {node_label}: {why}")
+        status, node_count, why = run_suite(["node", str(ROOT / node_path)], ROOT)
+        if status != "ok":
+            problems.append(f"{node_path} {why}")
             continue
-        m = re.search(label_pattern(node_label), text)
-        if m and int(m.group(1)) != node_count:
-            problems.append(f"'{node_label}' is written as {m.group(1)} and "
-                            f"runs {node_count}")
-        else:
-            notes.append(f"    ok    {node_label:<22} {node_count}")
+        hold(node_label, node_count, "runs")
         node_total += node_count
+
+    # README.md and HANDOFF.md state a few suite sizes in their prose, beside
+    # the file name. Only suites that ran are compared; a declared count from
+    # a suite that did not run is already reported above. HANDOFF.md joined
+    # the scan on 2026-09-07, when three of its counts had gone stale by
+    # 38, 18 and 1 checks, and the window after the file name widened from
+    # 80 to 120 characters to reach the count in its longest sentence.
+    for doc in ("README.md", "HANDOFF.md"):
+        for mod, said in suite_counts_in_prose(
+                (ROOT / doc).read_text(encoding="utf-8")):
+            count = ran.get(mod)
+            if count is None:
+                notes.append(f"    note  {doc} says src/{mod}.py has {said} "
+                             f"checks; that suite did not run here")
+            elif said != count:
+                problems.append(f"{doc} says src/{mod}.py has {said} checks and "
+                                f"it runs {count}")
+            else:
+                notes.append(f"    ok    {doc} src/{mod}.py     {count}")
 
     # The two totals the sentence states: the python subtotal, and the headline
     # that adds the node suites to it. Summed rather than taken from the last
@@ -802,7 +891,11 @@ def check_tests(problems: list[str], notes: list[str]) -> bool:
             problems.append(f"{doc} says {m.group(1)} checks and {total} run")
         else:
             notes.append(f"    ok    {doc:<22} total {total}")
-    return True
+
+    for line in not_run:
+        print(f"  NOT RUN  {line} -- its checks were not seen to pass, so this "
+              f"run does not pass")
+    return not not_run
 
 
 # ------------------------------------------------------- the running tallies
@@ -995,11 +1088,93 @@ def check_readme_threshold_table(measured: dict, problems: list[str],
     return True
 
 
+# The guard tally. "Seven guards now cover the things that have gone wrong
+# silently before" in HANDOFF §7, "**Seven guards, each exiting non-zero" in the
+# README and roadmap, each followed by a fenced block listing one `python src/`
+# command per guard. HANDOFF's own paragraph records that the word disagreed
+# with the list under it until 2026-08-30 and calls that "the failure
+# check_docs.py exists to stop, one level up" -- and until 2026-09-06 nothing
+# in this file read that paragraph. Only a number word or digits before
+# "guards" is a claim. The first version of this pattern matched any word
+# there and reported one it could not read as a problem, so a later sentence
+# starting "These guards" would have failed check_docs for saying nothing.
+GUARD_TALLY_DOCS = ("README.md", "docs/roadmap.md", "HANDOFF.md")
+GUARD_CLAIM = re.compile(
+    r"(?im)^\**(\d+|" + "|".join(re.escape(w) for w in WORDS) + r") guards\b")
+GUARD_COMMAND = re.compile(r"(?m)^\s*python src/\S+")
+
+
+def guard_tally(text: str) -> list[tuple[str, int, int | None]]:
+    """Every "<Number> guards" paragraph, with the count of `python src/` lines
+    in the fenced block directly beneath it.
+
+    Returns (word, said, counted) per paragraph. `counted` is None when no
+    fenced block opens where the paragraph ends, so a paragraph that has lost
+    its list is reported rather than matched against some later block.
+    """
+    out = []
+    for m in GUARD_CLAIM.finditer(text):
+        said = as_count(m.group(1))
+        end = text.find("\n\n", m.end())
+        if end < 0:
+            out.append((m.group(1), said, None))
+            continue
+        after = text[end:].lstrip("\n")
+        if not after.startswith("```"):
+            out.append((m.group(1), said, None))
+            continue
+        body_start = after.find("\n") + 1
+        body_end = after.find("\n```", body_start)
+        body = after[body_start:body_end if body_end >= 0 else None]
+        out.append((m.group(1), said, len(GUARD_COMMAND.findall(body))))
+    return out
+
+
+def check_guard_tally(rel: str, text: str, problems: list[str],
+                      notes: list[str]) -> int:
+    """One document's guard paragraphs against the lists beneath them.
+    Returns how many paragraphs it found."""
+    found = guard_tally(text)
+    for word, said, counted in found:
+        if counted is None:
+            problems.append(f"{rel}: says {word} guards and no fenced block of "
+                            f"commands follows the paragraph")
+        elif said != counted:
+            problems.append(f"{rel}: says {word} guards and the block beneath "
+                            f"lists {counted} `python src/` commands")
+        else:
+            notes.append(f"  {rel}: {counted} guards listed, as the sentence says")
+    return len(found)
+
+
 def check_tallies(problems: list[str], notes: list[str]) -> bool:
     """The number word, against the list it introduces and its other copies."""
     listed: dict[str, int] = {}
     pools: dict[str, int] = {}
     ordinals: list[tuple[str, int]] = []
+
+    guard_paragraphs = 0
+    for rel in GUARD_TALLY_DOCS:
+        path = ROOT / rel
+        if not path.exists():
+            problems.append(f"{rel}: missing, so its guard paragraph went unchecked")
+            continue
+        found = check_guard_tally(rel, path.read_text(encoding="utf-8"),
+                                  problems, notes)
+        if not found:
+            # Each of these documents carries the paragraph. One that stopped
+            # matching, re-wrapped so the number word was no longer at a
+            # line start, say, dropped out silently until 2026-09-07, and
+            # the check failed only once all three had.
+            problems.append(f"{rel}: no paragraph starting \"<Number> guards\" "
+                            f"-- either it was rewritten or the pattern "
+                            f"stopped matching it")
+        guard_paragraphs += found
+    if not guard_paragraphs:
+        problems.append("no document has a paragraph starting \"<Number> "
+                        "guards\" -- either the sentences were rewritten or "
+                        "this check has stopped matching them")
+        return False
 
     for rel in TALLY_DOCS:
         path = ROOT / rel
@@ -1121,8 +1296,9 @@ def main() -> int:
     for p in problems:
         print(f"  DRIFTED  {p}")
     if not ok:
-        print("\na table this checker expects is missing, so it checked less "
-              "than it claims to.\nFix the anchor rather than deleting the check.")
+        print("\na table this checker expects is missing, or a suite did not "
+              "run, so it checked less\nthan it claims to. Fix the anchor, or "
+              "install what the suite needs, rather than deleting the check.")
         return 2
     if problems:
         print(f"\n{len(problems)} number(s) in the documents no longer match the "

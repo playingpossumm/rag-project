@@ -3,21 +3,26 @@
 Answer strings are only useful as a metric if they match the text as parsed --
 not as the PDF renders it. Markdown artifacts and maths notation mean the two
 often differ, so every string is checked before it enters the golden set.
+
+The candidates below are answer strings for the Transformer paper, and the
+pages are keyed by page number across every document in the index, so the
+"also on N other page(s)" count includes every other document.
+
+    .venv\\Scripts\\python.exe src\\check_answers.py
 """
+import argparse
 import json
-import re
 import sys
 from pathlib import Path
+
+# The same whitespace-collapsing rule the harness scores with, imported rather
+# than copied. Five scripts carried their own copy until 2026-09-06.
+from evaluate import normalize as norm  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 STORE = Path(__file__).parent.parent / "vector_store" / "metadata.json"
-
-
-def norm(text: str) -> str:
-    """Collapse all whitespace and lowercase, so line breaks do not block a match."""
-    return re.sub(r"\s+", " ", text).strip().lower()
 
 # id -> (expected page, distinctive substring that constitutes the answer)
 CANDIDATES = {
@@ -49,10 +54,22 @@ CANDIDATES = {
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.parse_args()
     chunks = json.loads(STORE.read_text(encoding="utf-8"))
     by_page = {}
     for c in chunks:
-        by_page.setdefault(c["page"], []).append(c["text"])
+        # A chunk carried a `page` field until 2026-08-18, when the Office
+        # loaders generalised it to a `locator` of {kind, value}. This script
+        # went on reading `page` and raised KeyError on every run from that
+        # date until 2026-09-07. Chunks located by something other than a
+        # page (a slide, a sheet) have no page to check against and are
+        # skipped.
+        loc = c.get("locator") or {"kind": "page", "value": c.get("page")}
+        if loc.get("kind", "page") != "page":
+            continue
+        by_page.setdefault(loc.get("value"), []).append(c["text"])
     # Chunk text preserves Markdown line breaks, so a phrase spanning a newline
     # will not match a single-spaced needle. Collapse whitespace on both sides.
     by_page = {p: norm(" ".join(t)) for p, t in by_page.items()}

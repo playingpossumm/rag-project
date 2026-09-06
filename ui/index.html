@@ -4,24 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Retrieval visualized</title>
+<!-- Since 2026-09-06 the palette lives in tokens.css and the fonts, the
+     reset and the header in base.css, shared with the other pages. The
+     paths are relative rather than "/tokens.css" for the same reason the
+     static build's shim loads its data relatively, which is that the site
+     may be opened from disk or served under a subpath, and an absolute path
+     fails in both. The shim's name must not appear in this file, because
+     record_static.py takes its presence as proof the shim is already
+     installed and skips installing it; the first rebuild after this comment
+     named it shipped a front page that fetched /api/ from a server that was
+     not there. -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
 <style>
-/* ---------------------------------------------------------------- type
-   Inter and DM Mono, served from this repo. No CDN, no external request: the
-   corpus this indexes may be private, and a page about private documents
-   should not announce itself to a font host on load. That constraint is also
-   why the display face is DM Mono rather than a geometric sans -- adding one
-   would mean bundling another file, and a monospace headline suits an
-   instrument better anyway. */
-@font-face{font-family:Inter;src:url("/fonts/Inter-400_700.woff2") format("woff2");
-  font-weight:400 700;font-display:swap;font-style:normal}
-@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-400.woff2") format("woff2");
-  font-weight:400;font-display:swap;font-style:normal}
-@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-500.woff2") format("woff2");
-  font-weight:500;font-display:swap;font-style:normal}
-
 /* ============================================================== tokens
-   Near-black ground, raised cards, generous radius. The three document hues
-   are the dark-stepped, all-pairs-validated set (CVD dE 9.4, normal 20.9).
+   The palette is tokens.css. Only the layout values that belong to this page
+   stay here.
 
    THE RULE THAT MAKES THE PICTURE READ: colour means "this passage is in your
    answer". Everything else -- every candidate considered and dropped, every
@@ -29,24 +27,6 @@
    grey. The previous version tinted everything, so colour meant nothing and
    the diagram read as a chart competing with the answer. */
 :root{
-  --ground:#0e0e0f;
-  --card:#171819;
-  --nest:#1f2022;
-  --hair:#292b2d;
-  --edge:#35383a;
-
-  --ink:#f2f2f0;
-  --dim:#a2a5a7;
-  --mute:#7c8082;
-  --faint:#5a5e60;
-  --wire:#43474a;
-
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
-  --good:#3fb950; --bad:#f0685f; --warn:#d9a441;
-
-  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
-  --ease:cubic-bezier(.23,1,.32,1);
   /* One height for every pipeline drawing on the page, so the hero and the
      answer are the same drawing at the same size. Width-driven: the vh term it
      used to carry was there to keep the question field above the fold, and
@@ -63,16 +43,9 @@
   --pad:clamp(1.5rem,4vw,2.75rem);
 }
 
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
-  font-size:15px;line-height:1.6;letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
-button,input,textarea{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--s1);outline-offset:3px;border-radius:4px}
-
-.lab{font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.15em;
-  text-transform:uppercase;color:var(--faint)}
-.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+/* Half a pixel under base.css's label, which the other two pages use as it
+   is; this page sets more labels closer together. */
+.lab{font-size:9.5px;letter-spacing:.15em}
 
 /* ------------------------------------------------------------- topbar */
 .top{position:sticky;top:0;z-index:30;background:rgba(14,14,15,.86);
@@ -90,9 +63,6 @@ button,input,textarea{font:inherit;color:inherit}
 .top nav .here{font-family:var(--mono);font-size:10px;font-weight:500;
   letter-spacing:.13em;text-transform:uppercase;color:var(--ink);
   white-space:nowrap}
-.ghlink{display:inline-flex;align-items:center;line-height:0;opacity:.62;
-  transition:opacity 140ms ease-out}
-.ghlink:hover{opacity:1}
 .herovizhead{display:flex;flex-direction:column;gap:3px;align-items:center;
   margin-bottom:6px}
 .herovizhead .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;
@@ -181,14 +151,27 @@ body:not(.asked) .tray{display:none}
 .trayset[aria-pressed="true"]{border-color:var(--s1);color:var(--ink)}
 .trayset .cnt{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)}
 
-.trayPanel .sdesc{margin:0 0 9px;font-size:12px;line-height:1.55;color:var(--faint);
+/* Sentences at 12px and 12.5px take --mute, the body-text token. Until
+   2026-09-06 this description, .oldlink, .rgrid .note2, .fromsheet, .vizsub,
+   the two summary hints and the unselected tab names sat in --faint, which
+   was then #5a5e60 and reached 2.71:1 on --card, under the 4.5:1 line for
+   text a reader has to read. The first version of this comment gave that
+   ratio as 4.08:1, which is the ratio of the lifted --faint #747a7d and not
+   of the token the text had. Three more readers' texts still sat in --faint
+   after that pass, the unselected settings options (.opt), the dropped
+   candidates' table rows (tr.out td) and the question placeholder, and they
+   moved to --mute on 2026-09-07. --faint now carries the mono labels, the
+   header links, the axis ticks and the small counts beside a name. */
+.trayPanel .sdesc{margin:0 0 9px;font-size:12px;line-height:1.55;color:var(--mute);
   max-width:52ch}
 .oldlink{display:flex;align-items:baseline;gap:10px;
   border-top:1px solid var(--hair);padding:12px 15px;
-  font-size:12.5px;color:var(--faint);text-decoration:none;
+  font-size:12.5px;color:var(--mute);text-decoration:none;
   transition:color 160ms var(--ease)}
 .oldlink:hover{color:var(--dim)}
 .oldlink span{margin-left:auto;font-family:var(--mono);font-size:10px}
+.trayPanel .setsrc{margin:0;padding:4px 16px 6px;color:var(--mute);max-width:none}
+.trayPanel .setsrc b{color:var(--dim);font-weight:600}
 .trayPanel .cmp{border-top:1px solid var(--hair);padding:12px 15px;
   font-size:12.5px;color:var(--mute);line-height:1.5}
 @media (prefers-reduced-motion:reduce){
@@ -297,8 +280,12 @@ body:not(.asked) .tray{display:none}
    be swiped. The fade on the right edge is the only cue that there is more.
    scroll-snap is deliberately not used: this is one continuous drawing, not
    a carousel of separate things. */
+/* Both drawings scroll inside .wrapviz. Until 2026-09-06 the rule read
+   ".heroviz,.viz .wrapviz" and no element had the class wrapviz, so the
+   answer's canvas, at min-width 940px inside .card{overflow:hidden}, was
+   clipped at the card edge on a phone with no way to reach the rest. */
 @media (max-width:720px){
-  .heroviz,.viz .wrapviz{overflow-x:auto;overscroll-behavior-x:contain;
+  .wrapviz{overflow-x:auto;overscroll-behavior-x:contain;
     -webkit-overflow-scrolling:touch}
   /* Width and height together, because they are not independent here. The
      drawing is fitted to the HEIGHT on a narrow screen, and the scale that
@@ -308,15 +295,15 @@ body:not(.asked) .tray{display:none}
      drawing's height plus its padding -- or the drawing sits centred in slack
      and you swipe through empty canvas to reach it. */
   .heroviz canvas,canvas.city{min-width:940px}
-  .heroviz,.viz{position:relative}
+  .wrapviz{position:relative}
   /* The only cue that the drawing continues past the right edge. Sits above
      the canvas, ignores pointer events so it cannot block the swipe, and is
      hidden once scrolled to the end. */
-  .heroviz::after,.viz::after{content:"";position:absolute;top:0;bottom:0;right:0;
+  .wrapviz::after{content:"";position:absolute;top:0;bottom:0;right:0;
     width:44px;pointer-events:none;
     background:linear-gradient(to left,var(--ground),transparent)}
-  .heroviz.ended::after,.viz.ended::after{opacity:0}
-  .heroviz::after,.viz::after{transition:opacity 200ms var(--ease)}
+  .wrapviz.ended::after{opacity:0}
+  .wrapviz::after{transition:opacity 200ms var(--ease)}
 }
 /* A column wants height, not width. Capped so the stack and its side labels
    sit as one block instead of stranding a narrow diagram in a very wide box. */
@@ -336,7 +323,7 @@ body:not(.asked) .tray{display:none}
 .field textarea{flex:1;min-width:0;border:0;background:none;resize:none;
   padding:12px 0;font-size:16px;line-height:1.5;max-height:160px}
 .field textarea:focus{outline:0}
-.field textarea::placeholder{color:var(--faint)}
+.field textarea::placeholder{color:var(--mute)}
 /* min-height matches the textarea's single-line box exactly (12px padding +
    24px line + 12px padding), so at rest the button and the text align top and
    bottom. The row stays flex-end because the textarea grows downward and the
@@ -413,20 +400,11 @@ body:not(.asked) .tray{display:none}
 .ddopt .cnt{font-size:12.5px;color:var(--mute)}
 .ddopt .fmt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--faint)}
 .ddopt[aria-selected="true"]{background:var(--nest)}
-.sets .set{display:flex;flex-direction:column;gap:5px;text-align:left;
-  background:var(--card);border:1px solid var(--hair);border-radius:12px;
-  padding:14px 16px;cursor:pointer;font:inherit;
-  transition:border-color 160ms var(--ease),background 160ms var(--ease)}
-.sets .set:hover:not(:disabled){border-color:var(--edge);background:var(--nest)}
-.sets .set:disabled{opacity:.45;cursor:default}
-.sets .set[aria-pressed="true"]{border-color:var(--s1);background:var(--nest)}
-.sets .set .nm{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink)}
-.sets .set .nm b{margin-left:auto;font-family:var(--mono);font-size:9.5px;
-  font-weight:500;color:var(--s1);letter-spacing:.08em;text-transform:uppercase}
-.sets .set .cnt{font-size:12.5px;color:var(--mute)}
-.sets .set .fmt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
-  color:var(--faint)}
-.sets .set .warn2{color:var(--warn)}
+/* The document-set cards that used to live here (".sets .set", a flex column
+   with a pointer cursor and a hover border) were removed on 2026-09-06. The
+   cards became the .ddopt list above, but the rules stayed and matched the
+   settings panel, whose container is also .sets, so four settings cards that
+   cannot be clicked showed a pointer and a hover border. */
 body.switching .sets{opacity:.45;pointer-events:none}
 
 /* Suggestions hang under the field rather than sitting under it permanently,
@@ -554,7 +532,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
   text-transform:uppercase;color:var(--faint)}
 .rgrid .vv{display:flex;flex-wrap:wrap;gap:6px;font-size:14px;color:var(--ink)}
 .rgrid .vv.mono{font-family:var(--mono);font-size:14.5px}
-.rgrid .note2{font-size:12px;line-height:1.5;color:var(--faint)}
+.rgrid .note2{font-size:12px;line-height:1.5;color:var(--mute)}
 
 /* What this answer was produced with, and the way in to changing it. */
 .ranwith{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
@@ -594,7 +572,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
 /* A passage out of a spreadsheet is shown as the table it came from. */
 .answer.cells{font-size:15px;font-weight:400;line-height:1.55;border-collapse:collapse;
   width:100%;max-width:64ch;letter-spacing:0}
-.fromsheet{margin:0 0 12px;font-size:12.5px;color:var(--faint);max-width:62ch}
+.fromsheet{margin:0 0 12px;font-size:12.5px;color:var(--mute);max-width:62ch}
 .answer.cells th{width:1%;white-space:nowrap;text-align:left;vertical-align:top;
   padding:7px 18px 7px 0;font-family:var(--mono);font-size:10.5px;font-weight:500;
   letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
@@ -634,7 +612,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .vizhead{display:flex;align-items:center;gap:14px;padding:14px clamp(22px,3.4vw,34px);
   flex-wrap:wrap}
 .vizhead .lab{color:var(--mute)}
-.vizhead .vizsub{font-size:12.5px;color:var(--faint);
+.vizhead .vizsub{font-size:12.5px;color:var(--mute);
   font-family:var(--sans);letter-spacing:0;text-transform:none}
 .legend{margin-left:auto;display:flex;gap:14px;flex-wrap:wrap}
 .legend span{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
@@ -660,7 +638,7 @@ canvas.city{display:block;width:100%;height:var(--map-h)}
 .more > summary::-webkit-details-marker{display:none}
 .more > summary:hover{background:var(--nest)}
 .more > summary .lab{color:var(--dim)}
-.more > summary .hint{color:var(--faint);font-size:12.5px}
+.more > summary .hint{color:var(--mute);font-size:12.5px}
 .more > summary::after{content:"";width:7px;height:7px;margin-left:auto;flex:none;
   border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);
   transform:rotate(45deg) translateY(-2px);transition:transform 220ms var(--ease)}
@@ -716,7 +694,9 @@ tr.out .scorecell .sbar{background:var(--wire);opacity:.5}
 .oc{font-size:11.5px;white-space:nowrap}
 .oc.in{color:var(--good)}
 .oc.cut{color:var(--bad)}
-.oc.out{color:var(--faint)}
+/* --mute since 2026-09-07. This word is the only place a dropped row's fate is
+   stated, and --faint put it at 4.08:1 on the card. */
+.oc.out{color:var(--mute)}
 .scalekey{display:flex;align-items:center;gap:10px;margin:0 0 10px;
   flex-wrap:wrap;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--faint)}
@@ -776,7 +756,7 @@ tr.out .scorecell .sbar{background:var(--wire);opacity:.5}
 .detail > summary::-webkit-details-marker{display:none}
 .detail > summary:hover{background:var(--nest)}
 .detail > summary .lab{color:var(--dim)}
-.detail > summary .hint{color:var(--faint);font-size:12.5px}
+.detail > summary .hint{color:var(--mute);font-size:12.5px}
 .detail > summary::after{content:"";width:7px;height:7px;margin-left:auto;flex:none;
   border-right:1.5px solid var(--faint);border-bottom:1.5px solid var(--faint);
   transform:rotate(45deg) translateY(-2px);transition:transform 220ms var(--ease)}
@@ -786,7 +766,7 @@ tr.out .scorecell .sbar{background:var(--wire);opacity:.5}
   border-bottom:1px solid var(--hair)}
 .tabs button{background:none;border:0;border-bottom:2px solid transparent;
   margin-bottom:-1px;padding:9px 12px 11px;cursor:pointer;font:inherit;
-  font-size:13px;color:var(--faint);
+  font-size:13px;color:var(--mute);
   transition:color 160ms var(--ease),border-color 160ms var(--ease)}
 .tabs button:hover{color:var(--dim)}
 .tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--s1)}
@@ -803,7 +783,11 @@ th.r:last-child,td.r:last-child{padding-right:0}
 td{padding:10px 12px 10px 0;border-bottom:1px solid var(--hair);vertical-align:top;
   color:var(--dim)}
 tr:last-child td{border-bottom:0}
-tr.out td{color:var(--faint)}
+/* A dropped candidate's row is 12.5px text a reader compares against the
+   kept rows, so it steps down one tone from --dim to --mute rather than two
+   to --faint, which is 4.08:1 on --card and was what it had until
+   2026-09-07. */
+tr.out td{color:var(--mute)}
 .src{white-space:nowrap;display:flex;align-items:center;gap:8px;color:var(--ink)}
 .dot{width:7px;height:7px;border-radius:2px;flex:none}
 .loc{color:var(--faint);font-size:9.5px;font-family:var(--mono);margin-top:3px}
@@ -863,15 +847,20 @@ tr.out td{color:var(--faint)}
 .set h5{margin:0;font-size:12.5px;font-weight:600}
 .set .u{margin-left:auto}
 .opts{display:flex;gap:6px;flex-wrap:wrap}
+/* An unselected option is a 12px name and a 10.5px figure the reader has to
+   read to choose, so it sits in --mute, 5.53:1 on --card. Until 2026-09-07
+   it sat in --faint at 4.08:1, and the figure had opacity .75 on top, which
+   blended --mute down to 3.67:1; the figure is now told apart by its
+   monospace face alone. */
 .opt{border:1px solid var(--hair);background:var(--card);border-radius:999px;
-  padding:5px 11px;cursor:pointer;color:var(--faint);display:flex;align-items:baseline;
+  padding:5px 11px;cursor:pointer;color:var(--mute);display:flex;align-items:baseline;
   gap:6px;transition:color 180ms var(--ease),border-color 180ms var(--ease),
   background 180ms var(--ease)}
 .opt:hover{color:var(--dim);border-color:var(--edge)}
 .opt[aria-pressed="true"]{color:var(--ink);border-color:var(--s1);
   background:rgba(57,135,229,.12)}
 .opt .k{font-size:12px;white-space:nowrap}
-.opt .v{font-family:var(--mono);font-size:10.5px;opacity:.75}
+.opt .v{font-family:var(--mono);font-size:10.5px}
 .cmp{margin-top:16px;background:var(--nest);border:1px solid var(--hair);
   border-radius:10px;padding:14px 16px;font-size:13px;color:var(--dim)}
 .cmp table{margin-top:10px;max-width:460px}
@@ -898,7 +887,7 @@ tr.out td{color:var(--faint)}
 
 .thinking{display:flex;align-items:center;gap:14px;padding:34px clamp(22px,3.4vw,34px);
   font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--faint)}
+  color:var(--mute)}   /* --faint until 2026-09-07; status text a reader waits on */
 .thinking .bar{width:84px;height:2px;background:var(--hair);overflow:hidden;border-radius:2px}
 .thinking .bar::after{content:"";display:block;width:36%;height:100%;background:var(--s1);
   /* linear: constant motion. An ease-out curve on a loop makes the bar lurch
@@ -906,6 +895,12 @@ tr.out td{color:var(--faint)}
   animation:slide 1.15s linear infinite}
 @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
 .err{color:var(--bad)}
+/* The copy in the hero picker names its own colour because .hero p above
+   outranks .err, and until 2026-09-07 that copy painted in --dim while only
+   the tray copy was red. */
+.seterr,.hero .seterr{color:var(--bad)}
+.seterr{margin:8px 0 0;font-size:12.5px;line-height:1.5;max-width:52ch}
+.traysets .seterr{padding:0 8px}
 /* Reduced motion means gentler, not off.
    This was `*{transition:none!important;animation:none!important}`, which is
    not a stricter version of the scoped blocks above -- it OVERRODE them. The
@@ -956,7 +951,7 @@ tr.out td{color:var(--faint)}
       <span class="sub">Seven stages, from the whole index down to the passages
         an answer is allowed to use</span>
     </div>
-    <div class="heroviz"><canvas id="idle"></canvas></div>
+    <div class="heroviz wrapviz"><canvas id="idle"></canvas></div>
 
     <!-- Which documents to search comes before what to ask. The answer, the
          threshold it is judged against and the questions worth asking all
@@ -1006,6 +1001,11 @@ tr.out td{color:var(--faint)}
            you want to know why it came out the way it did, and which documents
            were searched is the first part of that. -->
       <div class="traysets" id="traysets"></div>
+      <!-- Which question set the figures on the cards below were measured on.
+           The cards used to say "this project's own question set" whichever
+           documents were in use, and the payload carried the ML papers'
+           figures under every corpus. -->
+      <p class="sdesc setsrc" id="setSrc"></p>
       <div class="sets" id="setBody"></div>
       <div class="cmp" id="setCmp"></div>
 
@@ -1016,12 +1016,9 @@ tr.out td{color:var(--faint)}
 
 <script type="module">
 import { buildCity, buildRun, drawScene, captions, shortDoc } from "/pipeline-map.js";
-import { clean, esc, fragment, markAnswer, STOP } from "/answer-mark.js";
+import { clean, fragment, markAnswer, STOP } from "/answer-mark.js";
 import { alsoFoundOrder, alsoFoundHint } from "/passages.js";
-
-const $ = s => document.querySelector(s);
-
-const nf = n => Number(n).toLocaleString();
+import { $, nf, esc, readInk } from "./common.js";
 
 
 /* Chunks are cut on a token boundary, so a passage routinely stops
@@ -1364,20 +1361,13 @@ function reading(score, threshold) {
 
 /* Marking both ends says "a fragment of something longer". */
 
-/* `other` is --wire, not a mid grey: everything that did NOT reach the answer
-   is drawn as near-invisible wireframe, so hue in the picture means exactly
-   one thing. */
-const readInk = () => {
-  const cs = getComputedStyle(document.body);
-  const v = n => cs.getPropertyValue(n).trim();
-  return { ink: v("--ink"), muted: v("--mute"), faint: v("--wire"), line: v("--hair"),
-    lineSoft: v("--hair"), panel: v("--ground"), sunk: v("--card"), rule: v("--hair"),
-    s1: v("--s1"), s2: v("--s2"), s3: v("--s3"),
-    other: v("--wire"), good: v("--good"), critical: v("--bad") };
-};
-
+/* The ink the drawing paints with is readInk in common.js, which reads the
+   page's tokens so the canvas and the page cannot disagree. */
 let CITY = null, EVAL = null, INK = readInk(), N = 0, BUSY = false, GENERATE = false;
 let ACTIVE = null;
+/* Every document set the server knows, as the picker last received them, so a
+   corpus name in a payload can be turned into the label a reader knows. */
+let CORPORA = [];
 
 /* How a plate sits: "upright" stands it on the ground plane like a panel,
    "flat" lays it down like a floor tile. One constant for both canvases --
@@ -1544,6 +1534,7 @@ async function loadCorpus() {
 }
 
 Promise.all([loadCorpus(), loadPicker()]).then(() => {
+  if (EVAL) renderSettings();   // both payloads are in, so the set label is right
   // No resize listener: the ResizeObserver in fit() already redraws when the
   // canvas changes size, and that is narrower and more accurate than the
   // window event -- a sidebar opening resizes the canvas without a resize
@@ -1662,6 +1653,7 @@ function idleLoop() {
 async function loadPicker() {
   const data = await fetch("/api/corpora").then(r => r.json()).catch(() => null);
   if (!data) return;
+  CORPORA = data.corpora || [];
   // Documents, passages and file formats -- what the set IS. The abstention
   // threshold each one was calibrated at is real and still applies, but it is
   // a number about the machinery, not about the reading material, and it does
@@ -1745,6 +1737,11 @@ addEventListener("keydown", e => { if (e.key === "Escape") closeDd(); });
 
 async function selectCorpus(name) {
   if (BUSY || (ACTIVE && name === ACTIVE.name)) return;
+  // A message from an earlier failed switch is cleared before this one
+  // starts. Until 2026-09-07 it was cleared only by the next failure, so a
+  // successful switch left the picker showing the new set's name over the old
+  // set's error.
+  document.querySelectorAll(".seterr").forEach(n => n.remove());
   document.body.classList.add("switching");
   try {
     const r = await fetch("/api/corpus/select", {
@@ -1765,10 +1762,25 @@ async function selectCorpus(name) {
     $("#hero").appendChild($("#form"));
     await Promise.all([loadCorpus(), loadPicker()]);
   } catch (err) {
-    const g = $("#setgrid");
-    if (g) g.dataset.error = err.message;
+    // Shown, in both places the set can be chosen from. Until 2026-09-06 the
+    // message went into a data attribute on the menu that nothing read, so a
+    // failed switch looked like a switch that had not been asked for.
+    showSwitchError(err.message);
   } finally {
     document.body.classList.remove("switching");
+  }
+}
+
+function showSwitchError(message) {
+  document.querySelectorAll(".seterr").forEach(n => n.remove());
+  const text = `Could not switch the document set: ${message}`;
+  for (const host of [$("#pickset"), $("#traysets")]) {
+    if (!host) continue;
+    const p = document.createElement("p");
+    p.className = "err seterr";
+    p.setAttribute("role", "alert");
+    p.textContent = text;
+    host.appendChild(p);
   }
 }
 
@@ -1822,7 +1834,15 @@ function markScrollEnd(el) {
     el.classList.toggle("ended", done || el.scrollWidth <= el.clientWidth);
   };
   el.addEventListener("scroll", check, { passive: true });
-  addEventListener("resize", check);
+  // A ResizeObserver rather than a window resize listener: one of these is
+  // made for every answer, and the answers are thrown away with the thread.
+  // An observer on a removed element drops out below; a window listener on a
+  // removed element stays for the life of the page.
+  const ro = new ResizeObserver(() => {
+    if (!el.isConnected) { ro.disconnect(); return; }
+    check();
+  });
+  ro.observe(el);
   check();
 }
 markScrollEnd(document.querySelector(".heroviz"));
@@ -1973,6 +1993,9 @@ function renderTurn(turn, question, data, opts) {
   const gen = data.generation || { state: "off" };
 
   const label = !gated ? "Can't tell" : v.confident ? "Answered" : "Not in these documents";
+  // One id per turn, so the tabs and panes below can name each other. A re-run
+  // into the same turn keeps the id it was given.
+  const tid = turn.id || (turn.id = `turn${N}`);
 
   // The header used to read "-9.23 · it needs 0.0 to answer at all", which is a
   // debugger readout standing where the answer should be. The numbers are real
@@ -2091,7 +2114,7 @@ function renderTurn(turn, question, data, opts) {
     <div class="viz">
       <div class="vizhead"><span class="lab">The RAG process</span>
         <span class="vizsub">How this answer was found, stage by stage</span></div>
-      <canvas class="city"></canvas>
+      <div class="wrapviz"><canvas class="city"></canvas></div>
       <div class="vizfoot">
         <span class="cap"></span>
         <input type="range" class="scrub" min="0" max="100" value="100" aria-label="Stage">
@@ -2135,13 +2158,17 @@ function renderTurn(turn, question, data, opts) {
           ? ` · ${data.attribution.terms.length} query terms` : ""} · ${
         data.stages.length} stages</span></summary>
 
-      <div class="tabs" role="tablist">
-        <button type="button" role="tab" data-pane="cands" aria-selected="true">Candidates</button>
-        <button type="button" role="tab" data-pane="words" aria-selected="false">Word matches</button>
-        <button type="button" role="tab" data-pane="steps" aria-selected="false">Stages</button>
+      <div class="tabs" role="tablist" aria-label="Detail views">
+        <button type="button" role="tab" data-pane="cands" id="${tid}-tab-cands"
+          aria-controls="${tid}-pane-cands" aria-selected="true" tabindex="0">Candidates</button>
+        <button type="button" role="tab" data-pane="words" id="${tid}-tab-words"
+          aria-controls="${tid}-pane-words" aria-selected="false" tabindex="-1">Word matches</button>
+        <button type="button" role="tab" data-pane="steps" id="${tid}-tab-steps"
+          aria-controls="${tid}-pane-steps" aria-selected="false" tabindex="-1">Stages</button>
       </div>
 
-      <div class="pane" data-pane="cands"><div class="inner">
+      <div class="pane" data-pane="cands" role="tabpanel" id="${tid}-pane-cands"
+        aria-labelledby="${tid}-tab-cands" tabindex="0"><div class="inner">
         <p class="pnote"><b>Every passage the search considered, and where it
         stood at each stage.</b> Rank 1 is the top of the chart, so a line that
         climbs was promoted and a line that falls was pushed down. A line that
@@ -2193,8 +2220,10 @@ function renderTurn(turn, question, data, opts) {
             <td>${outcome}</td>
           </tr>`; }).join("");
         })()}</tbody></table></div></div></div>
-      <div class="pane" data-pane="words" hidden><div class="stack"></div></div>
-      <div class="pane" data-pane="steps" hidden><div class="inner">
+      <div class="pane" data-pane="words" role="tabpanel" id="${tid}-pane-words"
+        aria-labelledby="${tid}-tab-words" tabindex="0" hidden><div class="stack"></div></div>
+      <div class="pane" data-pane="steps" role="tabpanel" id="${tid}-pane-steps"
+        aria-labelledby="${tid}-tab-steps" tabindex="0" hidden><div class="inner">
         <p class="pnote">The same run again, one stage at a time. Each block
         says what the stage does, what it produced on this question, and every
         passage it held when it finished, drawn in the order that stage put
@@ -2243,23 +2272,44 @@ function renderTurn(turn, question, data, opts) {
    its citation and the diagram are the page, and several questions in a row
    stay scannable. */
 function wireTabs(turn) {
-  const tabs = [...turn.querySelectorAll('.detail [role="tab"]')];
-  const panes = [...turn.querySelectorAll(".detail .pane")];
-  if (!tabs.length) return;
-
-  const show = name => {
-    tabs.forEach(t => t.setAttribute("aria-selected", String(t.dataset.pane === name)));
-    panes.forEach(pn => { pn.hidden = pn.dataset.pane !== name; });
-  };
-  tabs.forEach(t => { t.onclick = () => show(t.dataset.pane); });
-
   // Nothing matched means nothing to show; the tab goes rather than opening on
-  // an empty panel.
+  // an empty panel. Removed before the list is read, so the arrow keys below
+  // never land on a tab that is not there.
   const words = turn.querySelector('.pane[data-pane="words"] .stack');
   if (!words || !words.innerHTML.trim()) {
     turn.querySelector('[data-pane="words"][role="tab"]')?.remove();
     turn.querySelector('.pane[data-pane="words"]')?.remove();
   }
+  const tabs = [...turn.querySelectorAll('.detail [role="tab"]')];
+  const panes = [...turn.querySelectorAll('.detail [role="tabpanel"]')];
+  if (!tabs.length) return;
+
+  // The WAI-ARIA tabs pattern with automatic activation: one tab in the tab
+  // order, arrows move between tabs and select as they go, Home and End jump.
+  // Until 2026-09-06 the buttons carried role=tab and nothing else, so a
+  // screen reader announced tabs that no key could reach.
+  const show = (name, focus = false) => {
+    tabs.forEach(t => {
+      const on = t.dataset.pane === name;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      if (on && focus) t.focus();
+    });
+    panes.forEach(pn => { pn.hidden = pn.dataset.pane !== name; });
+  };
+  tabs.forEach((t, i) => {
+    t.onclick = () => show(t.dataset.pane);
+    t.onkeydown = e => {
+      const to = e.key === "ArrowRight" ? i + 1
+        : e.key === "ArrowLeft" ? i - 1
+        : e.key === "Home" ? 0
+        : e.key === "End" ? tabs.length - 1
+        : null;
+      if (to === null) return;
+      e.preventDefault();
+      show(tabs[(to + tabs.length) % tabs.length].dataset.pane, true);
+    };
+  });
 }
 
 /* --------------------------------------------------------- attention map
@@ -2469,6 +2519,8 @@ function wireCity(turn, run, data) {
   const scrub = turn.querySelector(".scrub"), btn = turn.querySelector(".replay");
   const cap = turn.querySelector(".cap");
   let raf = 0, playing = false;
+  // The edge fade on a phone, hidden once the drawing is scrolled to its end.
+  markScrollEnd(turn.querySelector(".viz .wrapviz"));
 
   // Once per turn. captions() builds six objects and their prose from the run,
   // and it was being rebuilt inside every frame of a seven-second replay --
@@ -2542,7 +2594,7 @@ function settingsHTML(opts) {
           reorders them. Slower, and much better at telling a passage that
           mentions the subject from one that answers the question. The number
           is mean reciprocal rank: how near the top the right passage lands,
-          measured on this project's own question set.`,
+          measured on the question set named above.`,
       opts: [
       ["On", true, g(e2e["dense + rerank"], "mrr")],
       ["Off", false, g(e2e["dense, no rerank"], "mrr")]] },
@@ -2602,8 +2654,37 @@ function optsSummary(o) {
 /* The panel reflects whatever the last answer was run with, and changing a
    control re-runs that question. Before any question has been asked it simply
    records the choice for the first one. */
+/* Which question set the figures beside the options were measured on. The
+   payload names its corpus under EVAL.corpus, as a label where the server adds
+   one and otherwise as a name such as "llm", which the picker's list turns
+   into the label a reader knows. A payload that names no set carries the ML
+   papers' figures, which is what every recorded payload carried until
+   2026-09-06, so that is what the panel says in that case. */
+function evalSetLabel() {
+  const c = EVAL?.corpus;
+  const name = typeof c === "string" ? c : c?.label || c?.name;
+  if (!name) return "ML & NLP papers";
+  // The active corpus answers for itself. CORPORA is filled by loadPicker(),
+  // which runs beside loadCorpus() rather than before it, so on a first load
+  // the raw name "llm" could reach here before the picker's labels had, and
+  // the note then said the figures were measured on "the llm question set,
+  // not on the ML & NLP papers set in use here" under the very set they
+  // describe. Seen on 2026-09-07 at 1280 and 390 wide, where the eval payload
+  // won the race; renderSettings() also runs again once both have arrived.
+  if (ACTIVE && (name === ACTIVE.name || name === ACTIVE.label)) return ACTIVE.label;
+  const known = CORPORA.find(x => x.name === name || x.label === name);
+  return known ? known.label : name;
+}
+
 function renderSettings() {
   const opts = LAST ? LAST.opts : OPTS;
+  const measured = evalSetLabel();
+  const inUse = ACTIVE?.label;
+  $("#setSrc").innerHTML = EVAL
+    ? `The figure beside each option was measured on the <b>${esc(measured)}</b>
+       question set${inUse && inUse !== measured
+         ? `, not on the ${esc(inUse)} set in use here` : ""}.`
+    : "No measurements are loaded, so the options carry no figures.";
   $("#setBody").innerHTML = settingsHTML(opts);
   const changed = JSON.stringify(opts) !== JSON.stringify(DEFAULTS);
   $("#setName").textContent = changed ? "Settings · changed" : "Settings";

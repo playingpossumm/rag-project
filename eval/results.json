@@ -7,7 +7,7 @@
     "adversarial_cases": 17,
     "k": 5,
     "candidate_k": 16,
-    "golden": "C:\\Users\\owner\\Desktop\\rag-project\\eval\\golden_set.json",
+    "golden": "eval/golden_set.json",
     "name": "llm",
     "rerank_blend": 0.0
   },

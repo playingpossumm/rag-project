@@ -35,11 +35,16 @@ offered to anyone and nothing says so.
     .venv\\Scripts\\python.exe src\\check_golden.py            # every corpus
     .venv\\Scripts\\python.exe src\\check_golden.py --corpus birds
 
-Exit code is the contract: 0 valid, 1 problems found.
+Exit code is the contract: 0 every configured golden set was checked and is
+valid, 1 problems found, 2 a configured corpus was not checked because it has
+no index built or no golden set, so the run says nothing about it. The same
+contract as `audit_page_credit.py`, which also exits 2 when a recording exists
+for some corpora and not others. Until 2026-09-06 an unindexed corpus was
+skipped with a one-line note and the run still printed "all 0 golden sets are
+structurally valid" and exited 0 on a fresh clone, having checked nothing.
 """
 import argparse
 import json
-import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -60,10 +65,10 @@ ANSWERABLE_KINDS = {"fact", "multi", "cross-doc"}
 ADVERSARIAL_KINDS = {"absent", "near-miss", "metadata"}
 
 
-def normalize(text: str) -> str:
-    """Whitespace-collapsed and lowercased, so a phrase split across a line
-    break in the parsed document still matches. Same rule evaluate.py uses."""
-    return re.sub(r"\s+", " ", str(text)).strip().lower()
+# One rule, defined in evaluate.py. This file carried its own copy until
+# 2026-09-07, the same rule with a str() around the argument that no caller
+# needed, and a rule that lives in two files is one that drifts.
+from evaluate import normalize  # noqa: E402
 
 
 def locator_key(loc: dict) -> tuple:
@@ -196,6 +201,16 @@ def check_corpus(name: str, cfg: dict) -> list[str]:
     return problems
 
 
+def shown(path: Path | None) -> str:
+    """A path as the documents write it, relative to the repo where it can be."""
+    if path is None:
+        return "(none configured)"
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -206,14 +221,29 @@ def main() -> int:
     wanted = args.corpus or list(reg)
     total = 0
     checked = 0
+    not_run: list[str] = []
 
     for name in wanted:
         cfg = reg.get(name)
         if not cfg:
             print(f"  unknown corpus {name!r}; have {sorted(reg)}")
             return 2
-        if not cfg["indexed"] or not cfg["golden"] or not cfg["golden"].exists():
-            print(f"\n{name}: no index or no golden set, skipped")
+        # A corpus that cannot be checked is reported in the same voice as a
+        # problem, because a reader scanning for trouble reads "skipped" as
+        # "fine". Nothing about its golden set has been established.
+        if not cfg["indexed"]:
+            print(f"\n{cfg['label']}\n  NOT RUN  no index is built under "
+                  f"{shown(cfg['store'])}, so the golden set was not checked. "
+                  f"Build one with\n           python src/ingest.py "
+                  f"(RAG_DATA_DIR={shown(cfg['data'])} "
+                  f"RAG_STORE_DIR={shown(cfg['store'])})")
+            not_run.append(name)
+            continue
+        if not cfg["golden"] or not cfg["golden"].exists():
+            print(f"\n{cfg['label']}\n  NOT RUN  no golden set at "
+                  f"{shown(cfg['golden'])}, so there is nothing to check "
+                  f"against the index")
+            not_run.append(name)
             continue
 
         found = check_corpus(name, cfg)
@@ -236,11 +266,23 @@ def main() -> int:
             print(f"  note     {n}")
 
     print()
+    skipped = (f" {len(not_run)} configured corpus(es) NOT RUN: "
+               f"{', '.join(not_run)}." if not_run else "")
     if total:
-        print(f"{total} problem(s) across {checked} corpora. A golden set that "
-              f"does not describe\nits corpus produces numbers that look fine "
-              f"and measure something else.")
+        print(f"{total} problem(s) across {checked} corpora.{skipped} A golden "
+              f"set that does not describe\nits corpus produces numbers that "
+              f"look fine and measure something else.")
         return 1
+    if not checked:
+        print(f"no golden set could be checked because no index is built.{skipped}\n"
+              f"Nothing here has been established; build an index and run this "
+              f"again.")
+        return 2
+    if not_run:
+        print(f"{checked} golden set(s) structurally valid against their "
+              f"indexes.{skipped}\nThis run says nothing about those, so it "
+              f"does not pass.")
+        return 2
     print(f"all {checked} golden sets are structurally valid against their indexes")
     return 0
 

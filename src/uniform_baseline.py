@@ -58,13 +58,15 @@ UNIFORM = {"candidate_k": CANDIDATE_K, "blend": 0.0, "fusion": DEFAULT_FUSION,
 def score(cases, index, metadata, model, bm25, *, k, candidate_k, blend,
           fusion, max_per_source, ensemble):
     totals = {"hit_rate": 0.0, "mrr": 0.0, "ndcg": 0.0, "src_recall": 0.0}
-    rr.RERANK_BLEND = blend
     rr.clear_cache()
     for case in cases:
         results = retrieve(case["question"], index, metadata, model, k=k,
                            candidate_k=candidate_k, use_reranker=True,
                            fusion=fusion, bm25=bm25,
-                           max_per_source=max_per_source, ensemble=ensemble)
+                           # Passed per call; set on the rerank module until
+                           # 2026-09-07.
+                           max_per_source=max_per_source, rerank_blend=blend,
+                           ensemble=ensemble)
         gold = gold_keys(case)
         totals["hit_rate"] += hit_rate(results, gold)
         totals["mrr"] += reciprocal_rank(results, gold)

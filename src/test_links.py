@@ -64,7 +64,7 @@ class Result:
 
 
 def scenario(hrefs, *, files=("docs/corpus-manifest.md",), branches=("master",),
-             remote=REMOTE, ids=("corpora",)):
+             remote=REMOTE, ids=("corpora",), routes=ROUTES):
     """Run the checker over a synthetic ui/ and a stubbed git.
 
     `hrefs` is what the interface links to, `files` and `branches` are what the
@@ -100,7 +100,7 @@ def scenario(hrefs, *, files=("docs/corpus-manifest.md",), branches=("master",),
             return None
 
         cl.ROOT, cl.UI, cl.git = tmp, ui, git
-        cl.served_routes = lambda: set(ROUTES)
+        cl.served_routes = lambda: set(routes)
         sys.argv = ["check_links.py"]
 
         buf = io.StringIO()
@@ -175,6 +175,18 @@ check("anchor / an id that exists passes",
 # which is the whole reason anchors are checked at all.
 check("anchor / the message names the id, not just the page",
       scenario(["/about#missing"]).says("#missing"), True)
+
+# ---- a bare file name beside the pages -------------------------------------
+# tokens.css and base.css are linked by name, not by route. Until 2026-09-07
+# the checker classed them as external and checked nothing, which is how a
+# stylesheet the server did not dispatch passed for a day.
+check("bare name / a file in ui/ that serve.py dispatches passes",
+      scenario(["site.css"], files=("ui/site.css",),
+               routes=ROUTES | {"/site.css"}).broken, False)
+check("bare name / a file in ui/ that serve.py does not dispatch is reported",
+      scenario(["site.css"], files=("ui/site.css",)).says("does not dispatch"), True)
+check("bare name / a name no file in ui/ carries is reported",
+      scenario(["ghost.css"]).says("no file in ui/ has that name"), True)
 
 # ---- the checker's own failure mode ----------------------------------------
 # Finding nothing to check is not the same as finding nothing wrong.

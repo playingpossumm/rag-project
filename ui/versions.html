@@ -14,21 +14,11 @@
      Delete this page, ui/versions/ and the two data files once a direction is
      chosen.
 -->
+<!-- The palette, the fonts and the reset are the shared tokens.css and
+     base.css, since 2026-09-06; this page carried its own copy before. -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
 <style>
-@font-face{font-family:Inter;src:url("fonts/Inter-400_700.woff2") format("woff2");
-  font-weight:400 700;font-display:swap}
-@font-face{font-family:"DM Mono";src:url("fonts/DMMono-500.woff2") format("woff2");
-  font-weight:500;font-display:swap}
-:root{
-  --ground:#0e0e0f; --card:#171819; --nest:#1f2022; --hair:#292b2d; --edge:#35383a;
-  --ink:#f2f2f0; --dim:#a2a5a7; --mute:#7c8082; --faint:#5a5e60; --wire:#43474a;
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --good:#3fb950; --bad:#f0685f;
-  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"DM Mono",ui-monospace,Consolas,monospace;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
-  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1240px;margin:0 auto;padding:28px clamp(16px,4vw,32px) 100px}
 h1{font-size:19px;margin:0 0 5px;letter-spacing:-.01em}
 .sub{color:var(--dim);font-size:13.5px;margin:0 0 8px;max-width:74ch}
@@ -113,6 +103,7 @@ import * as V1 from "./versions/v1-original.js";
 import * as V2 from "./versions/v2-optionC-first.js";
 import * as V3 from "./versions/v3-optionC-refined.js";
 import * as V4 from "./versions/v4-current.js";
+import { readInk } from "./common.js";
 
 // The basis the site actually ships. "flat" lays every plate down like a
 // floor tile, which projects to a shallow horizontal band and is not what any
@@ -132,14 +123,7 @@ document.getElementById("q").textContent = trace.query;
 
 /* The same ink for all four, read once from the page, so no version gets an
    advantage from a palette the others do not have. */
-const cs = getComputedStyle(document.body);
-const v = n => cs.getPropertyValue(n).trim();
-const INK = {
-  ink: v("--ink"), muted: v("--mute"), faint: v("--wire"), line: v("--hair"),
-  lineSoft: v("--hair"), panel: v("--ground"), sunk: v("--card"), rule: v("--hair"),
-  s1: v("--s1"), s2: v("--s2"), s3: v("--s3"),
-  other: v("--wire"), good: v("--good"), critical: v("--bad"),
-};
+const INK = readInk();
 
 const panes = [...document.querySelectorAll("canvas[data-v]")].map(cv => {
   const M = MODULES[cv.dataset.v];

@@ -54,7 +54,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import corpora  # noqa: E402
-import rerank as rr  # noqa: E402
 from evaluate import load_cases, normalize  # noqa: E402
 from hybrid import build_bm25  # noqa: E402
 from retrieve import (EMBEDDING_MODEL, TOP_K, load_ensemble, load_index,  # noqa: E402
@@ -447,7 +446,6 @@ def main() -> int:
         index, metadata = load_index(cfg["store"])
         bm25 = build_bm25(metadata)
         ensemble = load_ensemble(cfg["store"]) if cfg.get("ensemble_model") else None
-        rr.RERANK_BLEND = cfg["rerank_blend"]
 
         # The model that wrote the answers, which on a rescore is the one
         # recorded in the file rather than whatever the environment names now.
@@ -463,7 +461,10 @@ def main() -> int:
             results = retrieve(case["question"], index, metadata, model,
                                k=TOP_K, candidate_k=cfg["candidate_k"],
                                use_reranker=True, bm25=bm25,
-                               max_per_source=2, ensemble=ensemble)
+                               # Passed per call; set on the rerank module
+                               # until 2026-09-07.
+                               max_per_source=2, rerank_blend=cfg["rerank_blend"],
+                               ensemble=ensemble)
             if args.rescore:
                 if not results:
                     print(f"    {case['id']}: retrieval returns nothing now, "

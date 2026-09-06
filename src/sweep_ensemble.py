@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import numpy as np  # noqa: E402
 
 import corpora  # noqa: E402
-from evaluate import gold_keys, is_relevant, load_cases  # noqa: E402
+from evaluate import fixture_ids, gold_keys, is_relevant, load_cases  # noqa: E402
 from hybrid import RRF_K  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -50,15 +50,6 @@ PARTNERS = [
     {"name": "BAAI/bge-small-en-v1.5",
      "prefix": "Represent this sentence for searching relevant passages: "},
 ]
-
-
-def fixture_ids(cfg) -> set:
-    from check_freshness import artefact_suffix
-    p = ROOT / "eval" / f"hard_cases{artefact_suffix(cfg['golden'])}.json"
-    if not p.exists():
-        return set()
-    d = json.loads(p.read_text(encoding="utf-8"))
-    return {c["id"] if isinstance(c, dict) else c for c in d.get("structural", [])}
 
 
 def rankings(spec, texts, questions):

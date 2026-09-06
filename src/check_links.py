@@ -155,6 +155,22 @@ def main() -> int:
                     notes.append(f"{url} -> id present")
             continue
 
+        # A bare file name beside the pages: tokens.css and base.css since
+        # 2026-09-06. Until 2026-09-07 these fell through to "external, not
+        # checked offline", so a stylesheet the server did not dispatch, which
+        # was the case for a day, passed this check.
+        if "://" not in url and not url.startswith("mailto:"):
+            path, _, _frag = url.partition("#")
+            if not (UI / path).is_file():
+                problems.append(f"{url} ({where}) is a relative link and no file "
+                                f"in ui/ has that name")
+            elif "/" + path not in routes:
+                problems.append(f"{url} ({where}) is a file in ui/ that serve.py "
+                                f"does not dispatch")
+            else:
+                notes.append(f"{url} -> file in ui/, served at /{path}")
+            continue
+
         m = SELF_REPO.match(url)
         if not m:
             notes.append(f"{url} -> external, not checked offline")

@@ -55,13 +55,14 @@ FUSIONS = [
 ]
 
 
-def score(cases, index, metadata, model, bm25, fusion, alpha, k, cand):
+def score(cases, index, metadata, model, bm25, fusion, alpha, k, cand, blend):
     totals = {"hit_rate": 0.0, "mrr": 0.0, "ndcg": 0.0, "src_recall": 0.0}
     missed = []
     for case in cases:
         results = retrieve(case["question"], index, metadata, model, k=k,
                            candidate_k=cand, use_reranker=True, fusion=fusion,
-                           alpha=alpha, bm25=bm25, max_per_source=2)
+                           alpha=alpha, bm25=bm25, max_per_source=2,
+                           rerank_blend=blend)
         gold = gold_keys(case)
         m = {"hit_rate": hit_rate(results, gold),
              "mrr": reciprocal_rank(results, gold),
@@ -104,9 +105,6 @@ def main() -> int:
         answerable, _ = load_cases(cfg["golden"])
         index, metadata = load_index(cfg["store"])
         bm25 = build_bm25(metadata)
-        # The corpus's own blend, so this measures a change of fusion and not a
-        # change of fusion plus a change of everything else.
-        rr.RERANK_BLEND = cfg["rerank_blend"]
 
         print(f"\n  {cfg['label']}  ({len(answerable)} answerable, "
               f"blend {cfg['rerank_blend']:.2f})")
@@ -116,8 +114,11 @@ def main() -> int:
         shipped = None
         for label, fusion, alpha in FUSIONS:
             rr.clear_cache()
+            # The corpus's own blend, passed on the call, so this measures a
+            # change of fusion and not a change of fusion plus a change of
+            # everything else.
             r = score(answerable, index, metadata, model, bm25, fusion, alpha,
-                      args.k, args.candidate_k)
+                      args.k, args.candidate_k, cfg["rerank_blend"])
             rows[label] = r
             if fusion == "rrf":
                 shipped = r

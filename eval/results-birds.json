@@ -7,7 +7,7 @@
     "adversarial_cases": 7,
     "k": 5,
     "candidate_k": 20,
-    "golden": "eval\\golden-birds.json",
+    "golden": "eval/golden-birds.json",
     "name": "birds",
     "rerank_blend": 0.2
   },

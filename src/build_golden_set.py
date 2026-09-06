@@ -24,9 +24,14 @@ string is visible rather than quietly inflating the gold set.
 import argparse
 import json
 import os
-import re
 import sys
 from pathlib import Path
+
+# Gold is derived by substring match, and the match has to use the rule the
+# harness scores with or a case can be derived here and missed there. The one
+# definition lives in evaluate.py, and this file carried its own copy until
+# 2026-09-06.
+from evaluate import normalize as norm  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -244,10 +249,6 @@ ADVERSARIAL = [
     ("adv-compute-budget", "How many GPU-hours were budgeted before training began?",
      "near-miss", "compute used is reported after the fact, never as a prior budget"),
 ]
-
-
-def norm(text: str) -> str:
-    return re.sub(r"\s+", " ", text).strip().lower()
 
 
 def derive_gold(chunks, answer: str) -> list[dict]:

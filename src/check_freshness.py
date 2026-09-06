@@ -11,8 +11,21 @@ ask something it had itself concluded it could not answer.
 Only `RESULTS.md` grew a `--check`. This is the same idea for the other chain:
 
     golden set  ->  per_case*.json  ->  analytics.json  ->  the front page
+                         |                    |
+                         v                    v
+                  threshold.json      static-demo/ (manifest, recordings)
+    golden set + index  ->  top-passages.json
 
-Two kinds of check, deliberately, because they fail differently:
+The three branches were added on 2026-09-06. Until then `eval/threshold.json`
+was served at `/api/threshold` while naming a case the golden set had deleted
+and counting 66 + 18 cases against a set that held 67 + 17; `top-passages.json`
+disagreed with the golden sets on 4 of 157 entries; and the static demo's
+manifest carried no record of which golden set or index it was recorded from.
+None of the three carried a digest, so a file written before that date is
+reported UNSTAMPED, which is a problem and not a note: the file cannot be
+checked by provenance, and the way to fix that is to rewrite it.
+
+There are 3 kinds of check, and each fails in a different way.
 
 **Provenance.** Each generated file records a digest of the files it was built
 from. A digest that no longer matches means the input changed after the output
@@ -24,6 +37,12 @@ threshold and rerank blend are compared directly. This is the weaker check and
 the more useful one: it works on files written before provenance existed, it
 says which question is missing rather than that a hash moved, and it is what
 catches the interface offering a question the corpus no longer has.
+
+**Stamps.** A generated file with no `inputs` block at all. For `per_case` and
+`results` this is a note, because both predate provenance and every copy in
+the repository has since been rewritten with one. For the three files added on
+2026-09-06 it is a problem, because the copies on disk are the unstamped ones
+and the point of adding them to the chain is to have them rewritten.
 
 Config drift is checked here too, and found a live instance on the first run:
 `per_case.py` scored every corpus at the ML papers' 0.0 threshold and at rerank
@@ -50,6 +69,11 @@ ROOT = Path(__file__).parent.parent
 EVAL = ROOT / "eval"
 ANALYTICS = EVAL / "analytics.json"
 ANSWER_QUALITY = EVAL / "answer-quality.json"
+TOP_PASSAGES = EVAL / "top-passages.json"
+STATIC = ROOT / "static-demo"
+
+# The states that make the exit code nonzero. "note" is not one of them.
+PROBLEM_STATES = ("STALE", "MISSING", "UNSTAMPED")
 
 # Enough of a sha256 that a collision is not a thing to think about, short
 # enough to sit on one line of a diff. Full hashes made every regeneration a
@@ -96,6 +120,13 @@ def artefact(kind: str, golden: Path) -> Path:
     return EVAL / f"{kind}{artefact_suffix(golden)}.json"
 
 
+def count(value) -> str:
+    """A count for a message, or "none" when the file did not carry one, so a
+    partial manifest gets a STALE row rather than a TypeError from the
+    thousands separator. Until 2026-09-07 every site formatted the raw value."""
+    return f"{value:,}" if isinstance(value, int) else "none"
+
+
 def load(path: Path):
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -131,13 +162,50 @@ class Report:
         if fix and fix not in self.fixes:
             self.fixes.append(fix)
 
+    def unstamped(self, scope, item, detail, fix=None):
+        """A file with no provenance block, where that is a problem.
+
+        This is kept apart from `stale` because the finding is different even
+        though the fix is the same. Nothing has been shown to disagree, and
+        nothing can be shown to disagree until a generator that records its
+        inputs rewrites the file.
+        """
+        self.rows.append((scope, item, "UNSTAMPED", detail))
+        if fix and fix not in self.fixes:
+            self.fixes.append(fix)
+
     def note(self, scope, item, detail):
         """Something to know about, not something that is wrong."""
         self.rows.append((scope, item, "note", detail))
 
     @property
     def problems(self):
-        return [r for r in self.rows if r[2] in ("STALE", "MISSING")]
+        return [r for r in self.rows if r[2] in PROBLEM_STATES]
+
+    def clean(self, scope, item) -> bool:
+        """Whether nothing has been reported wrong under (scope, item) yet."""
+        return not [r for r in self.rows if r[0] == scope and r[1] == item
+                    and r[2] in PROBLEM_STATES]
+
+    def commands(self) -> list[str]:
+        """The rebuild commands, in the order the files have to be rebuilt.
+
+        The fixes arrive in check order, which is per-corpus files first, then
+        analytics, then top-passages, then the static demo. build_analytics.py
+        is always included because analytics.json carries the figures the
+        others feed. When analytics was found current it is not in `fixes`,
+        and until 2026-09-07 it was then appended last, after record_static.py,
+        although record_static.py copies eval/analytics.json into static-demo/
+        on every run; following that printed order would have left the copy
+        behind. It now goes in before the first record_static.py command.
+        """
+        analytics = ".venv\\Scripts\\python.exe src\\build_analytics.py"
+        cmds = list(self.fixes)
+        if analytics not in cmds:
+            at = next((i for i, c in enumerate(cmds) if "record_static.py" in c),
+                      len(cmds))
+            cmds.insert(at, analytics)
+        return cmds
 
 
 def check_per_case(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Path):
@@ -209,8 +277,8 @@ def check_per_case(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Pat
                             or got_c.get("documents") != stats.get("documents")):
         rep.stale(name, "per_case",
                   f"scored against {got_c.get('documents')} documents / "
-                  f"{got_c.get('chunks'):,} chunks; the index now holds "
-                  f"{stats.get('documents')} / {stats.get('chunks'):,}", fix)
+                  f"{count(got_c.get('chunks'))} chunks; the index now holds "
+                  f"{stats.get('documents')} / {count(stats.get('chunks'))}", fix)
 
     # Config drift. The single most reused finding in this project is that a
     # corpus setting does not transfer, so a file that recorded one corpus's
@@ -242,8 +310,7 @@ def check_per_case(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Pat
                  f"{rel} does not record a rerank blend; this corpus ships "
                  f"{cfg['rerank_blend']:.2f}")
 
-    if not [r for r in rep.rows if r[0] == name and r[1] == "per_case"
-            and r[2] in ("STALE", "MISSING")]:
+    if rep.clean(name, "per_case"):
         rep.ok(name, "per_case", f"{len(pc_ids)} cases, {rel}")
     return pc
 
@@ -302,8 +369,8 @@ def check_results(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Path
                   or c.get("documents") != stats.get("documents")):
         rep.stale(name, "results",
                   f"measured {c.get('documents')} documents / "
-                  f"{c.get('chunks'):,} chunks; the index now holds "
-                  f"{stats.get('documents')} / {stats.get('chunks'):,}", fix)
+                  f"{count(c.get('chunks'))} chunks; the index now holds "
+                  f"{stats.get('documents')} / {count(stats.get('chunks'))}", fix)
 
     # The harness records the settings it ran under, and they are the same two
     # that do not transfer between corpora. It read both from module constants
@@ -327,10 +394,285 @@ def check_results(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Path
                   f"was measured at rerank blend {got_blend:.2f}; corpora.json "
                   f"ships {cfg['rerank_blend']:.2f}", fix)
 
-    if not [r for r in rep.rows if r[0] == name and r[1] == "results"
-            and r[2] in ("STALE", "MISSING")]:
+    if rep.clean(name, "results"):
         rep.ok(name, "results", f"{n_ans} + {n_adv} cases, {path.name}")
     return res
+
+
+def check_threshold(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Path):
+    """threshold*.json -- the calibration table serve.py offers at /api/threshold.
+
+    Optional, so a corpus without one gets no row. It reads per_case, so its
+    provenance is the per_case digest plus whatever per_case recorded about
+    the golden set and the index. The live instance this was written against
+    was eval/threshold.json, calibrated on 2026-08-21 on 66 + 18 cases, which
+    on 2026-09-06 still named adv-moe-routing although the golden set had
+    dropped that case on 2026-08-25 (commit b7a34e1). The first draft of this
+    sentence put the gap at 16 days, counted from the calibration date rather
+    than from the git history; the dates above replace that figure.
+    """
+    path = artefact("threshold", gold_path)
+    if not path.exists():
+        return None
+    per_case = artefact("per_case", gold_path)
+    fix = (f".venv\\Scripts\\python.exe src\\calibrate_threshold.py "
+           f"--per-case {per_case.relative_to(ROOT).as_posix()} "
+           f"--emit {path.relative_to(ROOT).as_posix()}")
+    data = load(path)
+    if data is None:
+        rep.missing(name, "threshold", f"{path.name} is unreadable", fix)
+        return None
+    rel = path.relative_to(ROOT).as_posix()
+
+    inputs = data.get("inputs")
+    if not inputs:
+        rep.unstamped(name, "threshold",
+                      f"{rel} records no inputs, so nothing can say which "
+                      f"per_case or golden set it was calibrated from", fix)
+    else:
+        got = (inputs.get("golden") or {}).get("digest")
+        if got and got != digest(gold_path):
+            rep.stale(name, "threshold",
+                      f"golden set has changed since {rel} was calibrated "
+                      f"({got} -> {digest(gold_path)})", fix)
+        got_p = (inputs.get("per_case") or {}).get("digest")
+        if got_p and got_p != digest(per_case):
+            rep.stale(name, "threshold",
+                      f"{per_case.name} has been re-scored since {rel} was "
+                      f"calibrated", fix)
+        got_i = (inputs.get("index") or {}).get("digest")
+        if got_i and got_i != digest(cfg["store"] / "metadata.json"):
+            rep.stale(name, "threshold",
+                      f"the index has been rebuilt since {rel} was calibrated", fix)
+
+    n_ans = sum(1 for x in gold["cases"] if not x.get("unanswerable"))
+    n_adv = len(gold["cases"]) - n_ans
+    if (data.get("n_answerable"), data.get("n_adversarial")) != (n_ans, n_adv):
+        rep.stale(name, "threshold",
+                  f"calibrated on {data.get('n_answerable')} answerable + "
+                  f"{data.get('n_adversarial')} adversarial; the golden set now "
+                  f"holds {n_ans} + {n_adv}", fix)
+
+    gold_ids = {c["id"] for c in gold["cases"]}
+    named = set()
+    for row in data.get("sweep") or []:
+        named |= set(row.get("caught") or []) | set(row.get("wrongly_refused") or [])
+    gone = sorted(named - gold_ids)
+    if gone:
+        rep.stale(name, "threshold",
+                  f"names {len(gone)} case(s) the golden set no longer has: "
+                  f"{', '.join(gone[:4])}{' ...' if len(gone) > 4 else ''}", fix)
+
+    want_thr = cfg["threshold"] if cfg["calibrated"] else 0.0
+    got_thr = data.get("shipped_threshold")
+    if got_thr is not None and abs(got_thr - want_thr) > 1e-9:
+        rep.stale(name, "threshold",
+                  f"records a shipped threshold of {got_thr:+.1f}; corpora.json "
+                  f"ships {want_thr:+.1f}", fix)
+
+    if rep.clean(name, "threshold"):
+        rep.ok(name, "threshold", f"{n_ans} + {n_adv} cases, {path.name}")
+    return data
+
+
+def check_top_passages(rep: Report, reg: dict, golds: dict):
+    """top-passages.json -- the passages the answer-highlight sweep runs over.
+
+    One file for every corpus, written by dump_top_passages.py and read by
+    ui/test-answer-mark.mjs. Before 2026-09-06 it was a bare list, so a file
+    of that shape is UNSTAMPED and its rows are still checked by content.
+    """
+    scope = "top-passages"
+    fix = ".venv\\Scripts\\python.exe src\\dump_top_passages.py"
+    if not TOP_PASSAGES.exists():
+        return
+    data = load(TOP_PASSAGES)
+    if data is None:
+        rep.missing(scope, "provenance", "eval/top-passages.json is unreadable", fix)
+        return
+
+    if isinstance(data, list):
+        rows, inputs = data, {}
+        rep.unstamped(scope, "provenance",
+                      "eval/top-passages.json is a bare list with no inputs, so "
+                      "nothing can say which golden sets or indexes its passages "
+                      "came from", fix)
+    else:
+        rows = data.get("rows") or []
+        inputs = (data.get("inputs") or {}).get("per_corpus") or {}
+        if not data.get("inputs"):
+            rep.unstamped(scope, "provenance",
+                          "eval/top-passages.json records no inputs", fix)
+
+    for name in sorted(inputs):
+        cfg = reg.get(name)
+        if not cfg:
+            continue
+        got = (inputs[name].get("golden") or {}).get("digest")
+        if got and cfg["golden"] and got != digest(cfg["golden"]):
+            rep.stale(scope, name,
+                      f"golden set has changed since the passages were dumped "
+                      f"({got} -> {digest(cfg['golden'])})", fix)
+        got_i = (inputs[name].get("index") or {}).get("digest")
+        if got_i and got_i != digest(cfg["store"] / "metadata.json"):
+            rep.stale(scope, name,
+                      "the index has been rebuilt since the passages were dumped", fix)
+
+    by_corpus: dict[str, dict[str, dict]] = {}
+    for r in rows:
+        by_corpus.setdefault(r.get("corpus"), {})[r.get("id")] = r
+    for name in sorted(set(by_corpus) - set(golds), key=str):
+        rep.stale(scope, name,
+                  f"holds passages for {name!r}, which has no golden set", fix)
+    for name, gold in sorted(golds.items()):
+        gold_ids = {c["id"]: c for c in gold["cases"]}
+        got_ids = by_corpus.get(name, {})
+        if not got_ids:
+            rep.stale(scope, name, "no passages dumped for this corpus", fix)
+            continue
+        gone = sorted(set(got_ids) - set(gold_ids))
+        if gone:
+            rep.stale(scope, name,
+                      f"holds {len(gone)} case(s) the golden set no longer has: "
+                      f"{', '.join(gone[:4])}{' ...' if len(gone) > 4 else ''}", fix)
+        never = sorted(set(gold_ids) - set(got_ids))
+        if never:
+            rep.stale(scope, name,
+                      f"{len(never)} golden case(s) have never been dumped: "
+                      f"{', '.join(never[:4])}{' ...' if len(never) > 4 else ''}", fix)
+        shared = set(gold_ids) & set(got_ids)
+        reworded = sorted(i for i in shared
+                          if gold_ids[i]["question"] != got_ids[i].get("question"))
+        if reworded:
+            rep.stale(scope, name,
+                      f"{len(reworded)} question(s) reworded since the dump: "
+                      f"{', '.join(reworded[:4])}", fix)
+        flipped = sorted(i for i in shared
+                         if bool(gold_ids[i].get("unanswerable"))
+                         != bool(got_ids[i].get("unanswerable")))
+        if flipped:
+            rep.stale(scope, name,
+                      f"{len(flipped)} case(s) changed between answerable and "
+                      f"adversarial since the dump: {', '.join(flipped[:4])}", fix)
+        if rep.clean(scope, name):
+            rep.ok(scope, name, f"{len(got_ids)} passages, all in the golden set")
+
+
+def check_static(rep: Report, reg: dict, golds: dict):
+    """static-demo/ -- the recorded answers a visitor to the static build gets.
+
+    The manifest names each corpus with the golden set and index it was
+    recorded from; each corpus directory holds an index.json naming the
+    recorded questions, which are compared to the golden set the way the
+    front page's offered questions are. analytics.json there is a byte copy of
+    eval/analytics.json, so those two are compared by digest, and so are the
+    manifest and the copy of it under site/recorded/. The manifest also
+    records the digest of the analytics.json the recording was taken from,
+    because the questions a plain (not --all) recording covers are the ones
+    analytics.json offers, so an analytics.json rebuilt since then may offer
+    questions the recording does not hold. Until 2026-09-07 that digest was
+    written and never read.
+    """
+    scope = "static-demo"
+    manifest_path = STATIC / "manifest.json"
+    if not manifest_path.exists():
+        return
+    man = load(manifest_path)
+    if man is None:
+        rep.missing(scope, "manifest", "static-demo/manifest.json is unreadable",
+                    ".venv\\Scripts\\python.exe src\\record_static.py")
+        return
+    entries = man.get("corpora") or {}
+
+    # Whether the last recording covered whole golden sets or the offered
+    # ten, so the fix names the flag that reproduces it.
+    whole = all(golds.get(n) and e.get("questions") == len(golds[n]["cases"])
+                for n, e in entries.items())
+    fix = (".venv\\Scripts\\python.exe src\\record_static.py"
+           + (" --all" if whole else ""))
+    site_fix = ".venv\\Scripts\\python.exe src\\record_static.py --site-only"
+
+    copy = STATIC / "analytics.json"
+    if copy.exists() and ANALYTICS.exists() and digest(copy) != digest(ANALYTICS):
+        rep.stale(scope, "analytics",
+                  "static-demo/analytics.json is behind eval/analytics.json, so "
+                  "the static build's quality page draws the previous figures",
+                  site_fix)
+    site_copy = STATIC / "site" / "recorded" / "manifest.json"
+    if site_copy.exists() and digest(site_copy) != digest(manifest_path):
+        rep.stale(scope, "site",
+                  "site/recorded/ was built from an older manifest than the one "
+                  "in static-demo/", site_fix)
+    recorded_from = ((man.get("inputs") or {}).get("analytics") or {}).get("digest")
+    if recorded_from and ANALYTICS.exists() and recorded_from != digest(ANALYTICS):
+        rep.stale(scope, "manifest",
+                  "the recording was taken from an older eval/analytics.json "
+                  f"({recorded_from} -> {digest(ANALYTICS)}), so the questions "
+                  "it offers may not all have recorded answers", fix)
+
+    for name in sorted(set(entries) - set(reg)):
+        rep.stale(scope, name,
+                  f"records {name!r}, which corpora.json no longer configures", fix)
+    for name in sorted(n for n, c in reg.items()
+                       if c["indexed"] and c["golden"] and n not in entries):
+        rep.note(scope, name, f"{reg[name]['label']} has not been recorded")
+
+    for name, entry in sorted(entries.items()):
+        cfg = reg.get(name)
+        if not cfg:
+            continue
+        inputs = entry.get("inputs")
+        if not inputs:
+            rep.unstamped(scope, name,
+                          f"manifest.json records no inputs for {name}, so nothing "
+                          f"can say which golden set or index its "
+                          f"{entry.get('questions')} recorded answers came from", fix)
+        else:
+            got = (inputs.get("golden") or {}).get("digest")
+            if got and cfg["golden"] and got != digest(cfg["golden"]):
+                rep.stale(scope, name,
+                          f"golden set has changed since {name} was recorded "
+                          f"({got} -> {digest(cfg['golden'])})", fix)
+            got_i = (inputs.get("index") or {}).get("digest")
+            if got_i and got_i != digest(cfg["store"] / "metadata.json"):
+                rep.stale(scope, name,
+                          f"the index has been rebuilt since {name} was recorded", fix)
+
+        stats = corpora.stats(cfg)
+        if stats and (entry.get("chunks") != stats.get("chunks")
+                      or entry.get("documents") != stats.get("documents")):
+            rep.stale(scope, name,
+                      f"recorded against {entry.get('documents')} documents / "
+                      f"{count(entry.get('chunks'))} chunks; the index now holds "
+                      f"{stats.get('documents')} / {count(stats.get('chunks'))}", fix)
+        want_thr = cfg["threshold"] if cfg["calibrated"] else 0.0
+        if entry.get("threshold") is not None and abs(entry["threshold"] - want_thr) > 1e-9:
+            rep.stale(scope, name,
+                      f"recorded at threshold {entry['threshold']:+.1f}; "
+                      f"corpora.json ships {want_thr:+.1f}", fix)
+
+        gold = golds.get(name)
+        if not gold:
+            continue
+        by_q = {c["question"]: c for c in gold["cases"]}
+        recorded = load(STATIC / name / "index.json") or []
+        gone = [r["question"] for r in recorded if r.get("question") not in by_q]
+        if gone:
+            rep.stale(scope, name,
+                      f"answers {len(gone)} question(s) the golden set no longer "
+                      f"contains, first: {gone[0][:70]!r}", fix)
+        mislabelled = [r["question"] for r in recorded
+                       if r.get("question") in by_q
+                       and bool(r.get("adversarial"))
+                       != bool(by_q[r["question"]].get("unanswerable"))]
+        if mislabelled:
+            rep.stale(scope, name,
+                      f"{len(mislabelled)} recorded question(s) changed between "
+                      f"answerable and adversarial, first: "
+                      f"{mislabelled[0][:70]!r}", fix)
+        if rep.clean(scope, name):
+            rep.ok(scope, name,
+                   f"{len(recorded)} questions recorded, all in the golden set")
 
 
 def check_analytics(rep: Report, reg: dict, golds: dict, per_cases: dict):
@@ -422,8 +764,8 @@ def check_analytics(rep: Report, reg: dict, golds: dict, per_cases: dict):
                       or entry.get("documents") != stats.get("documents")):
             rep.stale(scope, name,
                       f"draws {entry.get('documents')} documents / "
-                      f"{entry.get('chunks'):,} chunks; the index holds "
-                      f"{stats.get('documents')} / {stats.get('chunks'):,}", fix)
+                      f"{count(entry.get('chunks'))} chunks; the index holds "
+                      f"{stats.get('documents')} / {count(stats.get('chunks'))}", fix)
 
         want_thr = cfg["threshold"] if cfg["calibrated"] else 0.0
         if entry.get("threshold") is not None and abs(entry["threshold"] - want_thr) > 1e-9:
@@ -449,8 +791,7 @@ def check_analytics(rep: Report, reg: dict, golds: dict, per_cases: dict):
         if not entry.get("examples"):
             rep.stale(scope, name, "offers no questions at all", fix)
 
-        if not [r for r in rep.rows if r[0] == scope and r[1] == name
-                and r[2] in ("STALE", "MISSING")]:
+        if rep.clean(scope, name):
             rep.ok(scope, name,
                    f"{len(entry.get('examples', []))} questions offered, all in "
                    f"the golden set")
@@ -481,12 +822,19 @@ def run() -> Report:
         if pc:
             per_cases[name] = pc
         check_results(rep, name, cfg, gold, gold_path)
+        check_threshold(rep, name, cfg, gold, gold_path)
 
+    # analytics before the static demo, which copies from it, so the fix list
+    # comes out in the order the files have to be rebuilt. Report.commands()
+    # keeps that order when analytics itself is current.
     check_analytics(rep, reg, golds, per_cases)
+    check_top_passages(rep, reg, golds)
+    check_static(rep, reg, golds)
     return rep
 
 
-STATE_MARK = {"ok": "  ok  ", "STALE": " STALE", "MISSING": " GONE ", "note": " note "}
+STATE_MARK = {"ok": "    ok   ", "STALE": "  STALE  ", "MISSING": "  GONE   ",
+              "UNSTAMPED": "UNSTAMPED", "note": "  note   "}
 
 
 def main() -> int:
@@ -504,11 +852,11 @@ def main() -> int:
 
     for scope in scopes:
         rows = [r for r in rep.rows if r[0] == scope]
-        if args.quiet and not any(r[2] in ("STALE", "MISSING") for r in rows):
+        if args.quiet and not any(r[2] in PROBLEM_STATES for r in rows):
             continue
         print(f"\n{scope}")
         for _, item, state, detail in rows:
-            if args.quiet and state not in ("STALE", "MISSING"):
+            if args.quiet and state not in PROBLEM_STATES:
                 continue
             print(f"  {STATE_MARK[state]}  {item:<12} {detail}")
 
@@ -516,15 +864,18 @@ def main() -> int:
     print()
     if not problems:
         print("the chain is current: golden set -> per_case -> analytics -> "
-              "the questions the front page offers")
+              "the questions the front page offers, threshold, top-passages "
+              "and the static demo")
         return 0
 
+    n_unstamped = sum(1 for r in problems if r[2] == "UNSTAMPED")
+    if n_unstamped:
+        print(f"{n_unstamped} UNSTAMPED finding(s): a file with no inputs digest "
+              f"cannot be checked by provenance until it is rewritten.")
     print(f"{len(problems)} problem(s). Rebuild in this order -- analytics reads "
           f"the others, so\nrebuilding it first only copies stale numbers forward:")
-    for cmd in rep.fixes:
+    for cmd in rep.commands():
         print(f"    {cmd}")
-    if ".venv\\Scripts\\python.exe src\\build_analytics.py" not in rep.fixes:
-        print("    .venv\\Scripts\\python.exe src\\build_analytics.py")
     return 2 if rep.broken else 1
 
 

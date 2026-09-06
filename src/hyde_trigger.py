@@ -92,7 +92,6 @@ def measure(cfg, model):
     index, metadata = load_index(cfg["store"])
     bm25 = build_bm25(metadata)
     ensemble = load_ensemble(cfg["store"])
-    rr.RERANK_BLEND = cfg["rerank_blend"]
     threshold = cfg["threshold"]
     cases, adversarial = load_cases(Path(cfg["golden"]))
 
@@ -103,7 +102,7 @@ def measure(cfg, model):
         results = retrieve(question, index, metadata, model, k=TOP_K,
                            candidate_k=cfg["candidate_k"], use_reranker=True,
                            fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2,
-                           ensemble=ensemble)
+                           ensemble=ensemble, rerank_blend=cfg["rerank_blend"])
         if not results:
             continue
 

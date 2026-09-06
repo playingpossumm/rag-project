@@ -4,98 +4,53 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Retrieval analytics</title>
+<!-- The palette, the fonts, the reset and the header are shared with the
+     other pages: tokens.css and base.css, since 2026-09-06. Until then this
+     page carried its own copy of each under its own token names, and wrote
+     var(--nest,#1f2022) to reach a token only the front page defined.
+     Relative paths, so the static build resolves them from disk and under a
+     subpath. -->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
 <style>
-/* Same fonts, tokens and devices as the app. This is a second view of one
-   system, not a second design -- and nothing here is loaded from a network. */
-@font-face{font-family:Inter;src:url("/fonts/Inter-400_700.woff2") format("woff2");
-  font-weight:400 700;font-display:swap;font-style:normal}
-@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-400.woff2") format("woff2");
-  font-weight:400;font-display:swap;font-style:normal}
-@font-face{font-family:"DM Mono";src:url("/fonts/DMMono-500.woff2") format("woff2");
-  font-weight:500;font-display:swap;font-style:normal}
-
-/* Dark, matching the app. The three series hues are the dark-stepped values
-   validated all-pairs on this ground -- CVD dE 9.4, normal vision 20.9 -- not
-   the light values dimmed, which fail the lightness band.
+/* The three series hues are the dark-stepped values validated all-pairs on
+   this ground -- CVD dE 9.4, normal vision 20.9 -- not the light values
+   dimmed, which fail the lightness band.
 
    COLOUR FOLLOWS THE CORPUS, everywhere on this page: ML papers is always
    blue, ornithology always orange, quantitative finance always green. The
    answerable/adversarial split is drawn filled vs hollow rather than as a
    fourth hue, so the same blue never means two different things, and the
    palette stays the validated three. */
-:root{
-  --bg:#0b0c0d; --panel:#141618; --sunk:#1b1e21;
-  --ink:#f4f6f7; --soft:#a9b0b5; --muted:#7d858b; --faint:#5b6368;
-  --line:#22262a; --rule:#2e3338;
-  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70;
-  --good:#3fb950; --critical:#f0685f; --serious:#d9a441;
-  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --mono:"DM Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
-  --ease-out:cubic-bezier(0.23,1,0.32,1);
-  --max:1180px; --pad:clamp(1.25rem,4vw,3.25rem);
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
-  font-size:15px;line-height:1.55;letter-spacing:-.006em;-webkit-font-smoothing:antialiased}
+:root{--max:1180px; --pad:clamp(1.25rem,4vw,3.25rem)}
+/* Tighter than base.css's 1.6 line and -.005em tracking: this page is
+   tables and tiles, not prose, and its wrap points stay where they were. */
+body{line-height:1.55;letter-spacing:-.006em}
 h1,h2{margin:0;font-weight:600;letter-spacing:-.022em;line-height:1.1}
 a{color:inherit}
 h2.lab{margin:0;font-size:10px}
-.lab{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--faint)}
-.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
-
-.folio{border-bottom:1px solid var(--rule);background:var(--panel);
-  position:sticky;top:0;z-index:20}
-.folio-in{max-width:var(--max);margin:0 auto;padding:0 var(--pad);height:54px;
-  display:flex;align-items:center;gap:22px}
-/* The wordmark is a wordmark, not a nav label, so it does not take the
-   capitals the links take. It was rendering as RETRIEVAL VISUALIZED/ on this
-   page and as retrieval visualized/ on the front page. */
-.folio .name{font-family:var(--mono);font-size:13px;font-weight:500;
-  letter-spacing:-.01em;text-transform:none;white-space:nowrap;
-  color:var(--ink);text-decoration:none}
-.folio .name:hover{opacity:.72}
-.folio .name .slash{color:var(--faint)}
-.folio .here{font-family:var(--mono);font-size:10px;font-weight:500;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
-.folio .rule{flex:1;height:1px;background:var(--rule)}
-.folio a{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
-.folio a:hover{color:var(--ink)}
-.ghlink{display:inline-flex;align-items:center;line-height:0;opacity:.62;
-  transition:opacity 140ms ease-out}
-.ghlink:hover{opacity:1}
-
-/* A phone header, matching the front page's. The wordmark and three links do
-   not fit at 390px with 22px between them: six items make five gaps, which is
-   where most of the overflow was. Without this the page scrolled sideways. */
-@media (max-width:560px){
-  .folio-in{gap:11px}
-  .folio .name{font-size:11.5px}
-  .folio a,.folio .here{font-size:9.5px;letter-spacing:.09em}
-}
 
 .wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 96px}
-.panel{border:1px solid var(--rule);background:var(--panel);margin-top:24px;
+.panel{border:1px solid var(--edge);background:var(--card);margin-top:24px;
   border-radius:12px;overflow:hidden}
 .phead{display:flex;align-items:baseline;gap:16px;padding:11px 18px;
-  border-bottom:1px solid var(--line);flex-wrap:wrap}
+  border-bottom:1px solid var(--hair);flex-wrap:wrap}
 .phead .right{margin-left:auto}
 .pbody{padding:20px 18px}
-.note{color:var(--muted);font-size:13px;max-width:78ch;margin:0 0 18px}
-.note b{color:var(--soft);font-weight:600}
+.note{color:var(--mute);font-size:13px;max-width:78ch;margin:0 0 18px}
+.note b{color:var(--dim);font-weight:600}
 .note:last-child{margin-bottom:0}
 
 /* ---- corpus selector: the page compares three corpora, so which one the
    single-corpus panels describe has to be explicit and switchable. */
 .pills{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 4px}
-.pill{display:flex;align-items:center;gap:8px;background:var(--panel);
-  border:1px solid var(--rule);border-radius:999px;padding:7px 15px;cursor:pointer;
-  font:inherit;font-size:13px;color:var(--soft);transition:border-color 180ms var(--ease-out),
-  color 180ms var(--ease-out)}
+.pill{display:flex;align-items:center;gap:8px;background:var(--card);
+  border:1px solid var(--edge);border-radius:999px;padding:7px 15px;cursor:pointer;
+  font:inherit;font-size:13px;color:var(--dim);transition:border-color 180ms var(--ease),
+  color 180ms var(--ease)}
 .pill:hover{color:var(--ink)}
 .pill .sw{width:8px;height:8px;border-radius:2px;flex:none}
-.pill[aria-pressed="true"]{color:var(--ink);border-color:var(--faint);background:var(--sunk)}
+.pill[aria-pressed="true"]{color:var(--ink);border-color:var(--faint);background:var(--nest)}
 .pill .n{font-family:var(--mono);font-size:10px;color:var(--faint)}
 
 /* 152px, not 168px: the panel is capped at 1180 and pads to about 1076
@@ -103,7 +58,7 @@ h2.lab{margin:0;font-size:10px}
    answer-shown tile on 2026-09-03 made it seven, and at 168 the last one
    wrapped onto a row of its own beside a large empty cell. */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:1px;
-  background:var(--line)}
+  background:var(--hair)}
 /* One vertical rhythm for the page. Sections were spaced by whatever inline
    margin each one had picked up, so the gaps between them were all different. */
 main.wrap > section.panel{margin-top:30px}
@@ -111,14 +66,14 @@ main.wrap > .note{margin-top:30px}
 .pbody > .note:first-child{margin-top:0}
 .pbody > .note{margin-top:22px}
 .pbody > .legend{margin-top:18px}
-.tile{background:var(--panel);padding:15px 17px;cursor:help;outline:none;
+.tile{background:var(--card);padding:15px 17px;cursor:help;outline:none;
   transition:background 140ms ease-out}
-.tile[data-why]:hover,.tile[data-why]:focus-visible{background:var(--nest,#1f2022)}
+.tile[data-why]:hover,.tile[data-why]:focus-visible{background:var(--nest)}
 .tile[data-why] .lab{border-bottom:1px dotted var(--faint);
   padding-bottom:1px;display:inline-block}
 .tile .v{font-family:var(--mono);font-size:25px;font-variant-numeric:tabular-nums;
   letter-spacing:-.02em;line-height:1.15;margin-top:5px}
-.tile .c{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.35}
+.tile .c{font-size:11.5px;color:var(--mute);margin-top:3px;line-height:1.35}
 
 /* ---- charts ---- */
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:26px 34px}
@@ -130,17 +85,17 @@ main.wrap > .note{margin-top:30px}
 svg{display:block;width:100%;overflow:visible}
 svg text{font-family:var(--mono);font-size:9.5px;fill:var(--faint);
   font-variant-numeric:tabular-nums}
-svg text.name{font-family:var(--sans);font-size:11.5px;fill:var(--soft)}
-svg text.val{fill:var(--soft);font-weight:500}
+svg text.name{font-family:var(--sans);font-size:11.5px;fill:var(--dim)}
+svg text.val{fill:var(--dim);font-weight:500}
 svg text.on{fill:var(--ink);font-weight:500}
-svg .axis{stroke:var(--line);stroke-width:1}
-svg .grid{stroke:var(--line);stroke-width:1;stroke-dasharray:2 4}
-svg .bar{transition:opacity 140ms var(--ease-out)}
+svg .axis{stroke:var(--hair);stroke-width:1}
+svg .grid{stroke:var(--hair);stroke-width:1;stroke-dasharray:2 4}
+svg .bar{transition:opacity 140ms var(--ease)}
 svg g.row:hover .bar{opacity:.72}
 
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;
   font-family:var(--mono);font-size:10px;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--muted)}
+  text-transform:uppercase;color:var(--mute)}
 .legend span{display:flex;align-items:center;gap:7px}
 .legend i{width:9px;height:9px;border-radius:2px;display:block;flex:none}
 .legend i.dot{border-radius:50%}
@@ -151,23 +106,23 @@ svg g.row:hover .bar{opacity:.72}
 .legend i.line{width:18px;height:0;border-radius:0;border-top:2px solid}
 .legend i.line{border-top-color:currentColor}
 .legend i.line.dash{background:none;border-top-style:dashed}
-.legend i.rule{width:0;height:14px;border-left:1.5px dashed var(--muted);
+.legend i.rule{width:0;height:14px;border-left:1.5px dashed var(--mute);
   background:none;border-radius:0}
 
 .tip{position:fixed;z-index:60;pointer-events:none;background:#000;
-  border:1px solid var(--rule);border-radius:8px;padding:7px 10px;font-size:12px;
+  border:1px solid var(--edge);border-radius:8px;padding:7px 10px;font-size:12px;
   color:var(--ink);box-shadow:0 12px 30px rgba(0,0,0,.6);max-width:250px}
 .tip[hidden]{display:none}
 .tip b{display:block;font-weight:600;color:var(--ink);margin-bottom:5px}
-.tip .imp{display:block;color:var(--muted);font-size:11.5px;line-height:1.5}
+.tip .imp{display:block;color:var(--mute);font-size:11.5px;line-height:1.5}
 .tip .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--faint);display:block}
 
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;font-family:var(--mono);font-size:9.5px;font-weight:500;
   text-transform:uppercase;letter-spacing:.13em;color:var(--faint);
-  padding:0 10px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:8px 10px 8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  padding:0 10px 8px 0;border-bottom:1px solid var(--hair);white-space:nowrap}
+td{padding:8px 10px 8px 0;border-bottom:1px solid var(--hair);vertical-align:top}
 tr:last-child td{border-bottom:0}
 td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .scroll{overflow-x:auto}
@@ -181,11 +136,10 @@ details{margin-top:16px}
 summary{cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--faint);list-style:none}
 summary::-webkit-details-marker{display:none}
-summary:hover{color:var(--soft)}
+summary:hover{color:var(--dim)}
 summary::before{content:"+ ";}
 details[open] summary::before{content:"- ";}
-.err{color:var(--serious);font-size:13px}
-:focus-visible{outline:2px solid var(--series-1);outline-offset:2px;border-radius:3px}
+.err{color:var(--warn);font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -279,8 +233,8 @@ details[open] summary::before{content:"- ";}
       corpus, which is why one number cannot serve all three.</p>
       <div id="dists"></div>
       <div class="legend">
-        <span><i class="dot" style="background:var(--soft)"></i>should be answered</span>
-        <span style="color:var(--soft)"><i class="ring"></i>should be refused</span>
+        <span><i class="dot" style="background:var(--dim)"></i>should be answered</span>
+        <span style="color:var(--dim)"><i class="ring"></i>should be refused</span>
       </div>
       <p class="note" style="margin-top:22px">Moving each corpus to its own cut
       point recovers answers at <b>no adversarial cost</b>: the same number of
@@ -302,8 +256,8 @@ details[open] summary::before{content:"- ";}
       answerable questions thrown away.</p>
       <div id="sweep"></div>
       <div class="legend">
-        <span><i class="line" style="background:var(--soft)"></i>questions that should be answered, refused. The cost.</span>
-        <span><i class="line dash" style="border-color:var(--soft)"></i>questions that should be refused, caught. The benefit.</span>
+        <span><i class="line" style="background:var(--dim)"></i>questions that should be answered, refused. The cost.</span>
+        <span><i class="line dash" style="border-color:var(--dim)"></i>questions that should be refused, caught. The benefit.</span>
         <span><i class="rule"></i>this corpus's calibrated cut point</span>
       </div>
     </div>
@@ -334,13 +288,10 @@ details[open] summary::before{content:"- ";}
 <div class="tip" id="tip" hidden></div>
 
 <script type="module">
-const $ = s => document.querySelector(s);
-const nf = n => Number(n).toLocaleString();
+import { $, nf, esc } from "./common.js";
 const f3 = n => Number(n).toFixed(3);
-const esc = s => String(s).replace(/[&<>"]/g, c =>
-  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-const HUE = ["var(--series-1)", "var(--series-2)", "var(--series-3)"];
+const HUE = ["var(--s1)", "var(--s2)", "var(--s3)"];
 const SVGNS = "http://www.w3.org/2000/svg";
 const el = (n, a = {}) => {
   const e = document.createElementNS(SVGNS, n);
@@ -405,7 +356,7 @@ function hbars(host, title, sub, rows, opts = {}) {
       if (Math.abs(d) >= 0.0005) {
         const dt = el("text", { x: W - 2, y: y + 12, "text-anchor": "end" });
         dt.textContent = (d > 0 ? "+" : "−") + Math.abs(d).toFixed(3);
-        dt.setAttribute("fill", "var(--muted)");
+        dt.setAttribute("fill", "var(--mute)");
         g.append(dt);
       }
     }

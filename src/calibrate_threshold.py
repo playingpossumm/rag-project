@@ -196,11 +196,30 @@ def main() -> int:
     print("  error -- is the claim that it is.")
 
     if args.emit:
+        from check_freshness import stamp
+
+        # What this table was calibrated from. The per_case file is stamped
+        # directly; the golden set and index digests are the ones per_case
+        # itself recorded, because this file never reads either -- it rests
+        # on per_case's reading of them. Nothing here was recorded until
+        # 2026-09-06, and the file on disk that day, calibrated on
+        # 2026-08-21, named adv-moe-routing, a case the golden set had
+        # dropped on 2026-08-25 (commit b7a34e1), with no way to tell from
+        # the file. The first draft of this comment said the case had been
+        # deleted 16 days earlier, a figure counted from the calibration date
+        # rather than taken from the git history.
+        inputs = {"per_case": stamp(args.per_case)}
+        for kind in ("golden", "index"):
+            recorded = (data.get("inputs") or {}).get(kind)
+            if recorded:
+                inputs[kind] = recorded
         args.emit.parent.mkdir(exist_ok=True)
         args.emit.write_text(json.dumps(
             {"generated_by": "src/calibrate_threshold.py",
+             "corpus": (data.get("corpus") or {}).get("name"),
              "shipped_threshold": shipped,
              "n_answerable": len(answerable), "n_adversarial": len(adversarial),
+             "inputs": inputs,
              "sweep": rows}, indent=1) + "\n", encoding="utf-8")
         print(f"\nwrote {args.emit}")
     return 0

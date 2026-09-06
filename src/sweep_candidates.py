@@ -76,7 +76,6 @@ def main() -> int:
         answerable, _ = load_cases(cfg["golden"])
         index, metadata = load_index(cfg["store"])
         bm25 = build_bm25(metadata)
-        rr.RERANK_BLEND = cfg["rerank_blend"]
         rr.load_reranker()
 
         print(f"\n  {cfg['label']}  ({len(answerable)} answerable, "
@@ -99,7 +98,9 @@ def main() -> int:
                 ceiling += 1.0 if any(is_relevant(c, gold) for c in pool) else 0.0
 
                 started = time.perf_counter()
-                ranked = rr.rerank(case["question"], pool, k=len(pool))
+                # The corpus's blend on the call, not on the module.
+                ranked = rr.rerank(case["question"], pool, k=len(pool),
+                                   blend=cfg["rerank_blend"])
                 laps.append((time.perf_counter() - started) * 1000)
 
                 results = diversify(ranked, k=args.k, max_per_source=2)

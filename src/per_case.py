@@ -126,7 +126,6 @@ def main() -> int:
         if args.candidate_k is None:
             args.candidate_k = cfg["candidate_k"]
         store = cfg["store"]
-        _rerank.RERANK_BLEND = blend
         print(f"corpus {cfg['name']} ({cfg['label']}): threshold {threshold:+.1f}, "
               f"rerank blend {blend:.2f}, candidates {args.candidate_k}, "
               f"index {store.name}")
@@ -161,7 +160,9 @@ def main() -> int:
     for case in answerable + adversarial:
         results = retrieve(case["question"], index, metadata, model, k=args.k,
                            candidate_k=args.candidate_k, bm25=bm25,
-                           ensemble=ensemble, **opts)
+                           # Passed per call; set on the rerank module until
+                           # 2026-09-07. Not in opts, which the file records.
+                           rerank_blend=blend, ensemble=ensemble, **opts)
         gold = gold_keys(case)
         sources = gold_sources(case)
 

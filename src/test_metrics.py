@@ -58,12 +58,15 @@ check("ndcg / all hits at top",
 # 2. the same two hits pushed to ranks 3 and 4
 #    DCG  = 1/log2(4) + 1/log2(5) = 0.5000 + 0.4307 = 0.9307
 #    IDCG = 1/log2(2) + 1/log2(3) = 1.0000 + 0.6309 = 1.6309
-#    NDCG = 0.9307 / 1.6309 = 0.571
-check("ndcg / hits demoted to 3 and 4",
+#    NDCG = 0.9307 / 1.6309 = 0.571, the figure the field notes document.
+#    Compared to that figure directly, at the tolerance every float check here
+#    uses. Until 2026-09-06 this was 2 checks, and the second one compared
+#    round((D[2] + D[3]) / (D[0] + D[1]), 3) with 0.571 -- both sides defined in
+#    this file, so it verified the comment's arithmetic and never called ndcg().
+#    The suite counted it as one of 22 checks all the same.
+check("ndcg / hits demoted to 3 and 4 is the documented 0.571",
       ndcg([res("b.pdf", 8), res("b.pdf", 9), res("a.pdf", 1), res("a.pdf", 2)], GOLD),
-      (D[2] + D[3]) / (D[0] + D[1]))
-check("ndcg / that value is the documented 0.571",
-      round((D[2] + D[3]) / (D[0] + D[1]), 3), 0.571)
+      0.571)
 
 # 3. nothing relevant returned
 check("ndcg / no hits", ndcg([res("b.pdf", 8), res("b.pdf", 9)], GOLD), 0.0)

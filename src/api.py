@@ -171,21 +171,41 @@ def ask(
     )
 
     if generate:
-        # Lazy: importing generate.py pulls in the anthropic client and reads
-        # .env, and the whole point of retrieval-only being the default is that
-        # a caller without an API key never touches any of that.
-        #
-        # This read `from generate_answer import synthesize` until 2026-08-21.
-        # No module of that name has ever existed. Being both lazy and inside
-        # the optional branch, it could only fail on a path that has never run
-        # for want of API credit -- so the code was wrong for as long as it was
-        # unexercised, and looked fine.
-        from generate import synthesize_with_backend
-
-        # Whichever backend RAG_GENERATOR names. The default is unchanged;
-        # setting it to "ollama" runs the same contract against a local model,
-        # which is how this path can execute at all without API credit.
-        result.answer = synthesize_with_backend(question, results)
-        result.mode = "generated"
+        generate_answer(result)
 
     return result
+
+
+def generate_answer(answer: Answer) -> Answer:
+    """Write prose over the passages an Answer already holds, in place.
+
+    Separate from `ask()` so a caller can run retrieval and generation as two
+    steps. The server needs that split: retrieval touches the shared embedder
+    and reranker and runs under its lock, while generation is a network call
+    to a model that takes longer than retrieval, and until 2026-09-06 `/ask`
+    held the lock across both, so every other request waited on one
+    visitor's generation. `ask(generate=True)` calls this same function, so the library
+    and the server generate from the same passages by the same path.
+
+    The generator reads `source`, `locator` and `text` from each passage,
+    which is what a Passage carries, so the citations it writes name the
+    passages the caller was shown.
+
+    Lazy import: generate.py pulls in the anthropic client and reads .env, and
+    the whole point of retrieval-only being the default is that a caller
+    without an API key never touches any of that. This read `from
+    generate_answer import synthesize` until 2026-08-21. No module of that
+    name has ever existed. Being both lazy and inside the optional branch, it
+    could only fail on a path that has never run for want of API credit, so
+    the code was wrong for as long as it was unexercised, and looked fine.
+    """
+    from generate import synthesize_with_backend
+
+    # Whichever backend RAG_GENERATOR names. The default is unchanged;
+    # setting it to "ollama" runs the same contract against a local model,
+    # which is how this path can execute at all without API credit.
+    chunks = [{"source": p.source, "locator": p.locator, "text": p.text,
+               "rerank_score": p.score} for p in answer.passages]
+    answer.answer = synthesize_with_backend(answer.question, chunks)
+    answer.mode = "generated"
+    return answer

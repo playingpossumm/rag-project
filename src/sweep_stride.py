@@ -64,7 +64,6 @@ def score(store, cfg, candidate_k, answerable, adversarial, model, label):
     index, metadata = load_index(store)
     bm25 = build_bm25(metadata)
     ensemble = load_ensemble(store)
-    rr.RERANK_BLEND = cfg["rerank_blend"]
 
     totals = {"hit": 0.0, "mrr": 0.0, "ndcg": 0.0, "src": 0.0}
     visible, visible_n, slips, seconds = 0, 0, 0, 0.0
@@ -75,7 +74,7 @@ def score(store, cfg, candidate_k, answerable, adversarial, model, label):
         res = retrieve(case["question"], index, metadata, model, k=TOP_K,
                        candidate_k=candidate_k, use_reranker=True,
                        fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2,
-                       ensemble=ensemble)
+                       ensemble=ensemble, rerank_blend=cfg["rerank_blend"])
         seconds += time.perf_counter() - t0
         gold = gold_keys(case)
         totals["hit"] += hit_rate(res, gold)
@@ -94,7 +93,7 @@ def score(store, cfg, candidate_k, answerable, adversarial, model, label):
         res = retrieve(case["question"], index, metadata, model, k=TOP_K,
                        candidate_k=candidate_k, use_reranker=True,
                        fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2,
-                       ensemble=ensemble)
+                       ensemble=ensemble, rerank_blend=cfg["rerank_blend"])
         if res and res[0]["rerank_score"] >= cfg["threshold"]:
             slips += 1
 

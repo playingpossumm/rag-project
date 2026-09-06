@@ -33,7 +33,60 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from api import ask
+
+def hf_cache_dir() -> Path:
+    """Where huggingface_hub keeps downloaded weights, by its own precedence.
+
+    HF_HUB_CACHE wins, then HF_HOME/hub, then XDG_CACHE_HOME or ~/.cache under
+    huggingface/hub. Computed here rather than read from huggingface_hub
+    because importing that package fixes HF_HUB_OFFLINE for the process, and
+    this file has to decide the variable before that import runs.
+    """
+    if os.environ.get("HF_HUB_CACHE"):
+        return Path(os.environ["HF_HUB_CACHE"]).expanduser()
+    home = os.environ.get("HF_HOME")
+    if not home:
+        base = os.environ.get("XDG_CACHE_HOME") or (Path.home() / ".cache")
+        home = str(Path(base) / "huggingface")
+    return Path(home).expanduser() / "hub"
+
+
+def set_offline_if_cached(cache: Path | None = None) -> bool:
+    """Tell huggingface_hub not to contact huggingface.co when weights are local.
+
+    Loading a cached SentenceTransformer without HF_HUB_OFFLINE still sends a
+    HEAD request to huggingface.co to ask whether a newer revision exists. On
+    a network that drops that host the request waits on the hub's own timeout
+    before the server can bind its port, while README.md said the server
+    makes no external request. Every normal run already has the weights on
+    disk, so the hub is told not to ask.
+
+    The variable is set only when the cache directory holds at least one
+    model. A first run on a fresh machine has nothing cached and must be
+    allowed to download; forcing offline there would fail with a message
+    about a missing model rather than fetching it. An operator who set the
+    variable either way is left alone, which is what setdefault means.
+
+    The test is for any cached model, not for the ones this server loads,
+    so a cache holding the embedder and not the cross-encoder fails the
+    second load with a message naming the missing model. Starting once
+    with HF_HUB_OFFLINE=0 lets that run download it.
+
+    Returns whether the variable was set here. Runs before the first model
+    import because huggingface_hub reads the variable when it is imported.
+    """
+    cache = cache or hf_cache_dir()
+    if not (cache.is_dir() and any(cache.glob("models--*"))):
+        return False
+    if "HF_HUB_OFFLINE" in os.environ:
+        return False
+    os.environ["HF_HUB_OFFLINE"] = "1"
+    return True
+
+
+set_offline_if_cached()
+
+from api import DEFAULT_EXPANSION, ask, generate_answer  # noqa: E402 - after the offline decision
 
 # Loopback by default, because the corpus may be private and a RAG server is a
 # document-reading service: binding it to the world by accident is the failure
@@ -49,21 +102,99 @@ MAX_BODY = 64 * 1024  # a question is small; refuse anything that clearly is not
 ROOT = Path(__file__).parent.parent
 UI_FILE = Path(__file__).parent.parent / "ui" / "index.html"
 EVAL_DIR = Path(__file__).parent.parent / "eval"
-EVAL_FILE = EVAL_DIR / "results.json"
 
 # The quality view reads whatever the harness has written. Each is optional:
 # a file that has not been generated yet makes its panel say so rather than
 # making the page fail to load, because "not measured" and "measured as zero"
-# must not look the same.
+# must not look the same. /api/eval is not in this table because its file is
+# chosen per corpus; see eval_file().
+# The per-question rows and the structural fixture behind the analytics
+# page, one file per corpus, resolved by the rule eval_file() uses. Until
+# 2026-09-07 this table named the ML papers' files and served them whatever
+# corpus was active, and it also served eval/threshold.json, a calibration
+# of the ML gate on a golden set that ended on 2026-08-25, which nothing
+# under ui/ fetched. That route is gone; the calibration each corpus ships
+# is argued in its note in corpora.json.
 QUALITY_FILES = {
-    "/api/eval": "results.json",
-    "/api/per-case": "per_case.json",
-    "/api/threshold": "threshold.json",
-    "/api/hard-cases": "hard_cases.json",
+    "/api/per-case": "per_case",
+    "/api/hard-cases": "hard_cases",
 }
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
+def is_public() -> bool:
+    """Whether the operator declared this server reachable from the network."""
+    return os.environ.get("RAG_PUBLIC") == "1"
+
+
+def reindex_allowed() -> bool:
+    """Whether a request may start or preview an indexing run.
+
+    Always, on a private server. On a public one, only with RAG_ALLOW_REINDEX=1,
+    because an indexing run replaces the vector store and a preview lists the
+    files in any directory the caller names.
+    """
+    return not is_public() or os.environ.get("RAG_ALLOW_REINDEX") == "1"
+
+
+def generate_allowed() -> bool:
+    """Whether a request may ask for a generated answer.
+
+    Always, on a private server. On a public one, only with
+    RAG_ALLOW_GENERATE=1, because generation is an outbound call to a model
+    that costs money or local compute, and a public server should not let
+    every visitor start one.
+    """
+    return not is_public() or os.environ.get("RAG_ALLOW_GENERATE") == "1"
+
+
+def describe_error(exc: Exception, where: str,
+                   public_text: str = "internal error; the server log has the detail") -> str:
+    """The exception text for a response body, or a generic line when public.
+
+    The text of an unexpected exception carries whatever the failing code was
+    holding, and on this server that has been absolute paths to the index,
+    the corpus and the user's home directory. A private server's operator is
+    the only reader and wants that detail. A public server's readers are
+    strangers, so the detail goes to the server log under `where` and the
+    body gets `public_text`. Every place that puts an exception into a
+    response goes through here; until 2026-09-07 attribution_for() and
+    chat()'s generation report did not, so a public /api/chat body could
+    still carry a path or the generator's URL.
+    """
+    detail = f"{type(exc).__name__}: {exc}"
+    if not is_public():
+        return detail
+    sys.stderr.write(f"  {where}: {detail}\n")
+    return public_text
+
+
+def eval_file(cfg: dict | None) -> Path:
+    """The results file evaluate.py wrote for one corpus.
+
+    evaluate.py names its output from the golden set: eval/golden_set.json
+    writes eval/results.json and eval/golden-birds.json writes
+    eval/results-birds.json. check_freshness.artefact() holds that rule, and
+    this reads it from there rather than keeping a fourth copy. Until
+    2026-09-06 /api/eval served eval/results.json whatever corpus was active,
+    so the quality view showed the ML papers' figures under the bird corpus
+    and under the quant corpus, and the recorded static demo repeated that
+    on every corpus.
+    """
+    import check_freshness
+
+    golden = (cfg or {}).get("golden") or (EVAL_DIR / "golden_set.json")
+    return check_freshness.artefact("results", Path(golden))
+
+
+def quality_file(route: str, cfg: dict | None) -> Path:
+    """The per-case or hard-cases file for one corpus, by eval_file()'s rule."""
+    import check_freshness
+
+    golden = (cfg or {}).get("golden") or (EVAL_DIR / "golden_set.json")
+    return check_freshness.artefact(QUALITY_FILES[route], Path(golden))
 
 
 class Resources:
@@ -219,9 +350,18 @@ class IndexRun:
 
     def _run(self, data_dir):
         try:
-            from ingest import DATA_DIR, build_index
+            from ingest import DATA_DIR, STORE_DIR, build_index
 
-            summary = build_index(data_dir or DATA_DIR, progress=self._on_event)
+            # The active corpus's own directories. Until 2026-09-06 this call
+            # passed no store_dir, so build_index() wrote to ingest's default,
+            # which is the ML papers' vector_store/, and RES.reload() then
+            # re-read the active corpus's untouched store: with the bird
+            # corpus active a reindex overwrote the ML index and kept serving
+            # the old bird one, and the UI reported success.
+            cfg = RES.corpus or {}
+            summary = build_index(data_dir or cfg.get("data") or DATA_DIR,
+                                  store_dir=cfg.get("store") or STORE_DIR,
+                                  progress=self._on_event)
             # Retrieval holds the OLD index in memory. Leaving it would serve
             # answers from a corpus that no longer matches what the UI reports.
             RES.reload()
@@ -342,17 +482,22 @@ def inspect_folder(raw: str) -> tuple[Path, list[str], list[tuple[str, str]]]:
     more here than anywhere else in this file: indexing REPLACES the vector
     store, so a path that quietly resolves to an empty directory would destroy a
     working index and report success.
+
+    The messages repeat the string the caller sent, not the resolved path.
+    Until 2026-09-06 they echoed the resolved absolute path, which told a
+    caller where the server's home directory and working directory are.
     """
     from corpus_health import SUPPORTED, scan_unsupported
 
     if not raw:
         raise ValueError("no folder given")
 
-    folder = Path(raw.strip().strip('"')).expanduser()
+    given = raw.strip().strip('"')
+    folder = Path(given).expanduser()
     if not folder.exists():
-        raise ValueError(f"no such folder: {folder}")
+        raise ValueError(f"no such folder: {given}")
     if not folder.is_dir():
-        raise ValueError(f"that is a file, not a folder: {folder}")
+        raise ValueError(f"that is a file, not a folder: {given}")
 
     try:
         supported = sorted(f.name for f in folder.iterdir()
@@ -364,7 +509,7 @@ def inspect_folder(raw: str) -> tuple[Path, list[str], list[tuple[str, str]]]:
     if not supported:
         formats = ", ".join(sorted(SUPPORTED))
         raise ValueError(
-            f"{folder} holds no indexable documents ({formats}). "
+            f"{given} holds no indexable documents ({formats}). "
             + (f"It does hold {len(skipped)} file(s) in other formats."
                if skipped else "It appears to be empty.")
         )
@@ -398,7 +543,8 @@ def attribution_for(question: str, trace: dict, limit: int = 12) -> dict:
             out = term_attribution.attribute(question, RES.bm25, ids)
     except Exception as exc:  # noqa: BLE001
         # A missing heatmap is a smaller problem than a failed answer.
-        return {"error": f"{type(exc).__name__}: {exc}"}
+        return {"error": describe_error(exc, "attribution",
+                                        "attribution failed; the server log has the detail")}
     out["chunk_ids"] = ids
     return out
 
@@ -472,6 +618,35 @@ def trace_options(payload: dict) -> dict:
     return opts
 
 
+def _trace(question: str, payload: dict) -> dict:
+    """Retrieval for one question with every stage recorded, from RES.
+
+    The one place the traced pipeline is assembled from the server's state.
+    /api/trace and /api/chat both call it, so they cannot disagree about which
+    retrievers ran. Until 2026-09-06 each route built its own call and they
+    did disagree: /api/chat passed the corpus's second dense retriever and its
+    candidate pool, /api/trace passed neither, so on the quant corpus the
+    inspector skipped the ensemble and pooled 20 candidates while the chat
+    surface pooled 16 and searched both indexes, so one server gave two
+    answers to the same question.
+
+    Options are validated before the lock is taken, so a bad option costs
+    nobody else a wait. The attribution runs after the lock is released and
+    takes it again briefly on its own.
+    """
+    from pipeline_trace import trace_pipeline  # not 'trace': shadows a stdlib module
+
+    opts = trace_options(payload)
+    with RES.lock:
+        trace = attach_locators(trace_pipeline(
+            question, RES.index, RES.metadata, RES.model, bm25=RES.bm25,
+            k=int(payload.get("k", 5)), threshold=RES.threshold(),
+            rerank_blend=RES.rerank_blend(), ensemble=RES.ensemble,
+            **{"candidate_k": RES.candidate_k(), **opts}))
+    trace["attribution"] = attribution_for(question, trace)
+    return trace
+
+
 def chat(question: str, payload: dict) -> dict:
     """One question, one round trip: the answer AND how it was reached.
 
@@ -488,24 +663,28 @@ def chat(question: str, payload: dict) -> dict:
       "unavailable" the call was attempted and failed -- no credit, no key, a
                    refusal. The passages are still returned and still correct,
                    so the surface degrades to retrieval-only rather than to an
-                   error page. The reason is passed through verbatim because
-                   "you have no credit" and "the model declined" need different
-                   actions from the reader.
+                   error page. On a private server the reason is passed
+                   through verbatim because "you have no credit" and "the
+                   model declined" need different actions from the reader; on
+                   a public one it goes to the server log and the body says
+                   only that the call failed, because the text of a
+                   connection error names the generator's host and port.
+                   Until 2026-09-07 the reason was verbatim on both.
+      "disabled"   the server is public and RAG_ALLOW_GENERATE is not set, so
+                   the call was not attempted. Reported rather than refused
+                   with a 4xx because the passages are still the answer, and a
+                   visitor to a public demo should see them rather than an
+                   error for a toggle the operator turned off.
     """
-    from pipeline_trace import trace_pipeline
-
-    with RES.lock:
-        trace = attach_locators(trace_pipeline(
-            question, RES.index, RES.metadata, RES.model, bm25=RES.bm25,
-            k=int(payload.get("k", 5)), threshold=RES.threshold(),
-            rerank_blend=RES.rerank_blend(), ensemble=RES.ensemble,
-            **{"candidate_k": RES.candidate_k(), **trace_options(payload)}))
-
-    trace["attribution"] = attribution_for(question, trace)
+    trace = _trace(question, payload)
     selected = trace["stages"][-1]["items"]
     generation = {"state": "off", "text": None, "reason": None}
 
-    if payload.get("generate"):
+    if payload.get("generate") and not generate_allowed():
+        generation = {"state": "disabled", "text": None,
+                      "reason": "generation is off on this server; the operator "
+                                "enables it with RAG_ALLOW_GENERATE=1"}
+    elif payload.get("generate"):
         try:
             from generate import synthesize_with_backend as synthesize
 
@@ -520,7 +699,9 @@ def chat(question: str, payload: dict) -> dict:
                           "reason": None}
         except Exception as exc:  # noqa: BLE001 - reported, never raised
             generation = {"state": "unavailable", "text": None,
-                          "reason": f"{type(exc).__name__}: {exc}"}
+                          "reason": describe_error(
+                              exc, "generation",
+                              "the generation call failed; the server log has the detail")}
 
     # Which document set answered. RES is process-wide, so the corpus can
     # differ from the one the caller last selected -- another tab switching it
@@ -528,6 +709,43 @@ def chat(question: str, payload: dict) -> dict:
     # cannot be checked against them.
     return {**trace, "generation": generation,
             "corpus": RES.corpus["name"] if RES.corpus else None}
+
+
+def answer_for(question: str, payload: dict):
+    """The /ask response: api.ask() over RES, with generation outside the lock.
+
+    Retrieval touches the shared embedder and reranker, so it runs under
+    RES.lock. Generation is an outbound call to a model, which takes longer
+    than retrieval and touches nothing shared, so it runs after the lock is
+    released, the way chat() does. Until 2026-09-06 this route passed generate= into
+    ask() inside the lock, so one visitor's generation stalled every other
+    request, and chat() and /ask disagreed about what the lock covered.
+
+    This route used to call ask() bare, which loads and caches its own index,
+    so it answered from whichever corpus the process loaded first, ignored
+    the selected one, ignored that corpus's rerank blend, and gated on a
+    hardcoded -2.0 instead of its calibrated threshold. The interface never
+    noticed because the interface talks to /api/chat.
+
+    A generation request on a public server without RAG_ALLOW_GENERATE=1 is
+    answered with the passages and a note, not a 4xx, for the reason chat()
+    gives: the passages are still the answer.
+    """
+    with RES.lock:
+        answer = ask(
+            question,
+            k=int(payload.get("k", 5)),
+            expansion=payload.get("expansion", DEFAULT_EXPANSION),
+            min_confidence=float(payload.get("min_confidence", RES.threshold())),
+            resources=(RES.index, RES.metadata, RES.model, RES.bm25),
+            rerank_blend=RES.rerank_blend(),
+        )
+    if payload.get("generate") and not generate_allowed():
+        answer.notes.append("Generation is off on this server; the operator "
+                            "enables it with RAG_ALLOW_GENERATE=1.")
+    elif payload.get("generate"):
+        generate_answer(answer)
+    return answer
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -541,19 +759,60 @@ class Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
+        if getattr(self, "close_connection", False):
+            # A refusal that left the request body unread must not keep the
+            # connection: on HTTP/1.1 the unread bytes would be parsed as the
+            # next request line.
+            self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(body)
 
     def _body(self) -> dict | None:
-        length = int(self.headers.get("Content-Length") or 0)
+        """The request body as a dict, or None after a 4xx has been sent.
+
+        Every caller treats None as "already answered", so each refusal here
+        has to write a response. Until 2026-09-06 three shapes did not: a
+        Content-Length that was not a number raised ValueError outside any
+        try and the connection closed; a body of `null` parsed to None, which
+        callers read as "4xx already sent", so nothing was written and the
+        client waited; and `[]` or `1` reached handlers as non-dicts and
+        failed on the first .get().
+
+        The three refusals that answer before reading the body close the
+        connection, because the body is still on the socket and on a
+        keep-alive connection it would be read as the next request. Until
+        2026-09-07 they answered and kept the connection open.
+        """
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            self.close_connection = True
+            self._send(400, {"error": "Content-Length must be a whole number"})
+            return None
+        if length < 0:
+            self.close_connection = True
+            self._send(400, {"error": "Content-Length must not be negative"})
+            return None
         if length > MAX_BODY:
+            self.close_connection = True
             self._send(413, {"error": "request body too large"})
             return None
         try:
-            return json.loads(self.rfile.read(length) or b"{}")
-        except json.JSONDecodeError as exc:
+            payload = json.loads(self.rfile.read(length) or b"{}")
+        except ValueError as exc:            # JSONDecodeError and bad UTF-8 both
             self._send(400, {"error": f"invalid JSON: {exc}"})
             return None
+        if not isinstance(payload, dict):
+            self._send(400, {"error": "body must be a JSON object"})
+            return None
+        return payload
+
+    def _fail(self, exc: Exception) -> None:
+        """A 500 whose body names the exception privately and nothing publicly.
+
+        The split between the two is describe_error()'s.
+        """
+        self._send(500, {"error": describe_error(exc, f"500 on {self.path}")})
 
     def do_GET(self):
         route = self.path.split("?")[0].rstrip("/")
@@ -581,16 +840,33 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, about.read_bytes(), "text/html; charset=utf-8")
 
-        elif route in ("/pipeline-map.js", "/answer-mark.js"):
+        elif route in ("/pipeline-map.js", "/answer-mark.js", "/passages.js",
+                       "/common.js"):
             # answer-mark.js holds the logic that decides which words of a
-            # passage are set bold. It lived inline in index.html, where nothing
-            # could run it without a browser; it is a separate module so
-            # ui/test-answer-mark.mjs can.
+            # passage are set bold, and passages.js which passages appear
+            # beneath the answer. Both lived inline in index.html, where
+            # nothing could run them without a browser; they are separate
+            # modules so ui/test-answer-mark.mjs and ui/test-passages.mjs
+            # can. common.js is the header the four pages share. Until
+            # 2026-09-07 this branch served the first two only, so the live
+            # server answered 404 for passages.js and the front page's
+            # module could not start, while the recorded build, which
+            # serves a directory, was unaffected.
             f = UI_FILE.parent / route.lstrip("/")
             if not f.exists():
                 self._send(404, {"error": f"ui{route} is missing"})
                 return
             self._raw(200, f.read_bytes(), "text/javascript; charset=utf-8")
+
+        elif route in ("/tokens.css", "/base.css"):
+            # The colour tokens and the base rules the four pages share,
+            # split out of each page on 2026-09-06 and linked by bare name,
+            # so they are served at the root beside the pages.
+            f = UI_FILE.parent / route.lstrip("/")
+            if not f.exists():
+                self._send(404, {"error": f"ui{route} is missing"})
+                return
+            self._raw(200, f.read_bytes(), "text/css; charset=utf-8")
 
         elif route.startswith("/fonts/"):
             # Inter and DM Mono, served from the repo rather than a CDN. The
@@ -611,8 +887,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._raw(200, f.read_bytes(), "text/html; charset=utf-8")
 
-        elif route in QUALITY_FILES and route != "/api/eval":
-            f = EVAL_DIR / QUALITY_FILES[route]
+        elif route in ("/api/per-case", "/api/hard-cases"):
+            f = quality_file(route, RES.corpus)
             if not f.exists():
                 self._send(404, {"error": f"eval/{f.name} has not been generated -- "
                                           f"see README for the command"})
@@ -620,13 +896,17 @@ class Handler(BaseHTTPRequestHandler):
             self._raw(200, f.read_bytes(), "application/json; charset=utf-8")
 
         elif route == "/api/eval":
-            # Static passthrough of what evaluate.py wrote. The UI shows measured
-            # numbers rather than restating them, so a stale README cannot make
-            # the interface lie; if the file is absent the view says so.
-            if not EVAL_FILE.exists():
-                self._send(404, {"error": "eval/results.json is missing -- run python src/evaluate.py"})
+            # Static passthrough of what evaluate.py wrote for the ACTIVE
+            # corpus. The UI shows measured numbers rather than restating them,
+            # so a stale README cannot make the interface lie; if the file is
+            # absent the view says so. The file's own "corpus" block carries
+            # the corpus name, so the page can say which set it is reading.
+            f = eval_file(RES.corpus)
+            if not f.exists():
+                self._send(404, {"error": f"eval/{f.name} is missing -- run "
+                                          f"python src/evaluate.py for this corpus"})
                 return
-            self._raw(200, EVAL_FILE.read_bytes(), "application/json; charset=utf-8")
+            self._raw(200, f.read_bytes(), "application/json; charset=utf-8")
 
         elif route == "/api/analytics":
             # Everything the analytics page plots, for every corpus at once --
@@ -657,17 +937,23 @@ class Handler(BaseHTTPRequestHandler):
                     doc = [order[c["source"]] for c in RES.metadata]
                 self._send(200, {"n": len(doc), "sources": sources, "doc": doc})
             except Exception as exc:  # noqa: BLE001 - report rather than drop
-                self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
+                self._fail(exc)
 
         elif route == "/api/corpus":
             # data_dir is reported because the answer to "which documents is
             # this?" stopped being obvious the moment a folder could be pasted
-            # in. A page that can be pointed anywhere has to say where it points.
-            from ingest import DATA_DIR
-
+            # in. A page that can be pointed anywhere has to say where it
+            # points. On a private server that is the active corpus's document
+            # directory; on a public one it is the corpus label, because an
+            # absolute path on the operator's disk is not the visitor's
+            # business. Until 2026-09-06 this reported ingest.DATA_DIR, which
+            # is the environment default and not the active corpus's folder,
+            # so it named data/ while serving data-birds/.
             active = RES.corpus["name"] if RES.corpus else None
+            cfg = RES.corpus or {}
+            where = cfg.get("label") if is_public() else str(cfg.get("data") or "")
             self._send(200, {**RES.stats(), "examples": examples_for(active),
-                             "data_dir": str(DATA_DIR),
+                             "data_dir": where,
                              "active": corpus_info()})
 
         elif route == "/api/corpora":
@@ -688,10 +974,14 @@ class Handler(BaseHTTPRequestHandler):
                 "usage": "POST /ask with {\"question\": \"...\"}",
                 "options": {
                     "k": "number of passages (default 5)",
-                    "expansion": "'page' | 'window' | 'none'",
+                    "expansion": f"'window' | 'page' | 'none' (default '{DEFAULT_EXPANSION}')",
                     "min_confidence": "float; lower returns more, less certain results",
                     "generate": "false by default -- true requires an API key and costs money",
                 },
+                "defaults": {"k": 5, "expansion": DEFAULT_EXPANSION},
+                "public": is_public(),
+                "generate_allowed": generate_allowed(),
+                "reindex_allowed": reindex_allowed(),
             })
         else:
             self._send(404, {"error": f"no route {self.path}"})
@@ -732,12 +1022,19 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(400, {"error": str(exc)})
                 return
             except Exception as exc:  # noqa: BLE001
-                self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
+                self._fail(exc)
                 return
             self._send(200, {**RES.stats(), "active": corpus_info()})
             return
 
         if route in ("/api/index/start", "/api/index/inspect"):
+            # Refused before the body is read. A public server let any
+            # visitor rebuild the index and list any directory on the host by
+            # name until 2026-09-06; both now need RAG_ALLOW_REINDEX=1.
+            if not reindex_allowed():
+                self._send(403, {"error": "indexing is off on this server; the "
+                                          "operator enables it with RAG_ALLOW_REINDEX=1"})
+                return
             payload = self._body()
             if payload is None:
                 return
@@ -790,7 +1087,7 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError as exc:
                 self._send(400, {"error": str(exc)})
             except Exception as exc:  # noqa: BLE001
-                self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
+                self._fail(exc)
             return
 
         if route not in ("/ask", "/api/trace"):
@@ -810,42 +1107,20 @@ class Handler(BaseHTTPRequestHandler):
 
         try:
             if route == "/api/trace":
-                from pipeline_trace import trace_pipeline  # not 'trace': shadows a stdlib module
-
-                with RES.lock:
-                    result = attach_locators(trace_pipeline(
-                        question, RES.index, RES.metadata, RES.model,
-                        bm25=RES.bm25, k=int(payload.get("k", 5)),
-                        threshold=RES.threshold(),
-                                            rerank_blend=RES.rerank_blend(), **trace_options(payload)))
-                result["attribution"] = attribution_for(question, result)
-                self._send(200, result)
+                # The same call /api/chat makes, from the same helper. Until
+                # 2026-09-06 this route built its own trace_pipeline() call
+                # without the corpus's second dense retriever or its candidate
+                # pool, so the inspector and the chat surface answered the
+                # same question differently on the quant corpus.
+                self._send(200, _trace(question, payload))
             else:
-                # From RES, like /api/trace and /api/chat. This route used to
-                # call ask() bare, which loads and caches its own index -- so it
-                # answered from whichever corpus the process loaded first,
-                # ignored the selected one, ignored that corpus's rerank blend,
-                # and gated on a hardcoded -2.0 instead of its calibrated
-                # threshold. The interface never noticed because the interface
-                # talks to /api/chat.
-                with RES.lock:
-                    answer = ask(
-                        question,
-                        k=int(payload.get("k", 5)),
-                        expansion=payload.get("expansion", "page"),
-                        min_confidence=float(payload.get(
-                            "min_confidence", RES.threshold())),
-                        generate=bool(payload.get("generate", False)),
-                        resources=(RES.index, RES.metadata, RES.model, RES.bm25),
-                        rerank_blend=RES.rerank_blend(),
-                    )
-                self._send(200, answer.to_dict())
+                self._send(200, answer_for(question, payload).to_dict())
         except ValueError as exc:
             # A rejected option is the caller's mistake, not the server's, and
             # saying so is the difference between fixing it and guessing.
             self._send(400, {"error": str(exc)})
         except Exception as exc:  # noqa: BLE001 - report rather than drop the connection
-            self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
+            self._fail(exc)
 
     def log_message(self, fmt, *args):
         # Default logging writes to stderr with a noisy prefix; keep it terse.

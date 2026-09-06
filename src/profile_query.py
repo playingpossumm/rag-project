@@ -67,7 +67,8 @@ def profile(cfg, questions, k, cand, clock: Clock):
     index, metadata = load_index(cfg["store"])
     model = SentenceTransformer(EMBEDDING_MODEL)
     bm25 = build_bm25(metadata)
-    rr.RERANK_BLEND = cfg["rerank_blend"]
+    # Passed to each rerank() call; set on the module until 2026-09-07.
+    blend = cfg["rerank_blend"]
     rr.load_reranker()
 
     # One warm query, untimed. A served query never pays lazy import, model
@@ -75,7 +76,7 @@ def profile(cfg, questions, k, cand, clock: Clock):
     # would describe a process nobody runs.
     warm = questions[0]
     dense = search(warm, index, metadata, model, k=cand)
-    ranked = rr.rerank(warm, dense, k=len(dense))
+    ranked = rr.rerank(warm, dense, k=len(dense), blend=blend)
     diversify(ranked, k=k, max_per_source=2)
 
     for q in questions:
@@ -99,7 +100,7 @@ def profile(cfg, questions, k, cand, clock: Clock):
         fused = fuse_rrf(dense, lexical, k=cand)
         clock.lap("fuse")
 
-        ranked = rr.rerank(q, fused, k=len(fused))
+        ranked = rr.rerank(q, fused, k=len(fused), blend=blend)
         clock.lap("rerank")
 
         results = diversify(ranked, k=k, max_per_source=2)

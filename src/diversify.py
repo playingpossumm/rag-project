@@ -88,11 +88,3 @@ def diversify(results: list[dict], k: int,
 
 def _score(result: dict) -> float:
     return float(result.get("rerank_score", result.get("score", 0.0)))
-
-
-def source_spread(results: list[dict]) -> dict:
-    """How many documents the returned set actually covers -- for reporting."""
-    counts: dict[str, int] = {}
-    for r in results:
-        counts[r["source"]] = counts.get(r["source"], 0) + 1
-    return counts

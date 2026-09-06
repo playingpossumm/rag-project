@@ -182,17 +182,18 @@ much harder to notice than a crash.
 
 ```
   documents ──> parse ──> chunk ──> embed ──> FAISS index
-   pdf/docx     +OCR     240 tok    MiniLM        │
+   pdf/docx     +OCR     210 tok    MiniLM        │
    pptx/xlsx   fallback  overlap                  │
                                                   ▼
   question ──> dense retrieval ─┐            candidate pool
-           └─> BM25 retrieval ──┴─> fuse ──>    (k=20)
+           └─> BM25 retrieval ──┴─> fuse ──>  (k per corpus:
+                                               16, 20 or 16)
                                                   │
                                     cross-encoder rerank
                                                   │
                                     per-document diversity cap
                                                   │
-                                    expand to full page
+                                    expand to window +/-1
                                                   ▼
                                    passages + citations
                                    (+ optional generation)
@@ -221,10 +222,13 @@ reports both.
 | [`calibrate_threshold.py`](src/calibrate_threshold.py) | Names the questions each abstention threshold would cost |
 | [`metadata_filter.py`](src/metadata_filter.py) | Scoped retrieval — constrains the search, not the results |
 | [`query_expansion.py`](src/query_expansion.py) | Pseudo-relevance feedback (measured; off by default) |
-| [`late_interaction.py`](src/late_interaction.py) | ColBERT-style MaxSim reranking (measured; off by default) |
 | [`query_rewrite.py`](src/query_rewrite.py) | LLM rewrite/decomposition — measured 2026-08-31, off by default |
-| [`web_fallback.py`](src/web_fallback.py) | Optional web search when the corpus declines — off |
 | [`pipeline_trace.py`](src/pipeline_trace.py) | Re-runs retrieval keeping every intermediate ranking |
+
+Two further modules, `late_interaction.py` (ColBERT-style MaxSim reranking) and
+`web_fallback.py` (web search when the corpus declines), were built, never wired
+into `ask()`, and moved to `archive/` on 2026-09-06; until then this table
+listed them as if they were stages of the pipeline.
 
 Three interfaces (Python, HTTP and CLI) are thin shells over one `ask()`
 function, so behaviour cannot drift between them.
@@ -355,9 +359,12 @@ RAG_GENERATOR=ollama python src/serve.py
 `ANTHROPIC_API_KEY` in a `.env`. Both go through one `synthesize(question,
 chunks)` contract, so the rest of the system does not know which is running.
 
-The server binds to 127.0.0.1 on purpose and makes no external request: the
-documents may be private, and the interface's fonts are bundled rather than
-pulled from a CDN for the same reason.
+The server binds to 127.0.0.1 on purpose and makes no external request at
+query time: the documents may be private, and the interface's fonts are
+bundled rather than pulled from a CDN for the same reason. The one exception
+is a first run with an empty Hugging Face cache, which downloads the models
+once; after that `serve.py` sets `HF_HUB_OFFLINE=1` itself so the hub is not
+asked again.
 
 Set `RAG_DATA_DIR` to point at any folder, including a Google Drive for Desktop
 mount. The interface does the same thing without an environment variable,

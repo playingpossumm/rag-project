@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import numpy as np  # noqa: E402
 
 import corpora  # noqa: E402
-from evaluate import gold_keys, is_relevant, load_cases  # noqa: E402
+from evaluate import fixture_ids, gold_keys, is_relevant, load_cases  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -55,15 +55,6 @@ MODELS = [
      "query_prefix": "Represent this sentence for searching relevant passages: ",
      "note": "33M, asymmetric, instruction-prefixed queries"},
 ]
-
-
-def fixture_ids(cfg) -> set:
-    from check_freshness import artefact_suffix
-    p = ROOT / "eval" / f"hard_cases{artefact_suffix(cfg['golden'])}.json"
-    if not p.exists():
-        return set()
-    d = json.loads(p.read_text(encoding="utf-8"))
-    return {c["id"] if isinstance(c, dict) else c for c in d.get("structural", [])}
 
 
 def evaluate_model(spec, metadata, cases, k):

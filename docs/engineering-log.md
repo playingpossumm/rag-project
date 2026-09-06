@@ -2492,6 +2492,113 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-07 — The 30 should-fix findings, and the seams between the chains that fixed them
+
+The audit of 2026-09-06 left 30 findings below the dire bar. They were worked
+as 5 chains that owned disjoint files, serving, guards, documents, interface
+and Python hygiene, each read by 2 reviewers and repaired, then read once
+more. 25 agents, 18.2 hours of wall clock, all 30 items closed. The reviewers
+earned their place, and what follows is what they caught, what the chains left
+at their edges for the owner of the whole tree, and what the re-record showed.
+
+**What the reviewers caught.** The serving chain added `HF_HUB_OFFLINE=1` to
+the Dockerfile's closing `ENV` block, which also set `HF_HOME`, and that block
+sat after the build-time download, so the weights were baked into
+`/root/.cache` and the running container, told to stay offline, would have
+looked in `/app/.cache` and found nothing: a regression the chain introduced
+and its reviewer removed. The guards chain's report quoted an NDCG of 0.57067
+for the demoted-hits case; the function returns 0.57064, and the figure had
+lived only in the report. The documents chain dated the 66-and-18 golden set
+to 2026-09-01 and its failure table to 2026-08-27; `git log` on
+`eval/golden_set.json` puts the set's end on 2026-08-25 and the table on
+2026-08-21, and the corrected entry now cites the commits. A "16 days" between
+a calibration and the removal of `adv-moe-routing` was arithmetic from the
+wrong date. `check_answers.py` had crashed on `--help` and on every run since
+2026-08-18, when ingest moved from a `page` field to a locator, and nobody had
+run it. On the interface, `.hero p` outranked `.err`, so the corpus-switch
+failure painted grey; and `evalSetLabel()` read a picker list that loads
+beside the eval payload rather than before it, so on a first load at 1280 and
+390 wide the settings note said the figures were measured on "the llm
+question set, not on the ML & NLP papers set in use here" under the very set
+they describe.
+
+**What sat between the chains.** Each chain reported what it could not touch,
+and the list was longer than any one item:
+
+- The interface chain split `tokens.css`, `base.css` and `common.js` out of
+  the four pages, and `index.html` had imported `passages.js` since
+  2026-09-03; the dispatch in `serve.py` served none of the four, so the live
+  pages loaded unstyled for a day while the recorded build, which serves a
+  directory, did not. The routes are added, `test_serve.py` holds them, and
+  `check_links.py` no longer classes a bare file name as external, which is
+  how the missing stylesheet passed it.
+- `serve.py` served `eval/per_case.json`, `eval/hard_cases.json` and
+  `eval/threshold.json` under every corpus through a table, and
+  `check_docs.served_routes()` read only literals, so the 3 routes were
+  invisible to the guard and undocumented in HANDOFF §6 without it noticing.
+  The scanner now resolves a named table; per-case and hard-cases resolve per
+  corpus by the rule `/api/eval` uses; `/api/threshold`, a calibration of the
+  ML gate on a set that ended on 2026-08-25 which nothing fetched, is gone.
+- The guard-paragraph tally failed only when all 3 documents had dropped
+  out; each is held now. The suite-count scan covered README.md alone, and 3
+  counts in HANDOFF.md had gone stale by 38, 18 and 1; it covers both.
+- `eval/results.json` carried the golden set's absolute path, a home
+  directory served verbatim by `/api/eval`. `evaluate.py` writes a repository
+  path now, and the field in the 3 results files was edited by hand to match,
+  which is a path and not a measurement, and is said here because it was done
+  by hand.
+- `check_golden.py` kept its own `normalize`; it imports the one in
+  `evaluate.py`. `check_freshness.py` formatted a count with a thousands
+  separator before checking the file carried one. Five measurement scripts
+  set the blend on the rerank module, which the hygiene chain had removed
+  from the sweeps; they pass it per call.
+- Wording: README's "no external request" now says at query time, since a
+  first run with an empty cache downloads the models once; the roadmap's
+  "44 to 56 seconds a query" is the range across 3 corpora, not the bird
+  run; the bird note in `corpora.json` quoted a 22% saving beside
+  milliseconds that give 26%, and says both; 3 sentences in RESULTS.md and
+  1 in `docs/deploying.md` recorded corrections to drafts that were never
+  committed, which no reader could verify, and are struck; HANDOFF §6 lists
+  the shared assets, the per-corpus measurement routes, what `/health`
+  carries and how a public server answers, and the guard list says which 3
+  guards exit 2 for a check that did not run.
+
+**The re-record.** The 4 writers ran in the order `check_freshness` prints:
+threshold, top passages (157 questions, 450 passages), analytics, and
+`record_static.py --all` over the 3 corpora. `check_freshness.py` exits 0,
+the first time since provenance was added on 2026-09-06; it had reported 5
+unstamped files and 10 problems. Each corpus's recorded `eval.json` now names
+itself, where until today all 3 carried the ML papers' figures. Test counts
+from `check_docs.py --tests`: **605** checks, 546 Python plus 59 Node, from
+491; serve 29 to 99, freshness 33 to 68, api 13 to 20, links 18 to 21,
+metrics 22 to 21 because a check that verified its own arithmetic was
+folded into one that calls the function. The seven guards pass; the page
+checks pass at 1600, 1280 and 390 wide with no external and no failed
+request; 13 of 13 retrieved answers appear on the page; the lead note fires
+where the lead is unmarked and nowhere else.
+
+**Left as found, and said so.** Docker is not installed on this machine, so
+the `ENV` ordering rests on Docker's documented scoping and on a check that
+`hf_cache_dir()` follows `HF_HOME`; whoever deploys should build once and
+look for 2 `models--*` directories under `/app/.cache/hub`.
+`set_offline_if_cached()` tests for any cached model rather than the ones
+this server loads; the docstring says what a partial cache does. A failed
+reindex's error text is served verbatim on `/api/index/status`, reachable
+only after an operator allows reindexing on a public server. The diagram's
+scroll-end fade scrolls with the drawing, as it did before. The 22
+could-fix items from the audit are untouched, and the 4 decisions that are
+the owner's, the private repository behind every Source link, the API key,
+the hero diagram and `/versions`, are still open.
+
+Two mistakes of the day are mine. The patch scripts were first written with a
+`newline` argument that `Path.read_text` does not take, and a rewrite to
+mend that turned one path into a string variable; the edits were re-applied
+file by file and every file compiled and its suite run before anything else
+happened. And 2 screenshot scripts wrote 8 PNG files into the repository root,
+found by `git status` before the commit and moved out.
+
+---
+
 ## 2026-09-06 — The pending items, and whether the bold lands on the answer
 
 Six items had been listed as pending on 2026-09-04. They were worked as four

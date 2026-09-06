@@ -78,7 +78,6 @@ def run(cfg, cases, adversarial, limit):
     index, metadata = load_index(cfg["store"])
     bm25 = build_bm25(metadata)
     ensemble = load_ensemble(cfg["store"])
-    rr.RERANK_BLEND = cfg["rerank_blend"]
     threshold = cfg["threshold"]
 
     answerable = cases[:limit] if limit else cases
@@ -108,7 +107,7 @@ def run(cfg, cases, adversarial, limit):
             res = retrieve(query, index, metadata, model, k=TOP_K,
                            candidate_k=cfg["candidate_k"], use_reranker=True,
                            fusion=DEFAULT_FUSION, bm25=bm25, max_per_source=2,
-                           ensemble=ensemble)
+                           ensemble=ensemble, rerank_blend=cfg["rerank_blend"])
             out[mode]["seconds"] += cost + time.perf_counter() - t0
 
             if case in adv:
