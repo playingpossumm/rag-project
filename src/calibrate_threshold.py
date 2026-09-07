@@ -204,7 +204,7 @@ def main() -> int:
         # on per_case's reading of them. Nothing here was recorded until
         # 2026-09-06, and the file on disk that day, calibrated on
         # 2026-08-21, named adv-moe-routing, a case the golden set had
-        # dropped on 2026-08-25 (commit 818eded), with no way to tell from
+        # dropped on 2026-08-25 (commit 115f640), with no way to tell from
         # the file. The first draft of this comment said the case had been
         # deleted 16 days earlier, a figure counted from the calibration date
         # rather than taken from the git history.
