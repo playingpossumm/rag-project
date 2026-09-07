@@ -19,9 +19,10 @@
 # not a size one: those documents are Wikipedia articles under CC BY-SA and can
 # be redistributed with attribution (see ATTRIBUTION.md). The arXiv papers in
 # the other two corpora cannot be, so they are not shipped here either. They
-# are untracked from HEAD since 2026-08-28 and still in the history; see
-# ATTRIBUTION.md. Until 2026-09-06 this comment said they had been removed
-# from the history, which was never true.
+# were untracked from HEAD on 2026-08-28 and removed from the history on
+# 2026-09-07, before this repository went public; see ATTRIBUTION.md. This
+# comment said they had been removed from the history until 2026-09-06, when
+# that was not yet true, and it is true now for a different reason.
 
 FROM python:3.12-slim
 

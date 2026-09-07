@@ -418,7 +418,7 @@ intensity**. That decision was implemented and then lost in the app rewrite.
 and `ui/pipeline.html`, along with their routes. Both options were open; the
 current direction is to dial the UI back, and wiring an animated generative
 field into the masthead is the opposite of that. The work is in git
-(`f2ab5de`, `f1ea450`) if the decision is ever revisited.
+(`0888772`, `c1aeaca`) if the decision is ever revisited.
 
 ---
 
@@ -530,18 +530,20 @@ deliberate default.
 
 **Licence: MIT** (`LICENSE`), added 2026-08-28 for the public release.
 
-**`data/`, `store-birds/` and `store-quant/` are untracked** as of 2026-08-28:
-78 MB of third-party papers, and the same text again inside `metadata.json`.
-They remain in the *history* deliberately, because this repository's prose
-cites
-**fourteen** of its own commit SHAs. `HANDOFF.md` §5 cites `f2ab5de` and
-`f1ea450`, and `docs/angle-sweep.html` stamps one on every entry. A rewrite
-would dangle them silently, because a dead SHA in a sentence reads exactly like
-a live one. (`serve.py` embedded `d1f8c71` in the archive banner
-until that route was removed on 2026-08-29; the count `check_docs.py` reports
-is the live one.) `src/check_docs.py` now counts and resolves them rather than
-leaving that as a number in a paragraph. See `docs/engineering-log.md`,
-2026-08-28. Rebuild the corpora with
+**`data/`, `store-birds/` and `store-quant/` are untracked** as of 2026-08-28,
+and gone from the history since 2026-09-07: 78 MB of third-party papers, and
+the same text again inside `metadata.json`. They stayed in the history for 10
+days because this repository's prose cites **15** of its own commit SHAs, §5
+here cites `0888772` and `c1aeaca` and `docs/angle-sweep.html` stamps one on
+every entry, and a rewrite dangles them silently, since a dead SHA in a
+sentence reads exactly like a live one. The rewrite ran before the repository
+went public and all 15 were translated through the map `git filter-repo`
+writes, so the argument was answered rather than overruled. (`serve.py`
+embedded `21b3c56` in the archive banner until that route was removed on
+2026-08-29; the count `check_docs.py` reports is the live one.)
+`src/check_docs.py` counts and resolves them rather than leaving that as a
+number in a paragraph. See `docs/engineering-log.md`, 2026-08-28 for the
+decision and 2026-09-07 for its reversal. Rebuild the corpora with
 `src/fetch_corpus.py`, `src/fetch_topic.py` and `src/ingest.py`.
 
 **Git identity is repo-local and deliberate.** `git config user.name` and

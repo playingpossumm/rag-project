@@ -9,7 +9,7 @@
 > rewrite, then **deleted on 2026-08-21** along with `ui/ambient.html` and
 > `ui/ambient-fields.js`, since the direction is now to dial the UI back and an
 > animated generative masthead is the opposite of that; the code is in git at
-> `f2ab5de` if it is ever wanted). The direction that survived: layered density,
+> `0888772` if it is ever wanted). The direction that survived: layered density,
 > mono data, and refusals made prominent and explained.
 
 Answers from a design interview on 2026-08-19, recorded so the direction survives
