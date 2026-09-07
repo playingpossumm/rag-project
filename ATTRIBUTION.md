@@ -29,32 +29,35 @@ code and not the corpus. `src/fetch_corpus.py` and
 `src/fetch_topic.py` rebuild them by downloading from arXiv, so anyone running
 this locally gets the papers from the people who published them.
 
-**They are still in the git history, and that is a deliberate choice rather than
-an oversight.** Removing them means rewriting history, which changes every
-commit SHA; this repository cites fourteen of its own SHAs in prose, and one of
-them is printed on screen by the server. All fourteen would dangle, and nothing
-checks that a commit named in a document still resolves. The full reasoning is
-in `docs/engineering-log.md` under 2026-08-28.
+**They are not in the git history either.** No paper, and no vector store
+holding a paper's text, is in any object this repository carries. Check it
+rather than believing it:
 
-What that choice costs, stated plainly rather than argued away. arXiv's default
-submission licence grants **arXiv** the right to distribute a paper. It does not
-grant that right to anyone else, so for a paper filed under it the copy in this
-history is redistribution the author has not licensed. Some of these papers
-carry a Creative Commons licence that does permit it and some do not, and this
-repository has not audited which is which. What weighs the other way is that the
-current files carry no paper, the history is a clone away rather than on the
-page, and a takedown request is honoured the same day. **If you are an author
-and would rather your paper were not in this history, open an issue and the
-rewrite runs**; the fourteen dangling SHAs are a smaller cost than publishing a
-paper against its author's wishes.
+```bash
+git rev-list --objects --all | grep -E '\.pdf$|^store-|^data/'
+```
 
-Until 2026-09-07 this paragraph said that arXiv's submission licence "grants a
-non-exclusive right to distribute" and that "many of these papers are CC-BY".
-The first was wrong about who holds that right, the second was a guess at a
-proportion nobody had counted, and the two together read as a licence to publish
-rather than as the risk it is. The correction is here rather than a deletion
-because this project records a claim it got wrong beside the claim that replaced
-it.
+That was not true until 2026-09-07. The papers were untracked on 2026-08-28 and
+left in the history for 10 days, on the argument that removing them means
+rewriting every commit SHA, that this repository cites 15 of its own in prose,
+and that nothing checks whether a SHA in a sentence still resolves. The
+argument was sound and the conclusion was wrong, for a reason this file had
+stated incorrectly.
+
+Until 2026-09-07 this section said that arXiv's submission licence "grants a
+non-exclusive right to distribute". It does not. arXiv's default submission
+licence grants **arXiv** permission to distribute a paper and grants no one else
+anything, so for every paper filed under it the copy in this history was
+redistribution its author had never licensed. The sentence beside it, that "many
+of these papers are CC-BY", was a proportion nobody had counted. Together they
+read as a licence to publish rather than as the risk they were, and they were
+the load-bearing half of the argument for keeping the files.
+
+So the rewrite ran, before the repository went public rather than after. The 15
+cited SHAs were translated through the map `git filter-repo` writes and every
+one of them resolves; the pack went from 66.69 MiB to 3.89 MiB. The wrong
+sentence is recorded here rather than deleted, because it is the reason a
+decision stood for 10 days.
 
 ### What the recorded demo publishes, and why
 

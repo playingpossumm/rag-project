@@ -1371,8 +1371,8 @@ prepared, with a backup branch, a tag and a copy of the files.
 
 **It was not run, and the deciding reason is specific rather than general.**
 This project's documents cite its own commit SHAs. `HANDOFF.md` §5 points at
-`f2ab5de` and `f1ea450` for the deleted ambient-field work, and `serve.py`
-embeds `d1f8c71` in the banner it serves over the archived front page, where a
+`0888772` and `c1aeaca` for the deleted ambient-field work, and `serve.py`
+embeds `21b3c56` in the banner it serves over the archived front page, where a
 visitor reads that SHA on screen. All three resolve today. A rewrite changes
 every SHA in the repository, so all three would become dangling references, and
 they would fail silently: nothing in the test suite or the four guards checks
@@ -1387,6 +1387,14 @@ So: history preserved, HEAD clean, and the reasoning written down rather than
 left as an unexplained absence. If the redistribution question is ever revisited,
 the rewrite is one command, and the three SHA references have to be fixed in
 the same change, which is the part that is easy to miss.
+
+**Reversed on 2026-09-07**, 10 days later, when the repository was made public
+and the licence sentence in the paragraph above was checked. It is wrong:
+arXiv's submission licence grants **arXiv** the right to distribute, not the
+world. The rewrite ran, the SHA references were fixed in the same change as
+this entry said they would have to be, and the entry of 2026-09-07 records it.
+This entry is left as it was written, because the wrong sentence is the reason
+the decision stood.
 
 ---
 
@@ -2489,6 +2497,75 @@ wrongly. It is `colbert-late`, an ordinary answerable case, and the passage was
 always correct. The interface said otherwise: the question list groups its
 suggestions by kind and printed **"decoys that look right"** over the
 cross-document group. See the entry below.
+
+---
+
+## 2026-09-07 — The history rewrite, and the sentence that had prevented it
+
+The repository went public today, and the decision of 2026-08-28 to leave 37
+arXiv PDFs in the history went with it. That decision rested on 2 things. One
+was a cost that was real: this project's prose cites its own commit SHAs, a
+rewrite changes every one, and a dead SHA in a sentence reads exactly like a
+live one. The other was a licence sentence, and reading it before publishing
+was what undid it.
+
+**"arXiv's submission licence grants a non-exclusive right to distribute" is
+wrong about who holds the right.** The grant runs to arXiv. It gives no third
+party permission to redistribute a paper, so for every paper filed under the
+default licence the copy in this history was redistribution its author had
+never licensed. The sentence beside it, that "many of these papers are CC-BY",
+was a proportion nobody had counted. Remove those 2 clauses and what is left of
+the 2026-08-28 argument is the SHA cost alone, which is a cost to this
+repository rather than to anyone else, and it is payable.
+
+**What the scan found first.** Before any of this, every text blob ever
+committed was read: 1,084 of them, against 13 patterns. No key or token has
+ever been in this repository. What it did find was contact data, and one line
+of it decided the shape of the day. 207 of 456 commits were **authored** by the
+owner's real name and personal address, which is what GitHub prints beside
+every commit. No edit to a file reaches that. Only a rewrite does, and the
+owner's request was to remove the name and the address, so the 2 operations
+became one.
+
+**One pass of `git filter-repo`** removed `data/`, `store-quant/` and
+`store-birds/` from every commit, mapped the real-name identity onto the
+no-reply address the other 249 commits already used, and replaced 14 literals
+in blob contents and commit messages: 2 personal addresses, the real name, 2
+academics' addresses that a loader fixture had carried out of a paper's author
+block, this machine's home path in 3 spellings, and 5 private artifact
+identifiers. Every commit is now authored by one pseudonymous identity. The
+pack went from **66.69 MiB to 3.89 MiB**. Master lost exactly 1 commit, the one
+whose whole content was untracking the files that no longer exist, and 454 of
+456 commits survived.
+
+**The SHA cost was paid rather than argued with.** 15 SHAs are cited across 8
+files, 27 mentions, found by matching every 7-to-10 character hex token in the
+prose and asking git which resolve to a commit. `filter-repo` writes a map from
+old commit to new; each of the 15 went through it, each new SHA was checked to
+resolve, and each one's subject line was read against the sentence citing it.
+The SHA this handoff describes as the diagram-angle work maps to a commit
+titled "Angle to 60 degrees". The one cited as the day a golden-set case was
+dropped maps to "Work the backlog: labels, over-broad gold". The mapping is
+right because the prose still describes the commit it points at.
+
+The pre-rewrite SHAs are deliberately not quoted here. The first draft of this
+paragraph named 2 of them as examples, and `check_docs.py` failed on both
+within the minute, which is the check this project added after arguing on
+2026-08-28 that no such check existed. A dead SHA in a sentence reads exactly
+like a live one, including when the sentence is about dead SHAs.
+
+**What is checkable now, which is the point.** No paper and no vector store is
+in any object this repository carries, and `ATTRIBUTION.md` gives the one-line
+command that proves it rather than asking to be believed. That is a better
+position than the one it replaced, and the 10 days it took to get here are the
+cost of a licence claim nobody had checked.
+
+Two things are worth saying about what this does not do. The recorded demo
+still publishes 385k characters of ML-paper excerpts, which is quotation with
+attribution and is argued where it is made; the rewrite changes nothing about
+it. And a rewrite is not a recall: anyone who cloned this repository while it
+was private, which is nobody outside its owner, would still hold the old
+objects.
 
 ---
 

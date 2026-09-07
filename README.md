@@ -152,7 +152,7 @@ No ranking benefit; source recall five points worse. Every chunk in a document
 received the *same* prefix, making them more similar to each other and clustering
 retrieval harder onto one document, which is the opposite of the goal.
 Reverted.
-→ [commit `d4ea4ab`](../../commit/d4ea4ab)
+→ [commit `5a82da0`](../../commit/5a82da0)
 
 ### 6. Three settled conclusions that were noise
 

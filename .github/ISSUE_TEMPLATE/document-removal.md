@@ -18,5 +18,5 @@ or its arXiv identifier. Any one of the 3 is enough to find it.
 What happens next. The corpus is rebuilt without the document and the demo is
 re-recorded, which is one command, and the passages leave
 <https://rag-retrieval-visualized.vercel.app> when that deploy lands. The
-document itself is not among this repository's current files. `ATTRIBUTION.md`
-explains what remains in the git history and why.
+document itself is in none of this repository's files and in none of its
+history, which `ATTRIBUTION.md` shows you how to check.

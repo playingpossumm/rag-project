@@ -25,13 +25,12 @@ eval/top-passages.json
 # and two vector stores holding the same text again, verbatim, in metadata.json.
 # Untracked from 2026-08-28 so they are not in HEAD.
 #
-# They ARE still in the history, deliberately, and a file in the history of a
-# public repository is published whether or not it is in HEAD. The rewrite that
-# would remove them was prepared and not run: fourteen commit SHAs cited in this
-# repository's own prose -- HANDOFF §5, the archive banner serve.py puts on
-# screen -- would dangle silently, and nothing checks that a commit named in
-# prose still resolves. The reasoning is in docs/engineering-log.md, 2026-08-28,
-# and ATTRIBUTION.md states the position.
+# They are not in the history either, since 2026-09-07. They were, deliberately,
+# for ten days, on the argument that a rewrite would dangle the 15 commit SHAs
+# this repository cites in its own prose. The rewrite ran before the repository
+# went public, and the 15 SHAs were translated through the map it wrote, so
+# nothing dangles. The reasoning both ways is in docs/engineering-log.md under
+# 2026-08-28 and 2026-09-07, and ATTRIBUTION.md states the position.
 #
 # All of it is rebuildable and the README says how:
 #   python src/fetch_corpus.py                      -> data/

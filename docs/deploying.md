@@ -79,14 +79,12 @@ there.
 
 ## Before you deploy
 
-The repository contains **no documents and no index** in HEAD. They are
-untracked, so a clone gives you the code and not the corpus. They remain in the
-history, and `ATTRIBUTION.md` explains why. That choice is what makes a clone
-about 67 MB (`git count-objects -vH` reports a 66.69 MiB pack on 2026-09-06):
-the arXiv papers are still in the history, and so are four revisions of
-`store-quant/metadata.json` at 9.6 to 9.8 MB each, committed between 2026-08-22
-and 2026-08-25 before the stores were untracked on 2026-08-28 (`git log --
-store-quant/metadata.json` gives the dates). So the corpus has to be built
+The repository contains **no documents and no index**, in HEAD or in the
+history, so a clone gives you the code and not the corpus. A clone is about
+**4 MB** (`git count-objects -vH` reports a 3.89 MiB pack on 2026-09-07). It was
+67 MB until that day, which was the arXiv papers plus four revisions of
+`store-quant/metadata.json` at 9.6 to 9.8 MB each; `ATTRIBUTION.md` explains
+what they were doing there and why they left. So the corpus has to be built
 once, locally, before the image can be built:
 
 ```bash
