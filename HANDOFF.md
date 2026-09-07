@@ -544,8 +544,12 @@ leaving that as a number in a paragraph. See `docs/engineering-log.md`,
 2026-08-28. Rebuild the corpora with
 `src/fetch_corpus.py`, `src/fetch_topic.py` and `src/ingest.py`.
 
-**Git identity is repo-local**: `playingpossumm <the owner's address, removed 2026-09-07>`. The owner
-explicitly did not want their work email on this repo. Do not change it.
+**Git identity is repo-local and deliberate.** `git config user.name` and
+`user.email` are set in this clone alone; the owner did not want a work
+address on this repository and the commits carry a GitHub no-reply address
+instead. Read the 2 values with `git config user.email` when you need them.
+Do not change them and do not let a global identity take over. The address
+itself was written here until 2026-09-07, when the repository went public.
 
 **Commit style**: explain *why*, not just what; record the measurement that drove
 the change, including measurements that refuted the original plan.
@@ -1073,49 +1077,36 @@ the count belongs to.
 
 ## 8. Published artifacts
 
-Their **source is in this repo**; the published copies live in the cloud and are
-not carried by any session.
+Three documents in `docs/` are also published as standalone pages in the cloud:
+`understanding-rag.html`, `phase-1-field-notes.html` and `project-status.html`.
+Their source is in this repository and the published copies are not carried by
+any session.
 
-| Artifact | Source file | URL | Updatable from `the owner's address, removed 2026-09-07`? |
-|---|---|---|---|
-| **Understanding This Retrieval System** (the complete guide) | `docs/understanding-rag.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | **yes** |
-| Anatomy of a Retrieval Pipeline (Phases 1–3) | `docs/phase-1-field-notes.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | **yes** |
-| ” (earlier copy, other account) | ” | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | no — see below |
-| Retrieval System Status | `docs/project-status.html` | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | **yes — use this one** |
-| ” (earlier copy, other account) | ” | https://claude.ai/code/artifact/an artifact id, removed 2026-09-07 | no — tested 2026-08-21, same error |
+**Their URLs are not in this file.** They sit in `docs/artifacts.local.md`,
+which `.gitignore` keeps out of the repository. This repository is public and a
+private cloud URL, and the account address that owns it, are not what a public
+document should carry. What follows is the part worth keeping in public, which
+is the failure mode rather than the addresses.
 
-**To update one, pass its URL.** Publishing the source file without the `url`
-creates a *second, separate* artifact instead of updating the existing one, and
-the existing link silently goes stale. This is the single easiest way to
-break something here, and nothing in the file itself warns you, which is why
-the URLs are recorded here.
+**To update one, pass its URL.** Publishing the source file without it creates a
+second, separate artifact instead of updating the existing one, and the existing
+link goes stale with nothing said. Nothing in the source file warns you, which
+is why the URLs are written down at all.
 
-### The `8c62ba9a` and `0fa6a672` URLs, which this account does not own
+**Two of the 5 published copies belong to an account this project cannot
+reach**, found on 2026-08-21 while updating the field notes. Publishing to such
+a URL is refused until the session has read the live version, and reading it is
+refused as well, so the only route is `force: true`, which overwrites a live
+copy without seeing it. The owner was asked and chose to keep both rather than
+force. The corrections of 2026-08-21 are therefore live on the current copy and
+absent from the older one, which still shows MRR 0.751, a module row this
+project removed, and a claim about indexing progress it has since corrected. If
+access to that account turns up, publishing from there with the old URL updates
+it in place, with no force and no risk.
 
-Discovered 2026-08-21 while updating the field notes. `action: "list"` on
-`the owner's address, removed 2026-09-07` returns eight artifacts and **neither of those UUIDs is
-among them**, so they were published from somewhere else. That produces a
-deadlock rather than a clean error, and it is worth recording so the next
-session does not spend the same time on it:
-
-- Publishing to that URL is refused until the session has read the live version.
-- Reading it is refused: *"served to you as a public (non-member) reader, and
-  reading public artifacts that way is not enabled yet."* Making the artifact
-  public does **not** lift this; it was already being served that way.
-
-So the only route to that URL is `force: true`, which overwrites the live copy
-without seeing it. The owner was asked and chose to **keep both** rather than
-force. The 2026-08-21 corrections (§5b, §7) are therefore live on
-`c8fef8f2` and **absent from `8c62ba9a`**, which still shows MRR 0.751, the
-"bump chart" module row, and "indexing progress is emitted but unread".
-
-If access to the original account turns up, publishing `phase-1-field-notes.html`
-from there with the `8c62ba9a` URL updates it in place with no force and no risk,
-and the two copies converge.
-
-Both carry a banner scoping Phase 1–2 figures as historical. Phase 3 reflects the
-system as it stands. If Phase 4 is added, extend that banner rather than letting it
-disclaim current work.
+Both carry a banner scoping the Phase 1 and 2 figures as historical, and Phase 3
+reflects the system as it stands. If a Phase 4 is added, extend that banner
+rather than letting it disclaim current work.
 
 ---
 
@@ -1124,6 +1115,8 @@ disclaim current work.
 | File | What it holds |
 |---|---|
 | `README.md` | project overview, current numbers |
+| `SECURITY.md` | what an unauthenticated server and a published corpus mean, added 2026-09-07 |
+| `ATTRIBUTION.md` | every document's licence, and what the demo publishes |
 | `eval/RESULTS.md` | every measurement and the default it justifies |
 | `eval/results.json` | machine-readable, regenerated by `src/evaluate.py` |
 | `docs/roadmap.md` | what is worth doing next, what has been ruled out, and why |
