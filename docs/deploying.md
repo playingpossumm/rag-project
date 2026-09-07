@@ -117,6 +117,25 @@ docker run -p 7860:7860 rag-demo
 # then http://localhost:7860/
 ```
 
+### Check the build
+
+The Dockerfile moved `HF_HOME` ahead of the model download on 2026-09-07,
+so the weights land where the offline container reads them. The image has
+not been built since: the development laptop is a managed work device
+without Docker, and the build waits for a personal machine. These two
+commands are the test; the first should list two `models--*` directories
+and the second should answer 200 within the 90 s start period with no
+network.
+
+```bash
+docker run --rm rag-demo ls /app/.cache/hub
+docker run -d -p 7860:7860 --network none rag-demo && sleep 60 \
+  && curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:7860/health
+```
+
+`--network none` is what makes the second command a test of
+`HF_HUB_OFFLINE` rather than of the connection.
+
 ### Configuration
 
 | variable | default | what it does |
