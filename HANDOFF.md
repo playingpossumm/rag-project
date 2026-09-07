@@ -567,6 +567,16 @@ instead.
 
 ## 7. Unfinished
 
+### Deferred, 2026-09-07
+
+**The container has not been built since the Dockerfile fix.** `HF_HOME`
+now precedes the model download, and the check that the weights sit in
+`/app/.cache/hub` and that `/health` answers with no network is written
+under "Check the build" in `docs/deploying.md`. Docker is not on the
+development laptop, which is a managed work device, so the build waits for
+a personal machine. Installing Docker Desktop on the work laptop was begun
+on 2026-09-07 and stopped before anything changed on it.
+
 ### Open problems, added 2026-08-26
 
 **The cross-encoder is the weakest stage, and only partly addressed.** On the

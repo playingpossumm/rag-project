@@ -292,6 +292,13 @@ given there.
 
 ## Blocked
 
+One thing is blocked on a machine. The Dockerfile's `HF_HOME` ordering was
+fixed on 2026-09-07 and the image has not been built since, because Docker
+is not on the development laptop and that laptop is a managed work device
+on which installing it was started and then stopped the same day. The build
+and its two-command check wait for a personal machine; they are under
+"Check the build" in `docs/deploying.md`.
+
 Nothing is blocked on API credit any more. `RAG_GENERATOR=ollama` runs the
 whole generation path against a local model, and `src/evaluate_answers.py`
 scores the prose that comes out of it: invented citations, correctness against
