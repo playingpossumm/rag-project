@@ -407,7 +407,7 @@ def check_threshold(rep: Report, name: str, cfg: dict, gold: dict, gold_path: Pa
     the golden set and the index. The live instance this was written against
     was eval/threshold.json, calibrated on 2026-08-21 on 66 + 18 cases, which
     on 2026-09-06 still named adv-moe-routing although the golden set had
-    dropped that case on 2026-08-25 (commit 818eded). The first draft of this
+    dropped that case on 2026-08-25 (commit 115f640). The first draft of this
     sentence put the gap at 16 days, counted from the calibration date rather
     than from the git history; the dates above replace that figure.
     """
