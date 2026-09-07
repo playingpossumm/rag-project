@@ -159,6 +159,11 @@ def main() -> int:
         # sat at the same depth -- and was caught only by dry-running before
         # writing. Two signals stop it: a comma-separated run of title-case
         # pairs, and an email directly below.
+        # The names and addresses here were the real ones from the paper
+        # until 2026-09-07 and are invented now. This repository became
+        # public and 2 academics' addresses were not this fixture's to
+        # publish; the shape the check reads, a comma-separated run of
+        # title-case pairs with an email under it, is unchanged.
         AUTHORS = [" Generative Models Must Preserve", "", "",
                    "## Priya Ramanathan, Devesh Iyer", "", "```",
                    "   p.ramanathan@example.edu, d.iyer@example.edu"]
@@ -166,7 +171,7 @@ def main() -> int:
             "Simulating Stress Laws under Extremal Dependence: Characterizing What",
             AUTHORS, 2)
         check("title / still joins the wrapped half", "Must Preserve" in got)
-        check("title / does not absorb an author heading", "Mantu" not in got)
+        check("title / does not absorb an author heading", "Priya" not in got)
 
         # A title ending on a dangling word earns a longer continuation than
         # one whose only evidence is position. Seven words was being refused by

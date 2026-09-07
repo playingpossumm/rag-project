@@ -33,11 +33,28 @@ this locally gets the papers from the people who published them.
 an oversight.** Removing them means rewriting history, which changes every
 commit SHA; this repository cites fourteen of its own SHAs in prose, and one of
 them is printed on screen by the server. All fourteen would dangle, and nothing
-checks that a commit named in a document still resolves. Weighed against that,
-arXiv's submission licence grants a non-exclusive right to distribute, many of
-these papers are CC-BY, and a research repository carrying the papers it was
-measured against is ordinary practice. The full reasoning is in
-`docs/engineering-log.md` under 2026-08-28.
+checks that a commit named in a document still resolves. The full reasoning is
+in `docs/engineering-log.md` under 2026-08-28.
+
+What that choice costs, stated plainly rather than argued away. arXiv's default
+submission licence grants **arXiv** the right to distribute a paper. It does not
+grant that right to anyone else, so for a paper filed under it the copy in this
+history is redistribution the author has not licensed. Some of these papers
+carry a Creative Commons licence that does permit it and some do not, and this
+repository has not audited which is which. What weighs the other way is that the
+current files carry no paper, the history is a clone away rather than on the
+page, and a takedown request is honoured the same day. **If you are an author
+and would rather your paper were not in this history, open an issue and the
+rewrite runs**; the fourteen dangling SHAs are a smaller cost than publishing a
+paper against its author's wishes.
+
+Until 2026-09-07 this paragraph said that arXiv's submission licence "grants a
+non-exclusive right to distribute" and that "many of these papers are CC-BY".
+The first was wrong about who holds that right, the second was a guess at a
+proportion nobody had counted, and the two together read as a licence to publish
+rather than as the risk it is. The correction is here rather than a deletion
+because this project records a claim it got wrong beside the claim that replaced
+it.
 
 ### What the recorded demo publishes, and why
 

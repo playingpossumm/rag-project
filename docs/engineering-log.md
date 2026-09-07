@@ -2492,6 +2492,103 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-07 — Reading the whole history before publishing it
+
+Going public publishes the history, not the checkout. So the question was not
+what `git status` shows but what a stranger can read after cloning, and it was
+answered by reading every object rather than by reasoning about the working
+tree. `git rev-list --objects --all` lists 1,610 named objects; 1,084 of them
+are text blobs under 4 MB, and each was fetched with `git cat-file` and matched
+against 13 patterns: 5 key formats, a private-key header, a bearer literal, an
+assignment of anything named password or secret or token, this machine's home
+path in 2 spellings, its hostname, and any email address.
+
+**No key, token or private key has ever been committed.** That is the finding
+that mattered and it came back empty on the first pass. `.env` has been in
+`.gitignore` since the first commit and has never been in an object.
+
+What the scan did return was contact data, in 3 kinds.
+
+**Two addresses belonging to people who are not the owner.** A fixture in
+`test_loaders.py` carried the real author block of an arXiv paper, 2 names and
+2 addresses at an academic domain, because that block was the input that caught
+a real defect. The test reads the *shape*, a comma-separated run of title-case
+pairs with an email under it, and no check touches the text, so the fixture now
+carries invented names at `example.edu` and the comment records what it held
+before. 33 of 33 loader checks still pass.
+
+Two more addresses stay. `front_matter.py` and `test_excerpt.py` quote the
+front matter of the Batch Normalization paper, authors and addresses included,
+and that paper is in the ML corpus, which means the recorded demo already
+publishes that passage text at
+<https://rag-retrieval-visualized.vercel.app>. Removing the addresses from the
+source while the demo shows them would be theatre rather than privacy. The line
+this draws is whether the data exists anywhere else in the project: the academic
+addresses were in one fixture and nowhere else, so taking them out was a real
+reduction.
+
+**The owner's own 2 addresses**, in `HANDOFF.md`. The same file says the git
+identity is repo-local because the owner did not want a work address on the
+repository, and then printed a personal one 500 lines further down. The
+identity paragraph now says how to read the values with `git config` instead of
+quoting them. The commits themselves carry a GitHub no-reply address and always
+have.
+
+**Five private cloud URLs** in section 8, the published copies of 3 documents
+in `docs/`, with the account that owns them. Section 8 keeps the part worth
+publishing, which is that updating an artifact without passing its URL silently
+creates a second one, and that 2 of the copies belong to an account this
+project cannot reach. The addresses moved to `docs/artifacts.local.md`, which
+`.gitignore` now holds.
+
+The 3 hits for this machine's home path were all in objects rather than in the
+current files. `eval/results.json` had carried the golden set's absolute path
+until yesterday, when `evaluate.py` started writing a repository-relative one.
+
+**The licensing claim was wrong, and it is the claim a public repository would
+be read on.** `ATTRIBUTION.md` argued for keeping 37 arXiv PDFs in the history
+partly because "arXiv's submission licence grants a non-exclusive right to
+distribute" and "many of these papers are CC-BY". The first sentence is wrong
+about who holds the right. arXiv's default submission licence grants **arXiv**
+permission to distribute; it grants no one else anything, so for a paper filed
+under it the copy in this history is redistribution its author has not
+licensed. The second was a proportion nobody had counted. Together they read as
+a licence to publish rather than as the risk that it is. The paragraph now
+states the cost, says which way the other considerations weigh, and offers the
+history rewrite to any author who asks for it, and the wrong version is
+recorded beside the correction. Nothing was deleted from the history: that
+decision was made on 2026-08-28 and stands, but it now stands on an accurate
+sentence.
+
+**Two files were added.** `SECURITY.md`, because this repository ships a server
+with no authentication whose only defence is the interface it binds, and
+because the thing most easily missed is that a retrieval system publishes its
+corpus by existing. And an issue template for a document-removal request, since
+`ATTRIBUTION.md` promises that route twice and a promise needs somewhere to
+land.
+
+**Every one of those removals is a removal from the checkout only.** The
+addresses stay in the objects the scan found them in, and a clone reads objects.
+`git log -p` on `HANDOFF.md` still shows the owner's 2 addresses and the 5
+artifact URLs, and `test_loaders.py` still shows the academic ones, because
+changing a file adds an object rather than editing the one before it. So the
+honest statement of what today achieved is that a reader of this repository
+meets none of these addresses, and a reader of its history meets all of them.
+
+That is the same trade the 37 PDFs are held under, and it has the same escape.
+One `git filter-repo` run removes the papers and every one of these addresses
+together, at the cost of the 14 SHAs this repository cites in prose. The
+rewrite is written down and not run. If it is ever run for an author who asks,
+it takes the contact data with it, and these 2 decisions should be made
+together rather than twice.
+
+All 7 guards pass. What is deliberately unchanged: the 37 PDFs and 8 revisions
+of a vector store in the history, the MIT licence, the owner's name on it, and
+the recorded demo's 385k characters of ML-paper excerpts, all of which were
+decided before today and are argued where they are made.
+
+---
+
 ## 2026-09-07 — The 30 should-fix findings, and the seams between the chains that fixed them
 
 The audit of 2026-09-06 left 30 findings below the dire bar. They were worked
