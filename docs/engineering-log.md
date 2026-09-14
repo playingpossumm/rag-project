@@ -2500,6 +2500,65 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-14 — A deferral that had stopped being true the day it was written
+
+The Dockerfile's `HF_HOME` ordering was fixed on 2026-09-07 and the image was
+not built, because Docker is not installed on the development laptop and that
+laptop is a managed work device. Installing it there was started that day and
+stopped at the elevation prompt, which was the right call. The wrong part was
+the conclusion written into 3 documents: that the build was waiting for a
+personal machine.
+
+**It never needed one.** The repository went public on 2026-09-07, hours after
+the Dockerfile change, and a public repository gets free runners with Docker
+already installed. The fact that removed the obstacle arrived the same day as
+the obstacle, and nobody re-read the deferral against it. `.github/workflows/
+docker.yml` now builds the image and asserts both properties on every change to
+the Dockerfile, `.dockerignore`, `requirements.txt`, `serve.py`, `api.py`,
+`ingest.py` or `fetch_topic.py`.
+
+**What it checks, and why neither can be checked anywhere else.** Both are
+properties of the image rather than of the code. The weights baked in at build
+time must be under `HF_HOME`, so `/app/.cache/hub` is asserted to hold at
+least 2 `models--*` directories and `/root/.cache/huggingface` is asserted not
+to exist. That second one is the regression test: root's cache is exactly
+where they landed while the `ENV` line sat after the download step. Then the
+container runs under `--network none` and its own `HEALTHCHECK` is polled
+through `docker inspect` until it reports healthy. `--network none` is what
+makes that a test of `HF_HUB_OFFLINE` rather than of the runner's connection,
+and it also rules out publishing a port, which is why the healthcheck is read
+back rather than curled from outside. The healthcheck definition gets exercised
+as a side effect.
+
+**The corpus is built in CI rather than committed**, with the 3 commands
+`docs/deploying.md` gives, because the Dockerfile copies `data-birds/` and
+`store-birds/` and both are gitignored, so a fresh checkout cannot build at
+all. Running the documented commands rather than equivalents is the same
+decision the README quickstart got on 2026-09-06, and it paid immediately.
+
+**The first of those 3 commands does not parse.** `docs/deploying.md` has said
+`python src/fetch_topic.py --topic birds` since 2026-08-28. The topic is
+positional and `--into` is required, so the line exits 2 with
+`the following arguments are required: --into`. It sat in the deploy guide for
+17 days, 7 of them public, and was found by writing a workflow that runs it.
+Corrected to `python src/fetch_topic.py birds --into data-birds --add 35`.
+
+**A second thing found the same way.** `src/ingest.py --help` had no argument
+parser, so it fell through to `build_index()` and began a full re-index of
+whatever `RAG_DATA_DIR` points at. Typing `--help` at a clone rebuilds the ML
+index. It now parses arguments first, takes none, and prints the 2 paths it
+reads and writes along with the environment variables that move them. This is
+the same defect `check_answers.py` had on 2026-09-07, found the same way, which
+suggests the `--help` sweep of that day should have covered every script rather
+than the 23 a chain happened to own.
+
+**Method note worth keeping.** Both findings came from making a machine run the
+documentation instead of reading it. Neither would have been caught by a
+reviewer, because both files look correct: the flag name is plausible and the
+help invocation is conventional.
+
+---
+
 ## 2026-09-07 — The history rewrite, and the sentence that had prevented it
 
 The repository went public today, and the decision of 2026-08-28 to leave 37

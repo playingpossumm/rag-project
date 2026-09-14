@@ -292,12 +292,16 @@ given there.
 
 ## Blocked
 
-One thing is blocked on a machine. The Dockerfile's `HF_HOME` ordering was
-fixed on 2026-09-07 and the image has not been built since, because Docker
-is not on the development laptop and that laptop is a managed work device
-on which installing it was started and then stopped the same day. The build
-and its two-command check wait for a personal machine; they are under
-"Check the build" in `docs/deploying.md`.
+Nothing is blocked on a machine. The Dockerfile's `HF_HOME` ordering was
+fixed on 2026-09-07 and the image went unbuilt for a week, because Docker is
+not on the development laptop and that laptop is a managed work device on
+which installing it was started and then stopped the same day. The
+conclusion drawn from that, that the build was waiting for a personal
+machine, was wrong: the repository had gone public the same day, and a
+public repository gets free runners with Docker on them.
+`.github/workflows/docker.yml` builds the image and checks both properties
+on every change to the Dockerfile. See "Check the build" in
+`docs/deploying.md`.
 
 Nothing is blocked on API credit any more. `RAG_GENERATOR=ollama` runs the
 whole generation path against a local model, and `src/evaluate_answers.py`

@@ -390,6 +390,19 @@ def build_index(data_dir: Path = DATA_DIR, store_dir: Path = STORE_DIR,
 
 
 def main():
+    # There are no options: the corpus and its destination come from
+    # RAG_DATA_DIR and RAG_STORE_DIR, because a corpus and the index built from
+    # it have to move together and a flag makes it possible to pair the wrong
+    # two. The parser exists so that `--help` prints this rather than starting
+    # a full re-index, which is what it did until 2026-09-14, and so that a
+    # mistyped flag is refused instead of silently ignored.
+    import argparse
+
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"reads  {DATA_DIR}\nwrites {STORE_DIR}\n\n"
+               "Set RAG_DATA_DIR and RAG_STORE_DIR to point at another corpus.")
+    ap.parse_args()
     build_index()
 
 

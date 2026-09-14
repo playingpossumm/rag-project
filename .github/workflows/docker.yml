@@ -1,0 +1,130 @@
+# Does the container this repository documents actually build and start?
+#
+# It answers two questions that no local test can, because both are properties
+# of the image rather than of the code:
+#
+#   1. Do the model weights baked in at build time land where the running
+#      container looks for them? `HF_HOME` was set AFTER the download step
+#      until 2026-09-07, so the build wrote /root/.cache/huggingface while the
+#      container read /app/.cache, and with HF_HUB_OFFLINE=1 the first load
+#      would have failed instead of silently re-downloading.
+#   2. Does the server bind and answer with no network at all? That is what
+#      HF_HUB_OFFLINE is for, and a host that drops huggingface.co is the case
+#      it was added for.
+#
+# The corpus is built here rather than committed, the same way a person
+# deploying this has to build it, so the commands in docs/deploying.md are run
+# as written and cannot drift from what works. That is the same reason the
+# README quickstart is run rather than described.
+#
+# Neither check depends on how many documents the corpus holds. They are about
+# where files sit in the image and whether the process comes up offline.
+
+name: container
+
+on:
+  push:
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "requirements.txt"
+      - "src/serve.py"
+      - "src/api.py"
+      - "src/ingest.py"
+      - "src/fetch_topic.py"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - ".dockerignore"
+      - "requirements.txt"
+      - "src/serve.py"
+      - "src/api.py"
+      - "src/ingest.py"
+      - "src/fetch_topic.py"
+      - ".github/workflows/docker.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install the dependencies the corpus build needs
+        run: pip install -r requirements.txt
+
+      # Exactly the commands docs/deploying.md gives, so a broken command in
+      # that file fails here rather than on a reader's machine. It gave one
+      # that exited 2 between 2026-08-28 and 2026-09-14.
+      - name: Build the ornithology corpus
+        run: python src/fetch_topic.py birds --into data-birds --add 35
+
+      - name: Index it
+        env:
+          RAG_DATA_DIR: data-birds
+          RAG_STORE_DIR: store-birds
+        run: python src/ingest.py
+
+      - name: The labels still describe the corpus
+        run: python src/check_golden.py --corpus birds
+
+      - name: Build the image
+        run: docker build -t rag-demo .
+
+      # Question 1. Two models are downloaded at build time, and both must be
+      # under HF_HOME, which the ENV line sets to /app/.cache before the
+      # download. /root/.cache/huggingface is where they landed while the
+      # ordering was wrong, so its absence is the regression test.
+      - name: The weights are in HF_HOME, not in root's cache
+        run: |
+          set -euo pipefail
+          echo "--- /app/.cache/hub"
+          docker run --rm rag-demo ls -1 /app/.cache/hub
+          n=$(docker run --rm rag-demo sh -c 'ls -1 /app/.cache/hub | grep -c "^models--"')
+          echo "models in HF_HOME: $n"
+          test "$n" -ge 2
+          echo "--- /root/.cache/huggingface should not exist"
+          docker run --rm rag-demo sh -c \
+            'test ! -e /root/.cache/huggingface || { echo "weights went to root cache"; ls -R /root/.cache/huggingface; exit 1; }'
+
+      # Question 2. --network none gives the container no network at all, which
+      # is what makes this a test of HF_HUB_OFFLINE rather than of the runner's
+      # connection. The port cannot be published under that flag, so the check
+      # is the image's own HEALTHCHECK, read back through docker inspect. That
+      # exercises the healthcheck definition as well as the server.
+      - name: It starts and answers /health with no network
+        run: |
+          set -euo pipefail
+          cid=$(docker run -d --network none rag-demo)
+          echo "container $cid"
+          for i in $(seq 1 60); do
+            status=$(docker inspect --format '{{.State.Health.Status}}' "$cid")
+            state=$(docker inspect --format '{{.State.Status}}' "$cid")
+            if [ "$status" = healthy ]; then
+              echo "healthy after $((i * 5))s"
+              docker rm -f "$cid" >/dev/null
+              exit 0
+            fi
+            if [ "$state" != running ]; then
+              echo "container stopped while $status"
+              docker logs "$cid"
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "not healthy within 300s, status $status"
+          docker logs "$cid"
+          docker rm -f "$cid"
+          exit 1
+
+      - name: What the image costs
+        if: success()
+        run: docker image ls rag-demo --format '{{.Repository}}:{{.Tag}}  {{.Size}}'

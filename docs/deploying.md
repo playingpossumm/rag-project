@@ -88,10 +88,16 @@ what they were doing there and why they left. So the corpus has to be built
 once, locally, before the image can be built:
 
 ```bash
-python src/fetch_topic.py --topic birds        # Wikipedia -> data-birds/
+python src/fetch_topic.py birds --into data-birds --add 35   # Wikipedia
 RAG_STORE_DIR=store-birds RAG_DATA_DIR=data-birds python src/ingest.py
 python src/check_golden.py --corpus birds      # labels still describe the corpus
 ```
+
+The first line read `--topic birds` with no `--into` from 2026-08-28 until
+2026-09-14, which exits 2: the topic is positional and the destination is
+required. `.github/workflows/docker.yml` now runs these 3 commands on every
+change to the Dockerfile, so a command that does not parse fails there rather
+than on a reader's machine.
 
 That produces `data-birds/` and `store-birds/`, which the `Dockerfile` copies in.
 Building the index inside the image instead would work, but it downloads from
@@ -118,21 +124,36 @@ docker run -p 7860:7860 rag-demo
 ### Check the build
 
 The Dockerfile moved `HF_HOME` ahead of the model download on 2026-09-07,
-so the weights land where the offline container reads them. The image has
-not been built since: the development laptop is a managed work device
-without Docker, and the build waits for a personal machine. These two
-commands are the test; the first should list two `models--*` directories
-and the second should answer 200 within the 90 s start period with no
-network.
+so the weights land where the offline container reads them. Two things have
+to be true of the image, and neither can be checked by any test that runs
+outside it. `.github/workflows/docker.yml` checks both on every change to
+the Dockerfile, on a runner rather than on anyone's laptop.
+
+1. **The weights are under `HF_HOME`.** `/app/.cache/hub` holds at least 2
+   `models--*` directories and `/root/.cache/huggingface` does not exist.
+   That second assertion is the regression test: root's cache is where they
+   landed while the `ENV` line sat after the download.
+2. **It starts with no network.** The container runs under `--network none`
+   and its own `HEALTHCHECK` is polled through `docker inspect` until it
+   reports healthy. `--network none` is what makes this a test of
+   `HF_HUB_OFFLINE` rather than of the connection, and it also rules out
+   publishing a port, which is why the healthcheck is read rather than
+   curled from outside.
+
+To run the same checks by hand:
 
 ```bash
+docker build -t rag-demo .
 docker run --rm rag-demo ls /app/.cache/hub
-docker run -d -p 7860:7860 --network none rag-demo && sleep 60 \
-  && curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:7860/health
+cid=$(docker run -d --network none rag-demo)
+docker inspect --format '{{.State.Health.Status}}' "$cid"   # until healthy
 ```
 
-`--network none` is what makes the second command a test of
-`HF_HUB_OFFLINE` rather than of the connection.
+Between 2026-09-07 and 2026-09-14 this section said the build was waiting
+for a personal machine, because the development laptop is a managed work
+device without Docker. It was never true that it needed one: the repository
+went public the same day the fix landed, and a public repository gets free
+runners with Docker already on them.
 
 ### Configuration
 

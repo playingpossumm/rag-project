@@ -573,15 +573,22 @@ instead.
 
 ## 7. Unfinished
 
-### Deferred, 2026-09-07
+### The container, deferred 2026-09-07 and closed 2026-09-14
 
-**The container has not been built since the Dockerfile fix.** `HF_HOME`
-now precedes the model download, and the check that the weights sit in
-`/app/.cache/hub` and that `/health` answers with no network is written
-under "Check the build" in `docs/deploying.md`. Docker is not on the
-development laptop, which is a managed work device, so the build waits for
-a personal machine. Installing Docker Desktop on the work laptop was begun
-on 2026-09-07 and stopped before anything changed on it.
+**The image is built and checked in CI.** `HF_HOME` now precedes the model
+download, and `.github/workflows/docker.yml` asserts the 2 things that
+follow from it: the weights sit in `/app/.cache/hub` and not in root's
+cache, and the container reaches its own healthcheck under
+`--network none`. It also runs the 3 corpus commands in
+`docs/deploying.md` as written, which is how the broken `fetch_topic.py`
+invocation in that file was found.
+
+For a week this said the build was waiting for a personal machine, because
+Docker is not on the development laptop and installing it there was begun
+on 2026-09-07 and stopped. The waiting was the mistake rather than the
+stopping: the repository went public the same day, and a public repository
+gets free runners with Docker already installed. A deferral is worth
+re-reading when the thing it depended on changes.
 
 ### Open problems, added 2026-08-26
 
