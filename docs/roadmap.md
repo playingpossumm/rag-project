@@ -165,6 +165,14 @@ hides the reason for running both. Also wanted: a *gate* at the diversity cap
 showing passages blocked, and more motion inside the arrays. The
 index-as-a-field is right and should stay.
 
+## Polish
+
+22 findings the audit of 2026-09-05 rated below the bar for that week, with
+their fixes and their status re-probed on 2026-09-14. They are in
+`docs/polish-backlog.md` rather than here, because 18 of them are still live
+and a list that long would bury this document's argument. One of them,
+the fused-collarbone chip on the front page, is visible to a visitor.
+
 ## Ruled out, with numbers
 
 These are kept because a refuted experiment is worth as much as a shipped one,
