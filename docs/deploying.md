@@ -100,6 +100,18 @@ change to the Dockerfile, so a command that does not parse fails there rather
 than on a reader's machine.
 
 That produces `data-birds/` and `store-birds/`, which the `Dockerfile` copies in.
+
+**It does not reproduce the published corpus, and no command does.**
+`make_documents.write_mixed` picks each file's format from its position in
+the run, the `BIRDS` list in `src/fetch_topic.py` holds 40 titles, and the
+shipped set is 45 documents accumulated over several `--add` runs. So a
+fresh build gives a valid ornithology corpus in 4 formats, with different
+documents under different extensions. `eval/golden-birds.json` describes the
+shipped build, so `check_golden.py --corpus birds` passes against that one
+and reports missing files against any rebuild. Every published bird figure
+refers to the shipped corpus. This was found on 2026-09-14 by running the
+rebuild in CI, where the check reported 28 labels naming files the new index
+did not contain.
 Building the index inside the image instead would work, but it downloads from
 Wikipedia at build time and makes the build non-reproducible.
 

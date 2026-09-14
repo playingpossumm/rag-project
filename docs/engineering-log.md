@@ -2552,7 +2552,22 @@ the same defect `check_answers.py` had on 2026-09-07, found the same way, which
 suggests the `--help` sweep of that day should have covered every script rather
 than the 23 a chain happened to own.
 
-**Method note worth keeping.** Both findings came from making a machine run the
+**A third thing, and the largest.** The workflow's first run got as far as
+`check_golden.py --corpus birds` and failed on 28 labels naming files the new
+index did not contain. **The published ornithology corpus cannot be rebuilt by
+any command in this repository.** `make_documents.write_mixed` picks each
+file's format from its position in the run, the `BIRDS` list in
+`fetch_topic.py` holds 40 titles, and the shipped set is 45 documents
+accumulated over several `--add` passes. So a rebuild gives a valid corpus in
+the same 4 formats, with different articles under different extensions, and
+`eval/golden-birds.json` describes the shipped build alone. Every published
+bird figure refers to that build. This does not make any number wrong, and it
+does mean the bird half of this project is reproducible only in the sense that
+the method is, not the artefact. `docs/deploying.md` now says so where it gives
+the rebuild commands, and CI asserts that an index was produced rather than
+that the labels still fit it.
+
+**Method note worth keeping.** All 3 findings came from making a machine run the
 documentation instead of reading it. Neither would have been caught by a
 reviewer, because both files look correct: the flag name is plausible and the
 help invocation is conventional.
