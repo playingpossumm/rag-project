@@ -9,7 +9,8 @@
    The contract, which src/../ui/test-answer-mark.mjs enforces:
 
      - at most ONE sentence is ever marked, and never the whole passage
-     - the mark is a contiguous run of at most MAX_MARK_WORDS words
+     - the mark is a contiguous run of at most MAX_MARK_WORDS words, or
+       MAX_MARK_WORDS_TOTAL where it ran back to the start of its clause
      - a mark has to carry at least two distinct question words, or one and a
        figure, or there is no mark at all; the one exception is a definitional
        question ("what is X called"), where a clause of 5 or more words around
@@ -101,6 +102,15 @@ export const STOP = new Set(("a an and are as at be by do does for from has have
    mark stops distinguishing anything, which is the failure the whole highlight
    exists to avoid: everything bold is the same as nothing bold. */
 export const MAX_MARK_WORDS = 12;
+
+/* How far a span may run back to reach the term its sentence defined, and
+   therefore how far a mark may exceed MAX_MARK_WORDS. Selection is still
+   bounded at 12; this is spent only when the span begins mid-clause and the
+   clause starts within 6 words. Measured on 2026-09-14: marks containing the
+   answer went from 38 of 68 to 43, the median share of a passage from 4.1%
+   to 4.6% and the 90th from 6.8% to 7.8%, with the largest mark unchanged. */
+export const RUN_BACK_WORDS = 6;
+export const MAX_MARK_WORDS_TOTAL = MAX_MARK_WORDS + RUN_BACK_WORDS;
 
 /* And a bound in characters, because a word count is not a length.
 
@@ -460,6 +470,52 @@ export function answerSpan(sentence, want, quantitative, definitional = false) {
   // points at nothing. Two distinct query words, or one and a figure. The
   // definitional exception, and its guards, are in `enough` above.
   if (!enough(carriedIn(lo, hi), lo, hi)) return null;
+
+  /* Run BACK from `lo` to the start of its clause, the mirror of runOn.
+
+     Measured on 2026-09-14 over the 13 misses that chose the right sentence:
+     4 of them put the answer BEFORE the mark, by a median of 2 characters,
+     and 3 more clipped its first words. The shape is always the same. The
+     sentence names the term and then explains it, and the span begins at the
+     explanation: "The syrinx (vocal organ) of parrots" marked from "(vocal",
+     "AdaMax, a variant of Adam" marked from "a variant", "internal covariate
+     shift, and address the problem" marked from "and address". The term the
+     question asked for sits one clause to the left, every time.
+
+     It stops on the word whose predecessor closes a clause, so it reaches the
+     start of the phrase and no further, and it is abandoned whole if the
+     result would break the character bound. Bounded at 6 words, which is what
+     reaches "this phenomenon as internal covariate shift" from "and".
+
+     It runs AFTER the `enough` guard on purpose. Placed before it, a span
+     that carried one question word could widen until it carried two and
+     pass a threshold it had failed, which put a mark on a passage that
+     does not answer at all. Widening is for reaching the term, never for
+     qualifying. */
+  const runBack = (from, n) => {
+    let start = from;
+    for (let k = from - 1; k >= Math.max(0, from - n); k--) {
+      if (/:\/\/|^www\./.test(words[k].t)) break;
+      start = k;
+      if (k === 0 || /[.,;:]$/.test(words[k - 1].t)) break;
+    }
+    return start;
+  };
+  // It spends the span's remaining word budget and no more. The first version
+  // bounded only the characters, which put 180 of 450 sweep marks over
+  // MAX_MARK_WORDS and let a whole sentence be marked.
+  // Not for a question about a figure. Those anchor on the figure, which is
+  // already the answer, and running back from it reached the start of the
+  // sentence and marked the whole of "we employed label smoothing of value
+  // 0.1" for a question that wanted 0.1.
+  if (!quantitative && lo > 0) {
+    const back = runBack(lo, RUN_BACK_WORDS);
+    if (back < lo &&
+        toks.slice(words[back].i, words[hi].i + 1).join("").length <= MAX_MARK_CHARS) {
+      lo = back;
+    }
+  }
+
 
   const startTok = words[lo].i;
   const endTok = words[hi].i;

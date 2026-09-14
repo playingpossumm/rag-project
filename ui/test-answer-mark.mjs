@@ -22,7 +22,8 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 import { clean, esc, fragment, markAnswer, splitSentences,
-         MAX_MARK_WORDS, MAX_MARK_CHARS, MAX_MARK_SHARE } from "./answer-mark.js";
+         MAX_MARK_WORDS, MAX_MARK_WORDS_TOTAL, MAX_MARK_CHARS,
+         MAX_MARK_SHARE } from "./answer-mark.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CHECKS = [];
@@ -46,8 +47,11 @@ check("the passage survives marking, character for character",
 
 check("exactly one run is marked", marked(markAnswer(passage, q)).length, 1);
 
-check("the mark is at most MAX_MARK_WORDS words",
-      wordsIn(marked(markAnswer(passage, q))[0]) <= MAX_MARK_WORDS, true);
+// The bound is MAX_MARK_WORDS for selection and MAX_MARK_WORDS_TOTAL once a
+// span has run back to the start of its clause, which it may do only when it
+// began mid-clause. Until 2026-09-14 there was one bound and no run-back.
+check("the mark is at most MAX_MARK_WORDS_TOTAL words",
+      wordsIn(marked(markAnswer(passage, q))[0]) <= MAX_MARK_WORDS_TOTAL, true);
 
 // The promise in the section heading: a highlight points into a sentence, it
 // does not span two. A mark crossing a boundary reads as a paragraph set bold.
@@ -62,7 +66,7 @@ const figure = "For all of our experiments we employed label smoothing of value 
 const figMark = marked(markAnswer(figure, "What label smoothing value was used?"))[0];
 check("a question about a figure marks the figure", figMark.includes("0.1"), true);
 check("and does not mark the whole sentence",
-      wordsIn(figMark) <= MAX_MARK_WORDS, true);
+      wordsIn(figMark) <= MAX_MARK_WORDS, true);   // no run-back on a figure
 
 // The rule that stops the highlight pointing at nothing. Asked what a bird's
 // fused collarbone is called, the marked words were once "this fused structure"
@@ -95,7 +99,7 @@ check("a passage with no sentence terminator is still bounded",
       wordsIn(marked(markAnswer(
         "syrinx vocal organ located at the base of the trachea unique to birds "
         + "producing song without vocal cords across many families worldwide",
-        "What is the syrinx and where is it located?"))[0] || "") <= MAX_MARK_WORDS,
+        "What is the syrinx and where is it located?"))[0] || "") <= MAX_MARK_WORDS_TOTAL,
       true);
 
 check("an empty passage does not throw", markAnswer("", q), "");
@@ -429,7 +433,7 @@ if (!existsSync(dump)) {
       if (runs[0].length > MAX_MARK_CHARS) {
         overLong += 1;
         worst.push({ id: row.id, words, run: runs[0].slice(0, 60), chars: runs[0].length });
-      } else if (words > MAX_MARK_WORDS) {
+      } else if (words > MAX_MARK_WORDS_TOTAL) {
         overLong += 1;
         worst.push({ id: row.id, words, run: runs[0].slice(0, 60) });
       }

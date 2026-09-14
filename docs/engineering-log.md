@@ -2500,6 +2500,75 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-14 — The highlight runs back to the term the sentence defined
+
+A reader asked why an answer was wrong and gave a case: "What is the period of
+sitting on eggs before hatching called?" The page showed a peregrine falcon
+passage with **"After hatching, the chicks (called "eyases") are covered with
+creamy-white down"** set bold, which answers nothing.
+
+**The retrieval was right and the highlight was wrong.** The lead passage
+contains "incubation" twice, and the gate passed it at -4.55 against -5.5. The
+highlighter scores each sentence by the question words it carries, divided by
+how many sentences carry each. The decoy holds "hatching" at weight 1.00,
+because it is the only sentence with it, plus "called" at 0.50. The answering
+sentence holds "eggs" at 0.50. So 0.1375 against 0.0373, and the wrong sentence
+wins by 3.7 times. The question says "before hatching"; the decoy says "After
+hatching". A confidence rule on the margin was the obvious fix and is useless
+here, because this failure is confident.
+
+**Splitting the misses was what made the problem tractable.**
+`audit-marks.mjs` reports one number, whether the marked text contains the
+answer, and that folds 2 different failures together. The highlighter picks a
+sentence and then picks words inside it. Measured over the 27 misses: **14 are
+the wrong sentence and 13 are the right sentence cut in the wrong place.** The
+second half is a boundary problem rather than a semantic one.
+
+**The gaps were tiny and the shape was always the same.** Of those 13, the
+answer sits after the mark in 6 (median 15 characters), before it in 4 (median
+**2**), and is clipped by it in 3. Every one of the "before" cases is a
+sentence that names a term and then explains it, with the span beginning at the
+explanation: "The syrinx (vocal organ) of parrots" marked from "(vocal",
+"AdaMax, a variant of Adam" marked from "a variant", "internal covariate
+shift, and address the problem" marked from "and address". `runOn` already
+extends a span rightwards to the end of its phrase. There was no mirror.
+
+**`runBack` is that mirror**, walking left to the start of the clause, at most
+6 words, abandoned whole if it would break the character bound. Marks
+containing the answer went from **38 of 68 to 43**, 55.9% to 63.2%, and all 3
+corpora improved: birds 4 to 5, papers 23 to 26, finance 11 to 12.
+
+Three things had to be got right, and each was found by a check failing.
+
+- **It runs after the `enough` guard, not before.** Placed before it, a span
+  carrying one question word could widen until it carried 2 and pass a
+  threshold it had failed. That put a mark on a passage that does not answer,
+  and the check that caught it is the one written for this very question.
+- **It does not apply to a question about a figure.** Those anchor on the
+  figure, which is already the answer, and running back from it marked the
+  whole of "we employed label smoothing of value 0.1" for a question wanting
+  0.1.
+- **It has its own word allowance rather than sharing the selection bound.**
+  Spending the remaining budget instead capped the gain at 40 of 68. A separate
+  6 words reaches 43, so `MAX_MARK_WORDS` stays 12 for selection and
+  `MAX_MARK_WORDS_TOTAL` is 18 for a span that ran back. Raising
+  `MAX_MARK_WORDS` itself to 16 looked better at 47 of 68 and was rejected: the
+  constant also governs the short-sentence early return, so it marked whole
+  sentences, broke 2 checks and took the median share of a passage from 4.1%
+  to 5.2%. With the separate allowance the median is 4.6%, the 90th 7.8%, and
+  the largest mark is unchanged at 23.2%.
+
+50 of 50 highlight checks and 9 of 9 passage checks pass.
+
+**The case that prompted this is not fixed.** It is one of the 14 that choose
+the wrong sentence, and `runBack` only helps once the right sentence is in
+hand. Fixing it means beating a decoy that carries more of the question's words
+than the answer does, which is this project's headline finding in a different
+layer, and the 8 mechanisms already refuted against it are all refuted for the
+same reason. What changed is that the 13 tractable misses are now 8.
+
+---
+
 ## 2026-09-14 — A deferral that had stopped being true the day it was written
 
 The Dockerfile's `HF_HOME` ordering was fixed on 2026-09-07 and the image was
