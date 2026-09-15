@@ -38,6 +38,12 @@
   --map-h:clamp(320px,34vw,540px);
   --r:14px;
   --max:1120px;
+  /* One column for everything you can act on. The set picker was 440px inside
+     an 860px box and the question field was 660px, so the two controls you use
+     in sequence had different widths and neither shared an edge with the
+     headline above them. Both read this now, and so does the composer after
+     the first answer. */
+  --col:660px;
   /* The floor was 1rem, so on a window a little narrower than --max the
      content sat 16px off the edge and read as pushed against the wall. */
   --pad:clamp(1.5rem,4vw,2.75rem);
@@ -63,16 +69,14 @@
 .top nav .here{font-family:var(--mono);font-size:10px;font-weight:500;
   letter-spacing:.13em;text-transform:uppercase;color:var(--ink);
   white-space:nowrap}
-.herovizhead{display:flex;flex-direction:column;gap:3px;align-items:center;
-  margin-bottom:6px}
+/* One row, not a stacked pair. The label and its line sit on the hero's left
+   edge like every other block; they were centred over a full-width diagram,
+   which made a third alignment on a page that already had two. */
+.herovizhead{display:flex;flex-wrap:wrap;gap:3px 14px;align-items:baseline;
+  margin-bottom:10px}
 .herovizhead .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;
   text-transform:uppercase;color:var(--faint)}
-.herovizhead .sub{font-size:12.5px;color:var(--mute);max-width:52ch;
-  text-align:center}
-.setwhy{font-family:var(--sans);font-size:10.5px;letter-spacing:0;
-  text-transform:none;color:var(--mute);text-decoration:underline;
-  text-underline-offset:2px;margin-left:7px}
-.setwhy:hover{color:var(--ink)}
+.herovizhead .sub{font-size:12.5px;color:var(--mute);max-width:52ch}
 /* A phone header. The name and the links do not fit at 13px on a 375px
    screen: the brand broke after "retrieval" and the header went to two rows.
    Both step down. */
@@ -233,8 +237,13 @@ body:not(.asked) .tray{display:none}
 /* Tall enough to fill a roomy window, never taller than its content needs.
    min-height was a hard 100vh, which forced five elements into one screen at
    any size and made every one of them fight the others for space. */
+/* Flush left, one edge, no centring. Every child used to be centred at its own
+   max-width, which put the headline at x=509, the question field at x=390 and
+   the diagram at x=204 on a 1440px screen: three left edges down one screen,
+   none of them shared. Centred body copy is also the harder thing to read once
+   it passes two lines, and the blurb runs to seven on a phone. */
 .hero{min-height:min(calc(100vh - 56px), 760px);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;text-align:center;
+  align-items:flex-start;justify-content:center;text-align:left;
   padding:clamp(26px,4vh,44px) 0 clamp(40px,6vh,72px);gap:clamp(16px,2.2vh,26px)}
 /* The hero holds five things now -- headline, blurb, diagram, the document
    sets and the question field -- and the field is the only one you can act on,
@@ -243,10 +252,12 @@ body:not(.asked) .tray{display:none}
 .hero h1{font-weight:700;font-size:clamp(30px,min(5vw,6.2vh),54px);line-height:1.03;
   letter-spacing:-.042em;margin:0;max-width:19ch;text-wrap:balance}
 .hero h1 em{font-style:normal;color:var(--mute)}
-.hero p{color:var(--dim);font-size:clamp(14px,1.7vh,16px);max-width:74ch;margin:0}
+/* 62ch, not 74ch. At 74 the blurb ran to 88 characters on a wide window, past
+   the range a line can be read without losing the start of the next one. */
+.hero p{color:var(--dim);font-size:clamp(14px,1.7vh,16px);max-width:62ch;margin:0}
 .hero h1 .slash{color:var(--faint)}
 .heroSub{font-size:clamp(15px,2vw,19px);font-weight:500;letter-spacing:-.012em;
-  color:var(--mute);margin:2px 0 0}
+  color:var(--mute);margin:2px 0 0;max-width:46ch}
 
 /* On a short screen the hero's fixed parts -- headline, blurb, the set picker,
    the question field and four gaps -- do not leave room for a diagram worth
@@ -316,7 +327,7 @@ body:not(.asked) .tray{display:none}
 .heroviz canvas{display:block;width:100%;height:var(--map-h)}
 
 /* ------------------------------------------------------------- the field */
-.field{width:100%;max-width:660px;display:flex;align-items:flex-end;gap:8px;
+.field{width:100%;max-width:var(--col);display:flex;align-items:flex-end;gap:8px;
   background:var(--card);border:1px solid var(--edge);border-radius:var(--r);
   padding:8px 8px 8px 18px;transition:border-color 180ms var(--ease)}
 .field:focus-within{border-color:var(--s1)}
@@ -330,7 +341,12 @@ body:not(.asked) .tray{display:none}
    button should stay with the last line, not drift to the middle of a
    paragraph -- but at one line, flex-end alone left it 17px from the top and
    9px from the bottom. */
-.go{border:0;background:var(--ink);color:var(--ground);border-radius:10px;
+/* Concentric with the field it sits in: the field's radius less the 8px inset
+   that separates them. It was a flat 10px against the field's 14px and an 8px
+   gap, so the two curves never ran parallel and the button read as a slab
+   dropped into the box rather than a control belonging to it. */
+.go{border:0;background:var(--ink);color:var(--ground);
+  border-radius:calc(var(--r) - 8px);
   min-height:48px;display:inline-flex;align-items:center;justify-content:center;
   padding:0 20px;font-family:var(--mono);font-size:11px;font-weight:500;
   letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap;
@@ -351,11 +367,11 @@ body:not(.asked) .tray{display:none}
    control in a corner. Size and file formats are what distinguish these from
    each other; the abstention threshold each was calibrated at is real and
    still applied, but it describes the machinery, not the reading material. */
-.pickset{width:100%;max-width:860px;display:flex;flex-direction:column;
-  align-items:center;gap:12px}
+.pickset{width:100%;max-width:var(--col);display:flex;flex-direction:column;
+  align-items:flex-start;gap:9px}
 .setlab{font-family:var(--mono);font-size:10px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--faint)}
-.dd{position:relative;width:min(100%,440px)}
+.dd{position:relative;width:100%}
 /* At rest this is the only control on an otherwise empty page, so it has to
    look pressable without shouting. The mark sits in its own bounded tile so
    the text starts at one x whatever the mark is, and the caret gets a target
@@ -443,25 +459,37 @@ body.switching .sets{opacity:.45;pointer-events:none}
 /* Clearance for the fixed composer, or the last thing on the page always
    sits underneath it. */
 #thread{padding-bottom:132px}
-.turn{margin-top:26px;animation:rise 260ms var(--ease) both;scroll-margin-top:74px}
+/* 56px of sticky header plus room to breathe. scroll-margin-top was 74px, so
+   an answer scrolled to sat 18px under the header -- close enough that the
+   question read as part of the header bar rather than as the top of its own
+   block. The question is the first thing you read after asking, and it should
+   arrive with space above it. */
+.turn{margin-top:40px;animation:rise 260ms var(--ease) both;scroll-margin-top:104px}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes appear{from{opacity:0}to{opacity:1}}
 /* Keep the cue, drop the travel -- an answer arriving with no transition at all
    is a page that changed while you were looking away. */
 @media (prefers-reduced-motion:reduce){.turn{animation:appear 200ms var(--ease) both}}
 
-.q{display:flex;gap:14px;align-items:baseline;padding:0 4px 14px}
+.q{display:flex;gap:14px;align-items:baseline;padding:0 0 14px}
 .q .t{font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.35;max-width:44ch}
 
-.card{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);
-  overflow:hidden}
-/* Not `.card > .pad`. The markup is .card > .slot > .pad, so the child
-   combinator never matched and every answer sat flush against the border of
-   its own card. */
-.card .pad{padding:clamp(22px,3.4vw,34px)}
-/* The retrieval result sits outside .pad, below the drawing, so it carries the
-   same inset itself and lines up with the answer above it. */
-.card .result{margin:0 clamp(22px,3.4vw,34px) clamp(22px,3.4vw,34px)}
+/* ---- one left edge ------------------------------------------------------
+   The answer was a card holding a panel holding bordered rows. Measured at
+   1440 wide on 2026-09-14 that put four left edges inside one answer -- card
+   at 200, the drawing bleeding to 218, the prose at 234, the document rows at
+   251 -- and each level cost 17 to 34px a side, so the document list ended up
+   291px wide inside a 1007px card. The nesting carried no meaning: depth did
+   not mean "contained by", it meant "added later".
+
+   Every border, fill and radius is gone. Sections are separated by a hairline
+   that runs the full measure and nothing is inset from anything, so the whole
+   answer reads down a single edge shared with the hero above it. The
+   instrument reading comes from the mono labels and the alignment, which is
+   where it was coming from anyway. */
+.card{background:none;border:0;border-radius:0}
+.card .pad{padding:26px 0}
+.card .result{margin:0}
 
 .head{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
 .state{display:inline-flex;align-items:center;gap:8px;border-radius:999px;
@@ -484,7 +512,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
    underneath are in four different units -- cosine, BM25 weight, RRF, a
    cross-encoder logit -- and shading by them would make rows incomparable.
    The true value with its real unit is on hover. */
-.stack{border-top:1px solid var(--hair);padding:20px 22px 22px}
+.stack{border-top:1px solid var(--hair);padding:20px 0 22px}
 .stack .hd{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;flex-wrap:wrap}
 .stack .hd .lab{white-space:nowrap}
 .stack .hd .k{margin-left:auto;font-family:var(--mono);font-size:9.5px;
@@ -510,8 +538,8 @@ body.switching .sets{opacity:.45;pointer-events:none}
    units it is actually in, and the three numbers worth knowing -- which
    documents, how much text, how long. Open, not folded: it is the reading of
    the result, not a footnote to it. */
-.result{margin:26px 0 2px;padding:16px 18px;border:1px solid var(--hair);
-  border-radius:12px;background:var(--nest)}
+.result{margin:0;padding:20px 0 0;border:0;border-top:1px solid var(--hair);
+  border-radius:0;background:none}
 .rhead{display:flex;align-items:center;gap:12px;margin-bottom:9px}
 .rhead .lab{color:var(--dim)}
 .score{margin-left:auto;display:inline-flex;align-items:baseline;gap:8px;
@@ -525,28 +553,28 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .result > p b{color:var(--dim);font-weight:600;font-family:var(--mono);font-size:13px}
 .result .thin{margin-top:10px;padding-left:12px;border-left:2px solid var(--warn);
   color:var(--dim)}
-.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:16px;margin-top:16px;padding-top:15px;border-top:1px solid var(--hair)}
-.rgrid > div{display:flex;flex-direction:column;gap:6px}
-.rgrid .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
-  text-transform:uppercase;color:var(--faint)}
-.rgrid .vv{display:flex;flex-wrap:wrap;gap:6px;font-size:14px;color:var(--ink)}
-.rgrid .vv.mono{font-family:var(--mono);font-size:14.5px}
-.rgrid .note2{font-size:12px;line-height:1.5;color:var(--mute)}
+/* One line of facts, separated by a rule the eye reads as a divider rather
+   than by three columns of unequal height. Each fact is its own item so it
+   wraps whole on a phone instead of breaking between a number and its unit. */
+.rgrid{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;
+  margin-top:14px;font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+.rgrid .f{white-space:nowrap}
+.rgrid .f + .f::before{content:"/";color:var(--wire);margin-right:18px}
+.rgrid b{color:var(--ink);font-weight:500}
 
 /* What this answer was produced with, and the way in to changing it. */
 .ranwith{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 .ranwith .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
   text-transform:uppercase;color:var(--faint)}
 .ranwith .vv{font-size:13px;color:var(--mute)}
-.ranwith .tweak{margin-left:auto;background:rgba(57,135,229,.12);
-  border:1px solid rgba(57,135,229,.42);
-  border-radius:999px;padding:6px 14px;cursor:pointer;font:inherit;font-size:12.5px;
-  font-weight:500;color:var(--s1);
-  transition:background 160ms var(--ease),border-color 160ms var(--ease),
-             color 160ms var(--ease)}
-.ranwith .tweak:hover{background:rgba(57,135,229,.2);
-  border-color:var(--s1);color:#8fbdf2}
+/* A secondary action, drawn as one. It was the only filled pill on the page
+   and the only saturated blue, which put more weight on "change the settings"
+   than on the answer it sat under. */
+.ranwith .tweak{margin-left:auto;background:none;border:0;
+  border-bottom:1px solid var(--edge);border-radius:0;padding:0 0 2px;
+  cursor:pointer;font:inherit;font-size:12.5px;color:var(--dim);
+  transition:color 160ms var(--ease),border-color 160ms var(--ease)}
+.ranwith .tweak:hover{color:var(--ink);border-color:var(--ink)}
 
 .why{margin:18px 0 4px}
 .why summary{display:inline-block;cursor:pointer;list-style:none;
@@ -569,21 +597,14 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .answer mark{background:none;color:var(--ink);font-weight:600}
 .answer.prose{font-size:16.5px;line-height:1.68;letter-spacing:-.005em;max-width:64ch}
 .answer.prose p{margin:0 0 14px}
-/* A passage out of a spreadsheet is shown as the table it came from. */
-.answer.cells{font-size:15px;font-weight:400;line-height:1.55;border-collapse:collapse;
-  width:100%;max-width:64ch;letter-spacing:0}
-.fromsheet{margin:0 0 12px;font-size:12.5px;color:var(--mute);max-width:62ch}
-.answer.cells th{width:1%;white-space:nowrap;text-align:left;vertical-align:top;
-  padding:7px 18px 7px 0;font-family:var(--mono);font-size:10.5px;font-weight:500;
-  letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
-.answer.cells td{padding:7px 0;vertical-align:top;color:var(--mute)}
-.answer.cells tr.hit th{color:var(--dim)}
-.answer.cells mark{background:none;color:var(--ink);font-weight:600}
-.answer.cells tr + tr th,.answer.cells tr + tr td{border-top:1px solid var(--hair)}
 .answer.prose p:last-child{margin-bottom:0}
-.cite{display:inline-flex;align-items:center;gap:9px;margin-top:18px;
-  background:var(--nest);border:1px solid var(--hair);border-radius:999px;
-  padding:6px 14px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+/* The last container on the answer, and the only one left after the cards
+   went. A citation is a line of text naming a file and a page; it does not
+   need a pill to say so, and the pill was the only rounded fill on a screen
+   that had stopped using them. */
+.cite{display:inline-flex;align-items:center;gap:9px;margin-top:20px;
+  background:none;border:0;border-radius:0;
+  padding:0;font-family:var(--mono);font-size:11.5px;color:var(--mute)}
 .cite i{width:7px;height:7px;border-radius:2px;flex:none}
 .note{margin:18px 0 0;color:var(--mute);font-size:13.5px;max-width:62ch}
 .note b{color:var(--dim);font-weight:600}
@@ -608,8 +629,8 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .warnbox code{font-family:var(--mono);font-size:11.5px;color:var(--mute);word-break:break-word}
 
 /* ------------------------------------------------- the pipeline picture */
-.viz{border-top:1px solid var(--hair);background:var(--ground)}
-.vizhead{display:flex;align-items:center;gap:14px;padding:14px clamp(22px,3.4vw,34px);
+.viz{border-top:1px solid var(--hair);background:none}
+.vizhead{display:flex;align-items:center;gap:14px;padding:14px 0;
   flex-wrap:wrap}
 .vizhead .lab{color:var(--mute)}
 .vizhead .vizsub{font-size:12.5px;color:var(--mute);
@@ -621,7 +642,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .legend i.w{background:var(--wire)}
 canvas.city{display:block;width:100%;height:var(--map-h)}
 .vizfoot{display:flex;align-items:center;gap:14px;
-  padding:10px clamp(22px,3.4vw,34px) 18px;flex-wrap:wrap}
+  padding:10px 0 18px;flex-wrap:wrap}
 .vizfoot .cap{color:var(--mute);font-size:13px;flex:1;min-width:220px;line-height:1.5}
 .vizfoot .cap b{color:var(--dim);font-weight:600}
 .replay{border:1px solid var(--hair);background:var(--nest);border-radius:999px;
@@ -633,7 +654,7 @@ canvas.city{display:block;width:100%;height:var(--map-h)}
 
 /* ------------------------------------------------------- disclosure rows */
 .more{border-top:1px solid var(--hair)}
-.more > summary{cursor:pointer;list-style:none;padding:15px clamp(22px,3.4vw,34px);
+.more > summary{cursor:pointer;list-style:none;padding:15px 0;
   display:flex;align-items:center;gap:12px;transition:background 180ms var(--ease)}
 .more > summary::-webkit-details-marker{display:none}
 .more > summary:hover{background:var(--nest)}
@@ -940,25 +961,18 @@ tr.out td{color:var(--mute)}
 <div class="wrap">
   <section class="hero" id="hero">
     <h1>retrieval visualized<span class="slash">/</span></h1>
-    <p class="heroSub">RAG in Motion</p>
-    <p>Retrieval-augmented generation answers a question by searching a set of
-      documents and quoting what it finds, rather than recalling it from
-      training. Every sentence traces back to a named document and a page, so
-      the answer can be checked against its source. This page runs that search
-      and draws each stage of it as it happens.</p>
-    <div class="herovizhead">
-      <span class="lab">The RAG process</span>
-      <span class="sub">Seven stages, from the whole index down to the passages
-        an answer is allowed to use</span>
-    </div>
-    <div class="heroviz wrapviz"><canvas id="idle"></canvas></div>
+    <p class="heroSub">Every stage of a retrieval pipeline, drawn as it
+      runs.</p>
+    <p>Retrieval-augmented generation answers from documents rather than from
+      training, so an answer names the file and place it came from. This page
+      runs the search and draws all seven stages, from the whole index down
+      to the passages the answer is allowed to use.</p>
 
     <!-- Which documents to search comes before what to ask. The answer, the
          threshold it is judged against and the questions worth asking all
          change with it, so it cannot be an afterthought in a corner. -->
     <div class="pickset" id="pickset">
-      <span class="setlab">Document set
-        <a class="setwhy" href="/about#corpora">what is this?</a></span>
+      <span class="setlab">Document set</span>
       <div class="dd" id="dd">
         <button class="ddbtn" id="ddBtn" type="button"
                 aria-haspopup="listbox" aria-expanded="false">
@@ -972,7 +986,8 @@ tr.out td{color:var(--mute)}
     </div>
 
     <form class="field" id="form">
-      <textarea id="q" rows="1" placeholder="Pick a question from the list"
+      <textarea id="q" rows="1"
+                placeholder="Ask, or pick one of 84 prepared questions"
                 data-short="Ask a question"
                 aria-label="Your question"></textarea>
       <button class="go" id="goBtn" type="submit">Ask</button>
@@ -981,6 +996,16 @@ tr.out td{color:var(--mute)}
            first question did, rather than leaving you to invent one. -->
       <div class="chips" id="chips" hidden></div>
     </form>
+
+    <!-- The drawing follows the controls. It explains the machine, and an
+         explanation is what you scroll to once you know what the page is for;
+         it sat above the field until 2026-09-14, which put the only thing on
+         this page you can act on 253px below the fold at 1440x780. -->
+    <div class="herovizhead">
+      <span class="lab">The RAG process</span>
+      <span class="sub">Seven stages, 5,459 passages down to 5</span>
+    </div>
+    <div class="heroviz wrapviz"><canvas id="idle"></canvas></div>
   </section>
 
   <div id="thread"></div>
@@ -1015,8 +1040,8 @@ tr.out td{color:var(--mute)}
 </div>
 
 <script type="module">
-import { buildCity, buildRun, drawScene, captions, shortDoc } from "/pipeline-map.js";
-import { clean, fragment, markAnswer, STOP } from "/answer-mark.js";
+import { buildCity, buildRun, demoTrace, drawScene, captions, shortDoc } from "/pipeline-map.js";
+import { clean, fragment, markAnswer } from "/answer-mark.js";
 import { alsoFoundOrder, alsoFoundHint } from "/passages.js";
 import { $, nf, esc, readInk } from "./common.js";
 
@@ -1255,53 +1280,76 @@ function alsoFound(sel, top, question, colour) {
         <b class="as">${typeof it.score === "number"
           ? (it.score > 0 ? "+" : "") + it.score.toFixed(2) : ""}</b>
       </div>
-      <p class="atext">${markAnswer(fragment(completed(it)), question)}</p>
+      <p class="atext">${markAnswer(fragment(quoted(it)), question)}</p>
     </div>`).join("")}</details>`;
 }
 
-/* Which cell of a table answers, scored the same way as which sentence. */
-function bestCell(cells, question) {
-  const want = [...new Set((String(question).toLowerCase().match(/[a-z0-9]{3,}/g) || []))]
-    .filter(w => !STOP.has(w));
-  if (!want.length) return -1;
-  const spread = {};
-  for (const w of want) {
-    spread[w] = cells.filter(([, v]) => String(v).toLowerCase().includes(w)).length || cells.length;
-  }
-  let best = -1, top = 0;
-  cells.forEach(([, v], i) => {
-    const low = String(v).toLowerCase();
-    let sc = 0;
-    for (const w of want) if (low.includes(w)) sc += 1 / spread[w];
-    sc /= Math.sqrt(Math.max(String(v).length, 40));
-    if (sc > top) { top = sc; best = i; }
-  });
-  return best;
-}
+/* A spreadsheet row, quoted like every other answer.
 
-/* A spreadsheet row does not become prose by being pulled out of a
-   spreadsheet. The xlsx loader serialises cells as "Header: value", so a
-   passage out of one reads "Length: 356 Topic: Song; Detail: Parrots are
-   unusual among birds..." -- a table printed as a paragraph, with the column
-   names stranded in the middle of the sentence.
+   The xlsx loader serialises cells as "Header: value", so a passage out of one
+   reads "Length: 356 Topic: Song; Detail: Parrots are unusual among birds..."
+   -- a row printed as a paragraph, with the column names stranded in the
+   middle of the sentences. Until 2026-09-14 the page answered that by drawing
+   the row as the table it came from: a caption, a two-column grid, uppercase
+   mono labels, hairlines between rows and 15px type against the 18 to 22px
+   every other answer sets. That made the one format on the page whose answer
+   looked like a different kind of object, and it was not even accurate. It
+   flattened every cell in the passage into a single list, so a passage
+   spanning two and a half rows came out as seven cells with Length, Topic and
+   Detail each appearing twice, under a caption reading "this passage is one
+   row of a spreadsheet" and beside a citation reading "rows 3-27".
 
-   Split it back into pairs and it can be shown as what it is. Returns null for
-   anything genuinely prose, which is most passages. */
-function tabular(text) {
-  const parts = String(text)
+   Every other format keeps its structure in the citation line and its answer
+   body as plain quoted text. A PDF does not draw its page furniture; it quotes
+   the paragraph and says "page 5". So this quotes the cell that carries the
+   row's prose and says sheet "Notes". The cells it leaves out are the row's
+   own label and two measurements of its text, and the Retrieval result line
+   already reports how much text an answer was drawn from.
+
+   The cell quoted is the longest one. Measured on 2026-09-14 over the 27
+   times a spreadsheet passage appears among the recorded set's selected
+   passages, 21 of them under an answer and 6 under a refusal, the longest
+   cell is the prose one in 27 of 27. The rule this replaces, the sentence
+   scorer applied to cells, agreed in 13 of the 27 and answered with a
+   label in 5, because
+   dividing by the square root of the length lets a 9-character cell outscore
+   300 characters of prose: it answered "Which corvid behaviour involves
+   shaping objects into implements?" with "Behaviour".
+
+   Returns null for anything that is not a spreadsheet row, which is most
+   passages. The locator decides that rather than the punctuation, so a
+   paragraph that happens to carry a colon cannot be taken for a row. */
+function sheetCell(item) {
+  const loc = item && item.loc;
+  const kind = (loc && loc.kind)
+    || String((item && item.locator) || "").split(" ")[0];
+  if (kind !== "sheet") return null;
+  const parts = clean((item && item.text) || "")
     .split(/(?=\b[A-Z][A-Za-z][A-Za-z ]{0,18}:\s)/)
     .map(t => t.trim())
     .filter(Boolean);
-  const rows = [];
-  let stray = 0;
+  let best = null;
+  let n = 0;
   for (const part of parts) {
     const m = part.match(/^([A-Z][A-Za-z][A-Za-z ]{0,18}):\s*([\s\S]+?);?$/);
-    if (m) rows.push([m[1].trim(), m[2].trim()]);
-    else stray += part.length;
+    if (!m) continue;
+    n++;
+    const val = m[2].trim();
+    if (!best || val.length > best.text.length) {
+      best = { label: m[1].trim(), text: val };
+    }
   }
-  // Three labelled cells and almost nothing outside them. A paragraph that
-  // happens to contain one colon must not become a table.
-  return rows.length >= 3 && stray < 40 ? rows : null;
+  // Two labelled cells at minimum, so a one-column sheet is left as the
+  // passage it already reads as.
+  return n >= 2 && best ? best : null;
+}
+
+/* The text of a passage as it should be quoted. A spreadsheet row contributes
+   the cell carrying its prose; everything else contributes the passage,
+   expanded to its context window where one was kept. */
+function quoted(item) {
+  const cell = sheetCell(item);
+  return cell ? cell.text : completed(item);
 }
 
 
@@ -1599,6 +1647,35 @@ function fit(cv, ctx, redraw) {
    a null run draws the city with no query, which is exactly the state the
    layout was designed around -- structure exists before the question. */
 let idleRaf = 0;
+
+/* The hero runs a demonstration pass on a loop.
+
+   It drew with `run = null` and `progress = 1` until 2026-09-15: a still of an
+   empty pipeline, on the page whose entire claim is that you can watch
+   retrieval happen. Passages now travel through all seven stages, the cap
+   turns some away, the reranker reorders, and the survivors land in the
+   answer -- then it starts again with a different set.
+
+   The run is generic and carries no counts; `demoTrace` and the note beside
+   `runSub` in pipeline-map.js explain why that matters and what it is allowed
+   to say. */
+const CYCLE = 7600;                 // one pass
+const HOLD = 2600;                  // then the finished picture, before it loops
+let demoRun = null, demoSeed = 0, demoAt = -1;
+
+/* Slow through each stage, without stopping.
+   Linear progress made seven stages read as one continuous slide; a hard stop
+   at each one made it a slideshow. Easing WITHIN each of the six spans
+   decelerates into a stage and accelerates out of it, so the eye is given time
+   exactly where something is happening. */
+function paced(p) {
+  const N = 6;
+  const i = Math.min(N - 1, Math.floor(p * N));
+  const f = p * N - i;
+  const e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
+  return (i + e) / N;
+}
+
 function drawIdle(clock = 0) {
   const cv = $("#idle");
   if (!cv || !CITY || $("#hero").classList.contains("gone")) {
@@ -1607,11 +1684,27 @@ function drawIdle(clock = 0) {
   const ctx = cv.getContext("2d");
   const r = fit(cv, ctx, () => drawIdle());
   if (!r) return;
-  // Brighter wire here than inside an answer: on the hero this drawing IS the
-  // subject, whereas in a card it is the quiet ground that lets the coloured
-  // survivors read.
-  drawScene(ctx, CITY, null, { ...INK, faint: "#6a6f72", other: "#6a6f72" },
-            r.width, r.height, 1, STILL ? null : clock, MAP);
+
+  const ink = { ...INK, faint: "#6a6f72", other: "#6a6f72" };
+
+  // Reduced motion gets the finished picture, not a different drawing and not
+  // an empty one: everything the loop would have shown, already arrived.
+  if (STILL) {
+    if (!demoRun) demoRun = buildRun(demoTrace(CITY, 0), CITY, ink, MAP);
+    drawScene(ctx, CITY, demoRun, ink, r.width, r.height, 1, null, MAP);
+    return;
+  }
+
+  const span = CYCLE + HOLD;
+  const n = Math.floor(clock / span);
+  const t = clock % span;
+  // A new set of passages each pass, so the hero is not one loop repeating.
+  if (n !== demoAt) {
+    demoAt = n;
+    demoRun = buildRun(demoTrace(CITY, demoSeed++), CITY, ink, MAP);
+  }
+  const progress = t < CYCLE ? paced(t / CYCLE) : 1;
+  drawScene(ctx, CITY, demoRun, ink, r.width, r.height, progress, clock, MAP);
 }
 
 /* The idle drawing is of a process, so one faint pulse walks the spine rather
@@ -1685,8 +1778,8 @@ async function loadPicker() {
   }
   $("#traysets").innerHTML = `
     <div class="top2"><h5>Documents</h5></div>
-    <p class="sdesc">Which set the search runs over. Changing it clears the
-      thread, because answers already on the page came from different
+    <p class="sdesc">The search runs over the set chosen here, and changing it
+      clears the thread, because answers already on the page came from different
       documents.</p>
     ${data.corpora.map(c => `
       <button type="button" class="trayset" data-name="${esc(c.name)}"
@@ -1708,6 +1801,21 @@ async function loadPicker() {
 /* Back to the starting state: no thread, the hero and its composer returned,
    the document set left alone. Switching sets also resets, but that changes
    which documents you are asking about, so it was never the way home. */
+/* Put the question field back where the hero expects it.
+   This was `hero.appendChild(form)` in both callers, which was correct while
+   the field was the hero's last child. The diagram moved below the field on
+   2026-09-14 and the two appends did not, so going home or switching document
+   set dropped the field underneath the drawing -- the one control on the page,
+   pushed off the first screen by the thing that explains it. Anchoring to the
+   drawing rather than to a position means the next reorder cannot break it
+   silently; if the anchor is ever removed, appending is still the right
+   answer. */
+function fieldHome() {
+  const hero = $("#hero"), form = $("#form"), viz = hero.querySelector(".herovizhead");
+  if (viz) hero.insertBefore(form, viz);
+  else hero.appendChild(form);
+}
+
 $("#home").onclick = () => {
   if (BUSY) return;
   $("#thread").innerHTML = "";
@@ -1715,7 +1823,7 @@ $("#home").onclick = () => {
   N = 0; BASELINE = null; LAST = null;
   $("#hero").classList.remove("gone");
   $("#dock").classList.add("hide");
-  $("#hero").appendChild($("#form"));
+  fieldHome();
   hideChips();
   $("#q").value = ""; grow();
   scrollTo({ top: 0, behavior: STILL ? "auto" : "smooth" });
@@ -1759,7 +1867,7 @@ async function selectCorpus(name) {
     N = 0; BASELINE = null;
     $("#hero").classList.remove("gone");
     $("#dock").classList.add("hide");
-    $("#hero").appendChild($("#form"));
+    fieldHome();
     await Promise.all([loadCorpus(), loadPicker()]);
   } catch (err) {
     // Shown, in both places the set can be chosen from. Until 2026-09-06 the
@@ -1848,10 +1956,13 @@ function markScrollEnd(el) {
 markScrollEnd(document.querySelector(".heroviz"));
 
 const shortQ = matchMedia("(max-width: 560px)");
+/* The wide placeholder is read off the markup rather than repeated here. It
+   was a literal in both places, so editing the one in index.html's <textarea>
+   left this copy to overwrite it on the next resize. */
+const LONG_Q = $("#q").placeholder;
 function syncPlaceholder() {
   const ta = $("#q");
-  const long = "Pick a question from the list";
-  ta.placeholder = shortQ.matches ? (ta.dataset.short || long) : long;
+  ta.placeholder = shortQ.matches ? (ta.dataset.short || LONG_Q) : LONG_Q;
 }
 syncPlaceholder();
 shortQ.addEventListener("change", syncPlaceholder);
@@ -2003,18 +2114,18 @@ function renderTurn(turn, question, data, opts) {
   // than being deleted -- the answer reads plainly, the reasoning is one click
   // away for anyone who wants it.
   const why = !gated
-    ? `This setting produces no relevance score, so there is nothing to judge
-       the passages against. What is below is the best the search could do,
-       unranked by confidence.`
+    ? `Without a cross-encoder score there is nothing to judge the passages
+       against, and what is below is the best the search could do unranked by
+       confidence.`
     : v.confident
       ? `The best passage scored <b>${sig(v.confidence)}</b>. At that score,
          ${reading(v.confidence, v.threshold).text}. That judgement compares the
          question and the passage and does not check that the passage is right,
-         so a high score can sit on a wrong one. The number runs roughly −11 to
+         so a high score can belong to a wrong one. The number runs roughly −11 to
          +11 and is not a probability.`
-      : `Nothing scored high enough to answer with. The closest passage reached
-         <b>${sig(v.confidence)}</b>, and everything below that scored lower
-         still. The candidates are listed below for inspection.`;
+      : `Nothing scored high enough to answer with, because the closest passage
+         reached <b>${sig(v.confidence)}</b> and that is below the cut-off
+         calibrated for this set of documents.`;
 
   // The cited passage can be a bare heading -- "Bird vocalization", 17
   // characters -- which clears the gate on score alone and answers nothing.
@@ -2023,14 +2134,15 @@ function renderTurn(turn, question, data, opts) {
     ? clean(top.text).length : 0;
   const read = gated ? reading(v.confidence, v.threshold) : null;
 
-  const cells = top && v.confident !== false ? tabular(clean(top.text)) : null;
-
   // The mark lands on the sentence that carries the question's words. When no
   // sentence in the lead passage qualifies, the passage is more likely than
   // the average lead to lack the answer. Measured in a browser on 2026-09-06
   // over the 120 recorded confident questions whose answer renders as prose
-  // and has a golden answer string (a 121st, bird-syrinx, renders as a
-  // spreadsheet row and is not counted), the shown passage lacked the answer
+  // and has a golden answer string (a 121st, bird-syrinx, rendered as a
+  // spreadsheet table at the time and was left out; it has been quoted as
+  // prose like every other answer since 2026-09-14, so the exclusion no longer
+  // describes the page, only the figures below), the shown passage lacked the
+  // answer
   // in 7 of the 10 cases with no mark and in 46 of the 110 with one. The
   // figure this note was designed against put the wrong-lead rate at about
   // 19%, and by the criterion used here, the golden string present in the
@@ -2041,8 +2153,8 @@ function renderTurn(turn, question, data, opts) {
   // lacks the answer, and not under a thin passage, because the Retrieval
   // result block already says that a passage that short has little to answer
   // with.
-  const leadHTML = top && v.confident !== false && !cells
-    ? markAnswer(fragment(completed(top)), question) : "";
+  const leadHTML = top && v.confident !== false
+    ? markAnswer(fragment(quoted(top)), question) : "";
   const unsure = gated && v.confident && !thin && leadHTML
     && !/<mark>/.test(leadHTML);
   const unsureHTML = unsure
@@ -2058,22 +2170,6 @@ function renderTurn(turn, question, data, opts) {
         .map(p => `<p>${esc(p.trim())}</p>`).join("")}</div>`
     : v.confident === false
       ? `<p class="answer">No passage in this document set answers the question.</p>`
-    : cells
-      ? `<p class="fromsheet">This passage is one row of a spreadsheet. The
-           labels are its columns.</p>
-         <table class="answer cells"><tbody>${(() => {
-          // Same idea as the prose highlight: the answering CELL is marked,
-          // not every cell in the row-dump.
-          const best = bestCell(cells, question);
-          // The winning cell goes through the same span narrowing as prose. It
-          // used to be wrapped whole, and a cell in one of these row-dumps can
-          // be a couple of sentences long -- 223 characters of bold, which is
-          // the problem the prose highlight was narrowed to solve.
-          return cells.map(([k, val], i) =>
-            `<tr${i === best ? ' class="hit"' : ""}><th>${esc(k)}</th>
-               <td>${i === best ? markAnswer(String(val), question) : esc(val)}</td>
-             </tr>`).join("");
-        })()}</tbody></table>`
       : `<p class="answer">${leadHTML}</p>${unsureHTML}`;
 
   turn.querySelector(".slot").innerHTML = `
@@ -2089,8 +2185,8 @@ function renderTurn(turn, question, data, opts) {
       ${top && v.confident !== false ? alsoFound(sel, top, question, colour) : ""}
       ${gen.state === "unavailable" ? `<div class="warnbox">
         <span class="k">could not write it out</span>
-        Generation was unavailable for this question, so the retrieved passage
-        is shown instead. This is the defined fallback, not an error.
+        The call to write an answer failed, so the retrieved passage
+        stands in its place. That is the defined fallback, not an error.
         <br><code>${esc(gen.reason || "")}</code></div>` : ""}
       ${v.confident === false
         ? `<p class="note">The closest matches are listed below, and none of them
@@ -2111,17 +2207,10 @@ function renderTurn(turn, question, data, opts) {
       </div>
     </div>
 
-    <div class="viz">
-      <div class="vizhead"><span class="lab">The RAG process</span>
-        <span class="vizsub">How this answer was found, stage by stage</span></div>
-      <div class="wrapviz"><canvas class="city"></canvas></div>
-      <div class="vizfoot">
-        <span class="cap"></span>
-        <input type="range" class="scrub" min="0" max="100" value="100" aria-label="Stage">
-        <button class="replay" type="button">Replay</button>
-      </div>
-    </div>
-
+    <!-- The reading of the result sits with the answer, above the drawing.
+         It was below it, which put the score 1,200px down the page at 1440x780
+         -- you had to scroll past the whole pipeline to find out whether the
+         thing you had just read was trusted. -->
       <div class="result">
         <div class="rhead"><span class="lab">Retrieval result</span>${
           gated ? `<span class="score ${read.band}">${sig(v.confidence)}
@@ -2132,24 +2221,32 @@ function renderTurn(turn, question, data, opts) {
           statement. Retrieval ranked it first, but there is little there to
           answer with. Turning context expansion back on, or reranking, usually
           replaces it with the passage around it.</p>` : ""}
+        <!-- One line, not three columns. The columns were 291px of bordered
+             rows beside two 70px blocks of text, so the row stood 240px tall
+             to fit its tallest member and two thirds of it was empty. The
+             per-document counts moved into Also found, which already lists
+             those passages. -->
         <div class="rgrid">
-          <div><span class="k">Documents drawn on</span>
-            <span class="vv">${docs.map(d =>
-              `<span class="pill"><i style="background:${colour(d.source)}"></i>
-                 ${esc(docName(d.source))} <b>${d.n}</b></span>`).join("")}</span>
-            <span class="note2">${docs.length === 1
-              ? "One document carried every passage used."
-              : `${docs.length} documents, with the count showing how many passages came from each.`}</span></div>
-          <div><span class="k">Passage text read</span>
-            <span class="vv mono">${data.context ? nf(data.context.chars) : "—"} characters</span>
-            <span class="note2">How much document text the answer was drawn
-              from${data.context && data.context.blocks
-                ? `, across ${data.context.blocks} passages` : ""}.</span></div>
-          <div><span class="k">Time taken</span>
-            <span class="vv mono">${data.ms.toFixed(0)} ms</span>
-            <span class="note2">Search, scoring and reranking.</span></div>
+          <span class="f"><b>${docs.length}</b> document${
+            docs.length === 1 ? "" : "s"}</span>${
+          data.context && data.context.blocks
+            ? `<span class="f"><b>${data.context.blocks}</b> passages</span>` : ""}${
+          data.context
+            ? `<span class="f"><b>${nf(data.context.chars)}</b> characters read</span>` : ""}
+          <span class="f"><b>${data.ms.toFixed(0)}</b> ms</span>
         </div>
       </div>
+
+    <div class="viz">
+      <div class="vizhead"><span class="lab">The RAG process</span>
+        <span class="vizsub">How this answer was found, stage by stage</span></div>
+      <div class="wrapviz"><canvas class="city"></canvas></div>
+      <div class="vizfoot">
+        <span class="cap"></span>
+        <input type="range" class="scrub" min="0" max="100" value="100" aria-label="Stage">
+        <button class="replay" type="button">Replay</button>
+      </div>
+    </div>
 
     <details class="detail"><summary>
       <span class="lab">Detail</span>
@@ -2169,14 +2266,14 @@ function renderTurn(turn, question, data, opts) {
 
       <div class="pane" data-pane="cands" role="tabpanel" id="${tid}-pane-cands"
         aria-labelledby="${tid}-tab-cands" tabindex="0"><div class="inner">
-        <p class="pnote"><b>Every passage the search considered, and where it
-        stood at each stage.</b> Rank 1 is the top of the chart, so a line that
-        climbs was promoted and a line that falls was pushed down. A line that
+        <p class="pnote"><b>Each line is one passage and each column is one
+        stage.</b> Rank 1 is the top of the chart, so a line that climbs was
+        promoted and one that falls was pushed down. A line that stops early
         stops early is a passage that stage removed. Colour is the document it
         came from; grey passages never reached the answer. Hover a line to see
         which passage it is.</p>
         <div class="bump"></div>
-        <p class="pnote">Every passage the search considered, in the order the
+        <p class="pnote">Every candidate, in the order the
         cross-encoder finally put them in. <b>Score</b> is that model's
         relevance judgement, running roughly −11 to +11. <b>Move</b> is how many
         places the passage shifted when the cross-encoder re-read it, against
@@ -2224,12 +2321,12 @@ function renderTurn(turn, question, data, opts) {
         aria-labelledby="${tid}-tab-words" tabindex="0" hidden><div class="stack"></div></div>
       <div class="pane" data-pane="steps" role="tabpanel" id="${tid}-pane-steps"
         aria-labelledby="${tid}-tab-steps" tabindex="0" hidden><div class="inner">
-        <p class="pnote">The same run again, one stage at a time. Each block
+        <p class="pnote">This is the same run again, one stage at a time. Each block
         says what the stage does, what it produced on this question, and every
         passage it held when it finished, drawn in the order that stage put
         them in. <b>Passages that reach the answer are drawn at full
-        strength</b>, so watching them climb from one block to the next is
-        watching the pipeline work. Hover a row for the passage itself. Each
+        strength</b>, so they stand out as they climb the list from one block
+        to the next. Hover a row for the passage itself. Each
         block names its own unit, and a bar is only as long as that stage's
         range allows: cosine, a BM25 weight, an RRF score and a cross-encoder
         logit are four different things, so a length in one block says nothing
@@ -2374,9 +2471,9 @@ function renderStack(turn, data, colour, sig) {
   host.innerHTML = `
     <p class="pnote">BM25 scores a passage by which of the question's words it
     contains, counting rare words for much more than common ones. <b>Each row is
-    one word from the question. Each column is one candidate passage.</b> A darker cell
-    means that word supplied more of that passage's score, and an empty cell
-    means the word does not appear in it. Hover a cell for the document it
+    one word from the question and each column is one candidate passage.</b> A darker
+    cell means that word supplied more of that passage's score, and an empty cell
+    means the word does not appear in that passage. Hover a cell for the document it
     belongs to.${dropped.length ? ` ${dropped.length === 1 ? "One word was" :
       `${dropped.length} words were`} too common to be worth scoring and
       ${dropped.length === 1 ? "was" : "were"} dropped: ${dropped.map(d =>
@@ -2663,7 +2760,7 @@ function optsSummary(o) {
 function evalSetLabel() {
   const c = EVAL?.corpus;
   const name = typeof c === "string" ? c : c?.label || c?.name;
-  if (!name) return "ML & NLP papers";
+  if (!name) return "Machine learning";
   // The active corpus answers for itself. CORPORA is filled by loadPicker(),
   // which runs beside loadCorpus() rather than before it, so on a first load
   // the raw name "llm" could reach here before the picker's labels had, and

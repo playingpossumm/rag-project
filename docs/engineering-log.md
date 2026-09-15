@@ -2500,6 +2500,69 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-14 — The spreadsheet answer stops being a different kind of object
+
+**Why.** Reading back through the recorded answers, the spreadsheet one was
+picked out as looking unlike the rest of the page. It did. A passage out of an
+`.xlsx` was drawn as the table it came from: a caption, a two-column grid,
+uppercase mono labels, hairlines between rows and 15px type against the 18 to
+22px every other answer sets. Five departures, on the one format that had them.
+
+**The observation that settled it.** Every other format on this page keeps its
+structure in the citation line and its answer body as plain quoted text. A PDF
+does not draw its page furniture; it quotes the paragraph and says "page 5". A
+deck says "slide 3" and a Word file says section "Migration". The spreadsheet
+was the single case where structure had been put into the answer body instead,
+and that is where the separate vocabulary came from.
+
+**It was also not accurate.** `tabular()` had no concept of a row. It split the
+passage at every `Label:` and flattened the result into one list, so a passage
+covering two and a half rows came out as 7 cells with Length, Topic and Detail
+each appearing twice, under a caption reading "this passage is one row of a
+spreadsheet" and beside a citation reading rows 3-27. Three statements about
+one passage on one screen, no two of them agreeing.
+
+**And the gate turned it off where it was needed most.** The rule required
+fewer than 40 unlabelled characters. A chunk starts mid row, so the passage
+opens with the tail of the cell that was cut: 127 characters on the corvid
+question, which fails the rule and falls back to prose. What a reader gets then
+is the thing the table was written to prevent, the column names inside the
+sentences:
+
+    ... corvid species.; Length: 240 Topic: Behaviour; Detail: Young corvids
+    have been known to play and take part in elaborate social games ...
+
+**Reach.** Of the 660 passages the recorded set puts under a confident answer,
+22 come out of a spreadsheet. 2 of those lead an answer and 20 sit under **Also
+found**, which never had the table branch at all and printed every one of them
+as the run-on above.
+
+**Which cell to quote.** The longest. Over the 27 spreadsheet passages in the
+recorded set that parse into two or more cells, counting those under a refusal,
+the longest cell is the prose one in 27 of 27. `bestCell()`, which was the
+sentence scorer applied to cells, agreed in 13 of the 27 and answered with a
+label in 5. It answered "Which corvid behaviour involves shaping objects into
+implements?" with **"Behaviour"**, because dividing by the square root of the
+length lets a 9-character cell outscore 300 characters of prose.
+
+**Done.** `sheetCell()` returns the content cell and `quoted()` returns it in
+place of the passage, for the lead and for the Also found rows both. The
+caption, the table branch, `bestCell()`, the `STOP` import and 10 lines of CSS
+are gone, so the page carries less code than before the change. Both leads now
+quote the Detail column, 690 characters of row-dump down to 300 and 659 down to
+300. The marks are unchanged: the parrot answer still bolds the syrinx sentence
+and the corvid answer still bolds the sticks sentence. None of the other 638
+passages is touched, because what counts as a spreadsheet row is decided by the
+locator and not by the punctuation. One of the 22 has fewer than two labelled
+cells and is left as the passage it already reads as.
+
+**Not fixed by this.** The corvid answer is still wrong. Its golden answer is
+"tool use", that phrase is not anywhere in the passage, and it was a miss
+before this change and is a miss after it. This moves where the text is cut,
+not what retrieval returned.
+
+---
+
 ## 2026-09-14 — The highlight runs back to the term the sentence defined
 
 A reader asked why an answer was wrong and gave a case: "What is the period of
