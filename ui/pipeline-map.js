@@ -239,6 +239,119 @@ function slot(plate, i) {
   return cellAt(plate, i);
 }
 
+/* A home cell for a passage, chosen from its id rather than its rank.
+
+   Rank order put the passages that went on to the answer in the first row of
+   every stage and left the rows below them empty, so every stage looked
+   top-heavy and all of them looked alike. Hashing the id spreads a stage's
+   passages over its whole matrix instead, and rank moves to how large and how
+   strong a passage is drawn and to when it settles.
+
+   Passages are placed in id order, not rank order, so the same set of passages
+   always lands in the same cells however a stage ranks them. `reuse` lets the
+   cross-encoder keep exactly the cells fusion gave its passages, so a
+   reordering shows as a change of size in place rather than a shuffle.
+   Collisions step through the matrix by a stride that shares no factor with its
+   size, which visits every cell before repeating and does not pile collisions
+   into a run of neighbours the way stepping by one does. */
+const hashId = id => {
+  const s = String(id);
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+};
+const gcd = (x, y) => (y ? gcd(y, x % y) : x);
+
+function spreadIndex(items, slots, reuse = null) {
+  const out = new Map();
+  const taken = new Set();
+  if (reuse) {
+    for (const it of items) {
+      const k = reuse.get(it.chunk_id);
+      if (k != null && k < slots && !taken.has(k)) {
+        taken.add(k);
+        out.set(it.chunk_id, k);
+      }
+    }
+  }
+  let stride = 7;
+  while (gcd(stride, slots) !== 1) stride++;
+  const rest = items.filter(it => !out.has(it.chunk_id))
+    .sort((x, y) => hashId(x.chunk_id) - hashId(y.chunk_id));
+  for (const it of rest) {
+    if (out.has(it.chunk_id)) continue;      // a repeated id keeps its first cell
+    let k = hashId(it.chunk_id) % slots;
+    for (let n = 0; n < slots && taken.has(k); n++) k = (k + stride) % slots;
+    taken.add(k);
+    out.set(it.chunk_id, k);
+  }
+  return out;
+}
+
+/* A dense-retrieval passage's point. The field is a region rather than a rack,
+   so each dot is moved to a fixed offset inside its cell and the field reads as
+   a scatter. The offset is applied to the placement itself, not only to the
+   drawing, so the line into a dot ends on the dot. */
+function spreadHome(plate, idx, id) {
+  const c = cellAt(plate, idx);
+  if (plate.shape !== "field") return c;
+  const h = hashId(id);
+  const s = c.s + (((h & 0xffff) / 0xffff) - 0.5) * c.ds * 1.1;
+  const t = c.t + ((((h >>> 16) & 0xffff) / 0xffff) - 0.5) * c.dt * 1.1;
+  return { ...c, ...ptAt(plate, s, t, c.k), s, t };
+}
+
+/* A BM25 passage's bar. Its line arrives at the bar's left end, which is where
+   the bar grows from, so the score is seen extending out of the point the
+   passage was delivered to. */
+function barHome(plate, row) {
+  const c = cellAt(plate, row);
+  const s = -plate.w * 0.86;
+  return { ...c, ...ptAt(plate, s, c.t, c.k), s };
+}
+
+/* The plane the flow runs through and height, for the two stages drawn as
+   vessels. A step along the flow is (+1, -1, 0) in u and v, so a move of `f`
+   along it projects to 2 * f * SPREAD across the screen and nothing up or
+   down, while height projects straight up. A shape drawn in this plane reaches
+   the screen without the shear a plate's own plane gives it, which is why the
+   funnel and the bowl are built here. */
+const fz = (plate, f, z) => ({ u: plate.u + f, v: plate.v - f, z: plate.z + z });
+
+// The funnel, in world units. Its mouth is about as tall as its taper is long,
+// which is the proportion that makes the shape read as a funnel.
+const FUN = { mouthF: -4.3, throatF: 7.8, spoutF: 11.4, mouthZ: 11.2, throatZ: 1.9 };
+
+function funnelSeat(plate, i, n) {
+  const k = n > 1 ? i / (n - 1) : 0.5;
+  return fz(plate, FUN.mouthF + (FUN.spoutF - FUN.mouthF) * (0.34 + k * 0.62), 0);
+}
+
+// Where a refused passage's line meets the lower wall, and where it comes to
+// rest after it falls clear.
+function funnelWall(plate, j, m) {
+  const k = m > 1 ? j / (m - 1) : 0.5;
+  const f = FUN.mouthF + (FUN.throatF - FUN.mouthF) * (0.2 + k * 0.5);
+  const along = (f - FUN.mouthF) / (FUN.throatF - FUN.mouthF);
+  const z = -(FUN.mouthZ + (FUN.throatZ - FUN.mouthZ) * along) + 0.8;
+  return { ...fz(plate, f, z), f, zRest: z - 6.5 };
+}
+
+// The bowl: a parabola in the same plane, its rim above the flow line and its
+// bottom below it, so the lines from the cap dip into it.
+const BOWL = { half: 5.0, rimZ: 2.0, bottomZ: -6.0 };
+const bowlZ = f => BOWL.bottomZ + (BOWL.rimZ - BOWL.bottomZ) * (f / BOWL.half) ** 2;
+const BOWL_AT = [0, -2.6, 2.6, -4.1, 4.1];
+
+function bowlSeat(plate, i) {
+  const f = BOWL_AT[i] ?? Math.max(-BOWL.half * 0.9,
+    Math.min(BOWL.half * 0.9, (i % 2 ? 1 : -1) * 1.3 * i));
+  return fz(plate, f, bowlZ(f) + 0.9);
+}
+
 /* ------------------------------------------------------------- the index */
 export function buildCity(chunks) {
   const sources = chunks.sources || [];
@@ -267,6 +380,107 @@ export function buildCity(chunks) {
            chunkAt: new Map(marks.map(m => [m.id, m])), step };
 }
 
+/* A demonstration run for the hero, where no question has been asked.
+
+   The hero drew with `run = null` and `progress = 1` until 2026-09-15, which
+   made it a still photograph of an empty pipeline: seven plates, dashed
+   connectors, nothing moving. The page's whole claim is that you can watch
+   retrieval happen, and the first thing a visitor saw was the one view where
+   nothing happens.
+
+   What moves here is generic. The passages are positions in the real index and
+   carry the real document colours, but no query chose them, so the run is
+   marked `demo` and every stage keeps its idle caption rather than printing a
+   count nobody measured. See the note beside `runSub`.
+
+   `seed` varies the run between loops, so the hero is not the same eight
+   seconds repeating exactly. It is a hash, not Math.random: the drawing has to
+   be reproducible frame to frame within one loop, and the file forbids
+   randomness at draw time. */
+export function demoTrace(city, seed = 0) {
+  if (!city || !city.marks?.length) return null;
+  const rnd = n => ((Math.sin((seed + 1) * 9781.17 + n * 127.1) * 43758.5453) % 1 + 1) % 1;
+  const srcs = city.sources?.length ? city.sources : ["a", "b", "c"];
+  const uniq = xs => { const seen = new Set();
+    return xs.filter(c => !seen.has(c.chunk_id) && seen.add(c.chunk_id)); };
+
+  // Candidates drawn from across the whole index rather than one corner, so
+  // the lines out of stage 01 fan the way a real search's do.
+  const pick = (n, salt) => {
+    const out = [];
+    const seen = new Set();
+    for (let i = 0; out.length < n && i < n * 6; i++) {
+      const m = city.marks[Math.floor(rnd(salt + i) * city.marks.length)];
+      if (!m || seen.has(m.id)) continue;
+      seen.add(m.id);
+      out.push({ chunk_id: m.id });
+    }
+    return out;
+  };
+
+  // Scores fall with rank the way a retriever's do, so sizes and bar lengths
+  // have something to encode. They are shaped like scores and are not
+  // measurements, which is one more reason this run prints no counts.
+  const dense = pick(16, 10).map((c, i) => ({ ...c, rank: i + 1,
+    score: Math.round((0.71 - i * 0.021) * 1000) / 1000 }));
+  // BM25 finds some of the same passages and some of its own, which is the
+  // reason the two are fused at all.
+  const sparse = uniq([...dense.slice(0, 6), ...pick(10, 400)])
+    .map((c, i) => ({ ...c, rank: i + 1,
+      score: Math.max(0.6, Math.round((15.2 - i * (0.7 + rnd(900 + i) * 0.5)) * 100) / 100) }));
+  const inDense = new Set(dense.map(c => c.chunk_id));
+  const inSparse = new Set(sparse.map(c => c.chunk_id));
+  const fusedSet = uniq([...dense.slice(0, 8), ...sparse.slice(6, 10)])
+    .map((c, i) => ({ ...c, rank: i + 1,
+      agreement: inDense.has(c.chunk_id) && inSparse.has(c.chunk_id) }));
+  // The reranker moves things. `was` is where fusion had a passage and `rank`
+  // is where reading the pair put it, and the gap is what stage 05 shows.
+  const reranked = fusedSet
+    .map((c, i) => ({ c, k: rnd(700 + i) }))
+    .sort((x, y) => x.k - y.k)
+    .map(({ c }, i) => {
+      const was = fusedSet.findIndex(f => f.chunk_id === c.chunk_id) + 1;
+      return { ...c, rank: i + 1, was, delta: was - (i + 1),
+               score: Math.round((6.2 - i * 0.8) * 100) / 100 };
+    });
+
+  /* Which document each passage came from, decided once per passage so it has
+     the same colour at every stage. The reranker's top three share a document,
+     which is the situation the cap exists for, one thorough document filling
+     every slot, and it means the funnel refuses at least one passage on every
+     pass. With documents assigned at random, 9 of the first 12 passes refused
+     nothing, so the stage whose point is that more goes in than comes out
+     usually showed no difference. The rest spread over three more documents. */
+  const off = Math.floor(rnd(77) * srcs.length);
+  const doc = j => srcs[(off + j) % srcs.length];
+  const sourceOf = new Map();
+  reranked.forEach((c, i) => sourceOf.set(c.chunk_id,
+    i < 3 ? doc(0) : doc(1 + Math.floor(rnd(1300 + i) * 3))));
+  const withSource = xs => xs.map(c => ({ ...c,
+    source: sourceOf.get(c.chunk_id) ?? doc(Math.floor(rnd(1700 + c.chunk_id) * 4)) }));
+
+  // Two per document, the cap the real pipeline ships, applied in reranked
+  // order the way src/diversify.py applies it.
+  const rr = withSource(reranked);
+  const perDoc = new Map();
+  const selected = [];
+  for (const c of rr) {
+    const n = perDoc.get(c.source) || 0;
+    if (n >= 2) continue;
+    perDoc.set(c.source, n + 1);
+    selected.push({ ...c, rank: selected.length + 1 });
+    if (selected.length === 5) break;
+  }
+
+  return { demo: true, stages: [
+    { name: "dense", items: withSource(dense) },
+    { name: "sparse", items: withSource(sparse) },
+    { name: "fused", items: withSource(fusedSet) },
+    { name: "reranked", items: rr },
+    { name: "selected", items: selected },
+  ] };
+}
+
 /* ---------------------------------------------------------------- a run */
 export function buildRun(trace, city, ink, variant = "flat") {
   if (!trace || !city) return null;
@@ -276,6 +490,8 @@ export function buildRun(trace, city, ink, variant = "flat") {
   const survivors = new Set(final.map(i => i.chunk_id));
 
   const placed = new Map();
+  // The cells fusion gave its passages, so the cross-encoder can keep them.
+  const fusedCells = new Map();
   for (const plate of platesFor(variant)) {
     const st = byName.get(plate.id);
     if (!st) continue;
@@ -284,26 +500,65 @@ export function buildRun(trace, city, ink, variant = "flat") {
     // the wider stages looking half-empty when they were full.
     const [cols, rows] = plate.cells || [1, 1];
     const items = st.items.slice(0, cols * rows);
-    // No `z: plate.z` here. slot() already returns the cell's own height, and
-    // overwriting it sent every cable to the plate's centre plane while the
-    // square it was flying to sat on its layer -- the line and the lit cell
-    // disagreeing by exactly the layer offset.
+    // No `z: plate.z` here. The home functions already return the cell's own
+    // height, and overwriting it sent every cable to the plate's centre plane
+    // while the square it was flying to sat on its layer -- the line and the
+    // lit cell disagreeing by exactly the layer offset.
+    const n = items.length;
+    let homes;
+    if (plate.id === "selected") {
+      homes = items.map((it, i) => funnelSeat(plate, i, n));
+    } else if (plate.shape === "bars") {
+      const rowOf = spreadIndex(items, rows);
+      homes = items.map(it => barHome(plate, rowOf.get(it.chunk_id)));
+    } else {
+      const idx = spreadIndex(items, cols * rows,
+                              plate.id === "reranked" ? fusedCells : null);
+      if (plate.id === "fused") for (const [id, k] of idx) fusedCells.set(id, k);
+      homes = items.map(it => spreadHome(plate, idx.get(it.chunk_id), it.chunk_id));
+    }
     placed.set(plate.id, items.map((it, i) => ({
-      ...it, ...slot(plate, i, items.length),
+      ...it, ...homes[i],
+      // Where the passage stands in its stage's ranking, 0 for the best. Size,
+      // strength and settle order are drawn from this, not from position.
+      frac: n > 1 ? clamp01((Number.isFinite(it.rank) ? it.rank - 1 : i) / (n - 1)) : 0,
       lives: survivors.has(it.chunk_id),
       colour: survivors.has(it.chunk_id) ? colour(it.source) : null,
     })));
   }
   const sel = placed.get("selected") || [];
   const ap = platesFor(variant).find(p => p.id === "answer");
-  placed.set("answer", sel.map((m, i) => ({ ...m, ...slot(ap, i, sel.length) })));
+  placed.set("answer", sel.map((m, i) => ({ ...m, ...bowlSeat(ap, i) })));
+
+  /* Which mark on the index a candidate belongs to. ONE answer, used by both
+     the lighting and the departure lines.
+
+     These were two mappings. `lit` keyed a Map by the sampled mark, so several
+     candidates rounding to the same mark overwrote each other and fewer
+     squares lit than there were candidates; `litAt` keyed by chunk_id and then
+     scattered each line off its mark by up to 1.4 world units so two nearby
+     candidates would not overdraw. The result was lines leaving from points
+     where nothing was lit, next to lit squares nothing left from -- which is
+     exactly what it looked like.
+
+     The scatter is gone. A mark carrying more than one candidate is drawn
+     bigger and brighter instead, which is the honest reading: at 5,459
+     passages sampled to 260 marks each mark stands for about twenty
+     passages, so a collision means that region of the index really did
+     supply more than one candidate. */
+  const markOf = id => city.chunkAt.get(Math.round(id / city.step) * city.step);
 
   const lit = new Map();
   for (const name of ["dense", "sparse"]) {
     for (const it of byName.get(name)?.items || []) {
-      const near = city.chunkAt.get(Math.round(it.chunk_id / city.step) * city.step);
+      const near = markOf(it.chunk_id);
       if (!near) continue;
-      lit.set(near.id, { colour: survivors.has(it.chunk_id) ? colour(it.source) : null,
+      const hue = survivors.has(it.chunk_id) ? colour(it.source) : null;
+      const prev = lit.get(near.id);
+      // A surviving candidate's colour wins over a non-survivor's absence of
+      // one, whichever order they arrive in.
+      lit.set(near.id, { colour: prev?.colour || hue,
+                         n: (prev?.n || 0) + 1,
                          chunk_id: it.chunk_id });
     }
   }
@@ -326,20 +581,30 @@ export function buildRun(trace, city, ink, variant = "flat") {
   // this from `lit` kept the last candidate at each mark and dropped the rest.
   // A surviving passage then had no line out of the index unless it happened
   // to be the last one written to its mark.
+  const corpus = platesFor(variant).find(p => p.id === "corpus");
   const litAt = new Map();
   for (const name of ["dense", "sparse"]) {
     for (const it of byName.get(name)?.items || []) {
       if (litAt.has(it.chunk_id)) continue;
-      const m = city.chunkAt.get(
-        Math.round(it.chunk_id / city.step) * city.step);
+      const m = markOf(it.chunk_id);
       if (!m) continue;
-      // A little scatter around the mark, deterministic per passage, so two
-      // candidates from the same region of the index leave as two lines
-      // instead of one line drawn twice.
-      const j = k => ((Math.sin(it.chunk_id * 12.9898 + k * 78.233)
-                       * 43758.5453) % 1 + 1) % 1 - 0.5;
-      litAt.set(it.chunk_id,
-                { u: m.u + j(1) * 1.4, v: m.v + j(2) * 1.4, z: 0.3 });
+      /* The mark's centre IN WORLD SPACE.
+
+         This is the whole of the "lines and lit squares do not match" bug, and
+         removing the jitter on 2026-09-14 did not touch it. A mark's `u` and
+         `v` are PLATE-LOCAL: the index's marks are drawn at
+         `ptAt(plate, m.u, m.v, k)`, which maps them across the plate's two
+         basis vectors into world space. This map stored the plate-local pair
+         unconverted, and `inflight` then fed it straight to `T(u, v, z)` as if
+         it were already world -- so every departure point was a plate-local
+         number read as a world coordinate, landing somewhere with no relation
+         to the square it was supposed to leave.
+
+         `layerAt(corpus, 0)` is the front sheet, which is the only one that
+         lights up, so the line starts on the face the reader sees rather than
+         somewhere inside the stack. */
+      const w = ptAt(corpus, m.u, m.v, layerAt(corpus, 0));
+      litAt.set(it.chunk_id, { u: w.u, v: w.v, z: w.z });
     }
   }
   for (const name of ["dense", "sparse"]) {
@@ -360,23 +625,24 @@ export function buildRun(trace, city, ink, variant = "flat") {
     }
   }
 
-  // The passages the cap threw out. Ranked highly enough by the cross-encoder
-  // to be in contention, and then stopped because their document already had
-  // two -- which is the entire mechanism, and the drawing had no way to show
-  // it. They travel to the cap's face and stop against it.
+  // The passages the cap turned away. A passage counts as refused when the
+  // cross-encoder ranked it above the last passage the cap kept and it was left
+  // out anyway, so the cap passed over it to keep one ranked lower. Everything
+  // ranked below that point was never reached, and drawing it as refused would
+  // show a rejection that did not happen; until 2026-09-15 every candidate
+  // outside the five was drawn as one. At most five are drawn, because more
+  // than that meeting one wall is a red smear and the label states the rule.
   const kept = new Set((placed.get("selected") || []).map(m => m.chunk_id));
   const capPlate = platesFor(variant).find(p => p.id === "selected");
-  const rejected = (placed.get("reranked") || []).filter(m => !kept.has(m.chunk_id));
-  // Five, fanned across the plate's face. Thirteen lines converging on one
-  // point is a red hatch, not thirteen stopped passages, and the count that
-  // matters is already on the label under the plate.
-  const shown = rejected.slice(0, 5);
-  shown.forEach((m, i) => {
-    const spread = (i - (shown.length - 1) / 2) * (capPlate.w * 0.42);
+  const rerRank = new Map((placed.get("reranked") || [])
+    .map((m, i) => [m.chunk_id, Number.isFinite(m.rank) ? m.rank : i + 1]));
+  const lastKept = Math.max(0, ...[...kept].map(id => rerRank.get(id) || 0));
+  const capRefused = (placed.get("reranked") || [])
+    .filter(m => !kept.has(m.chunk_id) && (rerRank.get(m.chunk_id) || 0) < lastKept)
+    .slice(0, 5);
+  capRefused.forEach((m, j) => {
     push("selected", {
-      a: m,
-      b: { u: capPlate.u + spread * 0.5, v: capPlate.v - spread * 0.5,
-           z: capPlate.z },
+      a: m, b: funnelWall(capPlate, j, capRefused.length),
       lives: false, colour: null, stopped: true,
     });
   });
@@ -387,6 +653,12 @@ export function buildRun(trace, city, ink, variant = "flat") {
 
   return {
     colour, placed, byTarget, lit, city,
+    // Carried through from the trace so `annotate` knows not to print counts
+    // for a run nobody asked for. See demoTrace above.
+    demo: !!trace.demo,
+    // The passages the cap passed over, drawn by capFunnel on the lower
+    // wall where their lines end.
+    capRefused,
     verdict: trace.verdict, confident: trace.verdict?.confident !== false,
     counts: {
       dense: byName.get("dense")?.items.length || 0,
@@ -466,112 +738,292 @@ function plane(ctx, T, plate, ink, a, dim, f = 1) {
 
 /* What a stage holds, drawn as the thing that stage does. Every stage used to
    draw cells, which is why seven different operations looked like one
-   operation repeated seven times. */
-function stageContents(ctx, T, plate, run, city, ink, a, variant) {
+   operation repeated seven times.
+
+   A passage's position no longer says its rank. Until 2026-09-15 every stage
+   filled its matrix in rank order from the top left, so the passages that went
+   on to the answer were always packed into the first row with empty rows
+   beneath them, and every stage looked top-heavy in the same way. A passage's
+   cell now comes from its id (see spreadIndex). Rank decides how large and how
+   strong it is drawn, and when it settles.
+
+   `ft` is the stage's own flight, 0 while its passages are still travelling and
+   1 once they have landed. Contents settle over the tail of the flight, which is
+   where `paced` in index.html slows the replay, so each stage does its work
+   while there is time to watch it. Every settle window closes by ft = 1, so the
+   finished frame, which is all a reader with reduced motion sees, shows every
+   stage complete. */
+function stageContents(ctx, T, plate, run, city, ink, a, variant, ft = 1) {
   const items = run?.placed.get(plate.id) || [];
-  const shade = m => m.lives ? m.colour : ink.other;
+  if (!items.length) return;
+  const local = clamp01((ft - 0.55) / 0.45);
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  const shade = m => (m.lives ? m.colour : ink.other);
+  // Rank 1 is drawn at full size and strength, the last passage at 45% of the
+  // size and half the strength.
+  const size = frac => 1 - frac * 0.55;
+  const strength = (m, frac) => (m.lives ? 1 : 0.55) * (1 - frac * 0.5);
+  // Rank 1 settles first and the last passage half a window after it.
+  const settle = frac => clamp01((local - frac * 0.5) / 0.5);
+  const at = (s, t, k = plate.front) => {
+    const w = ptAt(plate, s, t, k);
+    return T(w.u, w.v, w.z);
+  };
+  // `inflight` lifts every point a line lands on by 0.5, so contents take the
+  // same lift and a line ends on the thing it delivers.
+  const home = m => T(m.u, m.v, m.z + 0.5);
+  const ring = (p, r, colour, alpha, lw = 1) => {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = colour;
+    ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  };
 
   if (plate.shape === "field") {
-    // Dots where the candidates sit, no lattice under them.
-    for (const m of items) {
-      const p = T(m.u, m.v, m.z + 0.3);
-      ctx.globalAlpha = a * (m.lives ? 1 : 0.8);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, m.lives ? 3.6 : 2.3, 0, Math.PI * 2);
-      ctx.fillStyle = shade(m);
-      ctx.fill();
+    /* Dense retrieval. The question becomes a vector in the same space as the
+       passages, drawn as a ring widening from the centre, and the passages
+       nearest it are found in rank order, each flashing as it is found. The
+       dots do not sit at the passages' real coordinates, which run to 384
+       dimensions for the embedder this project uses; the order they are found
+       in is real. */
+    const c = at(0, 0);
+    const corner = at(plate.w, plate.h);
+    const reach = Math.hypot(corner.x - c.x, corner.y - c.y);
+    if (local > 0 && local < 1) {
+      ring(c, reach * (0.08 + 0.95 * ease(local)), ink.faint, a * 0.45 * (1 - local));
     }
-    ctx.globalAlpha = 1;
+    for (const m of items) {
+      const t = settle(m.frac);
+      if (t <= 0) continue;
+      const p = home(m);
+      const r = (m.lives ? 3.8 : 2.6) * size(m.frac);
+      if (t < 1) ring(p, r + 7 * t, shade(m), a * 0.5 * (1 - t));
+      ctx.save();
+      ctx.globalAlpha = a * strength(m, m.frac) * t;
+      ctx.fillStyle = shade(m);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r * (0.4 + 0.6 * ease(t)), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
     return;
   }
 
-  if (plate.shape === "bars" || plate.shape === "gate") {
+  if (plate.shape === "bars") {
+    /* BM25. Each passage is a bar whose length is its term-match score against
+       the best score in the list, and the bars grow to those lengths in rank
+       order. A trace that carries no scores falls back to rank. The gap left
+       between bars is what stops ten of them filling in as one block, which is
+       what this stage rendered as when every row was drawn full height. */
     const [, rows] = plate.cells;
-    const gate = plate.shape === "gate";
-    // How many the cap turned away. Drawn on the plate, under the rows that
-    // got through, because a gate has to show the slots it shut as well as the
-    // ones it opened.
-    const refused = gate && run
-      ? Math.min(rows - items.length,
-                 Math.max(0, (run.placed.get("reranked") || []).length - items.length))
-      : 0;
-    for (let r = 0; r < rows; r++) {
-      const m = items[r];
-      const cell = cellAt(plate, r);
-      if (m && m.lives) {
-        // Only the survivors are filled. Filling the rest at any alpha turns
-        // ten adjacent bars into one solid rectangle, which is what this stage
-        // kept coming out as; the empty slots are already drawn by plane().
-        drawCell(ctx, T, plate, cell, shade(m), null, a);
-      } else if (gate && r >= items.length && r < items.length + refused) {
-        drawCell(ctx, T, plate, cell, null, "#f0685f", a * 0.8, 1.4);
+    const scored = items.map(m => (Number.isFinite(m.score) && m.score > 0 ? m.score : null));
+    const best = Math.max(0, ...scored.filter(x => x != null));
+    const half = (plate.h / rows) * 0.62;
+    const span = plate.w * 0.86 * 2;
+    items.forEach((m, i) => {
+      const t = settle(m.frac);
+      if (t <= 0) return;
+      const share = best > 0 && scored[i] != null ? scored[i] / best : size(m.frac);
+      const len = span * share * ease(t);
+      const q = [at(m.s, m.t - half, m.k), at(m.s + len, m.t - half, m.k),
+                 at(m.s + len, m.t + half, m.k), at(m.s, m.t + half, m.k)];
+      ctx.save();
+      ctx.globalAlpha = a * strength(m, m.frac);
+      ctx.fillStyle = shade(m);
+      ctx.beginPath();
+      ctx.moveTo(q[0].x, q[0].y);
+      for (let j = 1; j < 4; j++) ctx.lineTo(q[j].x, q[j].y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+    return;
+  }
+
+  if (plate.shape === "merge" || plate.shape === "sort") {
+    const sort = plate.shape === "sort";
+    const n = items.length;
+    /* The cross-encoder reads the question and each passage together, one pair
+       at a time, which is what makes it slower than comparing two vectors and
+       better at it. It is drawn as a scan crossing the plate. Each passage keeps
+       the cell fusion gave it, and as the scan reaches it the passage changes
+       size from the rank fusion put it at to the rank the cross-encoder gives
+       it, so a passage that grows was promoted and one that shrinks was pushed
+       down. */
+    const scan = sort ? clamp01((local - 0.12) / 0.88) : 1;
+    const scanS = -plate.w + plate.w * 2 * scan;
+    if (sort && scan > 0 && scan < 1) {
+      const A = at(scanS, plate.h), B = at(scanS, -plate.h);
+      ctx.save();
+      ctx.globalAlpha = a * 0.6;
+      ctx.strokeStyle = ink.faint;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(A.x, A.y);
+      ctx.lineTo(B.x, B.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+    for (const m of items) {
+      let frac = m.frac, shown, reached = 1;
+      if (sort) {
+        shown = clamp01(local / 0.12);
+        if (shown <= 0) continue;
+        reached = scan >= 1 ? 1 : clamp01((scanS - (m.s - m.ds)) / (2 * m.ds));
+        const was = Number.isFinite(m.was) ? m.was : (m.rank ?? 1);
+        const before = n > 1 ? clamp01((was - 1) / (n - 1)) : 0;
+        frac = before + (m.frac - before) * ease(reached);
+      } else {
+        shown = settle(m.frac);
+        if (shown <= 0) continue;
+      }
+      const sz = size(frac) * (sort ? 1 : 0.4 + 0.6 * ease(shown));
+      drawCell(ctx, T, plate, { ...m, ds: m.ds * sz, dt: m.dt * sz }, shade(m), null,
+               a * strength(m, frac) * shown);
+      // Fusion. A passage both retrievers found rings as it lands, because
+      // reciprocal rank fusion adds a share for every list a passage appears
+      // in, so appearing in both is what lifts it.
+      if (!sort && m.agreement && shown < 1) {
+        ring(home(m), 4 + 10 * shown, m.lives ? m.colour : ink.faint, a * 0.7 * (1 - shown), 1.1);
+      }
+      // Cross-encoder. A passage it moves up flashes as the scan passes it.
+      if (sort && reached > 0 && reached < 1 && Number.isFinite(m.was) && m.rank < m.was) {
+        ring(home(m), 5 + 6 * reached, m.lives ? m.colour : ink.faint, a * 0.8 * (1 - reached), 1.2);
       }
     }
     return;
   }
 
-  if (plate.shape === "sort" && !run) {
-    const [, rows] = plate.cells;
-    for (let r = 0; r < rows; r++) {
-      const A = cellAt(plate, r * (plate.cells[0] || 1));
-      const B = cellAt(plate, ((rows - 1 - r)) * (plate.cells[0] || 1));
-      const aPt = T(A.u, A.v, A.z + 0.4), bPt = T(B.u, B.v, B.z + 0.4);
-      const dx = bPt.x - aPt.x, dy = bPt.y - aPt.y;
-      const len = Math.hypot(dx, dy) || 1;
-      const bow = Math.min(18, len * 0.3);
-      const nx = -dy / len * bow, ny = dx / len * bow;
-      ctx.beginPath();
-      ctx.moveTo(aPt.x, aPt.y);
-      ctx.bezierCurveTo(aPt.x + dx / 3 + nx, aPt.y + dy / 3 + ny,
-                        aPt.x + dx * 2 / 3 + nx, aPt.y + dy * 2 / 3 + ny,
-                        bPt.x, bPt.y);
-      ctx.strokeStyle = ink.other; ctx.globalAlpha = a * 0.3; ctx.lineWidth = 1;
-      ctx.stroke(); ctx.globalAlpha = 1;
-    }
-    return;
-  }
-
-  if (plate.shape === "sort") {
-    // The reorder. Each surviving passage runs from the height fusion ranked
-    // it at to the height the cross-encoder moved it to, so a promotion is a
-    // line climbing across the others rather than a number in a caption.
-    const [, rows] = plate.cells;
-    for (const m of items) {
-      if (!m.lives) continue;
-      const total = Math.max(items.length, 1);
-      const row = r => Math.min(rows - 1, Math.max(0,
-        Math.floor(((r - 1) / total) * rows)));
-      const from = row(m.was ?? m.rank);
-      const to = row(m.rank);
-      if (from === to) continue;   // it did not move; there is no arc to draw
-      // Both ends stay on the plate. Offsetting the control points in world
-      // units threw the curve outside the stage it describes.
-      const A = cellAt(plate, from * (plate.cells[0] || 1));
-      const B = cellAt(plate, to * (plate.cells[0] || 1));
-      const aPt = T(A.u, A.v, A.z + 0.4);
-      const bPt = T(B.u, B.v, B.z + 0.4);
-      const dx = bPt.x - aPt.x, dy = bPt.y - aPt.y;
-      const len = Math.hypot(dx, dy) || 1;
-      const bow = Math.min(22, len * 0.34);
-      const nx = -dy / len * bow, ny = dx / len * bow;
-      ctx.beginPath();
-      ctx.moveTo(aPt.x, aPt.y);
-      ctx.bezierCurveTo(aPt.x + dx / 3 + nx, aPt.y + dy / 3 + ny,
-                        aPt.x + dx * 2 / 3 + nx, aPt.y + dy * 2 / 3 + ny,
-                        bPt.x, bPt.y);
-      ctx.strokeStyle = m.colour || ink.other;
-      ctx.globalAlpha = a * 0.9;
-      ctx.lineWidth = 1.8;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-  }
-
-  // Cells, for the stages that really are a rack of them.
+  // A stage without a treatment of its own keeps the plain rack.
   for (const m of items) {
-    const k = 1 - ((m.rank - 1) / Math.max(items.length, 1)) * 0.7;
-    drawCell(ctx, T, plate, m, shade(m), null, a * (m.lives ? k : k * 0.4));
+    const t = settle(m.frac);
+    if (t <= 0) continue;
+    drawCell(ctx, T, plate, m, shade(m), null, a * strength(m, m.frac) * t);
   }
+}
+
+/* The diversity cap, as a funnel.
+
+   It was an eight-row rack: five filled cells for the passages that got through
+   and three red outlines for the ones that did not, which is a list with rows
+   crossed out rather than a funnel, and the one stage whose job is visibly
+   different looked the same as the stages around it.
+
+   Everything here is placed in WORLD space, in the plane the flow runs through
+   and height (see `fz`). Two earlier versions drew the vessel in screen space
+   around the plate's centre. It looked right, but `inflight` draws the lines
+   into and out of this stage between world points, so passages travelled along
+   lines to one place and were drawn arriving in another, the same disagreement
+   between a line and the thing it delivers that the index had. With seats in
+   world space, a line into the funnel ends on a passage in it and a line out of
+   it leaves from one. */
+function capFunnel(ctx, T, plate, run, ink, a, ft, variant = "flat") {
+  const P = (f, z) => { const w = fz(plate, f, z); return T(w.u, w.v, w.z); };
+  const items = run?.placed.get("selected") || [];
+  const refused = run?.capRefused || [];
+  const local = clamp01((ft - 0.45) / 0.55);
+  const ease = t => 1 - Math.pow(1 - t, 3);
+
+  ctx.save();
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+  ctx.strokeStyle = ink.other;
+  ctx.globalAlpha = a * 0.85;
+  ctx.lineWidth = 1.3;
+  for (const side of [1, -1]) {
+    const m = P(FUN.mouthF, side * FUN.mouthZ);
+    const t = P(FUN.throatF, side * FUN.throatZ);
+    const s = P(FUN.spoutF, side * FUN.throatZ);
+    ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(t.x, t.y); ctx.lineTo(s.x, s.y); ctx.stroke();
+  }
+  ctx.restore();
+
+  // What got through, at the seats their lines end on.
+  items.forEach((m, i) => {
+    const t0 = items.length > 1 ? (i / (items.length - 1)) * 0.5 : 0;
+    const t = clamp01((local - t0) / 0.5);
+    if (t <= 0) return;
+    const p = T(m.u, m.v, m.z + 0.5);
+    ctx.save();
+    ctx.fillStyle = m.colour || ink.faint;
+    ctx.globalAlpha = a * 0.22 * t;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 6.2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = a * t;
+    ctx.beginPath(); ctx.arc(p.x, p.y, 3.1 * (0.5 + 0.5 * ease(t)), 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  });
+
+  /* A refused passage meets the lower wall where its line ends, slides off and
+     falls clear, and stays where it falls, dimmed, so the finished frame still
+     shows that more went in than came out. Each window closes by ft = 1, so a
+     reader with reduced motion sees every refusal already at rest. */
+  refused.forEach((m, j) => {
+    const k = refused.length > 1 ? j / (refused.length - 1) : 0;
+    const t = clamp01((local - (0.4 + 0.2 * k)) / 0.4);
+    if (t <= 0) return;
+    const hit = funnelWall(plate, j, refused.length);
+    const rest = fz(plate, hit.f + 0.9, hit.zRest);
+    const p0 = T(hit.u, hit.v, hit.z + 0.5);
+    const p1 = T(rest.u, rest.v, rest.z + 0.5);
+    const fall = ease(clamp01((t - 0.35) / 0.65));
+    ctx.save();
+    ctx.globalAlpha = a * 0.9 * Math.min(1, t * 2) * (1 - fall * 0.45);
+    ctx.strokeStyle = "#f0685f";
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(p0.x + (p1.x - p0.x) * fall, p0.y + (p1.y - p0.y) * fall, 3.0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+/* The answer, as a bowl the passages come to rest in.
+
+   Placed in world space for the same reason as the funnel: the lines from the
+   cap end on the seats `bowlSeat` gives the passages, so a passage is drawn
+   where its line delivers it. The seats sit below the flow line, so those lines
+   dip into the bowl. Rank 1, the passage the answer quotes, sits at the bottom
+   and is drawn largest, and the rest sit up the sides. */
+function answerBasin(ctx, T, plate, run, ink, a, ft) {
+  const items = run?.placed.get("answer") || [];
+  const local = clamp01((ft - 0.45) / 0.55);
+  const ease = t => 1 - Math.pow(1 - t, 3);
+
+  ctx.save();
+  ctx.strokeStyle = ink.other;
+  ctx.globalAlpha = a * 0.8;
+  ctx.lineWidth = 1.3;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  for (let i = 0; i <= 36; i++) {
+    const f = -BOWL.half + (2 * BOWL.half * i) / 36;
+    const w = fz(plate, f, bowlZ(f));
+    const p = T(w.u, w.v, w.z);
+    if (i) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  items.forEach((m, i) => {
+    const t0 = items.length > 1 ? (i / (items.length - 1)) * 0.5 : 0;
+    const t = clamp01((local - t0) / 0.5);
+    if (t <= 0) return;
+    const p = T(m.u, m.v, m.z + 0.5);
+    const bounce = t > 0.8 ? Math.sin(((t - 0.8) / 0.2) * Math.PI) * 2.5 : 0;
+    const cited = i === 0;
+    ctx.save();
+    ctx.fillStyle = m.colour || ink.faint;
+    ctx.globalAlpha = a * 0.22 * t;
+    ctx.beginPath(); ctx.arc(p.x, p.y - bounce, cited ? 11 : 8, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = a * t;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - bounce, (cited ? 5.6 : 3.8) * (0.5 + 0.5 * ease(t)), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
 }
 
 /* Lifted plates get a dotted drop line and a ghost of their own footprint on
@@ -629,7 +1081,10 @@ function inflight(ctx, T, link, ink, a, t) {
   // survive stops short: twenty of them arriving at one small plate hatch it
   // into a solid block, which is what BM25 kept rendering as. They still carry
   // the volume of the leg they are on, which is the reason they are drawn.
-  const wall = link.stopped ? 0.72 : link.lives ? 1 : 0.66;
+  // A refused passage travels all the way to the funnel's lower wall, which
+  // is what stops it, and capFunnel draws it sliding off and falling. A
+  // passage that simply did not survive still stops short of its stage.
+  const wall = link.stopped ? 1 : link.lives ? 1 : 0.66;
   const held = Math.min(e, wall);
   const bx = lerp(p1.x, p2.x, held), by = lerp(p1.y, p2.y, held);
 
@@ -697,7 +1152,16 @@ function annotate(ctx, T, plate, city, run, ink, a, dim, room, W) {
       fill: ink.other },
     { text: plate.label, font: "600 12px Inter, system-ui, sans-serif",
       fill: dim ? ink.faint : ink.ink },
-    { text: String(dim ? "not run" : (run ? runSub(plate.id, run) : plate.term(city))).toUpperCase(),
+    /* A demonstration run animates the mechanism and states no counts.
+       `run.demo` is set by the hero, whose passages are generic rather than the
+       result of a query. The motion is a drawing; a caption reading
+       "16 CANDIDATES" under it would be a measurement, and this project does
+       not print a number it did not measure. The demo therefore keeps the idle
+       terms -- EMBEDDING SIMILARITY, LEXICAL MATCH -- and the index keeps its
+       real 5,459 passages, which is a fact about the corpus and not about any
+       query. */
+    { text: String(dim ? "not run"
+                   : (run && !run.demo ? runSub(plate.id, run) : plate.term(city))).toUpperCase(),
       font: "500 9px 'DM Mono', ui-monospace, monospace", fill: ink.muted },
   ];
   // A label is text at a fixed pixel size on a drawing that scales, so below
@@ -900,6 +1364,21 @@ function boundsFor(variant, PL) {
       see(project(c.u, c.v, c.z));
     const t = leaderTip(p);
     see(project(t.u, t.v, t.z));
+    // The two vessels reach past their plates, the bowl past the answer's
+    // right edge in particular, and the fit has to leave room for them or
+    // the last stage is cut by the frame.
+    if (p.id === "answer") {
+      for (const f of [-BOWL.half, BOWL.half]) {
+        const w = fz(p, f, BOWL.rimZ); see(project(w.u, w.v, w.z));
+      }
+      const w = fz(p, 0, BOWL.bottomZ); see(project(w.u, w.v, w.z));
+    }
+    if (p.id === "selected") {
+      for (const z of [-FUN.mouthZ, FUN.mouthZ]) {
+        const w = fz(p, FUN.mouthF, z); see(project(w.u, w.v, w.z));
+      }
+      const w = fz(p, FUN.spoutF, 0); see(project(w.u, w.v, w.z));
+    }
   }
   return (BOUNDS[variant] = { minX, maxX, minY, maxY });
 }
@@ -967,12 +1446,29 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
     const dim = run?.skipped.has(plate.id);
     const ft = flight(plate.step);
 
+    /* Dense and BM25 share a step, so their legs left the index in the same
+       instant and forty lines fanning out at once read as one search with a
+       wide spray rather than two searches running side by side. BM25's wave
+       is held back by a tenth of the leg so the two arrive as two.
+
+       This is a drawing device, not a claim about timing: the two retrievers
+       run concurrently, and the stage labels and the two plate heights are
+       what say so. The lag is small enough to separate the waves and too
+       small to read as "BM25 runs after dense". */
+    const LAG = { sparse: 0.12 };
+    const lag = LAG[plate.id] || 0;
+    const ftl = lag ? clamp01((ft - lag) / (1 - lag)) : ft;
     for (const l of run?.byTarget.get(plate.id) || []) {
-      inflight(ctx, T, l, ink, 1, ft);
+      inflight(ctx, T, l, ink, 1, ftl);
     }
 
     dropline(ctx, T, plate, ink, 1, f);
-    plane(ctx, T, plate, ink, 1, dim, f);
+    // Two stages draw their own vessel instead of a rack. The answer is a
+    // basin and the cap is a funnel, and both read as neither when a square
+    // grid is drawn behind them.
+    if (plate.id !== "answer" && plate.id !== "selected") {
+      plane(ctx, T, plate, ink, 1, dim, f);
+    }
 
     // Marks settle after the plate has formed under them.
     const ma = clamp01((f - 0.6) / 0.4);
@@ -992,7 +1488,12 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
               const w = ptAt(plate, m.u, m.v, k);
               const p = T(w.u, w.v, w.z);
               const hit = i === 0 ? run?.lit.get(m.id) : null;
-              if (hit) mark(c, p, 2.2, hit.colour || ink.faint, null, alpha);
+              // Size carries how many candidates came from this region, now
+              // that they are no longer scattered apart to show it. One
+              // candidate is 2.2; it grows with the count and stops at 3.4,
+              // past which a mark starts reading as a plate of its own.
+              if (hit) mark(c, p, Math.min(3.4, 2.2 + (hit.n - 1) * 0.5),
+                            hit.colour || ink.faint, null, alpha);
               else mark(c, p, 1.1, null, ink.other, alpha * 0.62 * depth);
             }
           }
@@ -1006,20 +1507,12 @@ export function drawScene(ctx, city, run, ink, W, H, progress = 1, clock = null,
             sheetLayer(W, H, sheetDpr(ctx), key, (c) => paintSheets(c, 1)),
             0, 0, W, H);
         }
-      } else if (plate.id === "answer" && ft >= 0.995) {
-        for (const m of run?.placed.get("answer") || []) {
-          const p = T(m.u, m.v, m.z + 0.6);
-          ctx.save();
-          ctx.globalAlpha = ma * 0.20;
-          ctx.beginPath(); ctx.arc(p.x, p.y, 6.6, 0, Math.PI * 2);
-          ctx.fillStyle = m.colour || ink.faint; ctx.fill();
-          ctx.globalAlpha = ma;
-          ctx.beginPath(); ctx.arc(p.x, p.y, 3.2, 0, Math.PI * 2);
-          ctx.fillStyle = m.colour || ink.faint; ctx.fill();
-          ctx.restore();
-        }
-      } else if (ft >= 0.995) {
-        stageContents(ctx, T, plate, run, city, ink, ma, variant);
+      } else if (plate.id === "answer") {
+        answerBasin(ctx, T, plate, run, ink, ma, ft);
+      } else if (plate.id === "selected") {
+        capFunnel(ctx, T, plate, run, ink, ma, ft, variant);
+      } else {
+        stageContents(ctx, T, plate, run, city, ink, ma, variant, ft);
       }
     }
 
