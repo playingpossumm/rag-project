@@ -164,11 +164,19 @@ def write_site(out: Path, manifest: dict) -> None:
     # page call /api/ too, and injecting into index.html alone left them making
     # real requests to a server that is not there -- which showed up as a 404
     # in the console of two of the three pages and nowhere else.
+    tag = '<script src="offline.js"></script>'
     for page in sorted(site.glob("*.html")):
         html = page.read_text(encoding="utf-8")
-        if "offline.js" in html:
+        # The tag, not the filename. This read `if "offline.js" in html` until
+        # 2026-09-14, which meant any page that so much as NAMED the file --
+        # in a comment explaining why it checks window.RECORDED_BUILD, say --
+        # was treated as already injected and shipped without the shim. The
+        # page then made a real request to /api/analytics, got a 404 from a
+        # server that is not there, and fell into its own "not measured yet"
+        # branch. Nothing failed loudly; the page just quietly stopped
+        # reporting numbers it had.
+        if tag in html:
             continue
-        tag = '<script src="offline.js"></script>'
         if "<head>" in html:
             html = html.replace("<head>", "<head>\n" + tag, 1)
         else:
@@ -324,9 +332,13 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
   const strip = document.createElement("div");
   strip.id = "recorded-strip";
   strip.innerHTML =
-    '<b>Recorded demo.</b> The pipeline answered these questions in advance ' +
-    'and wrote each answer to a file. No model runs behind this page, so it ' +
-    'answers the questions it was given and no others. ' +
+    // Shorter than it was. The fact has to stay -- no model runs here, and a
+    // visitor who types their own question deserves to know why it is
+    // refused -- but three sentences opening on what the page CANNOT do set
+    // the wrong frame for a tool whose point is showing how retrieval works.
+    // One sentence states it and moves on.
+    '<b>Recorded demo.</b> Answers come from a saved run, so this page ' +
+    'answers the questions it was given. ' +
     '<a href="https://github.com/playingpossumm/rag-project">Run it locally</a>' +
     ' to search your own documents.';
   const stripStyle = document.createElement("style");
@@ -498,6 +510,72 @@ def main() -> int:
         # against whatever measurements the last full recording happened to
         # carry.
         copy_measurements(args.out)
+        # Labels come from corpora.json, not from the recording. They are the
+        # name a reader sees, not a measurement, and freezing them meant the
+        # demo went on calling a set "ML & NLP papers" after corpora.json had
+        # renamed it, with no way to correct it short of re-recording 157
+        # questions through both models. Counts, thresholds and digests are
+        # left exactly as recorded, because those ARE measurements.
+        reg = corpora.registry()
+        by_label = {c["label"]: c for c in reg.values()}
+
+        def relabel(node):
+            """Rewrite every 'label' that names a corpus, in place.
+
+            The recorded payloads are nested differently in each file --
+            corpora.json keys by name, corpus.json states one active set,
+            analytics.json holds a list -- so this walks rather than reaching
+            for a path. A label is rewritten only when the node beside it
+            names a corpus the registry knows, so a document title that
+            happens to be called 'label' is left alone.
+            """
+            changed = 0
+            if isinstance(node, dict):
+                name = node.get("name") or node.get("corpus") or node.get("active")
+                cfg = reg.get(name) if isinstance(name, str) else None
+                if cfg is None and isinstance(node.get("label"), str):
+                    # No name beside it; fall back to matching the stale label
+                    # itself, which is how the per-corpus corpus.json records
+                    # the set it was taken from.
+                    cfg = by_label.get(node["label"])
+                if cfg and node.get("label") not in (None, cfg["label"]):
+                    node["label"] = cfg["label"]
+                    changed += 1
+                for v in node.values():
+                    changed += relabel(v)
+            elif isinstance(node, list):
+                for v in node:
+                    changed += relabel(v)
+            return changed
+
+        renamed = []
+        for name, entry in manifest["corpora"].items():
+            cfg = reg.get(name)
+            if cfg and cfg["label"] != entry.get("label"):
+                renamed.append(f"{entry.get('label')} -> {cfg['label']}")
+                entry["label"] = cfg["label"]
+        if renamed:
+            manifest_path.write_text(
+                json.dumps(manifest, indent=1) + "\n", encoding="utf-8")
+            for line in renamed:
+                print(f"  relabelled: {line}")
+
+        # The same names are recorded again inside each corpus's own payloads,
+        # which is what the picker and the analytics page actually read.
+        touched = 0
+        for path in sorted(args.out.rglob("*.json")):
+            if path.name == "manifest.json" or "site" in path.parts:
+                continue
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                continue
+            if relabel(data):
+                path.write_text(json.dumps(data, indent=1) + "\n",
+                                encoding="utf-8")
+                touched += 1
+        if touched:
+            print(f"  relabelled inside {touched} recorded payload(s)")
         write_site(args.out, manifest)
         total = sum(c["questions"] for c in manifest["corpora"].values())
         print(f"  page rebuilt from ui/ around {total} recorded question(s), "
