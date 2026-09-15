@@ -39,7 +39,7 @@ The system ships with three sets of documents, chosen to be unlike each other.
 
 | set | documents | passages | formats | refuses below |
 |---|---|---|---|---|
-| ML & NLP papers | 36 | 5,459 | PDF | 0.0 |
+| Machine learning | 36 | 5,459 | PDF | 0.0 |
 | Ornithology | 45 | 864 | DOCX, PPTX, XLSX, PDF | −5.5 |
 | Quantitative finance | 35 | 6,184 | PDF | −4.0 |
 
@@ -56,7 +56,7 @@ is what matters.
 
 ```
                         wrongly refused at 0.0
-  ML & NLP papers        1 of 67    ( 1.5%)
+  machine learning       1 of 67    ( 1.5%)
   ornithology            9 of 25    (36.0%)
   quantitative finance   9 of 33    (27.3%)
 ```

@@ -1,6 +1,6 @@
 {
   "llm": {
-    "label": "ML & NLP papers",
+    "label": "Machine learning",
     "data": "data",
     "store": "vector_store",
     "golden": "eval/golden_set.json",
