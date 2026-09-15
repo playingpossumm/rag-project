@@ -140,7 +140,15 @@ summary:hover{color:var(--dim)}
 summary::before{content:"+ ";}
 details[open] summary::before{content:"- ";}
 .err{color:var(--warn);font-size:13px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* Scoped, the way index.html does it, rather than a blanket `*` reset.
+   This page animates three things and all three are colour or opacity on a
+   hover or a filter change -- none of them travel, and none is the kind of
+   motion the preference exists to suppress. Killing every transition on the
+   page also killed the feedback that says a filter was applied, which leaves
+   a reader who asked for less motion with less information instead. */
+@media (prefers-reduced-motion:reduce){
+  .pill,.tile,svg .bar{transition-duration:1ms}
+}
 </style>
 </head>
 <body>
@@ -185,29 +193,29 @@ details[open] summary::before{content:"- ";}
       <span class="right lab">shipped configuration</span></div>
     <div class="pbody">
       <p class="note">The pipeline was tuned on the ML papers. Two further corpora
-      were built to find out how much of it is a property of the system and how
-      much of the documents it was tuned on.</p>
+      were built to find out how much of the result is a property of the system
+      and how much of the documents it was tuned on.</p>
       <div class="grid2" id="cross"></div>
       <p class="note" style="margin-top:20px"><b>Do not compare source recall
-      across these three corpora.</b> Questions on the finance set are answered
-      by more documents than questions on the ML set, so the finance corpus has
-      to return more documents in the same five slots to earn the same score.
-      Its divisor is <span id="div-gap" class="num"></span> larger. The scores
-      are honest within a corpus and misleading between them.</p>
+      across these three corpora.</b> Questions on the ornithology set are
+      answered by more documents than questions on the ML set, so the ornithology
+      corpus has to return more documents in the same five slots to earn the same
+      score, and its divisor is <span id="div-gap" class="num"></span> larger.
+      The scores are honest within a corpus and misleading between them.</p>
       <div id="divisor" style="max-width:520px"></div>
       <p class="note" style="margin-top:20px"><b>Every other figure on this page
       counts a question answered when the answer is anywhere in the five
       returned.</b> "Answer first" counts it only when the passage shown first is
       one that answers, which is what a reader meets before scrolling. The gap
-      between the two is the ordering cost, and it is large: across the three
-      sets 83 of 125 questions open with a passage that answers and 114 of 125
-      hold one somewhere. Asked "which passage ranking dataset is used for
-      evaluation", the system returns the ColBERT passage naming MS MARCO
-      second and an appendix about a reading-comprehension set first. The hit
-      rate calls that a hit and the reader has to read past a wrong answer to
-      reach the right one.</p>
+      between the two is the ordering cost. Across the three sets 83 of 125
+      questions open with a passage that answers and 114 of 125 hold one
+      somewhere. Asked "which passage ranking dataset is used for
+      evaluation", the system puts an appendix about a reading-comprehension
+      set first and the ColBERT passage naming MS MARCO second. The hit rate
+      counts that as a hit, although the reader has to read past a wrong answer
+      to reach the right one.</p>
       <p class="note" style="margin-top:20px"><b>What the scoring could get
-      wrong here, and what it does.</b> A question counts as answered when a
+      that answers nothing.</b> A question counts as answered when a
       passage comes back from a page the labels mark correct. A paper's title
       page is page one, and a paper is usually titled after the thing it is
       about, so page one is a marked page for 43 of the 100 questions asked of
@@ -216,7 +224,7 @@ details[open] summary::before{content:"- ";}
       page, and <b>both of those passages contain the answer</b>, because what
       follows a title page is the abstract. The number of hits credited to a
       page that answers nothing is <b>zero</b>. The reach is real and the cost
-      today is nothing, and only counting the cases tells you which.</p>
+      cost today is nothing, and only counting the cases shows that.</p>
     </div>
   </section>
 
@@ -225,7 +233,7 @@ details[open] summary::before{content:"- ";}
     <div class="phead"><h2 class="lab">Abstention</h2>
       <span class="right lab">one threshold per corpus</span></div>
     <div class="pbody">
-      <p class="note">Every question scored by the cross-encoder, plotted on one
+      <p class="note">Every question the cross-encoder scored appears on one
       axis. <b>Filled marks are questions the corpus can answer; hollow rings are
       adversarial questions whose answer is deliberately absent.</b> The gate
       refuses everything left of its cut point, so the best threshold sits in
@@ -238,8 +246,8 @@ details[open] summary::before{content:"- ";}
       </div>
       <p class="note" style="margin-top:22px">Moving each corpus to its own cut
       point recovers answers at <b>no adversarial cost</b>: the same number of
-      planted questions is still caught in every case. It is a strictly dominant
-      change, and it is visible only because the corpora were measured
+      finance set catches fewer planted questions than it did before. Both the
+      recovery and the cost are visible only because the corpora were measured
       separately.</p>
       <div class="grid2" id="cost"></div>
     </div>
@@ -250,9 +258,9 @@ details[open] summary::before{content:"- ";}
     <div class="phead"><h2 class="lab">The cost of each cut point</h2>
       <span class="right lab" id="sweep-n"></span></div>
     <div class="pbody">
-      <p class="note">Counted in cases, not rates. <b>Rates are the wrong unit
-      here</b>: the two populations are different sizes, so subtracting one rate
-      from the other quietly values a single adversarial catch at several
+      <p class="note"><b>Rates are the wrong unit here</b>: the two
+      populations are different sizes, so subtracting one rate from the
+      other quietly values a single adversarial catch at several
       answerable questions thrown away.</p>
       <div id="sweep"></div>
       <div class="legend">
@@ -269,10 +277,10 @@ details[open] summary::before{content:"- ";}
     <div class="pbody">
       <p class="note">Every other number on this page measures retrieval: which
       passages came back, and in what order. These measure the prose written
-      from them. <b>There is no model judging these answers.</b> A judge model
-      is a second system whose own failures are invisible, and it would make
-      the claim that every number here is reproducible from the repository
-      false. Citations and refusals are checked mechanically instead.</p>
+      from them. <b>No model judges these answers.</b> A judge model is a
+      second system whose own failures are invisible, and it would make the
+      claim that every number here is reproducible from the repository false.
+      Citations and refusals are checked mechanically instead.</p>
       <div class="tiles" id="answer-tiles"></div>
       <p class="note" id="answers-foot"></p>
     </div>
@@ -513,6 +521,22 @@ if (!A || !A.corpora?.length) {
     `<p class="err">eval/analytics.json is missing. Run
      <span class="num">python src/build_analytics.py</span>.</p>`);
 } else {
+  /* A partial analytics.json used to fail somewhere downstream, as a blank
+     panel or a thrown TypeError in the console, and the page said only
+     "loading" forever. The fields every chart on this page reads are checked
+     once, here, and a missing one is named rather than left to be inferred
+     from which chart is absent. */
+  const NEEDS = ["label", "documents", "n_answerable", "n_adversarial", "ladder"];
+  const short = A.corpora.flatMap((c, i) =>
+    NEEDS.filter(k => c[k] === undefined)
+         .map(k => `${c.label || `corpus ${i}`}.${k}`));
+  if (short.length) {
+    $("#readout").textContent = `incomplete: ${short.join(", ")}`;
+    document.querySelector("main").insertAdjacentHTML("afterbegin",
+      `<p class="err">eval/analytics.json is missing
+       ${esc(short.join(", "))}. Regenerate it with
+       <span class="num">python src/build_analytics.py</span>.</p>`);
+  }
   A.corpora.forEach((c, i) => { c.i = i; });
   let active = A.corpora[0];
 
@@ -732,7 +756,7 @@ if (!A || !A.corpora?.length) {
         c: HUE[c.i], on: true,
         note: `${(c.at_calibrated.refused / c.n_answerable * 100).toFixed(1)}% of ${c.n_answerable}` },
     ]), { fmt: v => String(v), padLeft: 148 });
-  hbars(cost, "Adversarial questions still caught", "unchanged by the move, which is what makes it a free change",
+  hbars(cost, "Adversarial questions still caught", "at the old global 0.0, then at each corpus's own cut point",
     A.corpora.flatMap(c => [
       { k: c.label + " @ 0.0", v: c.at_zero.caught, c: HUE[c.i], on: false,
         note: `of ${c.n_adversarial} planted` },

@@ -39,7 +39,25 @@ h2.lab{margin:0;font-size:10px}
   letter-spacing:.14em;text-transform:uppercase;padding:2px 6px;border-radius:3px;
   border:1px solid var(--edge);color:var(--mute);flex:none}
 .tl li.kept .verdict{color:var(--s1);border-color:var(--s1)}
-.tl p{margin:0;font-size:13px;line-height:1.62;color:var(--mute);max-width:74ch}
+/* Prose on a measure, figures in a rail beside it.
+   The panel runs the full width of the page while the prose wrapped at 74ch, so a
+   third of every entry was empty and the scores sat inside the sentences,
+   three of them at three different distances from the left, with no column to
+   read down. The prose now stops at 60ch and each figure sits on the heading's
+   baseline at the right, which fills the space and makes the changes
+   comparable at a glance. */
+.tl li{display:grid;grid-template-columns:minmax(0,60ch) minmax(0,1fr);
+  column-gap:34px}
+.tl h4,.tl p{grid-column:1}
+.tl .num{grid-column:2;grid-row:1;justify-self:end;align-self:baseline;
+  white-space:nowrap}
+@media(max-width:860px){
+  /* Below this the rail has no room of its own and the figure would sit on
+     top of the heading, so it goes back under the prose it belongs to. */
+  .tl li{display:block}
+  .tl .num{display:block;margin-top:7px}
+}
+.tl p{margin:0;font-size:13px;line-height:1.62;color:var(--mute);max-width:none}
 /* One entry carries a second paragraph, where the first reading of a
    measurement is corrected by the second. Without this they run together. */
 .tl p + p{margin-top:9px}
@@ -57,11 +75,26 @@ h2.lab{margin:0;font-size:10px}
 
 .panel{border:1px solid var(--edge);background:var(--card);margin-top:26px;
   border-radius:12px;overflow:hidden}
-.phead{display:flex;align-items:baseline;gap:16px;padding:11px 18px;
+/* A panel holding nothing but prose stops where the prose stops.
+   The rest -- the comparison grid, the glossary, the stat row, the timeline
+   with its rail -- genuinely uses the full column and keeps it, so this is
+   scoped by what the panel contains rather than applied by hand and then
+   forgotten when a section changes shape. Left-aligned, not centred: the page
+   has one left edge and a centred panel would introduce a second. */
+.panel:has(> .pbody > .prose:only-child){max-width:calc(68ch + 60px)}
+/* One inset, used by the header and the body alike, and enough of it that the
+   panel reads as a container rather than as a border drawn round the text.
+   It was 18px horizontal against 22px vertical, which on a 1180px panel put
+   the prose 18px from an edge it stopped 490px short of on the other side. */
+.phead{display:flex;align-items:baseline;gap:16px;
+  padding:13px clamp(18px,2.4vw,30px);
   border-bottom:1px solid var(--hair);flex-wrap:wrap}
 .phead .right{margin-left:auto}
-.pbody{padding:22px 18px}
-.prose{max-width:74ch}
+.pbody{padding:26px clamp(18px,2.4vw,30px)}
+/* 68ch, and the panel no longer runs wider than the widest thing in it. The
+   dead right-hand third was the whole of this complaint: a card sized to the
+   page holding prose sized to itself, with nothing reconciling the two. */
+.prose{max-width:68ch}
 .prose p{color:var(--dim);margin:0 0 15px}
 .prose p:last-child{margin-bottom:0}
 .prose b,.prose strong{color:var(--ink);font-weight:600}
@@ -204,13 +237,17 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
     <a href="#reading">Reading a result</a>
     <a href="#pipeline">Pipeline</a>
     <a href="#development">Development</a>
+    <a href="#limits">Limitations</a>
     <a href="#glossary">Glossary</a>
   </nav>
 
   <!-- ------------------------------------------------------------ at a glance -->
   <section class="panel" id="glance">
     <div class="phead"><h2 class="lab">At a glance</h2>
-      <span class="lab right" id="asof">read live from the running system</span></div>
+      <!-- Replaced by the boot below once it knows which build this is. The
+           markup says neither, because the wrong one was showing until the
+           fetch resolved. -->
+      <span class="lab right" id="asof">reading&hellip;</span></div>
     <div class="pbody">
       <div class="stats" id="stats">
         <div class="stat"><div class="v">&hellip;</div><div class="k">loading</div></div>
@@ -295,14 +332,15 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
            which is a page for a PDF, a slide for a deck and a sheet for a
            spreadsheet.</p>
         <p><b>The score</b> comes from the cross-encoder and runs roughly
-           &minus;11 to +11. It is neither a probability nor a percentage, and
-           it does not say whether the passage is right. It says how strongly
-           the model matched this passage to this question, which is a
-           different quantity. Across the three sets there are eleven questions
-           where retrieval returns nothing correct, and nine of them score
-           positive, the highest at +6.36. A strongly negative score does mean
-           the documents probably do not hold the answer. A high one does not
-           mean they do.</p>
+           &minus;11 to +11. It is the model's raw output for one question and
+           one passage, which nothing calibrates, so it is neither a probability
+           nor a percentage, and it does not say whether the passage is right.
+           It says how strongly the model matched this passage to this
+           question, which is a different quantity. Across the three sets there
+           are eleven questions where retrieval returns nothing correct, and
+           nine of them score positive, the highest at +6.36. A strongly
+           negative score does mean the documents probably do not hold the
+           answer, and a high one does not mean they do.</p>
         <p><b>&ldquo;Also found&rdquo;</b> lists the other passages that came
            back, one from each further document first and then the rest in the
            order they were ranked. The top passage is sometimes the wrong one,
@@ -311,9 +349,9 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
            than at the top. Asked for a bird's
            fused collarbone, the cross-encoder ranks the pygostyle passage first
            and the furcula second.</p>
-        <p><b>&ldquo;The corpus does not contain this&rdquo;</b> means the gate
-           declined, which is the system working. Some of the example questions
-           on the front page are chosen to trigger it.</p>
+        <p><b>&ldquo;Not in these documents&rdquo;</b> means the gate declined,
+           which is the system working. Some of the example questions on the
+           front page are chosen to trigger it.</p>
         <p><b>A passage rather than a written answer.</b> Everything above is
            text taken from a document. Composing an answer is the step where a
            system can state something no document said, so although this one
@@ -338,8 +376,9 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
         <li>
           <h3>Chunking</h3>
           <p>Each document is cut into overlapping windows of about 210 tokens.
-            <span class="why">A whole document is too large to compare against
-            a single question, and the windows overlap so that an answer sitting
+            <span class="why">The encoder reads a bounded amount of text at
+            once, which is a property of the model rather than a preference, and
+            consecutive windows overlap by 40 tokens so that an answer sitting
             across a cut still appears whole in one of them.</span></p>
         </li>
         <li>
@@ -349,9 +388,11 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
             weights rare ones heavily. They run at the same moment.
             <span class="why">Each fails where the other works. Dense retrieval
             handles a question worded differently from its answer and misses an
-            exact token such as a model number, and BM25 finds that token at
-            once and returns nothing when the question and the answer share no
-            words. Running both covers each gap.</span></p>
+            exact token such as a model number, because that token is averaged
+            into the same vector as everything else in the passage and largely
+            washes out. BM25 finds that token at once and returns nothing when
+            the question and the answer share no words, so running both covers
+            each gap.</span></p>
         </li>
         <li>
           <h3>Fusion</h3>
@@ -368,17 +409,24 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
             and the passage <em>together</em> and asking whether one answers the
             other.
             <span class="why">The earlier stages turned the question and the
-            passage into numbers separately and compared the numbers. Reading
-            the pair is more accurate and much slower, which is why it only
-            sees a shortlist.</span></p>
+            passage into numbers separately, so the two never met and the
+            comparison could only score what a passage is about rather than
+            whether it answers. Reading the pair is far more accurate and far
+            slower, and it takes over 90% of the time a query spends, which is
+            why it sees a shortlist rather than the corpus.</span></p>
         </li>
         <li>
           <h3>Diversity cap</h3>
           <p>At most two passages from any one document survive.
-            <span class="why">This is a trade. It lowers the hit rate a little
-            and raises how many of the answering documents come back, because a
-            question answered by four papers should not return four passages
-            from one of them.</span></p>
+            <span class="why">The reranker scores each passage against the
+            question on its own, so one document that matches well can take
+            every slot. The cap walks the ranked list and skips a passage whose
+            document is already full, keeping the skipped ones in reserve so
+            five results still come back when few documents qualify. It is a
+            trade, because it lowers the hit rate a little and raises how many
+            of the answering documents come back, and a question answered by
+            four papers should not return four passages from one of
+            them.</span></p>
         </li>
         <li>
           <h3>The gate</h3>
@@ -400,15 +448,14 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   <!-- ------------------------------------------------------------ development -->
   <section class="panel" id="development">
     <div class="phead"><h2 class="lab">Development</h2>
-      <span class="lab right">any-hit@5, ML papers</span></div>
+      <span class="lab right">any-hit@5, machine learning</span></div>
     <div class="pbody">
       <div class="prose" style="margin-bottom:22px">
-        <p>Nothing here was designed in one pass. Each stage was added because
-           the one before it was measured and found wanting, and every change
-           below, kept or not, was written, run and scored before it was
-           judged. The figure beside a kept change is, unless the row labels
-           it otherwise, the share of questions where a correct passage came
-           back in the top five on the paper set.</p>
+        <p>Each stage was added because the one before it was measured and
+           found wanting. Every change below was written, run and scored
+           before it was judged. Figures are any-hit@5 on the 36-paper set,
+           the share of questions where a correct passage came back in the top
+           five, unless the row labels them otherwise.</p>
       </div>
 
       <h3 class="lab grp">Kept</h3>
@@ -417,32 +464,32 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
           <h4>Dense retrieval<span class="verdict">kept</span></h4>
           <p>Every passage becomes a vector and the question is compared
              against all of them. This is the whole of what most tutorials
-             build. <span class="num">any-hit <b>0.821</b></span></p>
+             build.</p>
+          <span class="num">any-hit <b>0.821</b></span>
         </li>
         <li class="kept">
           <h4>Cross-encoder reranking<span class="verdict">kept</span></h4>
           <p>A second, slower model re-reads the shortlist one pair at a time.
              Comparing two separately made vectors is cheap and blunt, and
              reading the pair is expensive and much better at telling a passage
-             that mentions the subject from one that answers the question.
-             <span class="num">0.821 &rarr; <b>0.836</b></span></p>
+             that mentions the subject from one that answers the question.</p>
+          <span class="num">0.821 &rarr; <b>0.836</b></span>
         </li>
         <li class="kept">
           <h4>BM25 beside dense retrieval<span class="verdict">kept</span></h4>
           <p>Meaning-matching misses a term that carries its meaning by being
              exact, such as a model number or a species name. A second retriever
              scores word overlap and the two rankings are merged, which was the
-             largest single gain in the project.
-             <span class="num">0.836 &rarr; <b>0.925</b></span></p>
+             largest single gain in the project.</p>
+          <span class="num">0.836 &rarr; <b>0.925</b></span>
         </li>
         <li class="kept">
           <h4>Diversity cap<span class="verdict">a trade</span></h4>
           <p>One thorough document could fill every slot and hide a second
              document that also answered. The cap costs hit rate and buys
              coverage, and it is the only change here that shipped while making
-             a headline number worse.
-             <span class="num">0.925 &rarr; <b>0.910</b>, documents found
-             0.745 &rarr; <b>0.785</b></span></p>
+             a headline number worse.</p>
+          <span class="num">0.925 &rarr; <b>0.910</b>, documents found 0.745 &rarr; <b>0.785</b></span>
         </li>
         <li class="kept">
           <h4>The excerpt window<span class="verdict">kept</span></h4>
@@ -452,12 +499,12 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              with its letterhead while the answering sentence sat just past the
              edge. It now opens at the sentence carrying most of the question's
              words and runs to 720 characters. What is found did not change,
-             and what is shown did.
-             <span class="num">answer on the page 0.656 &rarr; <b>0.808</b></span></p>
+             and what is shown did.</p>
+          <span class="num">answer on the page 0.656 &rarr; <b>0.808</b></span>
         </li>
       </ol>
 
-      <details class="grp"><summary><span class="lab">Rejected, ranking</span><span class="n">4 changes</span></summary>
+      <details class="grp"><summary><span class="lab">Not kept, ranking</span><span class="n">4 changes</span></summary>
       <ol class="tl">
         <li class="gone">
           <h4>A larger reranker<span class="verdict">rejected</span></h4>
@@ -498,7 +545,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
         </li>
       </ol></details>
 
-      <details class="grp"><summary><span class="lab">Rejected, the question</span><span class="n">4 changes</span></summary>
+      <details class="grp"><summary><span class="lab">Not kept, the question</span><span class="n">4 changes</span></summary>
       <ol class="tl">
         <li class="gone">
           <h4>Query rewriting<span class="verdict">rejected</span></h4>
@@ -507,9 +554,8 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              restate each one more clearly first. It reached one of the seven
              and broke five that had been working, because a rewrite is a
              paraphrase and paraphrasing a question that already works moves it
-             off the wording that was working.
-             <span class="num">net <b>three questions worse</b>, and six times
-             slower</span></p>
+             off the wording that was working.</p>
+          <span class="num">net <b>three questions worse</b>, and six times slower</span>
         </li>
         <li class="gone">
           <h4>Query decomposition<span class="verdict">rejected</span></h4>
@@ -517,8 +563,8 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              parts, searched for each part and combined the results. It reached
              none of them, cost the same three questions, and took 21 times as
              long per search. It had been the project's named answer for those seven
-             for months, on an argument rather than a measurement.
-             <span class="num"><b>0 of 7</b>, at 21&times; the time</span></p>
+             for months, on an argument rather than a measurement.</p>
+          <span class="num"><b>0 of 7</b>, at 21&times; the time</span>
         </li>
         <li class="gone">
           <h4>An invented answer<span class="verdict">rejected</span></h4>
@@ -528,8 +574,8 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              on its invented passage, which supplies the vocabulary while the
              documents still supply the citation. Run on every question it is
              worse. On the paper set it recovers three and breaks seven, and on
-             the finance set it recovers none and breaks four.
-             <span class="num">paper set <b>+3 / &minus;7</b></span></p>
+             the finance set it recovers none and breaks four.</p>
+          <span class="num">paper set <b>+3 / &minus;7</b></span>
           <p>Running it only when the system was already about to decline, so
              it could not disturb a working question, was measured before it was
              built and never fires, because every one of the eleven questions
@@ -540,8 +586,8 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              far the top score leads the fifth, and how many of the top five
              both retrievers ranked, and on all three the failing questions sit
              inside the range of the working ones, so catching all eleven means
-             firing on at least 90% of every question.
-             <span class="num">reaches <b>0 of 11</b></span></p>
+             firing on at least 90% of every question.</p>
+          <span class="num">reaches <b>0 of 11</b></span>
         </li>
         <li class="gone">
           <h4>Pseudo-relevance feedback<span class="verdict">rejected</span></h4>
@@ -550,12 +596,12 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              recovered none of the twelve questions it was aimed at, for a
              reason written down before the run, which is that the extra words
              come from the passages the first search returned and the missing
-             word is not in those either.
-             <span class="num"><b>0 of 12</b> recovered</span></p>
+             word is not in those either.</p>
+          <span class="num"><b>0 of 12</b> recovered</span>
         </li>
       </ol></details>
 
-      <details class="grp"><summary><span class="lab">Rejected, the neighbouring passage</span><span class="n">4 changes</span></summary>
+      <details class="grp"><summary><span class="lab">Not kept, the neighbouring passage</span><span class="n">4 changes</span></summary>
       <ol class="tl">
         <li class="gone">
           <h4>Neighbours on the page<span class="verdict">rejected</span></h4>
@@ -567,9 +613,8 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              excerpt from the enlarged passage instead scored worse than doing
              nothing, 0.792 against 0.808, because the choice follows the
              question's words and moves further from the answer when given more
-             room.
-             <span class="num">0.808 &rarr; <b>0.840</b>, at 591 &rarr; 1,073
-             characters a passage</span></p>
+             room.</p>
+          <span class="num">0.808 &rarr; <b>0.840</b>, at 591 &rarr; 1,073 characters a passage</span>
         </li>
         <li class="gone">
           <h4>Neighbours in the shortlist<span class="verdict">rejected</span></h4>
@@ -578,9 +623,8 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              beside the piece that was found. It gains one question on one set
              of documents, costs ranking quality on the other two, lets one more
              unanswerable question through the gate, and takes two and a half
-             times as long.
-             <span class="num">one question gained, <b>MRR &minus;0.012 and
-             &minus;0.015</b></span></p>
+             times as long.</p>
+          <span class="num">one question gained, <b>MRR &minus;0.012 and &minus;0.015</b></span>
         </li>
         <li class="gone">
           <h4>Window scoring<span class="verdict">rejected</span></h4>
@@ -590,9 +634,8 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              does let fewer unanswerable questions through, and that is not an
              improvement, because scoring against more text lowers every score
              at once and moves the refusal line rather than the ranking, at a
-             cost of 7 answerable questions on the papers.
-             <span class="num">0.910 &rarr; <b>0.881</b> on the papers,
-             0.939 &rarr; <b>0.818</b> on finance</span></p>
+             cost of 7 answerable questions on the papers.</p>
+          <span class="num">0.910 &rarr; <b>0.881</b> on the papers, 0.939 &rarr; <b>0.818</b> on finance</span>
         </li>
         <li class="gone">
           <h4>A finer stride<span class="verdict">rejected</span></h4>
@@ -602,21 +645,20 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              of them to search. Measured on the ornithology set with the
              shortlist widened to match, it is worse at finding the answer and
              worse at showing it, and it recovers exactly the one question the
-             shortlist experiment above recovers.
-             <span class="num">0.880 &rarr; <b>0.840</b> found,
-             0.760 &rarr; <b>0.720</b> shown</span></p>
+             shortlist experiment above recovers.</p>
+          <span class="num">0.880 &rarr; <b>0.840</b> found, 0.760 &rarr; <b>0.720</b> shown</span>
         </li>
       </ol></details>
 
-      <details class="grp"><summary><span class="lab">Rejected, what is shown</span><span class="n">2 changes</span></summary>
+      <details class="grp"><summary><span class="lab">Not kept, what is shown</span><span class="n">2 changes</span></summary>
       <ol class="tl">
         <li class="gone">
           <h4>Title prefixes<span class="verdict">reverted</span></h4>
           <p>Putting each document's title on every passage should have helped a
              passage say what it belongs to. It bought no ranking gain and lost
              coverage, and an earlier version had looked like a win because two
-             things were changed at once.
-             <span class="num">documents found <b>&minus;0.051</b></span></p>
+             things were changed at once.</p>
+          <span class="num">documents found <b>&minus;0.051</b></span>
         </li>
         <li class="gone">
           <h4>A front-matter filter<span class="verdict">left off</span></h4>
@@ -630,12 +672,12 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
              in two or three sentences. The filter loses two real answers by
              dropping the abstract with the title, and judging a passage by how
              it opens is the error that put a title page on screen in the first
-             place.
-             <span class="num">0.851 &rarr; <b>0.836</b></span></p>
+             place.</p>
+          <span class="num">0.851 &rarr; <b>0.836</b></span>
         </li>
       </ol></details>
 
-      <details class="grp"><summary><span class="lab">Generation</span><span class="n">1 change</span></summary>
+      <details class="grp"><summary><span class="lab">Not kept, generation</span><span class="n">1 change</span></summary>
       <ol class="tl">
         <li class="gone">
           <h4>A larger generator<span class="verdict">no change</span></h4>
@@ -673,6 +715,102 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
            shortlist on the paper set is <em>identical</em> to the shipped one
            with only the order changed, and the reranker does worse with that
            order.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------------ limitations -->
+  <!-- Each paragraph names its source in the comment above it, so the next
+       change to the pipeline can be checked against what this section says. -->
+  <section class="panel" id="limits">
+    <div class="phead"><h2 class="lab">Limitations</h2>
+      <span class="lab right">Known weaknesses</span></div>
+    <div class="pbody">
+      <div class="prose">
+        <!-- ui/about.html #compared -->
+        <p>This is a simplified retrieval system, and the products compared
+           above answer better than it does.</p>
+
+        <!-- ui/about.html #glance; README.md, the recorded demo -->
+        <h3>Prepared documents</h3>
+        <p>It searches three fixed sets of documents, each indexed, given
+           labelled questions and calibrated before anything on this site was
+           measured. The copy published online is a recording of those runs, so
+           it answers only the questions it was given, and searching other
+           documents means running the project from <a
+           href="https://github.com/playingpossumm/rag-project">its
+           repository</a>.</p>
+
+        <!-- ui/about.html #development, "Not kept, the question" -->
+        <h3>The question as typed</h3>
+        <p>The question reaches the search in the words it was typed in. The
+           project built and measured four ways of interpreting it first, which
+           rewrote it with a language model, split it into parts, searched on an
+           answer a model invented, and added words taken from the first
+           results. Each left the system worse or no better, so none of them
+           ships.</p>
+
+        <!-- ui/about.html #development, "The shared cause" -->
+        <h3>Missing vocabulary</h3>
+        <p>When the passage that answers does not contain the words of the
+           question, the search misses it, and putting that passage in front of
+           the reranker does not help, because the reranker reads the same
+           question and reaches the same conclusion. A question that asks what
+           something is called withholds the one word that would find its
+           answer. This is the shared cause described under Development.</p>
+
+        <!-- ui/about.html #reading, the fused collarbone; ui/index.html, the
+             retrieval result reading; ui/about.html #development, "An invented
+             answer"; docs/polish-backlog.md item 18 -->
+        <h3>Confident mistakes</h3>
+        <p>The decision to answer or decline reads the cross-encoder's score,
+           which compares the question with the passage and does not check that
+           the passage is right. When the cross-encoder prefers the wrong
+           passage, the system answers with confidence. Asked for a bird's fused
+           collarbone, it ranks a passage about the pygostyle first and the
+           passage naming the furcula second, and every question these sets get
+           wrong scores above its own set's refusal line, so the system is no
+           less certain when it is wrong.</p>
+
+        <!-- README.md, per-corpus thresholds; src/abstain.py; src/corpora.py,
+             an uncalibrated corpus; src/build_golden_set.py, load_cases -->
+        <h3>Calibration per set</h3>
+        <p>The score below which the system declines is measured separately for
+           each set of documents against labelled questions, because a value
+           that suits one set refuses answerable questions on another. A new set
+           needs its own labelled questions before it can have a threshold,
+           since a question is only useful if its answer is in the documents.
+           Until then the system uses 0.0 and marks that value as a guess. <a
+           href="/quality">The analytics page</a> plots where each set's
+           threshold falls.</p>
+
+        <!-- ui/about.html #reading, "A passage rather than a written answer";
+             README.md, answer quality; ui/about.html #development, "A larger
+             generator" -->
+        <h3>Written answers</h3>
+        <p>This site shows the retrieved passage rather than a written answer.
+           The project can compose one with a small model on the serving
+           machine, and at that size the generator is brittle, so changing one
+           word of its prompt separates a correct answer from a citation with no
+           prose. A model of the same family about three times larger answered
+           no better on the questions both models ran.</p>
+
+        <!-- SECURITY.md -->
+        <h3>Exposure</h3>
+        <p>The server has no authentication, no users and no rate limit, and by
+           default it listens only on the machine it runs on. A deployment that
+           shows passages to strangers publishes those passages, so pointing it
+           at documents that are not yours to show is a decision to make before
+           running it anywhere public.</p>
+
+        <!-- README.md, "157 cases across three corpora is still small";
+             ui/about.html #development, "A larger generator" -->
+        <h3>Evaluation size</h3>
+        <p>The retrieval and answer figures on the analytics page are measured
+           over 157 labelled questions across the three sets. At that size a
+           difference of one or two questions is inside the noise, so a small
+           gain between two configurations is not evidence that one is
+           better.</p>
       </div>
     </div>
   </section>
@@ -867,9 +1005,15 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       cell(cases.toLocaleString(), "labelled questions") +
       cell(range("hit_rate"), "any-hit@5 across the sets", "rng") +
       cell(range("answer_visible"), "answer shown across the sets", "rng") +
-      cell(`${kept} / ${gone}`, "changes kept / not kept (one ships on a single set)");
-    document.getElementById("asof").textContent =
-      "read live from /api/analytics";
+      cell(`${kept} / ${gone}`, "kept / not kept");
+    // The recorded build serves a file that was written on the day it was
+    // recorded; nothing is live behind it. Saying "read live from
+    // /api/analytics" there was the one claim on this site that the site
+    // itself contradicted, on a page whose argument is that it never quotes a
+    // number it did not measure. offline.js sets the flag.
+    document.getElementById("asof").textContent = window.RECORDED_BUILD
+      ? "read from the recording, not live"
+      : "read live from /api/analytics";
   } catch (err) {
     // Saying nothing is better than saying a number nobody measured.
     box.innerHTML =
