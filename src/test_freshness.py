@@ -195,7 +195,7 @@ def scenario(gold=None, pc=None, res=None, an=None, thr=None, tp=None, st=None,
                                   "threshold": -3.0, "documents": 2, "chunks": 6,
                                   "inputs": stamps()}},
                 "default": "t",
-                "inputs": {"analytics": cf.stamp(cf.ANALYTICS)},
+                "inputs": {"analytics": cf.analytics_stamp(cf.ANALYTICS)},
             },
             "index": [{"key": f"k{i}", "question": c["question"], "id": c["id"],
                        "adversarial": bool(c.get("unanswerable")), "confident": True}
@@ -514,6 +514,30 @@ check("static / and the manifest's analytics digest is read, not only written",
           st=lambda d: d["manifest"]["inputs"].update(
               analytics={"path": "eval/analytics.json", "digest": "sha256:0"}))),
       True)
+
+
+# Those two and this one are the whole contract of that stamp: it reports an
+# analytics.json whose OFFERED QUESTIONS moved after the answers were
+# recorded, and says nothing about the name a reader sees a corpus by.
+# Renaming one corpus on 2026-09-17 moved 2 fields in analytics.json, its
+# label and the corpora.json digest beside it, and the byte digest then asked
+# for all 157 questions to be run through both models again to restore a name.
+# The check above still fails if an offered question moves, which is the case
+# the stamp was written for; this one fails if a rename is treated as one.
+def relabel_and_copy(tmp, cfg):
+    """A corpus renamed, analytics rebuilt, and the copy kept in step.
+
+    Which is what record_static.py does on every run, because it takes the
+    labels from corpora.json rather than from the recording.
+    """
+    d = json.loads(cf.ANALYTICS.read_text(encoding="utf-8"))
+    d["corpora"][0]["label"] = "A different name for the same documents"
+    write(cf.ANALYTICS, d)
+    shutil.copy2(cf.ANALYTICS, cf.STATIC / "analytics.json")
+
+
+check("static / a corpus renamed since the recording is not a problem",
+      problems(scenario(after=relabel_and_copy)), "")
 
 
 # Until 2026-09-07 this check removed the whole static-demo directory, which

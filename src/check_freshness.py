@@ -100,6 +100,57 @@ def stamp(path: Path, **extra) -> dict:
     return {"path": rel, "digest": digest(path), **extra}
 
 
+def content_digest(path: Path, ignore: tuple[str, ...] = ()) -> str:
+    """Like digest(), but blind to the named keys wherever they appear.
+
+    digest() hashes bytes on purpose, and for every other input that is right.
+    analytics.json is the exception, because it carries one field that is not
+    a measurement: the name a reader sees a corpus by. record_static.py takes
+    those names from corpora.json rather than from the recording, deliberately,
+    so that renaming a set does not mean re-recording it. Hashing the bytes
+    made the rename demand exactly that re-recording anyway, and on 2026-09-17
+    it did: renaming one corpus moved 2 fields in analytics.json, its label and
+    the corpora.json digest beside it, and cost a full pass of 157 questions
+    through both models to restore a stamp.
+
+    Re-serialising rather than hashing bytes means this value depends on the
+    settings below rather than on the file, which is why it is separate from
+    digest() and why both sides of the comparison call this same function.
+    """
+    if not path.exists():
+        return "missing"
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return digest(path)
+
+    def strip(node):
+        if isinstance(node, dict):
+            return {k: strip(v) for k, v in node.items() if k not in ignore}
+        if isinstance(node, list):
+            return [strip(v) for v in node]
+        return node
+
+    body = json.dumps(strip(doc), sort_keys=True, separators=(",", ":"))
+    h = hashlib.sha256(body.encode("utf-8")).hexdigest()
+    return f"sha256:{h[:DIGEST_CHARS]}"
+
+
+# The keys in analytics.json that name something rather than measure it.
+NOT_MEASURED = ("label",)
+
+
+def analytics_digest(path: Path) -> str:
+    """analytics.json's fingerprint, ignoring the names a reader sees."""
+    return content_digest(path, NOT_MEASURED)
+
+
+def analytics_stamp(path: Path) -> dict:
+    """The provenance record a recording keeps for analytics.json."""
+    rel = path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path)
+    return {"path": rel, "digest": analytics_digest(path)}
+
+
 def artefact_suffix(golden: Path) -> str:
     """`golden-birds.json` -> `-birds`, so per_case-birds.json is its output.
 
@@ -603,8 +654,11 @@ def check_static(rep: Report, reg: dict, golds: dict):
         rep.stale(scope, "site",
                   "site/recorded/ was built from an older manifest than the one "
                   "in static-demo/", site_fix)
+    # analytics_digest, not digest: a corpus renamed since the recording is
+    # not a reason to re-record it. See content_digest.
     recorded_from = ((man.get("inputs") or {}).get("analytics") or {}).get("digest")
-    if recorded_from and ANALYTICS.exists() and recorded_from != digest(ANALYTICS):
+    if (recorded_from and ANALYTICS.exists()
+            and recorded_from != analytics_digest(ANALYTICS)):
         rep.stale(scope, "manifest",
                   "the recording was taken from an older eval/analytics.json "
                   f"({recorded_from} -> {digest(ANALYTICS)}), so the questions "

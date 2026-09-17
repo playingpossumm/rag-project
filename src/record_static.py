@@ -38,7 +38,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import corpora  # noqa: E402
-from check_freshness import stamp  # noqa: E402
+from check_freshness import analytics_stamp, stamp  # noqa: E402
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -687,7 +687,11 @@ def main() -> int:
     manifest["default"] = next(iter(manifest["corpora"]), None)
     # The offered questions come from analytics.json, and the quality page
     # in the static build draws a copy of it, so it is an input too.
-    manifest["inputs"] = {"analytics": stamp(ROOT / "eval" / "analytics.json")}
+    # analytics_stamp rather than stamp: the fingerprint ignores the corpus
+    # names, which are read from corpora.json at build time and are not what
+    # this record is for.
+    manifest["inputs"] = {
+        "analytics": analytics_stamp(ROOT / "eval" / "analytics.json")}
     (args.out / "manifest.json").write_text(
         json.dumps(manifest, indent=1), encoding="utf-8")
 

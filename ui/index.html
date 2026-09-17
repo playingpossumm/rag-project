@@ -1284,7 +1284,7 @@ function alsoFound(sel, top, question, colour) {
     </div>`).join("")}</details>`;
 }
 
-/* A spreadsheet row, quoted like every other answer.
+/* A spreadsheet row, read back as the prose it was written from.
 
    The xlsx loader serialises cells as "Header: value", so a passage out of one
    reads "Length: 356 Topic: Song; Detail: Parrots are unusual among birds..."
@@ -1301,55 +1301,89 @@ function alsoFound(sel, top, question, colour) {
 
    Every other format keeps its structure in the citation line and its answer
    body as plain quoted text. A PDF does not draw its page furniture; it quotes
-   the paragraph and says "page 5". So this quotes the cell that carries the
-   row's prose and says sheet "Notes". The cells it leaves out are the row's
-   own label and two measurements of its text, and the Retrieval result line
-   already reports how much text an answer was drawn from.
+   the paragraph and says "page 5". So this drops the column names and the
+   cells that are nothing but a number, keeps every remaining value, and says
+   sheet "Notes".
 
-   The cell quoted is the longest one. Measured on 2026-09-14 over the 27
-   times a spreadsheet passage appears among the recorded set's selected
-   passages, 21 of them under an answer and 6 under a refusal, the longest
-   cell is the prose one in 27 of 27. The rule this replaces, the sentence
-   scorer applied to cells, agreed in 13 of the 27 and answered with a
-   label in 5, because
-   dividing by the square root of the length lets a 9-character cell outscore
-   300 characters of prose: it answered "Which corvid behaviour involves
-   shaping objects into implements?" with "Behaviour".
+   Quoting the single longest cell was tried first, on the measurement that it
+   is the prose one in 27 of 27 passages. That measurement could not see what
+   was wrong with it: the answer is sometimes the row's SHORT cell. Checked on
+   2026-09-17 against the golden answers, one cell carried 8 of the 10 that the
+   whole row held, losing "tool use" out of a Section cell and "mirror test"
+   out of a Topic cell, and "Tool use, memory, and complex rational thought" is
+   the name of the section that answers the corvid question. Keeping every
+   value carries 10 of 10, and every passage still comes out shorter than the
+   row-dump it replaced. The two dropped were both under Also found, which is
+   where 20 of the 22 sit, and checking only the 2 leads is what missed them.
 
    Returns null for anything that is not a spreadsheet row, which is most
-   passages. The locator decides that rather than the punctuation, so a
-   paragraph that happens to carry a colon cannot be taken for a row. */
-function sheetCell(item) {
+   passages, and for a row of fewer than two cells. The locator decides what is
+   a row rather than the punctuation, so a paragraph that happens to carry a
+   colon cannot be taken for one. */
+
+/* Where a cell ends and the next one's column name begins. */
+const SHEET_LABEL = /\b[A-Z][A-Za-z][A-Za-z ]{0,18}:\s/;
+
+/* The shortest a cut-off opening fragment can be and still be worth keeping.
+   Below this it is a word or two of a sentence the reader cannot reach, and it
+   reads as noise at the head of an answer. */
+const SHEET_MIN_HEAD = 20;
+
+function sheetProse(item) {
   const loc = item && item.loc;
   const kind = (loc && loc.kind)
     || String((item && item.locator) || "").split(" ")[0];
   if (kind !== "sheet") return null;
-  const parts = clean((item && item.text) || "")
-    .split(/(?=\b[A-Z][A-Za-z][A-Za-z ]{0,18}:\s)/)
-    .map(t => t.trim())
-    .filter(Boolean);
-  let best = null;
-  let n = 0;
-  for (const part of parts) {
-    const m = part.match(/^([A-Z][A-Za-z][A-Za-z ]{0,18}):\s*([\s\S]+?);?$/);
-    if (!m) continue;
-    n++;
-    const val = m[2].trim();
-    if (!best || val.length > best.text.length) {
-      best = { label: m[1].trim(), text: val };
-    }
+  const t = clean((item && item.text) || "");
+  const first = t.match(SHEET_LABEL);
+  if (!first) return null;
+
+  const vals = [];
+  let i = first.index;
+  while (i < t.length) {
+    const m = t.slice(i).match(SHEET_LABEL);
+    if (!m) break;
+    const after = i + m.index + m[0].length;
+    const next = t.slice(after).match(SHEET_LABEL);
+    const end = next ? after + next.index : t.length;
+    const val = t.slice(after, end).trim().replace(/;\s*$/, "").trim();
+    // A cell that is nothing but a number is bookkeeping. In these sheets that
+    // is Words and Length, and the Retrieval result line already reports how
+    // much text an answer was drawn from, in a form a reader asked for.
+    if (val && !/^[\d.,%]+$/.test(val)) vals.push(val);
+    i = end;
   }
-  // Two labelled cells at minimum, so a one-column sheet is left as the
-  // passage it already reads as.
-  return n >= 2 && best ? best : null;
+  if (vals.length < 2) return null;
+
+  // What sits before the first column name is the tail of the cell the chunk
+  // was cut through. It is real text, so it is kept, less the separator it was
+  // cut before.
+  let head = t.slice(0, first.index).trim()
+    .replace(/;\s*$/, "").replace(/^[^A-Za-z0-9"'(]+/, "").trim();
+  if (head.length < SHEET_MIN_HEAD) head = "";
+
+  /* A short cell with no sentence punctuation in it is the row's heading, and
+     joined with a full stop it becomes its own one-word sentence. The
+     highlighter scores sentences and divides by length, so " Behaviour." then
+     outscored the sentence that answered. A colon is not a boundary to
+     splitSentences, so the heading stays inside the sentence it heads. */
+  const heading = v => v.length < 60 && !/[.!?]/.test(v);
+  const parts = head ? [head, ...vals] : vals;
+  let out = "";
+  parts.forEach((v, n) => {
+    if (!out) { out = v; return; }
+    const joinable = heading(parts[n - 1]) && !/[.!?;:,]$/.test(parts[n - 1]);
+    if (!joinable && !/[.!?;:,]$/.test(out)) out += ".";
+    out += (joinable ? ": " : " ") + v;
+  });
+  return out;
 }
 
 /* The text of a passage as it should be quoted. A spreadsheet row contributes
    the cell carrying its prose; everything else contributes the passage,
    expanded to its context window where one was kept. */
 function quoted(item) {
-  const cell = sheetCell(item);
-  return cell ? cell.text : completed(item);
+  return sheetProse(item) || completed(item);
 }
 
 

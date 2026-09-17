@@ -2510,6 +2510,84 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-17 — The cell that reads best is not always the cell that answers
+
+Quoting one cell of a spreadsheet row, shipped on 2026-09-14, was checked on
+the 2 rows that lead an answer and not on the 20 that sit under **Also found**.
+That is where it was wrong.
+
+**The measurement that justified it could not see the fault.** The longest cell
+is the prose one in 27 of 27 passages, which is true and is why the rule was
+chosen. It says nothing about where the ANSWER is. Checked against the golden
+strings on 2026-09-17, the whole row-dump carries the answer in 10 of the
+spreadsheet passages a reader can reach and the single longest cell carries it
+in 8. The 2 it loses:
+
+| question | lost | out of |
+|---|---|---|
+| Which corvid behaviour involves shaping objects into implements? | "tool use" | a `Section` cell |
+| Which self-recognition experiment have magpies been shown to pass? | "mirror test" | a `Topic` cell |
+
+Both are the row's short cell, which the rule had treated as bookkeeping.
+"Tool use, memory, and complex rational thought" is the name of the section
+that answers the corvid question. It was discarded as a label.
+
+**What ships now keeps every value and drops only the column names and the
+cells that are nothing but a number.** Those are `Words` and `Length`, and the
+Retrieval result line already tells a reader how much text an answer was drawn
+from. 10 of 10 answers survive, and every passage still comes out shorter than
+the row-dump it replaced, so nothing was traded for the completeness.
+
+**One thing had to be got right for the highlighter's sake.** Joining a row's
+heading to its prose with a full stop makes the heading its own sentence, and
+the highlighter scores sentences and divides by length, so `" Behaviour."` won
+against the sentence that answered. A colon is not a boundary to
+`splitSentences`, so the heading is joined with one and stays inside the
+sentence it heads. The parrot answer keeps its mark on the syrinx sentence
+either way.
+
+**The corvid question is still answered wrongly, and this does not change
+that.** Its answering passage is ranked 2 by the cross-encoder, at -3.925
+against the wrong passage's -0.535, and is shown under Also found. What changed
+is that a reader who opens it now sees the words "Tool use" in it. Which
+passage comes first is retrieval's decision, it is the project's headline
+finding again, and it is not fixable in the renderer.
+
+---
+
+## 2026-09-17 — A name a reader sees is not a measurement
+
+Renaming the machine-learning corpus in `corpora.json` cost a full re-record of
+157 questions through both models. That is the whole finding.
+
+**The chain.** `record_static.py` takes corpus labels from `corpora.json`
+rather than from the recording, deliberately, so a rename does not need the
+answers taken again. That relabelling made the static copy of `analytics.json`
+differ from `eval/analytics.json`, which the freshness guard compares byte for
+byte, so the source had to be rebuilt too. Rebuilding it changed 2 fields, the
+label and the `corpora.json` digest beside it, and no measured figure. But the
+recording's manifest stamps which `analytics.json` the answers came from, also
+byte for byte, so the rebuild put the stamp behind and the guard asked for the
+157 questions again. They were re-recorded rather than worked around.
+
+**What the stamp is for.** A plain recording covers the questions
+`analytics.json` offers, so an `analytics.json` rebuilt since then may offer
+questions the recording does not hold. That is a real fault and the guard
+should keep catching it. A corpus label is not it.
+
+**So the stamp is now taken over the content with the display labels removed.**
+`content_digest()` in `check_freshness.py` re-serialises with the named keys
+dropped, `analytics_digest()` names `label` as the key that is not a
+measurement, and `record_static.py` writes the same fingerprint it will be
+compared against. Two checks in `test_freshness.py` hold the contract from both
+sides: an offered question that moves is still reported, and a corpus that is
+renamed is not. 69 of 69 freshness checks pass.
+
+**It cost one more re-record to adopt**, because the stamp already on disk was
+in the byte form. That is the last one a rename will ask for.
+
+---
+
 ## 2026-09-14 — The spreadsheet answer stops being a different kind of object
 
 **Why.** Reading back through the recorded answers, the spreadsheet one was
