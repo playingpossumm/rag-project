@@ -3,7 +3,7 @@
  "corpora": [
   {
    "name": "llm",
-   "label": "ML & NLP papers",
+   "label": "Machine learning",
    "documents": 36,
    "chunks": 5459,
    "formats": {
@@ -1132,7 +1132,7 @@
   }
  ],
  "inputs": {
-  "corpora_json": "sha256:fb48f51833042011",
+  "corpora_json": "sha256:e7eaaa2533ffe4d6",
   "answers": "sha256:292cd38177509237",
   "per_corpus": {
    "llm": {
