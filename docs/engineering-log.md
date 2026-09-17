@@ -2092,8 +2092,18 @@ correctness and the refusal comparison while sounding precise about each.
 
 ## 2026-09-01 — Four links to a repository that is not this one
 
+**The account name that was wrong here was removed from the repository on
+2026-09-17.** It carried a real surname, this project publishes under one name,
+and the repository has been public since 2026-09-07. It was quoted in this
+entry and in the docstrings of `src/check_links.py` and `src/test_links.py`,
+all three describing the fault rather than committing it. The fault is
+recorded without it: the links named an owner that is not the remote, which is
+the whole of what the guard checks. The history rewrite of 2026-09-07 replaced
+the Windows username and did not carry a rule for this handle, so it survived
+in 7 commits that are already public.
+
 Every Source link the interface serves named
-`github.com/a-different-owner/rag-project`. The remote is
+a `rag-project` under a different owner. The remote is
 `github.com/playingpossumm/rag-project`. The two are different repositories and
 the first does not exist, so all four links 404 for a visitor, and have since
 they were written.

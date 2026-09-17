@@ -12,7 +12,8 @@ Both defects reproduced here are real:
 - `/about` linked to `.../blob/main/docs/corpus-manifest.md` while this
   repository's only branch is `master`. That is `branch that does not exist`,
   and it is why the guard was written on 2026-08-30.
-- Every Source link named `a-different-owner/rag-project` while the remote is
+- Every Source link named a `rag-project` under a different owner, while
+  the remote is
   `playingpossumm/rag-project`. That is `owner that is not this repository`,
   found on 2026-09-01, and it is why the guard was extended.
 

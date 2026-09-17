@@ -3,7 +3,7 @@
 The fifth guard, and it exists because of a link that would have failed twice
 over. `/about` pointed at
 
-    https://github.com/a-different-owner/rag-project/blob/main/docs/corpus-manifest.md
+    https://github.com/<some-owner>/rag-project/blob/main/docs/corpus-manifest.md
 
 and this repository's only branch is `master`. The repository is also still
 private, so the link 404s today for a different reason, and making it public
@@ -28,7 +28,8 @@ from `git remote get-url origin`, so none of them needs the repository to be
 public or the network to be up.
 
 The repository half was added on 2026-09-01, after every Source link on the site
-was found to name `a-different-owner/rag-project` while the remote is
+was found to name a `rag-project` under a different owner, while the
+remote is
 `playingpossumm/rag-project`. The checker had matched the URL against a pattern
 named for this repository, taken the match as proof it was this repository, and
 then checked the branch and the file against the local working tree, which
