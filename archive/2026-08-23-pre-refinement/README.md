@@ -1,6 +1,6 @@
 # UI snapshot — 23 Aug 2026, before the interaction refinement
 
-Taken at commit `21b3c56`, the last state before the pass that renamed the site
+Taken at commit `053a7f7`, the last state before the pass that renamed the site
 to "retrieval visualized", stripped the header down to one link, moved the
 dataset choice into the hero, and put the example questions behind the input.
 
@@ -19,7 +19,7 @@ version is worth being able to look at rather than reconstruct from a diff.
 It is a snapshot, not a second app. To look at it:
 
     git stash                     # or commit whatever is in progress
-    git checkout 21b3c56 -- ui/
+    git checkout 053a7f7 -- ui/
     python src/serve.py
     # then: git checkout HEAD -- ui/
 

@@ -1372,7 +1372,7 @@ prepared, with a backup branch, a tag and a copy of the files.
 **It was not run, and the deciding reason is specific rather than general.**
 This project's documents cite its own commit SHAs. `HANDOFF.md` §5 points at
 `0888772` and `c1aeaca` for the deleted ambient-field work, and `serve.py`
-embeds `21b3c56` in the banner it serves over the archived front page, where a
+embeds `053a7f7` in the banner it serves over the archived front page, where a
 visitor reads that SHA on screen. All three resolve today. A rewrite changes
 every SHA in the repository, so all three would become dangling references, and
 they would fail silently: nothing in the test suite or the four guards checks
@@ -2507,6 +2507,55 @@ wrongly. It is `colbert-late`, an ordinary answerable case, and the passage was
 always correct. The interface said otherwise: the question list groups its
 suggestions by kind and printed **"decoys that look right"** over the
 cross-document group. See the entry below.
+
+---
+
+## 2026-09-18 — The second rewrite, and the rule the first one did not carry
+
+The history rewrite of 2026-09-07 removed a real name, two personal addresses,
+two academics' addresses, the Windows username, 37 papers and both vector
+stores. A GitHub handle carrying the same surname survived it and stayed public
+for 11 days.
+
+**The rule was written for the name with a space in it.** The 2026-09-07
+replacement spec mapped `<first> <last>` to the pseudonym, which is the form a
+commit author uses. The handle is the same two words joined, which is the form
+a URL uses, and no rule matched it. One spec, two forms of one name, and the
+form that ends up in a link is the one that was missed. It appeared 130 times
+across 8 commits, always inside the same sentence: the record of a 2026-09-01
+bug where the site's Source links named an account that is not the remote.
+
+**Found by accident.** It surfaced while re-probing an unrelated backlog item
+about which files `check_links` scans, because the module docstring quoting the
+bad URL was the first thing the probe printed. Nothing was looking for it. The
+scan that should have found it, the one run before publishing on 2026-09-07,
+searched for the forms the spec already knew.
+
+**Two things were wrong at once, which is this project's usual shape.** The
+name was in the repository, and the check that was supposed to have removed it
+had been given its inputs by the same hand that wrote the spec, so both agreed
+on which forms existed.
+
+**What was done.** The working tree was cleared first and committed on its own,
+so the name stopped going forward before anything irreversible ran. Then the
+history was rewritten from a mirror, with `--replace-text` for file contents
+and `--replace-message` for commit messages. The first attempt used only
+`--replace-text`, which left the name in one commit message, because
+`--replace-text` does not read them. Verified after: 0 of 1142 blobs and 0
+commit messages or identities carry it.
+
+**The tip is unchanged.** The tree of the final commit hashes to the same value
+before and after, checked directly, because the working tree had already been
+cleaned in its own commit. The value is not quoted here: `check_docs` reads any
+run of hex as a commit it should be able to resolve, and a tree hash is not a
+commit. Only history moved. Of the 4 commit SHAs the documents cite, 2 were
+untouched because they predate the first commit that carried the name, and 2
+moved and are re-pointed here.
+
+**What this does not do.** GitHub keeps unreachable objects until it garbage
+collects, so the old commits can still be fetched by their SHA by anyone who
+recorded one. Asking GitHub Support to purge them is the remaining step, and it
+is the same step the 2026-09-07 rewrite left open.
 
 ---
 

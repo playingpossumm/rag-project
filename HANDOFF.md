@@ -539,7 +539,7 @@ every entry, and a rewrite dangles them silently, since a dead SHA in a
 sentence reads exactly like a live one. The rewrite ran before the repository
 went public and all 15 were translated through the map `git filter-repo`
 writes, so the argument was answered rather than overruled. (`serve.py`
-embedded `21b3c56` in the archive banner until that route was removed on
+embedded `053a7f7` in the archive banner until that route was removed on
 2026-08-29; the count `check_docs.py` reports is the live one.)
 `src/check_docs.py` counts and resolves them rather than leaving that as a
 number in a paragraph. See `docs/engineering-log.md`, 2026-08-28 for the

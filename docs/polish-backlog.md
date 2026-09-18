@@ -12,7 +12,7 @@ report". They were recovered on 2026-09-14 from the workflow journal on disk,
 which is luck rather than a filing system. A backlog that is not in the
 repository is not a backlog.
 
-**Status was re-probed against the tree on 2026-09-14**, at commit `3edad44`,
+**Status was re-probed against the tree on 2026-09-14**, at commit `8606c7e`,
 because the intervening work touched most of these files. 18 of the 22 were
 still live. The file and line references come from the audit, so read them as
 pointers rather than coordinates.
