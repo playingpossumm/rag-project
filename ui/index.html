@@ -37,11 +37,13 @@
      bands and a grate are the same picture at forty-five pixels. */
   --map-h:clamp(320px,34vw,540px);
   --r:14px;
-  --max:900px;
-  /* The passage is the widest text on the page and takes the column. Anything
-     smaller takes --sub, so the supporting blocks share one edge instead of
-     each finding its own. */
-  --sub:70ch;
+  --max:1120px;
+  /* One edge for every block of text on the answer, whatever its size. At
+     900px the passage at 22px comes to about 82 characters and a 13.5px note
+     to about 96, so the two measures that made sense inside a 740px column
+     collapse into one here. The drawing is a figure and still takes the full
+     column, which is the one thing allowed to run wider than the text. */
+  --sub:900px;
   /* The question is set 25% above the passage, from one value, so the ratio
      cannot drift when either is tuned. */
   --answer-size:clamp(18px,2.1vw,22px);
@@ -430,7 +432,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
 
 .q{display:flex;gap:14px;align-items:baseline;padding:0 0 18px}
 .q .t{font-size:var(--ask-size);font-weight:600;letter-spacing:-.022em;
-  line-height:1.28;max-width:none;text-wrap:balance}
+  line-height:1.28;max-width:var(--sub);text-wrap:balance}
 /* Which documents were searched, and what kind of question this is. Both
    change how the answer should be read: a refusal on an adversarial question
    is the demonstration working, and a score means nothing without the set it
@@ -562,7 +564,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
 /* The passage is quoted at normal weight; the sentence that answers is the
    only thing set bold. Bolding the whole block made all of it shout. */
 .answer{font-size:var(--answer-size);line-height:1.52;letter-spacing:-.017em;
-  max-width:none;margin:0;color:var(--mute)}
+  max-width:var(--sub);margin:0;color:var(--mute)}
 .answer mark{background:none;color:var(--ink);font-weight:600}
 .answer.prose{font-size:16.5px;line-height:1.68;letter-spacing:-.005em;
   max-width:var(--sub)}

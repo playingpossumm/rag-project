@@ -520,7 +520,14 @@ export function buildRun(trace, city, ink, variant = "flat") {
   }
   const sel = placed.get("selected") || [];
   const ap = platesFor(variant).find(p => p.id === "answer");
-  placed.set("answer", sel.map((m, i) => ({ ...m, ...bowlSeat(ap, i) })));
+  // The gate sits between the cap and the answer, so a refused question is one
+  // where these five did pass the cap and then none of them was allowed
+  // through. Nothing is seated in the bowl, and the seats are kept so the legs
+  // that stop short have somewhere to aim.
+  const declined = trace.verdict?.confident === false;
+  const seats = sel.map((m, i) => ({ from: m, to: bowlSeat(ap, i) }));
+  placed.set("answer", declined
+    ? [] : seats.map(({ from, to }) => ({ ...from, ...to })));
 
   /* Which mark on the index a candidate belongs to. ONE answer, used by both
      the lighting and the departure lines.
@@ -608,6 +615,14 @@ export function buildRun(trace, city, ink, variant = "flat") {
 
   const chain = [["dense", "fused"], ["sparse", "fused"], ["fused", "reranked"],
                  ["reranked", "selected"], ["selected", "answer"]];
+  // Nothing is placed on the answer when the gate declines, so the last leg of
+  // the chain below finds no target and draws nothing. These stand in for it:
+  // the same five passages, leaving the cap and stopping at the gate.
+  if (declined) {
+    for (const { from, to } of seats) {
+      push("answer", { a: from, b: to, lives: false, gated: true, colour: null });
+    }
+  }
   for (const [a, b] of chain) {
     const idx = new Map((placed.get(a) || []).map(m => [m.chunk_id, m]));
     for (const m of placed.get(b) || []) {
@@ -1076,7 +1091,7 @@ function inflight(ctx, T, link, ink, a, t) {
   // A refused passage travels all the way to the funnel's lower wall, which
   // is what stops it, and capFunnel draws it sliding off and falling. A
   // passage that simply did not survive still stops short of its stage.
-  const wall = link.stopped ? 1 : link.lives ? 1 : 0.66;
+  const wall = link.gated ? 0.58 : link.stopped ? 1 : link.lives ? 1 : 0.66;
   const held = Math.min(e, wall);
   const bx = lerp(p1.x, p2.x, held), by = lerp(p1.y, p2.y, held);
 
@@ -1085,8 +1100,10 @@ function inflight(ctx, T, link, ink, a, t) {
   // leg of the pipeline read as the emptiest. The funnel is the point of the
   // drawing: forty leave the index, twenty cross fusion and the reranker, five
   // reach the answer, and that has to be visible without reading a label.
-  ctx.globalAlpha = a * (link.lives ? 0.85 : link.stopped ? 0.42 : 0.22);
-  ctx.strokeStyle = link.lives ? link.colour : link.stopped ? STOPPED : ink.other;
+  ctx.globalAlpha = a * (link.lives ? 0.85
+    : link.stopped || link.gated ? 0.42 : 0.22);
+  ctx.strokeStyle = link.lives ? link.colour
+    : link.stopped || link.gated ? STOPPED : ink.other;
   ctx.lineWidth = link.lives ? 1.2 : 0.75;
   if (!link.lives) ctx.setLineDash([1.5, 3]);
   ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(bx, by); ctx.stroke();
@@ -1096,6 +1113,23 @@ function inflight(ctx, T, link, ink, a, t) {
   // on the cap's face, where a reader can see which slots were shut; a second
   // mark hanging in mid-air stated the same thing in a place with no gate.
   if (link.stopped) return;
+
+  // The gate itself: a short bar across the path where the leg stops, so the
+  // reader sees something shutting rather than a line that ran out of ink.
+  if (link.gated) {
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.hypot(dx, dy) || 1;
+    ctx.save();
+    ctx.globalAlpha = a * 0.5 * Math.min(1, t * 2.2);
+    ctx.strokeStyle = STOPPED;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(bx - (dy / len) * 4.2, by + (dx / len) * 4.2);
+    ctx.lineTo(bx + (dy / len) * 4.2, by - (dx / len) * 4.2);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
 
   // The head, while it is moving: a ball, which is the only round solid on the
   // drawing and therefore the only thing that reads as travelling. It used to
@@ -1527,7 +1561,11 @@ function runSub(id, run) {
     // label says what happened; the caption below carries which passage moved.
     case "reranked": return `${c.reranked} rescored`;
     case "selected": return `${c.selected} kept`;
-    case "answer": return `${c.selected} passages`;
+    // "5 passages" under a caption saying no answer is returned was the
+    // picture contradicting the words.
+    case "answer":
+      return run.confident === false ? "no answer returned"
+                                     : `${c.selected} passages`;
     default: return "";
   }
 }

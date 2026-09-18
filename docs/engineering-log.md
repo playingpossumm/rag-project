@@ -2510,6 +2510,70 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-19 — 900px read as a document, not a site
+
+**Why.** Sizing the page to the reading measure fixed the ragged right edge and
+produced a new complaint from the same reader: at 900px on a 1440 screen the
+content sat in a column with 270px of margin on each side, which reads as A4
+rather than as a web page.
+
+**What was actually wrong before.** Not that a margin existed. Two different
+right edges sat inside one section: a grid filling 1014 above a paragraph
+stopping at 640, a 374px gap between them with nothing to explain it. A single
+edge with a margin beside it reads as a column; two edges read as a mistake.
+
+**So the width goes back to 1120 and the measure is stated in pixels.** 900px,
+which fills about 89% of the column and leaves a margin small enough to read as
+one. Pixels rather than `ch` because About sets its text at 13.5px and
+Analytics at 13px, so one `ch` value came out as two different line lengths;
+Analytics now matches at 13.5px too. The answer page's two measures collapse
+into one at this width: the passage at 22px comes to about 82 characters and a
+13.5px note to about 96, and both take the same edge. The drawing still takes
+the full column, which is the one thing allowed to run wider than the text.
+
+**The cost, stated.** About 96 characters a line against 78. That is past the
+range a typographer would choose, and it is the trade this width asks for: at a
+1016px column any single column of 13.5px text runs long. The alternative was
+the narrower page, which was tried and rejected by the person who has to look
+at it.
+
+**And the set names in prose.** "36 machine-learning papers" reads as a
+description; "36 Machine Learning papers" names the set the picker names. Three
+of those, plus the panel caption and a comment in the analytics stylesheet.
+
+---
+
+## 2026-09-19 — The drawing said five passages answered a question it refused
+
+**Why.** Asked a question the documents cannot answer, the page printed "No
+passage in this document set answers the question", the stage caption read
+"Below threshold ... No answer is returned", and the drawing beside both ran
+five coloured passages into the answer bowl under a label reading "5 passages".
+The one thing this page exists to do is show what happened, and on every
+refused question it showed the opposite.
+
+**Where the refusal actually happens.** The seven drawn stages are the index,
+the two retrievers, fusion, the cross-encoder, the diversity cap and the
+answer. The abstention gate is not one of them: it sits between the cap and the
+answer. So a refused question is not one where the cap dropped everything. Five
+passages do pass the cap, and then none of them is allowed through. Stopping
+them at the cap would have been a second untrue picture.
+
+**What it draws now.** The five leave the cap, travel 58% of the way to the
+bowl and stop against a short bar drawn across each path, in the colour the
+cap's own refusals already use. The bowl is empty and the stage reads "no
+answer returned". `run.confident` has been on the run object since the trace
+carried a verdict; nothing read it.
+
+**Checked.** The harness draws 167 runs in 1,197 renders with no exceptions and
+no non-finite coordinates. Its endpoint check counted 130 lines ending on no
+passage, which is what a gated leg is for, so it now separates the two: 0 lines
+end away from the passage they deliver, and 130 stop at the gate across the
+recorded traces. An answered question is unchanged, bowl filled and labelled
+"5 passages".
+
+---
+
 ## 2026-09-19 — One column, no boxes, and two names that were sentences
 
 **Why.** A read-through of the published site produced fourteen separate
