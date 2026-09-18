@@ -191,7 +191,6 @@ const FORM_LEAD = 0.22;
 const FORM_HOLD = 0.34;
 
 const clamp01 = t => (t < 0 ? 0 : t > 1 ? 1 : t);
-const easeOut = t => 1 - Math.pow(1 - t, 3);
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -230,13 +229,6 @@ function palette(sources, ink) {
   const m = new Map();
   sources.forEach((s, i) => m.set(s, i < 3 ? slots[i] : ink.other));
   return src => m.get(src) || ink.other;
-}
-
-/* A candidate's home on its stage. Position IS rank -- first cell, top left --
-   so the same passage visibly moves between plates when the cross-encoder
-   reorders it, which is the one thing the reranker stage has to show. */
-function slot(plate, i) {
-  return cellAt(plate, i);
 }
 
 /* A home cell for a passage, chosen from its id rather than its rank.
@@ -971,7 +963,7 @@ function capFunnel(ctx, T, plate, run, ink, a, ft, variant = "flat") {
     const fall = ease(clamp01((t - 0.35) / 0.65));
     ctx.save();
     ctx.globalAlpha = a * 0.9 * Math.min(1, t * 2) * (1 - fall * 0.45);
-    ctx.strokeStyle = "#f0685f";
+    ctx.strokeStyle = ink.critical;
     ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.arc(p0.x + (p1.x - p0.x) * fall, p0.y + (p1.y - p0.y) * fall, 3.0, 0, Math.PI * 2);
@@ -1076,7 +1068,7 @@ function inflight(ctx, T, link, ink, a, t) {
 
   // A blocked passage stops short of the plate it was heading for, and the
   // last thing drawn on its path is the thing that stopped it.
-  const STOPPED = "#f0685f";
+  const STOPPED = ink.critical;
   // A surviving passage is drawn onto the cell it lands in. One that does not
   // survive stops short: twenty of them arriving at one small plate hatch it
   // into a solid block, which is what BM25 kept rendering as. They still carry

@@ -116,12 +116,6 @@ h2.lab{margin:0;font-size:10px}
 @media(max-width:720px){.versus{grid-template-columns:1fr}}
 
 /* The pipeline walk-through: a numbered rail, because the order is the point. */
-.callout ul{margin:10px 0 12px;padding:0;list-style:none}
-.callout li{position:relative;padding:0 0 8px 18px;color:var(--mute);
-  font-size:13.5px;line-height:1.6}
-.callout li::before{content:"";position:absolute;left:2px;top:9px;
-  width:5px;height:5px;border-radius:50%;background:var(--faint)}
-.callout li:last-child{padding-bottom:0}
 .steps{counter-reset:s;margin:0;padding:0;list-style:none}
 .steps li{counter-increment:s;position:relative;padding:0 0 20px 46px;
   border-left:1px solid var(--edge);margin-left:12px}
@@ -156,10 +150,6 @@ h2.lab{margin:0;font-size:10px}
   font-variant-numeric:tabular-nums}
 .stat .k{color:var(--mute);font-size:12.5px;margin-top:3px}
 .stat .v.rng{font-size:17px;letter-spacing:-.01em}
-
-.callout{border-left:2px solid var(--s2);background:var(--nest);
-  padding:13px 16px;border-radius:0 8px 8px 0;margin:18px 0 0}
-.callout p{margin:0;color:var(--dim);font-size:13.5px}
 
 /* Sentences, not a label, so they take the body-text token. Until 2026-09-06
    the footer sat in --faint at 2.96:1 on the card surface. */
@@ -284,31 +274,46 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <div class="prose">
         <p>NotebookLM, Glean and the enterprise search tools sold to companies
            answer better than this, because they have larger models and far more
-           compute. They also answer from a closed middle, where a question goes
-           in, an answer comes out, and what happened between the two is not
-           shown.</p>
+           compute. What they do not show is the middle. A question goes in, an
+           answer comes out, and the steps between are not part of what a reader
+           is given. The five differences below are about what can be seen and
+           checked from outside, not about which one answers better.</p>
       </div>
 
       <div class="versus" style="margin-top:18px">
         <div class="q">The choice of passage</div>
-        <div class="closed"><span class="lab tag">Closed product</span>The passage arrives, and how it was chosen is not exposed.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>The passage arrives on its own. The ranking that chose it, and the passages it beat, are not part of what comes back.</div>
         <div class="here-col"><span class="lab tag">Here</span>Every stage is shown with the score it assigned. Asking a question draws what each retriever found, what the cross-encoder moved and what the cap dropped.</div>
 
         <div class="q">The effect of a change</div>
-        <div class="closed"><span class="lab tag">Closed product</span>No numbers exist, so the judgement rests on an impression.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>The retrieval settings are not the reader's to change, so there is no before and after to measure.</div>
         <div class="here-col"><span class="lab tag">Here</span>Labelled questions across three corpora are scored under every pipeline configuration, so a change is accepted or rejected on the measurement. <span id="gone-n">Fifteen</span> were measured and not kept, though one of them ships on a single set.</div>
 
         <div class="q">Unanswerable questions</div>
-        <div class="closed"><span class="lab tag">Closed product</span>It answers anyway, in the same confident prose either way.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>Whether it can decline at all, and below what confidence, is not stated to the reader.</div>
         <div class="here-col"><span class="lab tag">Here</span>It declines below a threshold calibrated for each corpus against questions the documents cannot answer.</div>
 
         <div class="q">Disagreeing sources</div>
-        <div class="closed"><span class="lab tag">Closed product</span>The disagreement is blended into one voice.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>One answer comes back, and the passages behind it are not set beside it to be read against each other.</div>
         <div class="here-col"><span class="lab tag">Here</span>The other passages that came back are listed beneath the answer, because the top result is sometimes the wrong one.</div>
 
         <div class="q">Use inside another tool</div>
-        <div class="closed"><span class="lab tag">Closed product</span>No, because it is a destination rather than a component.</div>
+        <div class="closed"><span class="lab tag">Closed product</span>It is reached over the network as a service, so the retrieval inside it cannot be read or changed.</div>
         <div class="here-col"><span class="lab tag">Here</span>It is a Python library with an HTTP wrapper around it, and this interface is one caller rather than the product.</div>
+      </div>
+
+      <div class="prose" style="margin-top:22px">
+        <!-- SECURITY.md, "The server has no authentication"; README.md, the
+             local bind and the model sizes; src/serve.py, which records
+             nothing a reader does -->
+        <p>Every row above is a difference this project wins, so the comparison
+           runs one way only. It searches sets of documents indexed ahead of
+           time, on one machine, with no accounts and no permissions, which
+           means it has nothing to say about whether a reader is allowed to see
+           a document. Nothing in its ranking comes from how readers behaved,
+           because no such signal is recorded. Its models are small enough to
+           run on a laptop's processor. Those are the parts a product sold to
+           companies has to get right, and none of them exists here.</p>
       </div>
     </div>
   </section>

@@ -24,6 +24,15 @@ mechanical, a grep for the thing the finding names, so a line saying an item
 reproduces means the code it points at is still there and not that it was read
 again in full. Item 18 was re-checked against a recording taken the same day.
 
+**Items 14 and 16 were fixed on 2026-09-18**, leaving 19 of the 22. The dead
+list in item 14 was recomputed rather than worked through as written: each
+page's own style block against every class name used in its markup, its script
+and the shared files it loads. That found 31 dead rules in `index.html` and 6
+in `about.html` where the audit had named ten selectors, and it contradicted
+the 2026-09-17 probe on one, `.callout` in `about.html`, which is declared in 6
+rules and used nowhere. The probe had read a mention of the name in a comment
+as a use.
+
 Nothing here is a defect in a published number. The audit's own summary of this
 tier was "items of polish".
 
@@ -114,6 +123,26 @@ never used: `.sub2`, `.warn2`, `.fignum`, `.pills`. The interface rebuild of
 `.oldlink`, `.legend` and `.genrow`, and `.callout` in `about.html` is now
 referenced. `#f0685f` is still written out 3 times.
 
+Closed on 2026-09-18, and that status line was wrong on two counts. Every one
+of the 10 selectors was dead, not 4: `.picker`, `.menu`, `.legend`, `.genrow`,
+`.oldlink` and `.pills` each still had rules in `index.html` and no markup
+using them, and their only remaining mentions were in comments, which is what
+the grep behind the status line had matched. `.callout` in `about.html` was
+dead too. 31 rules came out of `index.html` and 6 out of `about.html`, with
+`.legend` and `.pills` left in place in `quality.html`, which uses both. Two
+comments describing removed rules went with them and one describing `.steps`
+was kept.
+
+The colour is now read from the token it duplicates: `--bad` through
+`readInk()`, as `ink.critical` in `pipeline-map.js` and `INK.critical` in
+`versions.html`. The archived copies under `ui/versions/` keep their literals,
+because they are frozen snapshots of what the diagram was. `easeOut` and
+`slot()` are gone: `slot()` placed a passage by its rank and `spreadHome()`
+replaced it on 2026-09-15, and nothing had called either since. Checked by
+drawing 167 runs through the harness, 1,197 renders, with the same structure
+figures as before the removal, and by loading all three pages at 1440x780 and
+400x780 with no console error and no sideways scroll.
+
 **15. `quality.html` resets all motion and reads analytics unguarded.** The
 blanket `prefers-reduced-motion` rule should be scoped the way `index.html`
 does it, and the boot should sit in a `try/catch` that writes to `#readout` so
@@ -132,6 +161,26 @@ Smaller on 2026-09-17. The audit also asked for `scope="row"` on the
 spreadsheet cells in `index.html`. There are no spreadsheet cells any more: a
 row out of a spreadsheet is quoted as prose like every other answer, so that
 clause is closed by deletion rather than by a fix.
+
+Closed on 2026-09-18. The `:focus-visible` clause was already stale:
+`ui/base.css` line 24 carries a global rule that `about.html` inherits.
+
+The tiles are `role="group"` with `aria-labelledby` on their own label and
+`aria-describedby` on a hidden span holding the sentence the tooltip shows.
+The audit asked for `aria-describedby` pointing at `#tip`, which would have
+been wrong: `#tip` is one node shared by every tile and every chart and is
+emptied on pointerleave, so what it holds depends on where the pointer has
+been. A span per tile is right whatever the pointer is doing.
+
+The set list keeps its listbox roles and now answers the keys they promise.
+`ArrowDown` or `ArrowUp` on the button opens the list and lands on the set in
+use, the arrows move between sets and wrap, `Home` and `End` reach the ends,
+`Escape` closes and returns focus to the button, and `Tab` closes. The options
+are `tabindex="-1"` and reached from the button, which is the pattern for a
+listbox that collapses, and the list carries an `aria-label`. Selecting a set
+replaces the list, so focus returns to the button rather than falling to the
+body. Checked in a browser: 18 assertions over the keys, the roles and the
+descriptions, all passing, with no console error.
 
 **17. `versions.html` is a self-declared temporary page.** Its own comment says
 to delete it. Either do that, with `ui/versions/` and its 2 data files, or

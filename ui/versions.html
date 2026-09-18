@@ -148,7 +148,7 @@ function draw(pane, t) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, r.width, r.height);
   if (broken) {
-    ctx.fillStyle = "#f0685f";
+    ctx.fillStyle = INK.critical;
     ctx.font = "12px 'DM Mono', monospace";
     ctx.fillText(broken.slice(0, 90), 12, 24);
     return;

@@ -92,19 +92,6 @@
   transition:color 180ms var(--ease)}
 .top a:hover{color:var(--ink)}
 
-/* corpus picker: which documents the answers come from. Prominent because
-   switching it changes every answer on the page, and a control that silently
-   redefines the subject should not be tucked away. */
-.picker{position:relative}
-.picker>button{display:flex;align-items:center;gap:9px;background:var(--card);
-  border:1px solid var(--edge);border-radius:999px;padding:6px 13px 6px 12px;
-  cursor:pointer;font-size:13px;color:var(--ink);
-  transition:border-color 180ms var(--ease)}
-.picker>button:hover{border-color:var(--s1)}
-.picker>button.on{border-color:var(--warn);color:var(--ink)}
-.picker>button .dot{width:6px;height:6px;border-radius:50%;background:var(--s3);flex:none}
-.picker>button .caret{width:5px;height:5px;border-right:1.5px solid var(--faint);
-  border-bottom:1.5px solid var(--faint);transform:rotate(45deg) translate(-1px,-1px)}
 /* ---- the settings tray -------------------------------------------------
    Right edge, vertically centred, collapsed to a tab. Entering motion is
    ease-out and under 300ms; it moves on transform and opacity only, and never
@@ -168,12 +155,6 @@ body:not(.asked) .tray{display:none}
    header links, the axis ticks and the small counts beside a name. */
 .trayPanel .sdesc{margin:0 0 9px;font-size:12px;line-height:1.55;color:var(--mute);
   max-width:52ch}
-.oldlink{display:flex;align-items:baseline;gap:10px;
-  border-top:1px solid var(--hair);padding:12px 15px;
-  font-size:12.5px;color:var(--mute);text-decoration:none;
-  transition:color 160ms var(--ease)}
-.oldlink:hover{color:var(--dim)}
-.oldlink span{margin-left:auto;font-family:var(--mono);font-size:10px}
 .trayPanel .setsrc{margin:0;padding:4px 16px 6px;color:var(--mute);max-width:none}
 .trayPanel .setsrc b{color:var(--dim);font-weight:600}
 .trayPanel .cmp{border-top:1px solid var(--hair);padding:12px 15px;
@@ -205,27 +186,6 @@ body:not(.asked) .tray{display:none}
   .tray[data-open="true"] .trayPanel{transform:translateY(0)}
 }
 
-.menu{position:absolute;right:0;top:calc(100% + 8px);min-width:334px;z-index:40;
-  background:var(--card);border:1px solid var(--edge);border-radius:12px;
-  padding:6px;box-shadow:0 18px 40px rgba(0,0,0,.5)}
-.menu[hidden]{display:none}
-.menu button{display:block;width:100%;text-align:left;background:none;border:0;
-  border-radius:8px;padding:10px 12px;cursor:pointer;
-  transition:background 160ms var(--ease)}
-.menu button:hover:not(:disabled){background:var(--nest)}
-.menu button:disabled{opacity:.4;cursor:default}
-.menu .nm{font-size:13.5px;color:var(--ink);display:flex;align-items:center;gap:8px}
-.menu .nm b{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:500;
-  color:var(--faint)}
-.menu button[aria-current="true"] .nm{color:var(--s1)}
-.menu .sub2{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:4px}
-/* size on the left, cut point on the right: the two things you choose a corpus
-   on, and the two that differ most between them. */
-.menu .row2{display:flex;gap:12px;align-items:baseline;margin-top:2px;
-  font-family:var(--mono);font-size:10px;color:var(--faint)}
-.menu .row2 .fmt{letter-spacing:.06em}
-.menu .row2 .thr{margin-left:auto;white-space:nowrap}
-.menu .warn2{color:var(--warn)}
 .switching{opacity:.4;pointer-events:none}
 
 .wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
@@ -272,7 +232,6 @@ body:not(.asked) .tray{display:none}
    service of keeping the question field above the fold, which is a rule I
    invented and which is not worth the words. The page scrolls. */
 .hero.gone{display:none}
-
 
 /* Full column width. The 900px cap was set when the hero diagram was a
    vertical column and wanted height rather than width; the row layout it went
@@ -453,8 +412,6 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .chip:hover{color:var(--ink);background:var(--nest)}
 .chips .grp + .chip{border-top:0}
 
-.genrow{display:flex;align-items:center;gap:11px;justify-content:center}
-
 /* ------------------------------------------------------------ the thread */
 /* Clearance for the fixed composer, or the last thing on the page always
    sits underneath it. */
@@ -527,7 +484,6 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .cell.has{cursor:default}
 @media (hover:hover) and (pointer:fine){.cell.has:hover{transform:scaleY(1.35);z-index:2}}
 .cell.gone{background:transparent;border:1px dashed var(--hair)}
-.grid .sep{grid-column:1/-1;height:1px;background:var(--hair);margin:9px 0}
 .grid .cn{font-family:var(--mono);font-size:8px;color:var(--faint);text-align:center;
   overflow:hidden}
 .stack .ft{margin-top:12px;font-size:12.5px;color:var(--mute);max-width:70ch}
@@ -586,8 +542,6 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .why summary:hover{color:var(--dim)}
 .why p{margin:9px 0 0;font-size:13.5px;color:var(--mute);max-width:66ch}
 .why b{color:var(--dim);font-weight:600;font-family:var(--mono);font-size:13px}
-.head .fignum{margin-left:auto;font-family:var(--mono);font-size:10px;
-  letter-spacing:.14em;color:var(--faint)}
 
 /* the answer is the biggest thing on the page */
 /* The passage is quoted at normal weight; the sentence that answers is the
@@ -614,7 +568,6 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .unsure{margin:14px 0 0;font-size:12.5px;line-height:1.6;color:var(--mute);max-width:62ch}
 .unsure b{color:var(--dim);font-weight:600}
 
-.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
 .pill{display:inline-flex;align-items:center;gap:7px;background:var(--nest);
   border:1px solid var(--hair);border-radius:999px;padding:6px 13px;
   font-family:var(--mono);font-size:11px;color:var(--dim)}
@@ -635,11 +588,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .vizhead .lab{color:var(--mute)}
 .vizhead .vizsub{font-size:12.5px;color:var(--mute);
   font-family:var(--sans);letter-spacing:0;text-transform:none}
-.legend{margin-left:auto;display:flex;gap:14px;flex-wrap:wrap}
-.legend span{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);
-  font-size:10px;color:var(--faint)}
-.legend i{width:7px;height:7px;border-radius:2px}
-.legend i.w{background:var(--wire)}
+
 canvas.city{display:block;width:100%;height:var(--map-h)}
 .vizfoot{display:flex;align-items:center;gap:14px;
   padding:10px 0 18px;flex-wrap:wrap}
@@ -904,7 +853,6 @@ tr.out td{color:var(--mute)}
 .dock .field{max-width:none}
 /* Docked at the bottom of the window, the list has nowhere to go downward. */
 .dock .chips{top:auto;bottom:calc(100% + 8px)}
-.dock .genrow{justify-content:flex-start;margin-top:10px;padding-left:4px}
 
 .thinking{display:flex;align-items:center;gap:14px;padding:34px clamp(22px,3.4vw,34px);
   font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
@@ -981,7 +929,8 @@ tr.out td{color:var(--mute)}
             <span class="cnt" id="ddCnt"></span></span>
           <span class="caret" aria-hidden="true"></span>
         </button>
-        <div class="ddmenu" id="setgrid" role="listbox" hidden></div>
+        <div class="ddmenu" id="setgrid" role="listbox"
+             aria-label="Document sets" hidden></div>
       </div>
     </div>
 
@@ -1786,8 +1735,8 @@ async function loadPicker() {
   // a number about the machinery, not about the reading material, and it does
   // not help anyone choose between ornithology and finance.
   $("#setgrid").innerHTML = data.corpora.map(c => `
-    <button type="button" role="option" class="ddopt" data-name="${esc(c.name)}"
-            ${c.indexed ? "" : "disabled"}
+    <button type="button" role="option" class="ddopt" tabindex="-1"
+            data-name="${esc(c.name)}" ${c.indexed ? "" : "disabled"}
             aria-selected="${c.name === data.active}">
       <span class="ico">${setIcon(c.name)}</span>
       <span class="txt">
@@ -1825,7 +1774,7 @@ async function loadPicker() {
       </button>`).join("")}`;
 
   $("#setgrid").querySelectorAll("button[data-name]").forEach(b => {
-    b.onclick = e => { e.stopPropagation(); closeDd(); selectCorpus(b.dataset.name); };
+    b.onclick = e => { e.stopPropagation(); closeDd(true); selectCorpus(b.dataset.name); };
   });
   $("#traysets").querySelectorAll("button[data-name]").forEach(b => {
     b.onclick = e => { e.stopPropagation(); selectCorpus(b.dataset.name); };
@@ -1864,18 +1813,56 @@ $("#home").onclick = () => {
   drawIdle();
 };
 
-const closeDd = () => {
+/* The set list has carried role="listbox" and role="option" since it was
+   built, and answered no key but Escape. That is worse than carrying no role:
+   a reader who is told there is a list to arrow through finds the arrows
+   dead. Opening it now lands on the set in use, the arrows move between sets,
+   Home and End reach the ends, and Escape closes it and puts focus back on
+   the button that opened it. The options are out of the tab order and reached
+   from that button, which is the pattern for a listbox that collapses. */
+const ddOpts = () => [...$("#setgrid").querySelectorAll(".ddopt:not([disabled])")];
+
+const closeDd = back => {
+  if ($("#setgrid").hidden) return;
   $("#setgrid").hidden = true;
   $("#ddBtn").setAttribute("aria-expanded", "false");
+  if (back) $("#ddBtn").focus();
 };
+
+function openDd(land) {
+  $("#setgrid").hidden = false;
+  $("#ddBtn").setAttribute("aria-expanded", "true");
+  const opts = ddOpts();
+  if (!opts.length) return;
+  const sel = opts.find(o => o.getAttribute("aria-selected") === "true");
+  (land === "last" ? opts[opts.length - 1] : sel || opts[0]).focus();
+}
+
 $("#ddBtn").onclick = e => {
   e.stopPropagation();
-  const open = $("#setgrid").hidden;
-  $("#setgrid").hidden = !open;
-  $("#ddBtn").setAttribute("aria-expanded", String(open));
+  if ($("#setgrid").hidden) openDd(); else closeDd();
 };
-addEventListener("click", closeDd);
-addEventListener("keydown", e => { if (e.key === "Escape") closeDd(); });
+$("#ddBtn").addEventListener("keydown", e => {
+  if (e.key === "ArrowDown") { e.preventDefault(); openDd(); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); openDd("last"); }
+});
+$("#setgrid").addEventListener("keydown", e => {
+  const opts = ddOpts();
+  if (!opts.length) return;
+  const at = opts.indexOf(document.activeElement);
+  const to = e.key === "ArrowDown" ? at + 1
+           : e.key === "ArrowUp" ? at - 1
+           : e.key === "Home" ? 0
+           : e.key === "End" ? opts.length - 1 : null;
+  if (to !== null) {
+    e.preventDefault();
+    opts[(to + opts.length) % opts.length].focus();
+  } else if (e.key === "Tab") {
+    closeDd();
+  }
+});
+addEventListener("click", () => closeDd());
+addEventListener("keydown", e => { if (e.key === "Escape") closeDd(true); });
 
 async function selectCorpus(name) {
   if (BUSY || (ACTIVE && name === ACTIVE.name)) return;

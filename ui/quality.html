@@ -307,6 +307,27 @@ const el = (n, a = {}) => {
   return e;
 };
 
+/* One stat tile: a label, the figure, a caption under it, and the sentence
+   that says what the figure means.
+
+   role="group" with aria-labelledby and aria-describedby, because the tile is
+   a labelled cluster rather than a control: it does nothing when activated
+   and its only reason to take focus is to bring up the explanation. That
+   explanation is carried in a hidden span belonging to this tile. Pointing
+   every tile at #tip instead, which is what the audit asked for, would have
+   described them all with whatever the last hover left in one shared node. */
+let tileN = 0;
+function tile(k, v, sub, why) {
+  const id = `tile-${++tileN}`;
+  return `<div class="tile" data-why="${esc(why)}" tabindex="0" role="group"
+       aria-labelledby="${id}-k" aria-describedby="${id}-w">
+         <div class="lab" id="${id}-k">${esc(k)}</div>
+         <div class="v">${esc(String(v))}</div>
+         <div class="c">${esc(sub)}</div>
+         <span class="vh" id="${id}-w">${esc(why.split("|").join(" "))}</span>
+       </div>`;
+}
+
 /* ---- one tooltip, shared. Charts are interactive by default; a value the
    reader has to squint at an axis to recover is a value that was not shown. */
 const tip = $("#tip");
@@ -608,9 +629,7 @@ if (!A || !A.corpora?.length) {
        "How much of the answer's vocabulary appears in the passages given.|A " +
        "proxy, not a verdict: it cannot tell a correct claim from a wrong one."],
     ].map(([k, v, sub, why]) =>
-      `<div class="tile" data-why="${esc(why)}" tabindex="0">
-         <div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
-         <div class="c">${esc(sub)}</div></div>`).join("");
+      tile(k, v, sub, why)).join("");
 
     $("#answers-foot").innerHTML =
       `This is the only measurement on this page produced by a language model, ` +
@@ -648,10 +667,7 @@ if (!A || !A.corpora?.length) {
       ["Wrongly refused", `${c.at_calibrated.refused} / ${c.n_answerable}`,
        `${c.at_zero.refused} at the old global 0.0`,
        "Answerable questions the gate turned down anyway.|The cost of refusing. The threshold is chosen to keep it small."],
-    ].map(([k, v, s, why]) =>
-      `<div class="tile" data-why="${esc(why)}" tabindex="0">
-         <div class="lab">${esc(k)}</div><div class="v">${esc(String(v))}</div>
-         <div class="c">${esc(s)}</div></div>`).join("");
+    ].map(([k, v, s, why]) => tile(k, v, s, why)).join("");
 
     renderAnswers(c);
 
