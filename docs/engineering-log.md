@@ -2598,6 +2598,27 @@ the arrows move and wrap, Home and End reach the ends, Escape closes and
 returns focus to the button, and the options are out of the tab order and
 reached from it.
 
+**The full cone for the cap was parked, and the geometry it worked out is kept
+here.** A 10-hunk patch written on 2026-09-15 would have made stage 06 a cone
+of revolution: an elliptical mouth facing upstream, two silhouette rulings to a
+shoulder ring, a neck, and a throat whose aperture is exactly two passage-discs
+wide, with the survivors seated inside it and the refusals marked on the flank.
+It was validated at the time over 128 draw passes. 7 of its 14 anchors no
+longer match the file, and they are the load-bearing ones: the placement call,
+the answer placement, the chain link, the refused block and the two gate-shape
+branches all changed when placement moved from rank to identity, and `slot()`
+is deleted. Reviving it means re-deriving most of it against different code,
+for a vessel that is seen edge-on either way.
+
+**Two facts from that work are worth keeping, because they are properties of
+the projection rather than of the patch.** A funnel whose axis is the flow axis
+is seen exactly edge-on here, since the kernel direction (1, 1, 2*RISE) is
+perpendicular to (1, -1, 0), so the axis to draw it along is the plate's own
+`a` axis. And that axis projects at about 0.70 screen units per world unit
+against 1.0 radially, so a vessel's world length has to be about 1.4 times its
+mouth diameter or it draws as an egg with a spout. The same ratio is why the
+bowl reads as a bowl at `plate.w * 1.35`.
+
 **Checked.** All 7 guards pass. The diagram harness draws 167 runs in 1,197
 renders with 0 problems and the same structure figures as before the removals,
 so nothing that came out was load-bearing. 18 assertions over the keys, the
