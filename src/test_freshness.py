@@ -532,6 +532,11 @@ def relabel_and_copy(tmp, cfg):
     """
     d = json.loads(cf.ANALYTICS.read_text(encoding="utf-8"))
     d["corpora"][0]["label"] = "A different name for the same documents"
+    # A real rename moves two fields, not one: the label a reader sees and the
+    # digest of corpora.json stamped beside the figures, because the label is
+    # in that file. This test moved only the label until 2026-09-18 and so
+    # passed while renaming a corpus still demanded all 157 questions.
+    d.setdefault("inputs", {})["corpora_json"] = "sha256:0000renamed0000"
     write(cf.ANALYTICS, d)
     shutil.copy2(cf.ANALYTICS, cf.STATIC / "analytics.json")
 

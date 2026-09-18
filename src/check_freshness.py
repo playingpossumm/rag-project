@@ -137,7 +137,16 @@ def content_digest(path: Path, ignore: tuple[str, ...] = ()) -> str:
 
 
 # The keys in analytics.json that name something rather than measure it.
-NOT_MEASURED = ("label",)
+#
+# `corpora_json` is the digest of corpora.json stamped beside the figures as
+# provenance. It moves when a corpus is renamed, which is why ignoring the
+# label alone did not stop a rename asking for a re-record: the docstring
+# above named both fields and this tuple held one. Ignoring it loses nothing,
+# because every measurement that file governs is itself hashed here -- the
+# threshold, whether it was calibrated, and the refusal counts at both the
+# calibrated value and 0.0 -- so a recalibration still shows up as changed
+# content. A rename now shows up as nothing, which is what it is.
+NOT_MEASURED = ("label", "corpora_json")
 
 
 def analytics_digest(path: Path) -> str:

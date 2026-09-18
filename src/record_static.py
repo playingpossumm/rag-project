@@ -337,8 +337,7 @@ OFFLINE_JS = r"""// Answers the interface's own fetches from recorded files, so 
     // refused -- but three sentences opening on what the page CANNOT do set
     // the wrong frame for a tool whose point is showing how retrieval works.
     // One sentence states it and moves on.
-    '<b>Recorded demo.</b> Answers come from a saved run, so this page ' +
-    'answers the questions it was given. ' +
+    '<b>Recorded demo.</b> Answers come from a saved run. ' +
     '<a href="https://github.com/playingpossumm/rag-project">Run it locally</a>' +
     ' to search your own documents.';
   const stripStyle = document.createElement("style");
@@ -482,6 +481,51 @@ def copy_measurements(out: Path) -> None:
                                     encoding="utf-8")
 
 
+def restamp(out: Path, why: str) -> int:
+    """Re-stamp the recording's analytics fingerprint and say why.
+
+    Writes the reason next to the new value, so a later reader can see that
+    the provenance was corrected by hand and on what grounds. Refuses a reason
+    short enough to be a placeholder, because "fix" explains nothing and this
+    number is the only witness that the recorded answers match the figures
+    beside them.
+    """
+    manifest_path = out / "manifest.json"
+    if not manifest_path.exists():
+        print(f"--restamp needs a recording in {out}/ and there is no "
+              f"manifest.json there.")
+        return 2
+    if len(why.strip()) < 12:
+        print("--restamp needs a reason worth reading, not a placeholder.")
+        return 2
+
+    live = ROOT / "eval" / "analytics.json"
+    if not live.exists():
+        print("--restamp reads eval/analytics.json and it is not there.")
+        return 2
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    inputs = manifest.setdefault("inputs", {})
+    before = (inputs.get("analytics") or {}).get("digest")
+    fresh = analytics_stamp(live)
+    if before == fresh["digest"]:
+        print(f"  already stamped {before}; nothing to do")
+        return 0
+
+    inputs["analytics"] = fresh
+    inputs["restamped"] = {"on": time.strftime("%Y-%m-%d"), "why": why.strip(),
+                           "was": before}
+    manifest_path.write_text(json.dumps(manifest, indent=1) + "\n",
+                             encoding="utf-8")
+    site_copy = out / "site" / "recorded" / "manifest.json"
+    if site_copy.exists():
+        site_copy.write_text(json.dumps(manifest, indent=1) + "\n",
+                             encoding="utf-8")
+    print(f"  analytics fingerprint {before} -> {fresh['digest']}")
+    print(f"  reason recorded: {why.strip()}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -493,8 +537,17 @@ def main() -> int:
     ap.add_argument("--site-only", action="store_true",
                     help="rebuild the page from ui/ around existing recordings; "
                          "no models are loaded and nothing is re-recorded")
+    ap.add_argument("--restamp", metavar="REASON",
+                    help="recompute the manifest's analytics fingerprint from "
+                         "eval/analytics.json and record REASON beside it. For "
+                         "the one case this is right: the digest rule changed "
+                         "and no measurement moved. Re-record instead if any "
+                         "did")
     ap.add_argument("--out", type=Path, default=OUT)
     args = ap.parse_args()
+
+    if args.restamp:
+        return restamp(args.out, args.restamp)
 
     # Before `import serve`, which loads the index and both models. A rebuild
     # of the page needs neither, and this is the whole point of the flag.
@@ -548,6 +601,55 @@ def main() -> int:
                     changed += relabel(v)
             return changed
 
+        # The group each offered question is shown under is a name too. It
+        # changed on 2026-09-18 from a sentence, "answered in one place", to
+        # what the question tests, "direct lookup". The recorded payloads hold
+        # the wording of the day they were taken, so it is refreshed from
+        # eval/analytics.json, which build_analytics.py regenerates from the
+        # vocabulary in corpora.py. Matched on the question text rather than on
+        # the old label, so nothing here has to remember a vocabulary in order
+        # to translate out of it.
+        kind_of = {}
+        live = ROOT / "eval" / "analytics.json"
+        if live.exists():
+            try:
+                doc = json.loads(live.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                doc = {}
+            for c in doc.get("corpora") or []:
+                for e in c.get("examples") or []:
+                    if isinstance(e.get("q"), str) and isinstance(e.get("label"), str):
+                        kind_of[(c.get("name"), e["q"])] = e["label"]
+
+        def rekind(node, corpus=None):
+            """Rewrite the group label on every offered question, in place.
+
+            Keyed by corpus as well as by question, because the same question
+            is offered under different kinds by different sets: the bird
+            question about birdsong is a direct lookup on the ornithology set
+            and out of scope on the finance papers, which cannot answer it.
+
+            Only a dict carrying both a question and a label is touched, which
+            is the shape of an offered question and not of a recorded answer.
+            """
+            changed = 0
+            if isinstance(node, dict):
+                here = node.get("name") or node.get("corpus") or node.get("active")
+                if isinstance(here, str) and here in reg:
+                    corpus = here
+                for v in node.values():
+                    changed += rekind(v, corpus)
+            elif isinstance(node, list):
+                for v in node:
+                    if (isinstance(v, dict) and isinstance(v.get("q"), str)
+                            and isinstance(v.get("label"), str)):
+                        want = kind_of.get((corpus, v["q"]))
+                        if want and v["label"] != want:
+                            v["label"] = want
+                            changed += 1
+                    changed += rekind(v, corpus)
+            return changed
+
         renamed = []
         for name, entry in manifest["corpora"].items():
             cfg = reg.get(name)
@@ -570,7 +672,9 @@ def main() -> int:
                 data = json.loads(path.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError):
                 continue
-            if relabel(data):
+            owner = path.parent.name if path.parent != args.out else None
+            moved = relabel(data) + rekind(data, owner if owner in reg else None)
+            if moved:
                 path.write_text(json.dumps(data, indent=1) + "\n",
                                 encoding="utf-8")
                 touched += 1
