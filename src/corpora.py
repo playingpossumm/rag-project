@@ -28,6 +28,32 @@ import json
 import os
 from pathlib import Path
 
+# What each case kind is called on screen. The harness's own vocabulary --
+# "fact", "multi", "cross-doc" -- describes how a case was constructed, which
+# is the labeller's concern. A reader picking a question wants to know what the
+# question tests.
+#
+# These were sentences until 2026-09-18: "answered in one place", "spread over
+# several documents", "similar documents to tell apart". They read as
+# descriptions of an answer rather than as names for a kind, and at four words
+# each they were longer than the question labels around them.
+#
+# They live here rather than in build_analytics.py because serve.py states
+# them too, for the fallback list a fresh clone has before any eval has run,
+# and two copies of one vocabulary is the shape that drifts. Both readers
+# import them from here.
+KIND_LABEL = {
+    "fact": "direct lookup",
+    "multi": "source coverage",
+    # "decoys that look right" until 2026-09-02, which described the passages
+    # these questions compete against and read on screen as a label on the
+    # QUESTION. A reader picking one was told it was a decoy while the same row
+    # said it should be answered. The golden set calls these cross-document
+    # because similar papers have to be told apart.
+    "cross-doc": "near-duplicates",
+}
+ADVERSARIAL = "out of scope"
+
 # The fallback for a corpus that does not name its own, kept in one place so
 # this module and retrieve.py cannot disagree about what "default" means.
 CANDIDATE_K = 20

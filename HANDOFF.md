@@ -44,7 +44,7 @@ threshold and rerank blend, because **nothing about a corpus transfers to
 another one**. That is the most reused finding in this project, and §4 covers
 it.
 
-| | ML & NLP papers | Ornithology | Quant finance |
+| | Machine Learning | Ornithology | Quant Finance |
 |---|---|---|---|
 | documents | 36 PDF | 45 mixed | 35 PDF |
 | passages | 5,459 | 864 | 6,184 |
@@ -66,9 +66,9 @@ one configuration everywhere, and `src/uniform_baseline.py` measures it:
 
 | under the untuned defaults | any-hit | MRR | NDCG | src recall |
 |---|---|---|---|---|
-| ML & NLP papers | 0.910 | 0.783 | 0.802 | 0.784 |
+| Machine Learning | 0.910 | 0.783 | 0.802 | 0.784 |
 | Ornithology | 0.840 | 0.593 | 0.660 | 0.792 |
-| Quantitative finance | 0.939 | 0.758 | 0.794 | 0.786 |
+| Quantitative Finance | 0.939 | 0.758 | 0.794 | 0.786 |
 
 **Quote this table for the generalisation claim and the one above for the
 per-corpus one.** Across three corpora sharing no format, subject or provenance,
@@ -266,9 +266,11 @@ already reading. The snapshot stays in `archive/`.
 
 Flow: headline → what RAG is → the pipeline diagram → **pick a document set**
 (dropdown, each with an isometric mark, counts and formats) → ask. Clicking the
-field opens the example questions, grouped by what each exercises: *answered in
-one place*, *spread over several documents*, *similar documents to tell apart*,
-*not in these documents*. The third read *decoys that look right* until
+field opens the example questions, grouped by what each tests: *direct
+lookup*, *source coverage*, *near-duplicates*, *out of scope*. These were
+sentences until 2026-09-18, reading as descriptions of an answer rather than as
+names for a kind, and they are defined once in `src/corpora.py` because
+`serve.py` states them too. The third read *decoys that look right* until
 2026-09-02, which labelled eight answerable questions per corpus as traps. Those come from `eval/analytics.json`. **Regenerate it
 after any golden-set change, or the page offers questions the corpus cannot
 answer.**

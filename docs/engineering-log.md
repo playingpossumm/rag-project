@@ -2510,6 +2510,119 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-19 — One column, no boxes, and two names that were sentences
+
+**Why.** A read-through of the published site produced fourteen separate
+notes, and almost all of them were one fault seen from different angles: a
+block of text stopping well short of the box drawn around it. On About the
+worst case was a paragraph 640px wide inside a 1014px panel, so a third of
+every mixed section was empty. The earlier fix had narrowed the panels that
+held nothing but prose, which corrected those and left every panel holding
+both a grid and a paragraph looking half-finished.
+
+**One column, sized to the measure rather than the other way round.** All
+three pages are 900px wide, where a panel's inner width is about 740 and 78ch
+comes to about 734. The floor is not arbitrary: `.grid2` on the analytics page
+needs 714px to keep two columns of charts, so the column cannot go below that
+without changing what the page shows. The stat row, the comparison grid and
+the timeline all reflow on their own.
+
+**Two measures on the answer, on purpose, where there had been five.** The
+question was capped at 44ch, the passage at 38em, the retrieval note at 70ch
+and the caveats at 62ch, with the drawing at the full column. One column
+cannot serve both sizes of type: at this width the passage at 22px comes to
+about 65ch, which is right, while a 13.5px note across the same width would
+run to 95ch, which is not. The passage, the question and the citation take the
+column; every smaller supporting block shares one narrower measure.
+
+**The boxes went, following the answer view.** That page dropped its card,
+panel and bordered rows on 2026-09-15 and separates sections with a rule on
+one left edge. About and Analytics kept the older language: a filled, bordered,
+rounded panel per section, with the figures and the comparison rows in their
+own smaller boxes inside it. Nested boxes are what put four left edges inside
+one answer. The corpus selector stays a button, because it is a control.
+
+**The question is set 25% above the passage, from one value.** `--ask-size` is
+`calc(var(--answer-size) * 1.25)`, so the ratio cannot drift when either is
+tuned. Above it the answer now names the set it searched and what the question
+tests, both of which change how the answer should be read: a refusal on an out
+of scope question is the demonstration working.
+
+**Two names were sentences.** The corpus labels went to title case, and
+"answered in one place", "spread over several documents" and "similar
+documents to tell apart" became "direct lookup", "source coverage" and
+"near-duplicates", with the adversarial group "out of scope". They read as
+descriptions of an answer rather than as names for a kind, and at four words
+each they were longer than the labels around them.
+
+**Renaming found three documents nothing was holding.** `HANDOFF.md`,
+`docs/roadmap.md` and `ATTRIBUTION.md` still called the machine-learning set
+"ML & NLP papers" four days after `corpora.json` renamed it, because
+`check_docs` holds the README's two tables to that file and those three
+carry the label in tables it does not read.
+
+**The case-kind vocabulary was in two files.** `build_analytics.py` defined it
+and `serve.py` restated it for the fallback list a fresh clone shows before
+any eval has run. It now lives in `corpora.py`, which both already read and
+which imports nothing heavier than `json`.
+
+**A rename still demanded 157 questions, which the 2026-09-17 fix was written
+to stop.** That fix made the analytics fingerprint blind to the label. Its own
+docstring recorded that a rename moves two fields, the label and the
+`corpora.json` digest stamped beside it, and the ignore list held one of them.
+The test covering it moved only the label, so it passed against the bug.
+Ignoring the digest loses nothing, because every measurement that file governs
+is hashed here in its own right: the threshold, whether it was calibrated, and
+the refusal counts at both the calibrated value and 0.0. A recalibration still
+shows as changed content. A rename now shows as nothing, which is what it is.
+
+**Changing the rule needed a way to re-stamp a recording without re-recording
+it.** `--restamp REASON` recomputes the fingerprint and writes the reason into
+the manifest beside it. It cannot be made safe automatically: `--site-only`
+copies `eval/analytics.json` over the recording's copy, so by the time
+anything could compare them the evidence is gone, and nothing in the recorded
+answers says which analytics.json produced them. So the claim goes in the
+file, next to the number it justifies.
+
+**And the group labels had to stop being frozen too.** `--site-only` already
+took the set's name from `corpora.json` rather than from the recording, for
+the reason written there. The group a question is offered under is the same
+kind of thing and was left frozen, so renaming four kinds would have needed
+all 157 questions run again. It is now refreshed from `eval/analytics.json`,
+matched on the question text so nothing has to remember the old vocabulary in
+order to translate out of it.
+
+**Keyed on the question alone, that refresh was wrong.** "What organ do birds
+use to produce song?" is offered under the ornithology set as a direct lookup
+and under the finance papers as out of scope, because a bird question asked of
+finance papers is one the documents cannot answer. One map keyed on the
+question held whichever came last and relabelled the other, and the ornithology
+set's first question came out as out of scope. Caught by `check_freshness`
+reporting the copy as behind the original, which is the check doing exactly
+its job. The key is now the corpus and the question.
+
+**The figures moved when the set changed.** The ornithology set lists four
+formats where the other two list one, so its captions wrapped and its tiles
+stood 91px against 76px, dropping every figure below them by 15px. Two lines
+of caption are reserved whether or not the second is used. All three sets now
+draw the block at 229px with the figures on the same baselines.
+
+**The prose.** Rates, the judge paragraph, the About opening and the
+score-band tooltip were rewritten to the register the project's owner named:
+one point per sentence, a conventional join where a real contrast or cause
+exists, no clause commenting on the page rather than the subject, and no
+mid-sentence colon standing in for a connection that should be written out.
+A colon introducing a list stays. Five more of those colons came out of the
+README. No number moved: the old and new files were compared number by number
+and the sets are identical.
+
+**Checked.** All 7 guards pass and all 606 tests. The three pages load at
+1440x900 and 400x820 with no console error and no sideways scroll, the four
+group labels read correctly on all three corpora, the question measures 27.5px
+against the passage's 22, and the analytics tiles measure 229px on every set.
+
+---
+
 ## 2026-09-18 — The register the documents are written in, and the code the rebuild left behind
 
 **Why.** `docs/writing-style.md` said "Prose is the default. Bullets and tables

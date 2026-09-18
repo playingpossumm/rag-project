@@ -21,7 +21,7 @@ article it was built from. `peregrine_falcon.pdf` is
 
 `src/fetch_topic.py` records how each file was produced.
 
-## ML & NLP papers, and quantitative finance — arXiv
+## Machine Learning and Quantitative Finance, from arXiv
 
 36 arXiv cs.CL/cs.LG papers and 35 q-fin papers. **Neither set ships with
 this repository.** Both were untracked on 2026-08-28, so a clone gives you the
@@ -68,8 +68,8 @@ on. Measured on the current build:
 | corpus | distinct passages shown | characters | documents |
 |---|---|---|---|
 | Ornithology | 549 | 141k | 43 |
-| ML & NLP papers | 1,493 | 385k | 36 |
-| Quantitative finance | 1,211 | 312k | 35 |
+| Machine Learning | 1,493 | 385k | 36 |
+| Quantitative Finance | 1,211 | 312k | 35 |
 
 For the arXiv sets that is roughly 40 non-contiguous excerpts per paper,
 averaging 257 characters each. That is about a quarter of a typical paper's

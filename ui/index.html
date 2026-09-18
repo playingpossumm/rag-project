@@ -37,7 +37,15 @@
      bands and a grate are the same picture at forty-five pixels. */
   --map-h:clamp(320px,34vw,540px);
   --r:14px;
-  --max:1120px;
+  --max:900px;
+  /* The passage is the widest text on the page and takes the column. Anything
+     smaller takes --sub, so the supporting blocks share one edge instead of
+     each finding its own. */
+  --sub:70ch;
+  /* The question is set 25% above the passage, from one value, so the ratio
+     cannot drift when either is tuned. */
+  --answer-size:clamp(18px,2.1vw,22px);
+  --ask-size:calc(var(--answer-size) * 1.25);
   /* One column for everything you can act on. The set picker was 440px inside
      an 860px box and the question field was 660px, so the two controls you use
      in sequence had different widths and neither shared an edge with the
@@ -69,14 +77,6 @@
 .top nav .here{font-family:var(--mono);font-size:10px;font-weight:500;
   letter-spacing:.13em;text-transform:uppercase;color:var(--ink);
   white-space:nowrap}
-/* One row, not a stacked pair. The label and its line sit on the hero's left
-   edge like every other block; they were centred over a full-width diagram,
-   which made a third alignment on a page that already had two. */
-.herovizhead{display:flex;flex-wrap:wrap;gap:3px 14px;align-items:baseline;
-  margin-bottom:10px}
-.herovizhead .lab{font-family:var(--mono);font-size:10px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--faint)}
-.herovizhead .sub{font-size:12.5px;color:var(--mute);max-width:52ch}
 /* A phone header. The name and the links do not fit at 13px on a 375px
    screen: the brand broke after "retrieval" and the header went to two rows.
    Both step down. */
@@ -421,15 +421,27 @@ body.switching .sets{opacity:.45;pointer-events:none}
    question read as part of the header bar rather than as the top of its own
    block. The question is the first thing you read after asking, and it should
    arrive with space above it. */
-.turn{margin-top:40px;animation:rise 260ms var(--ease) both;scroll-margin-top:104px}
+.turn{margin-top:54px;animation:rise 260ms var(--ease) both;scroll-margin-top:104px}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes appear{from{opacity:0}to{opacity:1}}
 /* Keep the cue, drop the travel -- an answer arriving with no transition at all
    is a page that changed while you were looking away. */
 @media (prefers-reduced-motion:reduce){.turn{animation:appear 200ms var(--ease) both}}
 
-.q{display:flex;gap:14px;align-items:baseline;padding:0 0 14px}
-.q .t{font-size:21px;font-weight:600;letter-spacing:-.02em;line-height:1.35;max-width:44ch}
+.q{display:flex;gap:14px;align-items:baseline;padding:0 0 18px}
+.q .t{font-size:var(--ask-size);font-weight:600;letter-spacing:-.022em;
+  line-height:1.28;max-width:none;text-wrap:balance}
+/* Which documents were searched, and what kind of question this is. Both
+   change how the answer should be read: a refusal on an adversarial question
+   is the demonstration working, and a score means nothing without the set it
+   was calibrated on. The kind is the group the question was offered under, so
+   a typed question shows the set alone. */
+.qmeta{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;
+  margin:0 0 9px;font-family:var(--mono);font-size:9.5px;font-weight:500;
+  letter-spacing:.15em;text-transform:uppercase}
+.qmeta .corpus{color:var(--s1)}
+.qmeta .cat{color:var(--faint)}
+.qmeta .cat::before{content:"\00b7";margin-right:10px;color:var(--wire)}
 
 /* ---- one left edge ------------------------------------------------------
    The answer was a card holding a panel holding bordered rows. Measured at
@@ -445,7 +457,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
    instrument reading comes from the mono labels and the alignment, which is
    where it was coming from anyway. */
 .card{background:none;border:0;border-radius:0}
-.card .pad{padding:26px 0}
+.card .pad{padding:32px 0 36px}
 .card .result{margin:0}
 
 .head{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
@@ -486,7 +498,8 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .cell.gone{background:transparent;border:1px dashed var(--hair)}
 .grid .cn{font-family:var(--mono);font-size:8px;color:var(--faint);text-align:center;
   overflow:hidden}
-.stack .ft{margin-top:12px;font-size:12.5px;color:var(--mute);max-width:70ch}
+.stack .ft{margin-top:12px;font-size:12.5px;color:var(--mute);
+  max-width:var(--sub)}
 .stack .ft b{color:var(--dim);font-weight:600}
 
 /* ---- the retrieval result ----------------------------------------------
@@ -494,18 +507,20 @@ body.switching .sets{opacity:.45;pointer-events:none}
    units it is actually in, and the three numbers worth knowing -- which
    documents, how much text, how long. Open, not folded: it is the reading of
    the result, not a footnote to it. */
-.result{margin:0;padding:20px 0 0;border:0;border-top:1px solid var(--hair);
+.result{margin:0;padding:26px 0 0;border:0;border-top:1px solid var(--hair);
   border-radius:0;background:none}
 .rhead{display:flex;align-items:center;gap:12px;margin-bottom:9px}
 .rhead .lab{color:var(--dim)}
 .score{margin-left:auto;display:inline-flex;align-items:baseline;gap:8px;
   font-family:var(--mono);font-size:15px;color:var(--ink)}
 .score em{font-style:normal;font-size:9.5px;letter-spacing:.1em;
+  cursor:help;border-bottom:1px dotted currentColor;
   text-transform:uppercase}
 .score.strong em{color:var(--s3)}
 .score.clear em{color:var(--s1)}
 .score.weak em,.score.marginal em{color:var(--warn)}
-.result > p{margin:0;font-size:13.5px;line-height:1.6;color:var(--mute);max-width:70ch}
+.result > p{margin:0;font-size:13.5px;line-height:1.6;color:var(--mute);
+  max-width:var(--sub)}
 .result > p b{color:var(--dim);font-weight:600;font-family:var(--mono);font-size:13px}
 .result .thin{margin-top:10px;padding-left:12px;border-left:2px solid var(--warn);
   color:var(--dim)}
@@ -513,7 +528,7 @@ body.switching .sets{opacity:.45;pointer-events:none}
    than by three columns of unequal height. Each fact is its own item so it
    wraps whole on a phone instead of breaking between a number and its unit. */
 .rgrid{display:flex;flex-wrap:wrap;gap:4px 18px;align-items:baseline;
-  margin-top:14px;font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+  margin:18px 0 30px;font-family:var(--mono);font-size:11.5px;color:var(--mute)}
 .rgrid .f{white-space:nowrap}
 .rgrid .f + .f::before{content:"/";color:var(--wire);margin-right:18px}
 .rgrid b{color:var(--ink);font-weight:500}
@@ -540,32 +555,34 @@ body.switching .sets{opacity:.45;pointer-events:none}
 .why summary::before{content:"+ "}
 .why[open] summary::before{content:"– "}
 .why summary:hover{color:var(--dim)}
-.why p{margin:9px 0 0;font-size:13.5px;color:var(--mute);max-width:66ch}
+.why p{margin:9px 0 0;font-size:13.5px;color:var(--mute);max-width:var(--sub)}
 .why b{color:var(--dim);font-weight:600;font-family:var(--mono);font-size:13px}
 
 /* the answer is the biggest thing on the page */
 /* The passage is quoted at normal weight; the sentence that answers is the
    only thing set bold. Bolding the whole block made all of it shout. */
-.answer{font-size:clamp(18px,2.1vw,22px);line-height:1.5;letter-spacing:-.017em;
-  max-width:38em;margin:0;color:var(--mute)}
+.answer{font-size:var(--answer-size);line-height:1.52;letter-spacing:-.017em;
+  max-width:none;margin:0;color:var(--mute)}
 .answer mark{background:none;color:var(--ink);font-weight:600}
-.answer.prose{font-size:16.5px;line-height:1.68;letter-spacing:-.005em;max-width:64ch}
+.answer.prose{font-size:16.5px;line-height:1.68;letter-spacing:-.005em;
+  max-width:var(--sub)}
 .answer.prose p{margin:0 0 14px}
 .answer.prose p:last-child{margin-bottom:0}
 /* The last container on the answer, and the only one left after the cards
    went. A citation is a line of text naming a file and a page; it does not
    need a pill to say so, and the pill was the only rounded fill on a screen
    that had stopped using them. */
-.cite{display:inline-flex;align-items:center;gap:9px;margin-top:20px;
+.cite{display:inline-flex;align-items:center;gap:9px;margin-top:26px;
   background:none;border:0;border-radius:0;
   padding:0;font-family:var(--mono);font-size:11.5px;color:var(--mute)}
 .cite i{width:7px;height:7px;border-radius:2px;flex:none}
-.note{margin:18px 0 0;color:var(--mute);font-size:13.5px;max-width:62ch}
+.note{margin:18px 0 0;color:var(--mute);font-size:13.5px;max-width:var(--sub)}
 .note b{color:var(--dim);font-weight:600}
 /* Under a confident answer whose lead passage carries no mark. It qualifies the
    passage rather than replacing it, so it sits below the answer in the muted
    register and uses no colour the page does not already have. */
-.unsure{margin:14px 0 0;font-size:12.5px;line-height:1.6;color:var(--mute);max-width:62ch}
+.unsure{margin:14px 0 0;font-size:12.5px;line-height:1.6;color:var(--mute);
+  max-width:var(--sub)}
 .unsure b{color:var(--dim);font-weight:600}
 
 .pill{display:inline-flex;align-items:center;gap:7px;background:var(--nest);
@@ -808,7 +825,8 @@ tr.out td{color:var(--mute)}
 .stage{border-top:1px solid var(--hair);padding:16px 0}
 .stage:first-child{border-top:0;padding-top:4px}
 .stage h4{margin:0 0 4px;font-size:13.5px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
-.stage p{margin:9px 0 13px;color:var(--mute);font-size:12.5px;max-width:70ch}
+.stage p{margin:9px 0 13px;color:var(--mute);font-size:12.5px;
+  max-width:var(--sub)}
 
 /* ------------------------------------------------------------- settings */
 .sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
@@ -909,12 +927,14 @@ tr.out td{color:var(--mute)}
 <div class="wrap">
   <section class="hero" id="hero">
     <h1>retrieval visualized<span class="slash">/</span></h1>
-    <p class="heroSub">Every stage of a retrieval pipeline, drawn as it
-      runs.</p>
-    <p>Retrieval-augmented generation answers from documents rather than from
-      training, so an answer names the file and place it came from. This page
-      runs the search and draws all seven stages, from the whole index down
-      to the passages the answer is allowed to use.</p>
+    <p class="heroSub">Retrieval-Augmented Generation, visualized for
+      anyone.</p>
+    <p>Retrieval-Augmented Generation is a method where the system searches
+      through documents to answer a question, instead of relying only on what
+      it learned during training. This keeps answers grounded and reduces
+      hallucination. This project explores how that mechanism actually works,
+      visualizes it so it is understandable for non-technical people, and
+      documents the process of trying to get it working.</p>
 
     <!-- Which documents to search comes before what to ask. The answer, the
          threshold it is judged against and the questions worth asking all
@@ -935,9 +955,7 @@ tr.out td{color:var(--mute)}
     </div>
 
     <form class="field" id="form">
-      <textarea id="q" rows="1"
-                placeholder="Ask, or pick one of 84 prepared questions"
-                data-short="Ask a question"
+      <textarea id="q" rows="1" placeholder=""
                 aria-label="Your question"></textarea>
       <button class="go" id="goBtn" type="submit">Ask</button>
       <!-- Inside the field, so it follows it down to the dock after the first
@@ -950,10 +968,6 @@ tr.out td{color:var(--mute)}
          explanation is what you scroll to once you know what the page is for;
          it sat above the field until 2026-09-14, which put the only thing on
          this page you can act on 253px below the fold at 1440x780. -->
-    <div class="herovizhead">
-      <span class="lab">The RAG process</span>
-      <span class="sub">Seven stages, 5,459 passages down to 5</span>
-    </div>
     <div class="heroviz wrapviz"><canvas id="idle"></canvas></div>
   </section>
 
@@ -1381,14 +1395,24 @@ function where(item) {
    these bands now say so. */
 function reading(score, threshold) {
   if (score >= 5) return { band: "strong",
-    text: "the cross-encoder reads this as a direct answer" };
+    text: "the cross-encoder reads this as a direct answer",
+    why: "+5 or above, the closest match this model gives." };
   if (score >= 1) return { band: "clear",
-    text: "the cross-encoder reads this as on topic and carrying the answer" };
+    text: "the cross-encoder reads this as on topic and carrying the answer",
+    why: "+1 to +5. On topic, with the answer present." };
   if (score >= -2) return { band: "weak",
-    text: "the cross-encoder reads this as on topic, with the answer partial or implied" };
+    text: "the cross-encoder reads this as on topic, with the answer partial or implied",
+    why: "−2 to +1. On topic, with the answer partial or implied." };
   return { band: "marginal",
-    text: `only just past this set’s cut-off of ${threshold.toFixed(1)}` };
+    text: `only just past this set’s cut-off of ${threshold.toFixed(1)}`,
+    why: `Below −2, barely past this set’s cut-off of `
+       + `${threshold.toFixed(1)}.` };
 }
+
+/* Appended to every band, because the band names a match and a reader will
+   read it as a verdict on the answer. It is not one. */
+const BAND_CAVEAT = " The score rates the match between question and "
+  + "passage, not whether the answer is right.";
 
 /* Marking both ends says "a fragment of something longer". */
 
@@ -1545,6 +1569,10 @@ async function loadCorpus() {
   // Grouped by what kind of retrieval the question exercises. The adversarial
   // group is labelled with what SHOULD happen, so a refusal reads as the
   // demonstration it is rather than as a failure.
+  // The group a question was offered under is the only categorisation this
+  // page has, and the answer view prints it above the question.
+  KIND_OF.clear();
+  for (const x of corpus.examples || []) KIND_OF.set(x.q, x.label);
   const groups = [];
   for (const x of corpus.examples || []) {
     const last = groups[groups.length - 1];
@@ -1791,10 +1819,11 @@ async function loadPicker() {
    set dropped the field underneath the drawing -- the one control on the page,
    pushed off the first screen by the thing that explains it. Anchoring to the
    drawing rather than to a position means the next reorder cannot break it
-   silently; if the anchor is ever removed, appending is still the right
-   answer. */
+   silently. The anchor was the drawing's heading until 2026-09-18 and is the
+   drawing itself now; appending is the fallback only because a hero with no
+   drawing has nothing for the field to sit above. */
 function fieldHome() {
-  const hero = $("#hero"), form = $("#form"), viz = hero.querySelector(".herovizhead");
+  const hero = $("#hero"), form = $("#form"), viz = hero.querySelector(".heroviz");
   if (viz) hero.insertBefore(form, viz);
   else hero.appendChild(form);
 }
@@ -1951,9 +1980,6 @@ addEventListener("scroll", () => {
 }, { passive: true });
 addEventListener("resize", syncDock);
 
-/* The placeholder is a sentence on a wide screen and two words on a phone,
-   where the long one wrapped inside a one-row field and was clipped. Swapped
-   on the same breakpoint the header uses. */
 /* Hide the edge fade once the drawing is scrolled to its end, so it does not
    sit there implying there is more. */
 function markScrollEnd(el) {
@@ -1976,17 +2002,6 @@ function markScrollEnd(el) {
 }
 markScrollEnd(document.querySelector(".heroviz"));
 
-const shortQ = matchMedia("(max-width: 560px)");
-/* The wide placeholder is read off the markup rather than repeated here. It
-   was a literal in both places, so editing the one in index.html's <textarea>
-   left this copy to overwrite it on the next resize. */
-const LONG_Q = $("#q").placeholder;
-function syncPlaceholder() {
-  const ta = $("#q");
-  ta.placeholder = shortQ.matches ? (ta.dataset.short || LONG_Q) : LONG_Q;
-}
-syncPlaceholder();
-shortQ.addEventListener("change", syncPlaceholder);
 addEventListener("focusin", syncDock);
 addEventListener("focusout", () => setTimeout(syncDock, 0));
 
@@ -2086,11 +2101,18 @@ async function ask(question, opts = OPTS, into = null) {
   } finally { BUSY = false; $("#goBtn").disabled = false; }
 }
 
+const KIND_OF = new Map();
+
 function newTurn(question) {
   N += 1;
   const el = document.createElement("section");
   el.className = "turn";
+  const set = ACTIVE && ACTIVE.label ? ACTIVE.label : "";
+  const cat = KIND_OF.get(question) || "";
   el.innerHTML = `
+    ${set || cat ? `<div class="qmeta">${
+      set ? `<span class="corpus">${esc(set)}</span>` : ""}${
+      cat ? `<span class="cat">${esc(cat)}</span>` : ""}</div>` : ""}
     <div class="q"><span class="t">${esc(question)}</span></div>
     <div class="card"><div class="slot">
       <div class="thinking"><span class="bar"></span>looking through ${nf(CITY.total)} passages</div>
@@ -2235,7 +2257,8 @@ function renderTurn(turn, question, data, opts) {
       <div class="result">
         <div class="rhead"><span class="lab">Retrieval result</span>${
           gated ? `<span class="score ${read.band}">${sig(v.confidence)}
-            <em>${read.band}</em></span>` : ""}</div>
+            <em title="${esc(read.why + BAND_CAVEAT)}">${read.band}</em>
+            </span>` : ""}</div>
         <p>${why}</p>
         ${thin ? `<p class="thin">The cited passage is only
           ${thin} characters long, a heading or a fragment rather than a
@@ -2349,7 +2372,7 @@ function renderTurn(turn, question, data, opts) {
         strength</b>, so they stand out as they climb the list from one block
         to the next. Hover a row for the passage itself. Each
         block names its own unit, and a bar is only as long as that stage's
-        range allows: cosine, a BM25 weight, an RRF score and a cross-encoder
+        range allows. Cosine, a BM25 weight, an RRF score and a cross-encoder
         logit are four different things, so a length in one block says nothing
         against a length in another.</p>
         ${(() => {
@@ -2781,7 +2804,7 @@ function optsSummary(o) {
 function evalSetLabel() {
   const c = EVAL?.corpus;
   const name = typeof c === "string" ? c : c?.label || c?.name;
-  if (!name) return "Machine learning";
+  if (!name) return "Machine Learning";
   // The active corpus answers for itself. CORPORA is filled by loadPicker(),
   // which runs beside loadCorpus() rather than before it, so on a first load
   // the raw name "llm" could reach here before the picker's labels had, and

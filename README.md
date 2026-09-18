@@ -40,9 +40,9 @@ The system ships with three sets of documents, chosen to be unlike each other.
 
 | set | documents | passages | formats | refuses below |
 |---|---|---|---|---|
-| Machine learning | 36 | 5,459 | PDF | 0.0 |
+| Machine Learning | 36 | 5,459 | PDF | 0.0 |
 | Ornithology | 45 | 864 | DOCX, PPTX, XLSX, PDF | −5.5 |
-| Quantitative finance | 35 | 6,184 | PDF | −4.0 |
+| Quantitative Finance | 35 | 6,184 | PDF | −4.0 |
 
 Every document in each set is listed with its filename, title, format and
 passage count in [`docs/corpus-manifest.md`](docs/corpus-manifest.md),
@@ -57,9 +57,9 @@ is what matters.
 
 ```
                         wrongly refused at 0.0
-  machine learning       1 of 67    ( 1.5%)
-  ornithology            9 of 25    (36.0%)
-  quantitative finance   9 of 33    (27.3%)
+  Machine Learning       1 of 67    ( 1.5%)
+  Ornithology            9 of 25    (36.0%)
+  Quantitative Finance   9 of 33    (27.3%)
 ```
 
 The same number that served the original corpus for its whole life throws away
@@ -459,7 +459,7 @@ now been measured against them without one shipping. They are `gpt3-params`,
 `roberta-nsp-drop` and `wmt14` on the papers, and `bird-hollow-bones` and
 `bird-precocial` on the birds; the finance corpus has none. Four of the five
 never reach the reranker at all, because RRF rewards agreement between the two
-retrievers and on these the two disagree sharply: BM25 ranks `wmt14`'s answer
+retrievers and on these the two disagree sharply. BM25 ranks `wmt14`'s answer
 11th and the embedder ranks it 138th. Refuted against them on the corrected
 labels: a deeper candidate pool, every rerank blend, three cross-encoders,
 scoring the best window inside a chunk, and retrieving on a hypothetical
@@ -528,7 +528,7 @@ scored as a refusal, and a model describing the corpus instead of answering
 scored as answering. `src/test_evaluate_answers.py` holds it to 79 checks,
 most of them real answers this repository has already scored wrongly.
 
-The generator is brittle at this size: changing one word of the prompt from
+The generator is brittle at this size. Changing one word of the prompt from
 "Context:" to "Excerpts:" is the difference between a citation with no prose
 and a correct answer. The bird corpus is where it is weakest, refusing 10 of
 the 25 questions its documents answer and grounding under half of its
@@ -551,7 +551,7 @@ what a sample that size is worth.
 
 157 cases across three corpora is still small. On the 25 answerable bird
 questions each is worth 4.0 points, so a one-question difference looks like a
-result and is not. Treat small differences as noise: a 23-case set earlier in
+result and is not. Treat small differences as noise. A 23-case set earlier in
 this project produced three false conclusions (finding 6), and assume these are
 hiding others.
 
@@ -572,9 +572,9 @@ paper is titled "... by Reducing Internal Covariate Shift", which the scoring
 would accept. `src/audit_title_credit.py` measures how much of that reach is
 collected and finds two hits satisfied only by a chunk that opens with a title
 block, and both of those chunks contain the answer, because what follows a
-title block is the abstract. False credits: zero. The reach is real and the
-cost today is nothing, which is a distinction the figures above depend on and
-no aggregate can show.
+title block is the abstract. There were no false credits. The reach is real
+and the cost today is nothing. The figures above depend on that distinction,
+and no aggregate can show it.
 
 ### Per-corpus tuning
 
@@ -584,9 +584,9 @@ the candidate pool size, the choice of embedder, and whether fusing a second
 embedder helps at all. Four of the five are configured per corpus in
 `corpora.json`; the choice of embedder was measured per corpus and shipped
 the same everywhere, which is why `HANDOFF.md` counts four and this counts
-five. The last of those was settled end to end on 2026-08-31: worse on every
-metric on the ML papers, a one-question trade on the birds, and earned on
-quantitative finance, which is the only corpus that ships it. Pointing this at
+five. The last of those was settled end to end on 2026-08-31. It is worse on
+every metric on the ML papers, a one-question trade on the birds, and earned
+on quantitative finance, which is the only corpus that ships it. Pointing this at
 your own documents means re-running the harness, not just re-indexing.
 
 ---

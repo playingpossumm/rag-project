@@ -61,22 +61,10 @@ def sweep(ans: list[float], adv: list[float], lo=-8.0, hi=4.0, step=0.5):
     return out
 
 
-# What each case kind is called on screen. The harness's own vocabulary --
-# "fact", "multi", "cross-doc" -- describes how a case was constructed, which is
-# the labeller's concern. A reader picking a question wants to know what kind of
-# retrieval it will exercise.
-KIND_LABEL = {
-    "fact": "answered in one place",
-    "multi": "spread over several documents",
-    # "decoys that look right" until 2026-09-02, which described the passages
-    # these questions compete against and read on screen as a label on the
-    # QUESTION. A reader picking one was told it was a decoy while the same row
-    # said it should be answered. The golden set calls these cross-document
-    # because similar papers have to be told apart, which is what the reader
-    # is being shown.
-    "cross-doc": "similar documents to tell apart",
-}
-ADVERSARIAL = "not in these documents"
+# Named in corpora.py, because serve.py states them too. Re-exported here so
+# the modules and tests that read them from this file keep working.
+KIND_LABEL = corpora.KIND_LABEL
+ADVERSARIAL = corpora.ADVERSARIAL
 
 # Roughly how many of each to offer, in the order they should be shown. Weighted
 # towards the two kinds that show the system doing something a plain keyword

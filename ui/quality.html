@@ -22,7 +22,7 @@
    answerable/adversarial split is drawn filled vs hollow rather than as a
    fourth hue, so the same blue never means two different things, and the
    palette stays the validated three. */
-:root{--max:1180px; --pad:clamp(1.25rem,4vw,3.25rem)}
+:root{--max:900px; --pad:clamp(1.25rem,4vw,3.25rem); --measure:84ch}
 /* Tighter than base.css's 1.6 line and -.005em tracking: this page is
    tables and tiles, not prose, and its wrap points stay where they were. */
 body{line-height:1.55;letter-spacing:-.006em}
@@ -31,13 +31,17 @@ a{color:inherit}
 h2.lab{margin:0;font-size:10px}
 
 .wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 96px}
-.panel{border:1px solid var(--edge);background:var(--card);margin-top:24px;
-  border-radius:12px;overflow:hidden}
-.phead{display:flex;align-items:baseline;gap:16px;padding:11px 18px;
-  border-bottom:1px solid var(--hair);flex-wrap:wrap}
+/* No card. A rule above the label, the label, then the body, which is what
+   the answer page does. The inset is gone with the box: content sits on the
+   page's one left edge rather than 30px inside a second one. */
+.panel{border:0;background:none;border-radius:0;overflow:visible;
+  margin:0;padding:38px 0 0;border-top:1px solid var(--hair)}
+#tiles.panel{border-top:0;padding-top:22px}
+.phead{display:flex;align-items:baseline;gap:16px;
+  padding:0 0 18px;border-bottom:0;flex-wrap:wrap}
 .phead .right{margin-left:auto}
-.pbody{padding:20px 18px}
-.note{color:var(--mute);font-size:13px;max-width:78ch;margin:0 0 18px}
+.pbody{padding:0 0 34px}
+.note{color:var(--mute);font-size:13px;max-width:var(--measure);margin:0 0 18px}
 .note b{color:var(--dim);font-weight:600}
 .note:last-child{margin-bottom:0}
 
@@ -57,8 +61,8 @@ h2.lab{margin:0;font-size:10px}
    inside, which fits six tiles at 168 and seven at 152. Adding the
    answer-shown tile on 2026-09-03 made it seven, and at 168 the last one
    wrapped onto a row of its own beside a large empty cell. */
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:1px;
-  background:var(--hair)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:24px 26px;
+  background:none}
 /* One vertical rhythm for the page. Sections were spaced by whatever inline
    margin each one had picked up, so the gaps between them were all different. */
 main.wrap > section.panel{margin-top:30px}
@@ -66,14 +70,20 @@ main.wrap > .note{margin-top:30px}
 .pbody > .note:first-child{margin-top:0}
 .pbody > .note{margin-top:22px}
 .pbody > .legend{margin-top:18px}
-.tile{background:var(--card);padding:15px 17px;cursor:help;outline:none;
+.tile{background:none;padding:0;cursor:help;outline:none;
   transition:background 140ms ease-out}
-.tile[data-why]:hover,.tile[data-why]:focus-visible{background:var(--nest)}
+.tile[data-why]:hover .lab,.tile[data-why]:focus-visible .lab{color:var(--ink)}
 .tile[data-why] .lab{border-bottom:1px dotted var(--faint);
   padding-bottom:1px;display:inline-block}
 .tile .v{font-family:var(--mono);font-size:25px;font-variant-numeric:tabular-nums;
   letter-spacing:-.02em;line-height:1.15;margin-top:5px}
-.tile .c{font-size:11.5px;color:var(--mute);margin-top:3px;line-height:1.35}
+/* Two lines of caption are reserved whether or not the second is used.
+   The ornithology set lists four formats where the other two list one,
+   so its captions wrapped and its figures sat 15px lower than the same
+   figures on the other two corpora. Switching sets should move the
+   numbers, not the layout. */
+.tile .c{font-size:11.5px;color:var(--mute);margin-top:3px;line-height:1.35;
+  min-height:2.7em}
 
 /* ---- charts ---- */
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:26px 34px}
@@ -177,11 +187,11 @@ details[open] summary::before{content:"- ";}
     <div class="phead"><h2 class="lab">Contribution of each stage</h2>
       <span class="right lab" id="ladder-n"></span></div>
     <div class="pbody">
-      <p class="note">Each row is the row above it plus one more mechanism, run
-      on the same questions, and <b>the cross-encoder gains the most</b>. The
-      diversity cap is the only row that gives something up, accepting a lower
-      hit rate in return for finding more of the documents that answer the
-      question, and this system takes that trade.</p>
+      <p class="note">Each score includes every mechanism above it plus one new
+      addition. <b>The cross-encoder adds the most value on its own</b>, while the
+      diversity cap trades a lower hit rate for wider coverage, since it
+      favours returning the documents that answer over matching the question
+      alone.</p>
       <div class="grid2" id="ladder"></div>
       <details><summary>Table</summary><div class="scroll"><table id="ladder-t"></table></div></details>
     </div>
@@ -258,10 +268,10 @@ details[open] summary::before{content:"- ";}
     <div class="phead"><h2 class="lab">The cost of each cut point</h2>
       <span class="right lab" id="sweep-n"></span></div>
     <div class="pbody">
-      <p class="note"><b>Rates are the wrong unit here</b>: the two
-      populations are different sizes, so subtracting one rate from the
-      other quietly values a single adversarial catch at several
-      answerable questions thrown away.</p>
+      <p class="note"><b>Rates are the wrong unit here</b>, because the two
+      groups are different sizes. Subtracting one rate from the other treats
+      a single adversarial catch as worth several answerable questions
+      thrown away.</p>
       <div id="sweep"></div>
       <div class="legend">
         <span><i class="line" style="background:var(--dim)"></i>questions that should be answered, refused. The cost.</span>
@@ -275,8 +285,8 @@ details[open] summary::before{content:"- ";}
     <div class="phead"><h2 class="lab">Answer quality</h2>
       <span class="right lab" id="answers-n"></span></div>
     <div class="pbody">
-      <p class="note">Every other number on this page measures retrieval: which
-      passages came back, and in what order. These measure the prose written
+      <p class="note">Every other number here measures retrieval, meaning
+      which passages came back and in what order. These measure the prose written
       from them. <b>No model judges these answers.</b> A judge model is a
       second system whose own failures are invisible, and it would make the
       claim that every number here is reproducible from the repository false.

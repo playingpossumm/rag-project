@@ -14,9 +14,9 @@ is a snapshot.
 
 | | documents | passages | any-hit@5 |
 |---|---|---|---|
-| ML & NLP papers | 36 | 5,459 | 0.910 |
+| Machine Learning | 36 | 5,459 | 0.910 |
 | Ornithology | 45 | 864 | 0.880 |
-| Quantitative finance | 35 | 6,184 | 0.939 |
+| Quantitative Finance | 35 | 6,184 | 0.939 |
 
 **606 checks**, none of which need a network or an API key:
 

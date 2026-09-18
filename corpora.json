@@ -1,6 +1,6 @@
 {
   "llm": {
-    "label": "Machine learning",
+    "label": "Machine Learning",
     "data": "data",
     "store": "vector_store",
     "golden": "eval/golden_set.json",
@@ -20,7 +20,7 @@
     "candidate_k": 20
   },
   "quant": {
-    "label": "Quantitative finance",
+    "label": "Quantitative Finance",
     "data": "data-quant",
     "store": "store-quant",
     "golden": "eval/golden-quant.json",

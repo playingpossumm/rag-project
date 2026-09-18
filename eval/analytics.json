@@ -3,7 +3,7 @@
  "corpora": [
   {
    "name": "llm",
-   "label": "Machine learning",
+   "label": "Machine Learning",
    "documents": 36,
    "chunks": 5459,
    "formats": {
@@ -335,61 +335,61 @@
    "examples": [
     {
      "q": "How are all NLP tasks cast into a single format?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Does the adaptation method add inference latency?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What problem does normalizing layer inputs address?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What subword tokenization scheme is used?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which optimizer was used, and with what beta values?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which passage ranking dataset is used for evaluation?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What is late interaction in a retrieval model?",
-     "label": "similar documents to tell apart",
+     "label": "near-duplicates",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What is in-context learning without gradient updates?",
-     "label": "similar documents to tell apart",
+     "label": "near-duplicates",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Has this paper been retracted?",
-     "label": "not in these documents",
+     "label": "out of scope",
      "adversarial": true,
      "expect": "should be refused"
     },
     {
      "q": "How is the reward model trained for RLHF?",
-     "label": "not in these documents",
+     "label": "out of scope",
      "adversarial": true,
      "expect": "should be refused"
     }
@@ -695,61 +695,61 @@
    "examples": [
     {
      "q": "What organ do birds use to produce song?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What is the fused collarbone of a bird called?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which wing measurement compares span against width?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which pigment gives feathers their black and brown colouring?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which dietary pigments produce red and yellow feather colour?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What is the period of sitting on eggs before hatching called?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which corvid behaviour involves shaping objects into implements?",
-     "label": "similar documents to tell apart",
+     "label": "near-duplicates",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What term describes chicks able to move and feed themselves soon after hatching?",
-     "label": "similar documents to tell apart",
+     "label": "near-duplicates",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "How does insulin regulate blood glucose in humans?",
-     "label": "not in these documents",
+     "label": "out of scope",
      "adversarial": true,
      "expect": "should be refused"
     },
     {
      "q": "How does a proof of stake protocol reach consensus?",
-     "label": "not in these documents",
+     "label": "out of scope",
      "adversarial": true,
      "expect": "should be refused"
     }
@@ -772,7 +772,7 @@
   },
   {
    "name": "quant",
-   "label": "Quantitative finance",
+   "label": "Quantitative Finance",
    "documents": 35,
    "chunks": 6184,
    "formats": {
@@ -1061,55 +1061,55 @@
    "examples": [
     {
      "q": "Can the CVaR threshold be restricted to a bounded range?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "How many news tags does the news-pricing taxonomy define?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What peak Sharpe ratio does the photonic approach report?",
-     "label": "answered in one place",
+     "label": "direct lookup",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which style of trading operates at sub-second timescales?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Whose portfolio selection theory underpins modern allocation methods?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which measure reports the largest peak-to-trough decline of a strategy?",
-     "label": "spread over several documents",
+     "label": "source coverage",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "Which framework trades expected return against portfolio variance?",
-     "label": "similar documents to tell apart",
+     "label": "near-duplicates",
      "adversarial": false,
      "expect": "should be answered"
     },
     {
      "q": "What organ do birds use to produce song?",
-     "label": "not in these documents",
+     "label": "out of scope",
      "adversarial": true,
      "expect": "should be refused"
     },
     {
      "q": "What was the closing price of AAPL yesterday?",
-     "label": "not in these documents",
+     "label": "out of scope",
      "adversarial": true,
      "expect": "should be refused"
     }
@@ -1132,7 +1132,7 @@
   }
  ],
  "inputs": {
-  "corpora_json": "sha256:e7eaaa2533ffe4d6",
+  "corpora_json": "sha256:c1ff109080170c4d",
   "answers": "sha256:292cd38177509237",
   "per_corpus": {
    "llm": {

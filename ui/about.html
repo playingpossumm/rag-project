@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="base.css">
 <style>
-:root{--max:1180px; --pad:clamp(1.25rem,4vw,3.25rem)}
+:root{--max:900px; --pad:clamp(1.25rem,4vw,3.25rem); --measure:78ch}
 /* This page's own tracking, a thousandth of an em under base.css's. Kept
    because the wider value moved a wrap point: with -.005em the paragraph
    opening "Compared with a closed product" took a fourth line at 1280 wide
@@ -36,9 +36,8 @@ h2.lab{margin:0;font-size:10px}
 .tl h4{margin:0 0 3px;font-size:14px;font-weight:600;letter-spacing:-.005em;
   color:var(--ink);display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
 .tl .verdict{font-family:var(--mono);font-size:9px;font-weight:500;
-  letter-spacing:.14em;text-transform:uppercase;padding:2px 6px;border-radius:3px;
-  border:1px solid var(--edge);color:var(--mute);flex:none}
-.tl li.kept .verdict{color:var(--s1);border-color:var(--s1)}
+  letter-spacing:.14em;text-transform:uppercase;color:var(--faint);flex:none}
+.tl li.kept .verdict{color:var(--s1)}
 /* Prose on a measure, figures in a rail beside it.
    The panel runs the full width of the page while the prose wrapped at 74ch, so a
    third of every entry was empty and the scores sat inside the sentences,
@@ -67,34 +66,26 @@ h2.lab{margin:0;font-size:10px}
 @media(max-width:560px){.tl li{padding-left:20px}}
 .wrap{max-width:var(--max);margin:0 auto;padding:34px var(--pad) 110px}
 
-.hero{max-width:70ch;margin:22px 0 8px}
+.hero{max-width:var(--measure);margin:22px 0 8px}
 .hero h1{font-size:clamp(28px,4.2vw,44px)}
 .hero .sub{color:var(--mute);font-size:clamp(17px,2vw,21px);font-weight:600;
   letter-spacing:-.018em;margin-top:6px}
 .hero p{color:var(--dim);margin:18px 0 0}
 
-.panel{border:1px solid var(--edge);background:var(--card);margin-top:26px;
-  border-radius:12px;overflow:hidden}
-/* A panel holding nothing but prose stops where the prose stops.
-   The rest -- the comparison grid, the glossary, the stat row, the timeline
-   with its rail -- genuinely uses the full column and keeps it, so this is
-   scoped by what the panel contains rather than applied by hand and then
-   forgotten when a section changes shape. Left-aligned, not centred: the page
-   has one left edge and a centred panel would introduce a second. */
-.panel:has(> .pbody > .prose:only-child){max-width:calc(68ch + 60px)}
-/* One inset, used by the header and the body alike, and enough of it that the
-   panel reads as a container rather than as a border drawn round the text.
-   It was 18px horizontal against 22px vertical, which on a 1180px panel put
-   the prose 18px from an edge it stopped 490px short of on the other side. */
+/* No card. A rule above the label, the label, then the body, which is what
+   the answer page does. The inset is gone with the box: content sits on the
+   page's one left edge rather than 30px inside a second one. */
+.panel{border:0;background:none;border-radius:0;overflow:visible;
+  margin:0;padding:38px 0 0;border-top:1px solid var(--hair)}
 .phead{display:flex;align-items:baseline;gap:16px;
-  padding:13px clamp(18px,2.4vw,30px);
-  border-bottom:1px solid var(--hair);flex-wrap:wrap}
+  padding:0 0 18px;border-bottom:0;flex-wrap:wrap}
 .phead .right{margin-left:auto}
-.pbody{padding:26px clamp(18px,2.4vw,30px)}
-/* 68ch, and the panel no longer runs wider than the widest thing in it. The
-   dead right-hand third was the whole of this complaint: a card sized to the
-   page holding prose sized to itself, with nothing reconciling the two. */
-.prose{max-width:68ch}
+.pbody{padding:0 0 34px}
+/* One measure, and the page column is sized to it rather than the other way
+   round. The dead right-hand third was the whole of this complaint: a card
+   sized to the page holding prose sized to itself, with nothing reconciling
+   the two. */
+.prose{max-width:var(--measure)}
 .prose p{color:var(--dim);margin:0 0 15px}
 .prose p:last-child{margin-bottom:0}
 .prose b,.prose strong{color:var(--ink);font-weight:600}
@@ -105,11 +96,13 @@ h2.lab{margin:0;font-size:10px}
 
 /* The comparison that states the thesis. Two columns, because the claim is a
    contrast and a list would flatten it. */
-.versus{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair);
-  border:1px solid var(--hair);border-radius:9px;overflow:hidden;margin:4px 0 0}
-.versus>div{background:var(--card);padding:14px 16px}
-.versus .q{grid-column:1/-1;background:var(--nest);color:var(--ink);
-  font-weight:600;font-size:14px;padding:11px 16px}
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;
+  background:none;border:0;border-radius:0;margin:2px 0 0}
+.versus>div{background:none;padding:0 0 16px}
+.versus .q{grid-column:1/-1;background:none;color:var(--ink);
+  font-weight:600;font-size:14px;padding:20px 0 10px;
+  border-top:1px solid var(--hair);margin-top:4px}
+.versus .q:first-child{border-top:0;margin-top:0;padding-top:0}
 .versus .closed{color:var(--mute)}
 .versus .here-col{color:var(--dim)}
 .versus .tag{display:block;margin-bottom:5px}
@@ -125,16 +118,17 @@ h2.lab{margin:0;font-size:10px}
   background:var(--nest);border:1px solid var(--edge);color:var(--faint);
   font-family:var(--mono);font-size:10px;display:grid;place-items:center}
 .steps h3{font-size:15px;margin:2px 0 6px}
-.steps p{color:var(--mute);font-size:13.5px;margin:0;max-width:70ch}
+.steps p{color:var(--mute);font-size:13.5px;margin:0;max-width:var(--measure)}
 .steps .why{color:var(--dim);display:block;margin-top:6px}
 
 /* Glossary: a definition list that stays readable at phone width. */
 .gloss{display:grid;grid-template-columns:minmax(150px,210px) 1fr;
-  gap:1px;background:var(--hair);border:1px solid var(--hair);
-  border-radius:9px;overflow:hidden}
-.gloss dt{background:var(--nest);padding:12px 15px;font-weight:600;font-size:14px}
-.gloss dd{background:var(--card);padding:12px 16px;margin:0;color:var(--dim);
-  font-size:13.5px}
+  gap:0 26px;background:none;border:0;border-radius:0}
+.gloss dt{background:none;padding:14px 0 14px;font-weight:600;font-size:14px;
+  border-top:1px solid var(--hair)}
+.gloss dd{background:none;padding:14px 0 14px;margin:0;color:var(--dim);
+  font-size:13.5px;border-top:1px solid var(--hair)}
+.gloss dt:first-of-type,.gloss dt:first-of-type + dd{border-top:0;padding-top:0}
 .gloss dd .aka{color:var(--faint);font-family:var(--mono);font-size:10.5px;
   letter-spacing:.1em;text-transform:uppercase;display:block;margin-top:5px}
 @media(max-width:640px){
@@ -143,9 +137,9 @@ h2.lab{margin:0;font-size:10px}
   .gloss dd{padding-top:4px}
 }
 
-.stats{display:flex;flex-wrap:wrap;gap:10px}
-.stat{flex:1 1 150px;background:var(--nest);border:1px solid var(--hair);
-  border-radius:9px;padding:13px 15px}
+.stats{display:grid;gap:24px 26px;margin-bottom:4px;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.stat{min-width:0;background:none;border:0;border-radius:0;padding:0}
 .stat .v{font-family:var(--mono);font-size:22px;font-weight:500;
   font-variant-numeric:tabular-nums}
 .stat .k{color:var(--mute);font-size:12.5px;margin-top:3px}
@@ -153,7 +147,7 @@ h2.lab{margin:0;font-size:10px}
 
 /* Sentences, not a label, so they take the body-text token. Until 2026-09-06
    the footer sat in --faint at 2.96:1 on the card surface. */
-.foot{color:var(--mute);font-size:12.5px;margin-top:30px;max-width:74ch}
+.foot{color:var(--mute);font-size:12.5px;margin-top:30px;max-width:var(--measure)}
 .foot a{color:var(--dim)}
 
 /* ---- the rewrite of 2026-09-05. Three additions to the stylesheet.
@@ -164,7 +158,7 @@ h2.lab{margin:0;font-size:10px}
    section and on the paragraph the front page links to, so an anchor does
    not land under the sticky header. */
 .toc{display:flex;flex-wrap:wrap;gap:6px 18px;margin:22px 0 4px;
-  padding:12px 0;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+  padding:12px 0 0;border-top:1px solid var(--hair)}
 .toc a{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--mute);text-decoration:none;white-space:nowrap}
 .toc a:hover{color:var(--ink)}
@@ -213,12 +207,10 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
     <h1>Retrieval, visualized</h1>
     <div class="sub">A retrieval system built from parts, with every stage on screen.</div>
     <p>Retrieval-augmented generation answers a question by searching a set of
-       documents and quoting what it finds. A framework builds one in an
-       afternoon and the result works, but every decision it makes is hidden
-       inside it. This one is built from parts, so each stage is drawn as it
-       runs, each setting can be changed and the question re-run, and each
-       default can be traced to the measurement that chose it over the
-       alternatives.</p>
+       documents and quoting what it finds. This was built from parts. Each
+       stage is drawn as it runs, each setting can be changed and the question
+       re-run, and each default traces back to the measurement that chose
+       it.</p>
   </section>
 
   <nav class="toc" aria-label="Sections on this page">
@@ -243,15 +235,14 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
         <div class="stat"><div class="v">&hellip;</div><div class="k">loading</div></div>
       </div>
       <div class="prose" style="margin-top:18px">
-        <p id="corpora">Three prepared document sets are searchable here and they
-           are fixed: 36 machine-learning papers, 45 ornithology articles and 35
-           quantitative-finance papers. Each set was indexed, given labelled
-           questions and calibrated before any figure on this site was measured,
-           and the figures above are read from the same generated file the
-           analytics page plots, so this page cannot quote a number the
-           measurements do not support. <a href="/quality">The analytics
-           page</a> shows every configuration, every threshold sweep and every
-           case.</p>
+        <p id="corpora">Three document sets are searchable here, and they are
+           fixed. They hold 36 machine-learning papers, 45 ornithology articles
+           and 35 quantitative-finance papers. Each one was indexed, given
+           labelled questions and calibrated before any figure on this site was
+           measured. The figures above come from the same generated file the
+           analytics page plots, so every number here traces back to a
+           measurement. <a href="/quality">The analytics page</a> shows every
+           configuration, every threshold sweep and every case.</p>
         <p>The site is a learning project, built to understand retrieval by
            making every part of it visible rather than to serve documents at
            scale. To point it at your own documents, or to run the search live

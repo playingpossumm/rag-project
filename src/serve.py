@@ -87,6 +87,7 @@ def set_offline_if_cached(cache: Path | None = None) -> bool:
 set_offline_if_cached()
 
 from api import DEFAULT_EXPANSION, ask, generate_answer  # noqa: E402 - after the offline decision
+from corpora import ADVERSARIAL, KIND_LABEL  # noqa: E402 - the on-screen case-kind names
 
 # Loopback by default, because the corpus may be private and a RAG server is a
 # document-reading service: binding it to the world by accident is the failure
@@ -398,13 +399,13 @@ INDEX_RUN = IndexRun()
 # with no eval run yet has to offer, and it is about the ML papers because that
 # is the corpus a fresh clone ships with.
 EXAMPLES = [
-    {"label": "answered in one place",
+    {"label": KIND_LABEL["fact"],
      "q": "What BLEU score did the Transformer achieve on WMT 2014 English-to-German?"},
-    {"label": "answered in one place",
+    {"label": KIND_LABEL["fact"],
      "q": "How are normalization statistics computed across features rather than examples?"},
-    {"label": "spread over several documents",
+    {"label": KIND_LABEL["multi"],
      "q": "What learning rate schedule and optimizer settings were used for training?"},
-    {"label": "not in these documents",
+    {"label": ADVERSARIAL,
      "q": "What is the airspeed velocity of an unladen swallow?"},
 ]
 
