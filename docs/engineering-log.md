@@ -2629,6 +2629,54 @@ its own `overflow-x:auto`.
 
 ---
 
+## 2026-09-18 — Fourteen citations the rewrite broke, and the guard that could not see them
+
+The rewrite moved every commit SHA. The pass that followed it re-pointed the
+citations and `check_docs` went green, so the job looked finished. It was not:
+**14 citations were still dangling**, and they surfaced only because pruning the
+local object store took away the old commits the working copy had been quietly
+resolving them against.
+
+**Why the pass missed them.** It read `*.md`. The dangling ones were in a
+`.html` page and two `.py` files.
+
+| file | citations |
+|---|---|
+| `docs/angle-sweep.html` | 11 commit stamps, one of them twice |
+| `src/calibrate_threshold.py` | 1 |
+| `src/check_freshness.py` | 1, the same commit as above |
+
+**And `check_docs` reported one of the 14, not 14.** Its SHA check reads
+markdown and a handful of named sources, so the eleven stamps in the HTML page
+were never looked at. The one it did catch, in `calibrate_threshold.py`, is the
+only reason any of this was found. A guard that covers most of a class is worth
+less than it appears, because the green result is read as covering all of it.
+
+**Recovering the mapping, with the commit-map already deleted.** The rewrite's
+`commit-map` was in a scratch clone that had been cleaned up, and by then the
+old commits were gone from the remote and pruned locally, so there was nothing
+mechanical left to look them up in. They were recovered by matching each
+stamp's own caption against the subject lines in the current history:
+"Sixty degrees" to "Angle to 60 degrees; the block reads as one solid volume",
+"Layers of arrays" to "Draw the run as layers of arrays, with the attention map
+underneath", and so on for all eleven. The match was then checked a second way:
+the stamps appear in the page in reverse chronological order, and the eleven
+replacements are in that same order in the rewritten history, with no crossings.
+The page's own sentence naming the range it was rendered from, oldest stamp
+through `HEAD`, fixes the earliest of them, which is the one whose caption was
+least specific.
+
+**A scan that reads everything git tracks** now exists in the scratch notes
+rather than the repository, and it is the reason the count is 14 and not "the
+ones somebody thought to look at". Two cautions it produced, both worth keeping:
+the word **feedback** is seven hexadecimal letters and matches any 7-character
+SHA pattern, and one of the eleven stamps was a SHA made only of digits, which
+any check that filters numeric tokens out will skip. Both appear in this
+repository, and neither SHA is quoted here, because `check_docs` reads a run of
+hex as a commit it should be able to resolve and these no longer exist.
+
+---
+
 ## 2026-09-18 — The second rewrite, and the rule the first one did not carry
 
 The history rewrite of 2026-09-07 removed a real name, two personal addresses,
