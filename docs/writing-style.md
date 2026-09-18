@@ -46,17 +46,24 @@ wrong; "Architecture" is right. Prefer a single noun or a short noun phrase.
 
 STRUCTURE
 
-Prose is the default. Bullets and tables are exceptions and both should be rare.
+A document is a set of labelled sections, and within a section the unit is the paragraph
+that states one point and stops. That is the shape a technical paper has, and it is not the
+shape of an essay, which carries a reader from one idea to the next, or of a page of
+bullets, which carries nothing. A reader after a single fact should be able to find the
+paragraph holding it without reading the section through.
 
-- Use a table when the content is genuinely two-dimensional — a comparison across the same
-  axes, a glossary, a reference index. A table with one row, or with a column that repeats
-  the same value, should be a sentence.
+- Use a table when the content is genuinely two-dimensional, such as a comparison across
+  the same axes, a glossary, or a reference index. A table with one row, or with a column
+  that repeats the same value, should be a sentence.
 - Use bullets when the items are strictly parallel and each is one line. Three or more, or
   it is a sentence with commas.
-- Everything else is a paragraph. A document that is mostly tables is a spreadsheet.
+- Everything else is a paragraph. A document that is mostly tables is a spreadsheet, and
+  one that is mostly bullets is a set of notes.
 
-Diagrams in fenced code blocks are welcome where a flow or a directory tree is clearer shown
-than described.
+Diagrams in fenced code blocks are welcome where a flow or a directory tree is clearer
+shown than described. Where the project already draws the thing under discussion, point the
+reader at the drawing and describe what it shows, rather than rebuilding the mechanism in
+sentences alongside it.
 
 FACTS
 

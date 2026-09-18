@@ -2510,6 +2510,104 @@ cross-document group. See the entry below.
 
 ---
 
+## 2026-09-18 — The register the documents are written in, and the code the rebuild left behind
+
+**Why.** `docs/writing-style.md` said "Prose is the default. Bullets and tables
+are exceptions and both should be rare". The register asked for is a technical
+paper: labelled sections, a paragraph that states one point, a figure where a
+figure carries the mechanism better than a sentence. Those are two different
+instructions, and the README was written to neither. The rule was settled
+first, because the rule decides the rewrite.
+
+**The rule now describes the shape rather than the prose.** Its STRUCTURE
+section says a document is a set of labelled sections and the unit inside one
+is the paragraph that states one point and stops, that a reader after a single
+fact should find the paragraph holding it without reading the section through,
+and that a document which is mostly bullets is a set of notes. It adds the
+clause this project's diagram made necessary: where the project already draws
+the thing under discussion, point the reader at the drawing rather than
+rebuilding the mechanism in sentences beside it.
+
+**The README was rewritten against it.** 20 labelled sections now stand where
+a bold sentence opened the paragraph, 5 under Design decisions, 6 under
+Quickstart and 9 under Limitations, and the emphasis inside sentences came
+out: a figure set in bold reads as a figure being argued for. 7 em dashes went. Every number
+was held: the old and the new file were compared number by number, and the only
+differences are `+7.6` written as `7.6`, one comma, and the figures this entry
+adds. `check_docs` passes on all of it, which is 4 ladder rows, the corpora
+table, the threshold table, the guard tally and the per-corpus settings list.
+
+**Two phrases rated the result instead of stating it, and one of them had a
+measurement sitting in the repository.** "The one that separates best is
+dramatically slower" is `BAAI/bge-reranker-base` at 12.6 seconds a query on the
+papers and 9.6 on the birds against 1.1 for the shipped model, which
+`eval/reranker-comparison.json` has held since it was written.
+
+**The test section named 7 of the 17 python suites.** It had gone stale as
+suites were added, which is backlog item 20. It now points at `python
+src/check_docs.py --tests`, which runs every suite, prints each count, and
+fails when a count a document states has drifted. No total is quoted in the
+README, because a total there would be a number nothing holds: the checker
+reads the ones in `HANDOFF.md` and `docs/roadmap.md` only.
+
+**Running that guard found it was already failing.** `test_freshness` gained a
+check on 2026-09-17 and the three documented counts did not move with it, so
+`--tests` had been exiting 1 on `master`: the suite sentence said 68 and the
+suite runs 69, the subtotal said 546, and two documents said 605 against 606.
+A second copy of the same figure sits in section 7's prose and was also stale.
+Fixed, and the exercise is the argument for the guard: the drift was a day old
+and nothing else would have said so.
+
+**About's comparison said what closed products do inside.** The five
+differences were sourced to HANDOFF section 1, but three of the cells claimed
+behaviour of named third-party products that nothing here has measured, on a
+public page. Each now says what a reader can see from outside, which is the
+part the comparison is about and the part that can be checked. A closing
+paragraph says what the grid cannot: every row is a difference this project
+wins, and it has no accounts, no permissions, no connection to a live document
+store and nothing in its ranking that came from how readers behaved.
+
+**The interface rebuild of 2026-09-15 left more dead CSS than the audit
+found.** The audit named 10 selectors and the 2026-09-17 re-probe reported 4 of
+them still dead. Both were computed by grepping for the name, which matches the
+name in a comment. Comparing each page's style block against every class used
+in its markup, its script and the shared files it loads found 31 dead rules in
+`index.html` and 6 in `about.html`, and contradicted the probe on `.callout`,
+recorded as referenced and in fact declared in 6 rules and used nowhere.
+`.legend` and `.pills` stay in `quality.html`, which uses both, so the check
+has to be per page.
+
+**The colour that marks a stop is read from its token now.** `#f0685f` was
+written out in `pipeline-map.js` twice and in `versions.html` once, beside a
+`--bad` token that `readInk()` already exposes as `ink.critical`. `easeOut` and
+`slot()` are gone: `slot()` placed a passage by its rank until `spreadHome()`
+replaced it on 2026-09-15, and nothing had called either since.
+
+**The tiles on the analytics page were focusable with nothing to read.** The
+audit asked for `aria-describedby` pointing at `#tip`. That would have been
+wrong: `#tip` is one node shared by every tile and every chart and is emptied
+on pointerleave, so what it holds depends on where the pointer has been. Each
+tile now carries its own hidden description and `role="group"` with its label,
+and the shared tooltip stays what it is, a visual affordance.
+
+**The set list promised keys it did not answer.** It has carried
+`role="listbox"` and `role="option"` since it was built and answered nothing
+but Escape, which is worse than carrying no role: a reader told there is a list
+to arrow through finds the arrows dead. Opening it now lands on the set in use,
+the arrows move and wrap, Home and End reach the ends, Escape closes and
+returns focus to the button, and the options are out of the tab order and
+reached from it.
+
+**Checked.** All 7 guards pass. The diagram harness draws 167 runs in 1,197
+renders with 0 problems and the same structure figures as before the removals,
+so nothing that came out was load-bearing. 18 assertions over the keys, the
+roles and the descriptions pass in a browser. All three pages load at 1440x780
+and 400x780 with no console error and no sideways scroll; the only elements
+wider than a 400px window are the diagram canvas and two tables, each inside
+its own `overflow-x:auto`.
+
+---
+
 ## 2026-09-18 — The second rewrite, and the rule the first one did not carry
 
 The history rewrite of 2026-09-07 removed a real name, two personal addresses,

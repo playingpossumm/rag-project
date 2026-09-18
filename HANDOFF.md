@@ -660,7 +660,7 @@ changes no count), and case ids, question strings, corpus sizes and the
 per-corpus threshold and blend are compared directly (weaker, but it works on
 files written before provenance existed and names the question rather than a
 hash). `src/test_freshness.py` stages each known failure on a synthetic corpus
-and asserts the check reports it: 68 checks, hermetic, running in
+and asserts the check reports it: 69 checks, hermetic, running in
 milliseconds (30 when this entry was written).
 
 **And it found a live instance of the trap it was written for.** `per_case.py`
@@ -1035,11 +1035,11 @@ reads the same words. Query decomposition was the fix that addressed it on
 paper, and measured on 2026-08-31 it reaches none of them. Full numbers in
 `docs/engineering-log.md`.
 
-Test counts, as of 2026-09-07: **605 checks plus the route suite**: 99 serve,
-81 trace, 79 answer-quality judge, 68 freshness, 33 loaders, 24 local
+Test counts, as of 2026-09-18: **606 checks plus the route suite**: 99 serve,
+81 trace, 79 answer-quality judge, 69 freshness, 33 loaders, 24 local
 generation, 21 links, 21 metrics, 20 api, 20 excerpt, 19 generate, 17
 golden-set audit, 17 analytics, 10 reranker cache, 9 ingest cache and 8 OCR,
-which is 546,
+which is 547,
 plus 50 answer-highlight checks under `node ui/test-answer-mark.mjs` and 9
 passage-selection checks under `node ui/test-passages.mjs`.
 
