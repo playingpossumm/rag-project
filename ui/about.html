@@ -94,20 +94,6 @@ h2.lab{margin:0;font-size:10px}
 .prose code{font-family:var(--mono);font-size:.88em;background:var(--nest);
   border:1px solid var(--hair);border-radius:4px;padding:1px 5px;color:var(--ink)}
 
-/* The comparison that states the thesis. Two columns, because the claim is a
-   contrast and a list would flatten it. */
-.versus{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;
-  background:none;border:0;border-radius:0;margin:2px 0 0}
-.versus>div{background:none;padding:0 0 16px}
-.versus .q{grid-column:1/-1;background:none;color:var(--ink);
-  font-weight:600;font-size:14px;padding:20px 0 10px;
-  border-top:1px solid var(--hair);margin-top:4px}
-.versus .q:first-child{border-top:0;margin-top:0;padding-top:0}
-.versus .closed{color:var(--mute)}
-.versus .here-col{color:var(--dim)}
-.versus .tag{display:block;margin-bottom:5px}
-@media(max-width:720px){.versus{grid-template-columns:1fr}}
-
 /* The pipeline walk-through: a numbered rail, because the order is the point. */
 .steps{counter-reset:s;margin:0;padding:0;list-style:none}
 .steps li{counter-increment:s;position:relative;padding:0 0 20px 46px;
@@ -239,9 +225,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
            fixed. They hold 36 Machine Learning papers, 45 Ornithology
            articles and 35 Quantitative Finance papers. Each one was indexed, given
            labelled questions and calibrated before any figure on this site was
-           measured. The figures above come from the same generated file the
-           analytics page plots, so every number here traces back to a
-           measurement. <a href="/quality">The analytics page</a> shows every
+           measured. <a href="/quality">The analytics page</a> shows every
            configuration, every threshold sweep and every case.</p>
         <p>The site is a learning project, built to understand retrieval by
            making every part of it visible rather than to serve documents at
@@ -260,7 +244,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   <!-- --------------------------------------------------------------- compared -->
   <section class="panel" id="compared">
     <div class="phead"><h2 class="lab">Compared with a closed product</h2>
-      <span class="lab right">Five points of difference</span></div>
+      <span class="lab right">What it trades</span></div>
     <div class="pbody">
       <div class="prose">
         <p>NotebookLM, Glean and the enterprise search tools sold to companies
@@ -271,40 +255,16 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
            checked from outside, not about which one answers better.</p>
       </div>
 
-      <div class="versus" style="margin-top:18px">
-        <div class="q">The choice of passage</div>
-        <div class="closed"><span class="lab tag">Closed product</span>The passage arrives on its own. The ranking that chose it, and the passages it beat, are not part of what comes back.</div>
-        <div class="here-col"><span class="lab tag">Here</span>Every stage is shown with the score it assigned. Asking a question draws what each retriever found, what the cross-encoder moved and what the cap dropped.</div>
-
-        <div class="q">The effect of a change</div>
-        <div class="closed"><span class="lab tag">Closed product</span>The retrieval settings are not the reader's to change, so there is no before and after to measure.</div>
-        <div class="here-col"><span class="lab tag">Here</span>Labelled questions across three corpora are scored under every pipeline configuration, so a change is accepted or rejected on the measurement. <span id="gone-n">Fifteen</span> were measured and not kept, though one of them ships on a single set.</div>
-
-        <div class="q">Unanswerable questions</div>
-        <div class="closed"><span class="lab tag">Closed product</span>Whether it can decline at all, and below what confidence, is not stated to the reader.</div>
-        <div class="here-col"><span class="lab tag">Here</span>It declines below a threshold calibrated for each corpus against questions the documents cannot answer.</div>
-
-        <div class="q">Disagreeing sources</div>
-        <div class="closed"><span class="lab tag">Closed product</span>One answer comes back, and the passages behind it are not set beside it to be read against each other.</div>
-        <div class="here-col"><span class="lab tag">Here</span>The other passages that came back are listed beneath the answer, because the top result is sometimes the wrong one.</div>
-
-        <div class="q">Use inside another tool</div>
-        <div class="closed"><span class="lab tag">Closed product</span>It is reached over the network as a service, so the retrieval inside it cannot be read or changed.</div>
-        <div class="here-col"><span class="lab tag">Here</span>It is a Python library with an HTTP wrapper around it, and this interface is one caller rather than the product.</div>
-      </div>
-
-      <div class="prose" style="margin-top:22px">
+      <div class="prose" style="margin-top:14px">
         <!-- SECURITY.md, "The server has no authentication"; README.md, the
              local bind and the model sizes; src/serve.py, which records
              nothing a reader does -->
-        <p>Every row above is a difference this project wins, so the comparison
-           runs one way only. It searches sets of documents indexed ahead of
-           time, on one machine, with no accounts and no permissions, which
-           means it has nothing to say about whether a reader is allowed to see
-           a document. Nothing in its ranking comes from how readers behaved,
-           because no such signal is recorded. Its models are small enough to
-           run on a laptop's processor. Those are the parts a product sold to
-           companies has to get right, and none of them exists here.</p>
+        <p>What this has instead is the middle. Every stage is drawn with the
+           score it assigned, every default traces to a measurement on the
+           analytics page, and any of the four retrieval settings can be
+           changed and the question re-run. What it does not have is an
+           account, a permission model or a connection to a live document
+           store, which is most of what a product sold to companies is.</p>
       </div>
     </div>
   </section>
@@ -504,40 +464,19 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <ol class="tl">
         <li class="gone">
           <h4>A larger reranker<span class="verdict">rejected</span></h4>
-          <p>The obvious answer to the reranker being the weakest stage was a
-             model twelve times its size. It recovered two of the ten failing
-             questions, the same two that a model 1.5 times the size recovered,
-             and took ten times as long per query. Three models were
-             compared, and the two halves of the job move in opposite directions
-             as the model grows, since the larger ones rank worse and separate
-             answerable from unanswerable better.</p>
+          <p>A model twelve times the size recovered two of the ten failing questions, the same two a model 1.5 times the size reached, and took ten times as long. Across three models, ranking gets worse as they grow while telling answerable from unanswerable gets better.</p>
         </li>
         <li class="gone">
           <h4>A quantised reranker<span class="verdict">rejected</span></h4>
-          <p>Compressing the cross-encoder ran 1.5&times; faster and barely moved
-             the rankings, which is all a normal comparison would have checked.
-             Every score also shifted down by a fifth of a point, and the gate
-             reads that score as an absolute, so the system silently began
-             refusing questions it could answer.</p>
+          <p>Compressing the cross-encoder ran 1.5&times; faster and barely moved the rankings, which is all a normal comparison checks. Every score also shifted down a fifth of a point, and the gate reads that score as an absolute, so the system silently began refusing questions it could answer.</p>
         </li>
         <li class="gone">
           <h4>A wider candidate pool<span class="verdict">rejected</span></h4>
-          <p>More candidates means the answer is available more often, and it
-             was returned <em>less</em> often on all three document sets,
-             because the reranker's precision falls faster than the extra
-             candidates help. This is the clearest statement in the project of
-             where the weak stage is, and it came out of an experiment about
-             speed.</p>
+          <p>More candidates made the answer available more often and returned <em>less</em> often, on all three sets, because the reranker's precision falls faster than the extra candidates help. It is the clearest evidence in the project of where the weak stage is.</p>
         </li>
         <li class="gone">
           <h4>A second embedder<span class="verdict">one set only</span></h4>
-          <p>Two different models read the passages and their results are
-             combined. On a candidate shortlist it looked better on all three
-             document sets, and measured on the finished answer it is worse on
-             the papers, an even trade on the birds, and better only on the
-             finance set, where it ships. On the papers the shortlist does not
-             change at all, since the same passages arrive in a different order
-             and the reranker does worse with that order.</p>
+          <p>Two models read the passages and their rankings are fused. Better on the shortlist everywhere, and on the finished answer worse on the papers, an even trade on the birds, and better only on finance, where it ships.</p>
         </li>
       </ol></details>
 
@@ -545,54 +484,24 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <ol class="tl">
         <li class="gone">
           <h4>Query rewriting<span class="verdict">rejected</span></h4>
-          <p>Seven questions on the paper set fail however the search is
-             configured, and the plan for them was to have a language model
-             restate each one more clearly first. It reached one of the seven
-             and broke five that had been working, because a rewrite is a
-             paraphrase and paraphrasing a question that already works moves it
-             off the wording that was working.</p>
+          <p>A language model restated each of the seven failing questions more clearly first. It reached one and broke five, because paraphrasing a question that already works moves it off the wording that was working.</p>
           <span class="num">net <b>three questions worse</b>, and six times slower</span>
         </li>
         <li class="gone">
           <h4>Query decomposition<span class="verdict">rejected</span></h4>
-          <p>For the same seven, a second plan split each question into its
-             parts, searched for each part and combined the results. It reached
-             none of them, cost the same three questions, and took 21 times as
-             long per search. It had been the project's named answer for those seven
-             for months, on an argument rather than a measurement.</p>
+          <p>Splitting each question into its parts and searching for each reached none of the seven and cost the same three. It had been the project's named answer for those seven for months, on an argument rather than a measurement.</p>
           <span class="num"><b>0 of 7</b>, at 21&times; the time</span>
         </li>
         <li class="gone">
           <h4>An invented answer<span class="verdict">rejected</span></h4>
-          <p>Of the five questions no configuration reaches, four ask for a
-             word the question does not contain, so the word which would find
-             the passage is absent from the search. A model was therefore asked to answer from memory and the search was run
-             on its invented passage, which supplies the vocabulary while the
-             documents still supply the citation. Run on every question it is
-             worse. On the paper set it recovers three and breaks seven, and on
-             the finance set it recovers none and breaks four.</p>
+          <p>Four of the five unreachable questions ask for a word they do not contain, so a model was asked to answer from memory and the search run on its invented passage. It supplies the vocabulary while the documents still supply the citation, and run on every question it is worse.</p>
           <span class="num">paper set <b>+3 / &minus;7</b></span>
-          <p>Running it only when the system was already about to decline, so
-             it could not disturb a working question, was measured before it was
-             built and never fires, because every one of the eleven questions
-             these sets get wrong scores <em>above</em> its own set's refusal
-             line, the highest at +6.36. The system is not uncertain when it is
-             wrong. Three cheaper signals were tried in the gate's place, which
-             are how many of the question's words the top passage carries, how
-             far the top score leads the fifth, and how many of the top five
-             both retrievers ranked, and on all three the failing questions sit
-             inside the range of the working ones, so catching all eleven means
-             firing on at least 90% of every question.</p>
+          <p>Firing it only when the system was about to decline never triggers. Every one of the eleven questions these sets get wrong scores <em>above</em> its own set's refusal line, the highest at +6.36, so the system is not uncertain when it is wrong. Three cheaper signals were tried in the gate's place and all three put the failing questions inside the range of the working ones.</p>
           <span class="num">reaches <b>0 of 11</b></span>
         </li>
         <li class="gone">
           <h4>Pseudo-relevance feedback<span class="verdict">rejected</span></h4>
-          <p>Expanding the query with words from the first results is the
-             classical fix for a question whose answer uses different words. It
-             recovered none of the twelve questions it was aimed at, for a
-             reason written down before the run, which is that the extra words
-             come from the passages the first search returned and the missing
-             word is not in those either.</p>
+          <p>Adding words from the first results is the classical fix for a question whose answer uses different words. It recovered none of the twelve, for a reason written down before the run, because those words come from the passages the first search returned and the missing word is not in them either.</p>
           <span class="num"><b>0 of 12</b> recovered</span>
         </li>
       </ol></details>
@@ -601,47 +510,22 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <ol class="tl">
         <li class="gone">
           <h4>Neighbours on the page<span class="verdict">rejected</span></h4>
-          <p>When the answer is missing from what is shown it is usually one
-             passage away, so the obvious repair is to show more. Shown in
-             full, the neighbours put the answer on screen for 9 more questions
-             and triple the text. Restricted to what the page actually renders,
-             they are 4 questions for nearly twice the text. Choosing the
-             excerpt from the enlarged passage instead scored worse than doing
-             nothing, 0.792 against 0.808, because the choice follows the
-             question's words and moves further from the answer when given more
-             room.</p>
+          <p>Showing the passages either side puts the answer on screen for 9 more questions and triples the text, or 4 questions for nearly twice the text once restricted to what the page renders. Choosing the excerpt from the enlarged passage scored worse than doing nothing.</p>
           <span class="num">0.808 &rarr; <b>0.840</b>, at 591 &rarr; 1,073 characters a passage</span>
         </li>
         <li class="gone">
           <h4>Neighbours in the shortlist<span class="verdict">rejected</span></h4>
-          <p>Rather than show the neighbour, offer it to the model that ranks,
-             so the piece holding the answer sits in front of the reranker
-             beside the piece that was found. It gains one question on one set
-             of documents, costs ranking quality on the other two, lets one more
-             unanswerable question through the gate, and takes two and a half
-             times as long.</p>
+          <p>Offering the neighbour to the reranker instead gains one question on one set, costs ranking quality on the other two, lets one more unanswerable question through the gate, and takes two and a half times as long.</p>
           <span class="num">one question gained, <b>MRR &minus;0.012 and &minus;0.015</b></span>
         </li>
         <li class="gone">
           <h4>Window scoring<span class="verdict">rejected</span></h4>
-          <p>The same idea approached from the other end ranks each passage by
-             the piece it sits in while still returning the piece itself. It is
-             worse on every set of documents and on every measure but one. It
-             does let fewer unanswerable questions through, and that is not an
-             improvement, because scoring against more text lowers every score
-             at once and moves the refusal line rather than the ranking, at a
-             cost of 7 answerable questions on the papers.</p>
+          <p>Ranking each passage by the piece it sits in, while still returning the piece itself, is worse on every set and every measure but one. It lets fewer unanswerable questions through only because scoring more text lowers every score at once, which moves the refusal line rather than the ranking.</p>
           <span class="num">0.910 &rarr; <b>0.881</b> on the papers, 0.939 &rarr; <b>0.818</b> on finance</span>
         </li>
         <li class="gone">
           <h4>A finer stride<span class="verdict">rejected</span></h4>
-          <p>If no single passage holds both the words that find it and the
-             words that answer, cut the documents so that one does. The pieces
-             stay the same length and start closer together, which is 32% more
-             of them to search. Measured on the ornithology set with the
-             shortlist widened to match, it is worse at finding the answer and
-             worse at showing it, and it recovers exactly the one question the
-             shortlist experiment above recovers.</p>
+          <p>Cutting the documents so passages start closer together means 32% more of them to search. On the ornithology set it is worse at finding the answer and worse at showing it, and it recovers exactly the one question the shortlist experiment above recovers.</p>
           <span class="num">0.880 &rarr; <b>0.840</b> found, 0.760 &rarr; <b>0.720</b> shown</span>
         </li>
       </ol></details>
@@ -650,25 +534,12 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <ol class="tl">
         <li class="gone">
           <h4>Title prefixes<span class="verdict">reverted</span></h4>
-          <p>Putting each document's title on every passage should have helped a
-             passage say what it belongs to. It bought no ranking gain and lost
-             coverage, and an earlier version had looked like a win because two
-             things were changed at once.</p>
+          <p>Putting each document's title on every passage bought no ranking gain and lost coverage. An earlier version had looked like a win because two things were changed at once.</p>
           <span class="num">documents found <b>&minus;0.051</b></span>
         </li>
         <li class="gone">
           <h4>A front-matter filter<span class="verdict">left off</span></h4>
-          <p>Dropping a paper's title block from the search was the obvious
-             repair for the excerpt problem, written before the cause was
-             understood. It scores worse on both sets that have title pages,
-             and the first reading was that the scoring had credited a title
-             page which answers nothing. Read in full, both passages behind the
-             drop answer outright, because a passage that begins with a title
-             page continues into the abstract, which states the paper's finding
-             in two or three sentences. The filter loses two real answers by
-             dropping the abstract with the title, and judging a passage by how
-             it opens is the error that put a title page on screen in the first
-             place.</p>
+          <p>Dropping a paper's title block from the search scores worse on both sets that have title pages. Both passages behind the drop answer outright, because a passage that begins with a title page continues into the abstract, so the filter loses two real answers along with the title.</p>
           <span class="num">0.851 &rarr; <b>0.836</b></span>
         </li>
       </ol></details>
@@ -677,15 +548,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <ol class="tl">
         <li class="gone">
           <h4>A larger generator<span class="verdict">no change</span></h4>
-          <p>A generator roughly three times the size, from the same family,
-             was compared over the 43 questions both models answered. It gets
-             two more of the 28
-             answerable ones right, which on a set this size is inside the
-             noise, and everything else moves the other way. It misses one of
-             the questions it should refuse, it quotes the papers' own reference
-             numbers, which name no document and cannot be looked up, it draws
-             less of its wording from the passages it was given, and it takes 58
-             times as long.</p>
+          <p>A generator three times the size got two more of the 28 answerable questions right, which is inside the noise at this size, and everything else moved the other way. It misses one of the refusals, quotes reference numbers that name no document, draws less of its wording from the passages it was given, and takes 58 times as long.</p>
         </li>
       </ol></details>
 
@@ -723,9 +586,28 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <span class="lab right">Known weaknesses</span></div>
     <div class="pbody">
       <div class="prose">
-        <!-- ui/about.html #compared -->
-        <p>This is a simplified retrieval system, and the products compared
-           above answer better than it does.</p>
+        <!-- ui/about.html #reading, the eleven wrong answers and their
+             scores; ui/index.html, the retrieval result reading -->
+        <p>The answer can be wrong, and it does not look wrong when it is.
+           Across the three sets there are eleven questions where nothing that
+           comes back answers them, and the system shows an answer anyway on
+           nine of those, the highest scoring +6.36 on a scale running to about
+           +11. Nothing in the pipeline checks that a passage is right. The
+           score measures how well a passage matches the question, which is a
+           different thing, and every limitation below is a reason that gap
+           opens.</p>
+
+        <!-- ui/about.html #reading, the fused collarbone; ui/index.html, the
+             retrieval result reading; ui/about.html #development, "An invented
+             answer"; docs/polish-backlog.md item 18 -->
+        <h3>Why a wrong answer looks confident</h3>
+        <p>The decision to answer or decline reads the cross-encoder's score,
+           which compares the question with the passage and does not check that
+           the passage is right. When the cross-encoder prefers the wrong
+           passage, the system answers with confidence. Asked for a bird's
+           fused collarbone, it ranks a passage about the pygostyle first and
+           the passage naming the furcula second, and every question these sets
+           get wrong scores above its own set's refusal line.</p>
 
         <!-- ui/about.html #glance; README.md, the recorded demo -->
         <h3>Prepared documents</h3>
@@ -754,19 +636,6 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
            question and reaches the same conclusion. A question that asks what
            something is called withholds the one word that would find its
            answer. This is the shared cause described under Development.</p>
-
-        <!-- ui/about.html #reading, the fused collarbone; ui/index.html, the
-             retrieval result reading; ui/about.html #development, "An invented
-             answer"; docs/polish-backlog.md item 18 -->
-        <h3>Confident mistakes</h3>
-        <p>The decision to answer or decline reads the cross-encoder's score,
-           which compares the question with the passage and does not check that
-           the passage is right. When the cross-encoder prefers the wrong
-           passage, the system answers with confidence. Asked for a bird's fused
-           collarbone, it ranks a passage about the pygostyle first and the
-           passage naming the furcula second, and every question these sets get
-           wrong scores above its own set's refusal line, so the system is no
-           less certain when it is wrong.</p>
 
         <!-- README.md, per-corpus thresholds; src/abstain.py; src/corpora.py,
              an uncalibrated corpus; src/build_golden_set.py, load_cases -->
@@ -945,10 +814,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
     </div>
   </section>
 
-  <p class="foot">Built by hand in Python, with no retrieval framework, no CDN
-     and no external request from this page. The server binds to localhost,
-     since the documents may be private, and a page about private documents
-     should not call a font host, so the fonts are bundled.</p>
+  <p class="foot">Built by hand in Python, with no retrieval framework.</p>
 
 </main>
 
