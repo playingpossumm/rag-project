@@ -172,6 +172,49 @@ details.grp[open]>summary::after{content:"\2212"}
 details.grp[open]>summary{margin-bottom:12px}
 details.grp>summary:hover .lab,details.grp>summary:hover{color:var(--ink)}
 details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
+/* Reading a result. The anatomy flowchart and the score distribution.
+
+   The nodes are buttons because each one reveals text when activated, and a
+   button takes keyboard focus without a tabindex. Their note lands in one pane
+   under the figure rather than in a floating tooltip: a tooltip that opens on
+   hover alone cannot be reached on a touch screen, and this figure is the
+   section's content rather than an ornament beside it. */
+.fig{margin:0;max-width:var(--measure)}
+.fig+.fig{margin-top:30px}
+.flow{display:flex;flex-direction:column}
+.node{display:block;width:100%;text-align:left;font-family:inherit;cursor:pointer;
+  background:var(--nest);border:1px solid var(--hair);border-radius:3px;
+  padding:9px 11px;color:var(--dim);
+  transition:border-color .14s var(--ease),color .14s var(--ease)}
+.node:hover,.node:focus-visible{border-color:var(--wire);color:var(--ink);outline:none}
+.node[aria-pressed="true"]{border-color:var(--s1);color:var(--ink)}
+.node .nk{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:2px}
+.node[aria-pressed="true"] .nk{color:var(--s1)}
+.node .nv{display:block;font-size:13.5px;line-height:1.35}
+/* The trunk between two stacked nodes, and the pair of legs under the gate. */
+.conn{width:1px;height:15px;background:var(--wire);margin:0 auto}
+.legs{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px}
+.leg{display:flex;flex-direction:column;gap:7px}
+.leg>.lab{font-size:9.5px}
+.leg .node{flex:none}
+.fig .cap{color:var(--mute);font-size:12.5px;margin:13px 0 0;line-height:1.5}
+/* The pane holding the selected node's note. It keeps its height between
+   selections so the figure below it does not jump as a reader moves across. */
+.detail{border-top:1px solid var(--hair);margin-top:16px;padding-top:12px;
+  color:var(--dim);font-size:13.5px;line-height:1.55;min-height:4.6em}
+.detail .dk{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--s1);display:block;margin-bottom:4px}
+.detail .hint{color:var(--faint)}
+/* Names the figure for a screen reader without putting the sentence on
+   screen twice; quality.html carries its own copy of this rule. */
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+.distwrap{overflow-x:auto}
+.dist{width:100%;height:auto;display:block;overflow:visible;min-width:600px}
+@media (max-width:460px){
+  .node .nv{font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -200,8 +243,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   </section>
 
   <nav class="toc" aria-label="Sections on this page">
-    <a href="#glance">At a glance</a>
-    <a href="#compared">Compared</a>
+    <a href="#glance">Overview</a>
     <a href="#reading">Reading a result</a>
     <a href="#pipeline">Pipeline</a>
     <a href="#development">Development</a>
@@ -211,7 +253,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
 
   <!-- ------------------------------------------------------------ at a glance -->
   <section class="panel" id="glance">
-    <div class="phead"><h2 class="lab">At a glance</h2>
+    <div class="phead"><h2 class="lab">Overview</h2>
       <!-- Replaced by the boot below once it knows which build this is. The
            markup says neither, because the wrong one was showing until the
            fetch resolved. -->
@@ -237,34 +279,18 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
            target="_blank" rel="noopener">Every document in every set</a> is
            listed there with its title and format, and every stage drawn on
            these pages is a function in that repository.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- --------------------------------------------------------------- compared -->
-  <section class="panel" id="compared">
-    <div class="phead"><h2 class="lab">Compared with a closed product</h2>
-      <span class="lab right">What it trades</span></div>
-    <div class="pbody">
-      <div class="prose">
-        <p>NotebookLM, Glean and the enterprise search tools sold to companies
-           answer better than this, because they have larger models and far more
-           compute. What they do not show is the middle. A question goes in, an
-           answer comes out, and the steps between are not part of what a reader
-           is given. The five differences below are about what can be seen and
-           checked from outside, not about which one answers better.</p>
-      </div>
-
-      <div class="prose" style="margin-top:14px">
         <!-- SECURITY.md, "The server has no authentication"; README.md, the
              local bind and the model sizes; src/serve.py, which records
              nothing a reader does -->
-        <p>What this has instead is the middle. Every stage is drawn with the
-           score it assigned, every default traces to a measurement on the
-           analytics page, and any of the four retrieval settings can be
-           changed and the question re-run. What it does not have is an
-           account, a permission model or a connection to a live document
-           store, which is most of what a product sold to companies is.</p>
+        <p>NotebookLM, Glean and the search tools sold to companies answer
+           better than this, because they have larger models and far more
+           compute. What they do not show is the middle. A question goes in, an
+           answer comes out, and the steps between are not part of what a
+           reader gets. This site shows those steps, each with the score its
+           stage assigned, and every default traces to a measurement on the
+           analytics page. It has no account, no permission model and no
+           connection to a live document store, which is most of what a product
+           sold to companies is.</p>
       </div>
     </div>
   </section>
@@ -272,38 +298,75 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   <!-- ------------------------------------------------------- reading a result -->
   <section class="panel" id="reading">
     <div class="phead"><h2 class="lab">Reading a result</h2>
-      <span class="lab right">The front page</span></div>
+      <span class="lab right">Anatomy of an answer</span></div>
     <div class="pbody">
       <div class="prose">
-        <p>Pick a document set and type a question. The answer comes back as
-           the passage it rests on, together with the route the search took.
-           Nothing is generated by default, so what you read is the retrieved
-           text word for word.</p>
-        <p>The passage is shown verbatim, with only the words that answer set in
-           bold. That bold is chosen by overlap with the question, so a question
-           asking what something is <em>called</em> withholds the one word that
-           would be pointed at, and those passages carry no bold at all. The
-           citation beside it names the document's real title and the location
-           in the unit its format has, which is a page for a PDF, a slide for a
-           deck and a sheet for a spreadsheet.</p>
-        <!-- ui/about.html #limits, which carries the eleven wrong answers and
-             their scores; this section states the scale and stops. -->
-        <p>The score comes from the cross-encoder and runs roughly &minus;11 to
-           +11. Nothing calibrates it, so it is neither a probability nor a
-           percentage. It says how strongly the model matched this passage to
-           this question, which is not the same as whether the passage is right.
-           A strongly negative score does mean the documents probably do not
-           hold the answer. A high one does not mean they do, and <a
-           href="#limits">Limitations</a> measures how often that goes
-           wrong.</p>
-        <p>&ldquo;Also found&rdquo; lists the other passages that came back, one
-           from each further document first and then the rest in the order they
-           were ranked. It is worth reading, because the top passage is
-           sometimes the wrong one: on 27 of the 121 recorded answers that carry
-           a labelled answer string, the passage holding the answer sits in that
-           list rather than at the top. &ldquo;Not in these documents&rdquo;
-           means the gate declined, which is the system working, and some of the
-           example questions on the front page are chosen to trigger it.</p>
+        <p>A result is the top-ranked passage after reranking, together with the
+           route the search took to reach it. Nothing is generated by default,
+           so the text is the retrieved passage word for word. The figure below
+           is the tail of the pipeline, from the reranked passage to what
+           reaches the page.</p>
+      </div>
+
+      <figure class="fig" id="anatomy" style="margin-top:20px">
+        <div class="flow">
+          <button type="button" class="node" data-k="top" aria-pressed="false">
+            <span class="nk">1 &middot; input</span>
+            <span class="nv">Top-ranked passage, with its cross-encoder score</span>
+          </button>
+          <div class="conn" aria-hidden="true"></div>
+          <button type="button" class="node" data-k="gate" aria-pressed="false">
+            <span class="nk">2 &middot; decision</span>
+            <span class="nv">Abstention gate, comparing that score with this
+              corpus's threshold</span>
+          </button>
+          <div class="conn" aria-hidden="true"></div>
+          <div class="legs">
+            <div class="leg">
+              <span class="lab">At or above the threshold</span>
+              <button type="button" class="node" data-k="passage" aria-pressed="false">
+                <span class="nk">3 &middot; returned</span>
+                <span class="nv">Passage, verbatim</span>
+              </button>
+              <button type="button" class="node" data-k="citation" aria-pressed="false">
+                <span class="nk">4 &middot; returned</span>
+                <span class="nv">Citation and locator</span>
+              </button>
+              <button type="button" class="node" data-k="also" aria-pressed="false">
+                <span class="nk">5 &middot; returned</span>
+                <span class="nv">&ldquo;Also found&rdquo;, the passages ranked below it</span>
+              </button>
+            </div>
+            <div class="leg">
+              <span class="lab">Below the threshold</span>
+              <button type="button" class="node" data-k="declined" aria-pressed="false">
+                <span class="nk">6 &middot; returned</span>
+                <span class="nv">&ldquo;Not in these documents&rdquo;, and no passage</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <figcaption class="detail" id="anatomy-detail">
+          <span class="hint">Select a stage to read what it does.</span>
+        </figcaption>
+      </figure>
+
+      <figure class="fig" id="scoredist">
+        <div class="distwrap">
+          <svg class="dist" id="dist-svg" role="img"
+               aria-labelledby="dist-title" aria-describedby="dist-desc"></svg>
+        </div>
+        <span id="dist-title" class="vh">Cross-encoder score of every labelled
+          question, by corpus</span>
+        <span id="dist-desc" class="vh">For each corpus, one mark per labelled
+          question. Answerable questions sit above the axis and adversarial ones
+          below it, and the vertical rule is the score below which the system
+          declines.</span>
+        <p class="cap" id="dist-cap">Reading&hellip;</p>
+      </figure>
+      <div class="prose" style="margin-top:26px">
+        <!-- ui/about.html #reading, the generator; README.md, answer quality;
+             ui/about.html #development, "A larger generator" -->
         <p>Everything above is text taken from a document. Composing an answer
            is the step where a system can state something no document said, so
            although the project <em>can</em> write one from the same passages
@@ -334,7 +397,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
             across a cut still appears whole in one of them.</span></p>
         </li>
         <li>
-          <h3>Two retrievers</h3>
+          <h3>Hybrid retrieval</h3>
           <p><b>Dense retrieval</b> compares meaning, by turning the question and
             every passage into vectors. <b>BM25</b> compares exact words and
             weights rare ones heavily. They run at the same moment.
@@ -381,7 +444,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
             them.</span></p>
         </li>
         <li>
-          <h3>The gate</h3>
+          <h3>Abstention</h3>
           <p>If the best passage scores below this corpus's threshold, the system
             declines instead of answering.
             <span class="why">A search always returns its closest matches,
@@ -549,7 +612,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       </ol></details>
 
       <div class="prose" style="margin-top:26px">
-        <h3>The shared cause</h3>
+        <h3>Shared failure modes</h3>
         <p>Nine of the rejected changes aim at the same two dozen questions and
            fail for one reason. The passage that answers does not contain the
            words of the question, which is why the search missed it, so putting
@@ -595,7 +658,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
         <!-- ui/about.html #reading, the fused collarbone; ui/index.html, the
              retrieval result reading; ui/about.html #development, "An invented
              answer"; docs/polish-backlog.md item 18 -->
-        <h3>Why a wrong answer looks confident</h3>
+        <h3>Relevance without correctness</h3>
         <p>The decision to answer or decline reads the cross-encoder's score,
            which compares the question with the passage and does not check that
            the passage is right. When the cross-encoder prefers the wrong
@@ -606,7 +669,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
 
 
         <!-- ui/about.html #development, "The shared cause" -->
-        <h3>Missing vocabulary</h3>
+        <h3>Vocabulary mismatch</h3>
         <p>When the passage that answers does not contain the words of the
            question, the search misses it, and putting that passage in front of
            the reranker does not help, because the reranker reads the same
@@ -617,7 +680,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
 
         <!-- README.md, "157 cases across three corpora is still small";
              ui/about.html #development, "A larger generator" -->
-        <h3>Evaluation size</h3>
+        <h3>Sample size</h3>
         <p>The retrieval and answer figures on the analytics page are measured
            over 157 labelled questions across the three sets. At that size a
            difference of one or two questions is inside the noise, so a small
@@ -781,17 +844,6 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   const box = document.getElementById("stats");
   const kept = document.querySelectorAll("#development .tl li.kept").length;
   const gone = document.querySelectorAll("#development .tl li.gone").length;
-  // The comparison grid states this count in a sentence. It was typed as a
-  // word once, read "Twelve" while the list beneath held fifteen, and is taken
-  // from the list now for the same reason the tiles are.
-  const WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight",
-    "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
-    "seventeen", "eighteen", "nineteen", "twenty"];
-  const goneWord = document.getElementById("gone-n");
-  if (goneWord) {
-    const w = WORDS[gone] || String(gone);
-    goneWord.textContent = w[0].toUpperCase() + w.slice(1);
-  }
   // A range is eleven characters of mono where a count is three, and at the
   // tile's face size it broke across two lines; it takes a smaller face.
   const cell = (v, k, cls = "") =>
@@ -841,5 +893,162 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   }
 })();
 </script>
+<script>
+/* The anatomy notes, and the score distribution drawn from the analytics
+   payload. The thresholds and every plotted score are read at run time for the
+   same reason the stat tiles are: a transcribed number goes stale in silence,
+   and this project has been caught by that three times. */
+(() => {
+  const NOTE = {
+    top: ["Top-ranked passage",
+      "The cross-encoder scores each candidate passage against the question and "
+      + "the highest scoring one is returned. The score is the model's raw "
+      + "output, running roughly \u221211 to +11. Nothing calibrates it, so it "
+      + "is neither a probability nor a percentage, and it measures how well the "
+      + "passage matches the question rather than whether the passage is right."],
+    gate: ["Abstention gate",
+      "The threshold is measured separately for each corpus against labelled "
+      + "questions, because a value that suits one corpus refuses answerable "
+      + "questions on another. The second figure plots where each one falls."],
+    passage: ["Passage",
+      "Returned verbatim, with the words that overlap the question set in bold. "
+      + "The emphasis follows lexical overlap, so a question asking what "
+      + "something is called withholds the one word that would be marked, and "
+      + "those passages carry no emphasis at all."],
+    citation: ["Citation and locator",
+      "The document's real title, and a position in the unit its format has: a "
+      + "page for a PDF, a slide for a deck, a sheet for a spreadsheet. Saying "
+      + "\u201cpage 3\u201d of a slide deck sends a reader somewhere that does "
+      + "not exist."],
+    also: ["Also found",
+      "The remaining passages, one from each further document first and then the "
+      + "rest in rank order. On 27 of the 121 recorded answers that carry a "
+      + "labelled answer string, the passage holding the answer sits here rather "
+      + "than at the top, which is why the list is shown rather than discarded."],
+    declined: ["Declined",
+      "Below the threshold the system returns no passage. This is the gate "
+      + "working, and some of the example questions on the front page are chosen "
+      + "to trigger it."],
+  };
+
+  const detail = document.getElementById("anatomy-detail");
+  const nodes = [...document.querySelectorAll("#anatomy .node")];
+  let pinned = null;
+
+  const show = k => {
+    const [head, body] = NOTE[k];
+    detail.innerHTML = "";
+    const h = document.createElement("span");
+    h.className = "dk"; h.textContent = head;
+    detail.append(h, document.createTextNode(body));
+    nodes.forEach(n => n.setAttribute("aria-pressed", String(n.dataset.k === k)));
+  };
+  const clear = () => {
+    detail.innerHTML = '<span class="hint">Select a stage to read what it does.</span>';
+    nodes.forEach(n => n.setAttribute("aria-pressed", "false"));
+  };
+
+  for (const n of nodes) {
+    const k = n.dataset.k;
+    n.addEventListener("mouseenter", () => { if (!pinned) show(k); });
+    n.addEventListener("focus", () => { if (!pinned) show(k); });
+    n.addEventListener("mouseleave", () => { if (!pinned) clear(); });
+    n.addEventListener("blur", () => { if (!pinned) clear(); });
+    // A click pins the note, so a reader can move the pointer away to read it
+    // and a touch screen has any way at all to reach it.
+    n.addEventListener("click", () => {
+      pinned = pinned === k ? null : k;
+      pinned ? show(k) : clear();
+    });
+  }
+
+  /* ---------------------------------------------------- score distribution */
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const el = (n, a = {}) => {
+    const e = document.createElementNS(SVGNS, n);
+    for (const [k, v] of Object.entries(a)) e.setAttribute(k, v);
+    return e;
+  };
+  const HUE = ["var(--s1)", "var(--s2)", "var(--s3)"];
+
+  const draw = corpora => {
+    const svg = document.getElementById("dist-svg");
+    const W = 720, ROW = 84, PADL = 104, PADR = 20, TOP = 16;
+    const H = TOP + ROW * corpora.length + 26;
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+    const all = corpora.flatMap(c => [...c.dist.answerable, ...c.dist.adversarial]);
+    const lo = Math.floor(Math.min(...all) - 1), hi = Math.ceil(Math.max(...all) + 1);
+    const x = v => PADL + (v - lo) / (hi - lo) * (W - PADL - PADR);
+
+    corpora.forEach((c, i) => {
+      const mid = TOP + ROW * i + ROW / 2;
+      const g = el("g");
+
+      // The corpus name, and its threshold in the same mono face the rest of
+      // the interface gives a measured number.
+      const nm = el("text", { x: PADL - 12, y: mid - 3, "text-anchor": "end",
+        fill: "var(--dim)", "font-size": 12.5, "font-family": "var(--sans)" });
+      nm.textContent = c.label;
+      const th = el("text", { x: PADL - 12, y: mid + 12, "text-anchor": "end",
+        fill: "var(--faint)", "font-size": 10.5, "font-family": "var(--mono)" });
+      th.textContent = `declines below ${c.threshold.toFixed(2)}`;
+      g.append(nm, th);
+
+      g.append(el("line", { x1: PADL, y1: mid, x2: W - PADR, y2: mid,
+        stroke: "var(--hair)", "stroke-width": 1 }));
+
+      // Answerable above the axis, adversarial below it. One mark per question,
+      // so the overlap between the two groups is the thing on screen.
+      for (const v of c.dist.answerable)
+        g.append(el("line", { x1: x(v), y1: mid - 3, x2: x(v), y2: mid - 22,
+          stroke: HUE[i % 3], "stroke-width": 1.5, opacity: .62 }));
+      for (const v of c.dist.adversarial)
+        g.append(el("line", { x1: x(v), y1: mid + 3, x2: x(v), y2: mid + 22,
+          stroke: "var(--faint)", "stroke-width": 1.5, opacity: .85 }));
+
+      g.append(el("line", { x1: x(c.threshold), y1: mid - 28, x2: x(c.threshold),
+        y2: mid + 28, stroke: "var(--bad)", "stroke-width": 1,
+        "stroke-dasharray": "3 3" }));
+      svg.append(g);
+    });
+
+    // One axis under the last row, since all three share a scale.
+    const base = TOP + ROW * corpora.length + 2;
+    for (let v = Math.ceil(lo / 4) * 4; v <= hi; v += 4) {
+      svg.append(el("line", { x1: x(v), y1: base - 4, x2: x(v), y2: base,
+        stroke: "var(--wire)", "stroke-width": 1 }));
+      const t = el("text", { x: x(v), y: base + 14, "text-anchor": "middle",
+        fill: "var(--faint)", "font-size": 10.5, "font-family": "var(--mono)" });
+      t.textContent = v > 0 ? `+${v}` : String(v);
+      svg.append(t);
+    }
+    const lab = el("text", { x: PADL - 12, y: base + 14, "text-anchor": "end",
+      fill: "var(--faint)", "font-size": 10.5, "font-family": "var(--mono)" });
+    lab.textContent = "score";
+    svg.append(lab);
+  };
+
+  (async () => {
+    const cap = document.getElementById("dist-cap");
+    try {
+      const data = await (await fetch("/api/analytics")).json();
+      draw(data.corpora);
+      const n = data.corpora.reduce(
+        (s, c) => s + c.dist.answerable.length + c.dist.adversarial.length, 0);
+      cap.innerHTML = "One mark for each of the " + n + " labelled questions, "
+        + "coloured above the axis where the documents answer and grey below "
+        + "where they cannot. The dashed rule is the score below which that "
+        + "corpus declines. The two groups overlap, and that overlap is why a "
+        + "wrong answer can score highly: the gate reads a number that measures "
+        + "the match between question and passage, and no number in the "
+        + "pipeline measures whether the passage is right.";
+    } catch {
+      cap.textContent = "The distribution could not be read.";
+    }
+  })();
+})();
+</script>
+
 </body>
 </html>
