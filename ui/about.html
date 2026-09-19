@@ -204,13 +204,16 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   .part{grid-template-columns:1fr;gap:4px}
   .pl{padding-top:0}
 }
-/* The note for the selected part. It holds its height so the figure below does
-   not jump as a reader moves down the card. */
-.detail{border-top:1px solid var(--hair);margin-top:14px;padding-top:12px;
-  color:var(--dim);font-size:13.5px;line-height:1.55;min-height:3.2em}
-.detail .dk{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--s1);display:block;margin-bottom:4px}
-.detail .hint{color:var(--faint)}
+/* The note for the part under the pointer. quality.html carries the same
+   tooltip; both put the explanation where the reader is looking rather than
+   at the foot of the figure. */
+.tip{position:fixed;z-index:60;pointer-events:none;background:#000;
+  border:1px solid var(--edge);border-radius:8px;padding:9px 11px;font-size:12px;
+  color:var(--ink);box-shadow:0 12px 30px rgba(0,0,0,.6);max-width:280px}
+.tip[hidden]{display:none}
+.tip b{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--s1);margin-bottom:5px}
+.tip .imp{display:block;color:var(--dim);font-size:12.5px;line-height:1.5}
 .fig .cap{color:var(--mute);font-size:12.5px;margin:12px 0 0;line-height:1.5}
 </style>
 </head>
@@ -309,17 +312,14 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <span class="lab right">Anatomy of an answer</span></div>
     <div class="pbody">
       <div class="prose">
-        <p>A result is the highest-ranked passage after reranking, returned word
-           for word. No model writes any of it.</p>
+        <p>To understand how to read a result, hover over each part
+           below.</p>
       </div>
 
       <figure class="fig" id="anatomy">
         <div class="card" id="card" aria-busy="true">
           <p class="cap" style="padding:10px 14px;margin:0">Reading&hellip;</p>
         </div>
-        <figcaption class="detail" id="anatomy-detail">
-          <span class="hint">Select a part for what it is.</span>
-        </figcaption>
       </figure>
     </div>
   </section>
@@ -777,6 +777,8 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
 
 </main>
 
+<div class="tip" id="tip" hidden></div>
+
 <script>
 // The numbers are read from the same generated file the analytics page plots.
 // A transcribed number goes stale silently, and this project has been bitten
@@ -876,11 +878,16 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   const sgn = n => (n === 0 ? "" : n > 0 ? "+" : "\u2212")
     + Math.abs(n).toFixed(2);
 
-  const detail = document.getElementById("anatomy-detail");
-  const clear = () => {
-    detail.innerHTML = '<span class="hint">Select a part for what it is.</span>';
-    for (const p of document.querySelectorAll(".part"))
-      p.setAttribute("aria-pressed", "false");
+  const tip = document.getElementById("tip");
+  const place = (x, y) => {
+    const r = tip.getBoundingClientRect();
+    tip.style.left = Math.max(8, Math.min(x + 14, innerWidth - r.width - 8)) + "px";
+    tip.style.top = Math.max(8, y - r.height - 12) + "px";
+  };
+  const hide = () => {
+    tip.hidden = true;
+    for (const q of document.querySelectorAll(".part"))
+      q.setAttribute("aria-pressed", "false");
   };
 
   const buildCard = (q, top, rest, verdict) => {
@@ -907,22 +914,28 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
     card.removeAttribute("aria-busy");
 
     for (const p of card.querySelectorAll(".part")) {
-      const k = p.dataset.k;
-      const show = () => {
-        const [head, body] = NOTE[k];
-        detail.innerHTML = "";
-        const h = document.createElement("span");
-        h.className = "dk"; h.textContent = head;
-        detail.append(h, document.createTextNode(body));
-        for (const q2 of card.querySelectorAll(".part"))
-          q2.setAttribute("aria-pressed", String(q2 === p));
+      const [head, body] = NOTE[p.dataset.k];
+      const fill = () => {
+        tip.innerHTML = "";
+        const h = document.createElement("b");
+        h.textContent = head;
+        const s = document.createElement("span");
+        s.className = "imp"; s.textContent = body;
+        tip.append(h, s);
+        tip.hidden = false;
+        for (const q of card.querySelectorAll(".part"))
+          q.setAttribute("aria-pressed", String(q === p));
       };
-      p.addEventListener("mouseenter", show);
-      p.addEventListener("focus", show);
-      p.addEventListener("mouseleave", clear);
-      p.addEventListener("blur", clear);
-      // A tap has no hover, so it pins instead.
-      p.addEventListener("click", show);
+      p.addEventListener("pointerenter", e => { fill(); place(e.clientX, e.clientY); });
+      p.addEventListener("pointermove", e => place(e.clientX, e.clientY));
+      p.addEventListener("pointerleave", hide);
+      // Keyboard has no pointer, so the note anchors to the row itself.
+      p.addEventListener("focus", () => {
+        fill();
+        const r = p.getBoundingClientRect();
+        place(r.left, r.top);
+      });
+      p.addEventListener("blur", hide);
     }
   };
 
