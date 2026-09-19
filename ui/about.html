@@ -180,41 +180,44 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
    hover alone cannot be reached on a touch screen, and this figure is the
    section's content rather than an ornament beside it. */
 .fig{margin:0;max-width:var(--measure)}
-.fig+.fig{margin-top:30px}
-.flow{display:flex;flex-direction:column}
-.node{display:block;width:100%;text-align:left;font-family:inherit;cursor:pointer;
-  background:var(--nest);border:1px solid var(--hair);border-radius:3px;
-  padding:9px 11px;color:var(--dim);
-  transition:border-color .14s var(--ease),color .14s var(--ease)}
-.node:hover,.node:focus-visible{border-color:var(--wire);color:var(--ink);outline:none}
-.node[aria-pressed="true"]{border-color:var(--s1);color:var(--ink)}
-.node .nk{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--faint);margin-bottom:2px}
-.node[aria-pressed="true"] .nk{color:var(--s1)}
-.node .nv{display:block;font-size:13.5px;line-height:1.35}
-/* The trunk between two stacked nodes, and the pair of legs under the gate. */
-.conn{width:1px;height:15px;background:var(--wire);margin:0 auto}
-.legs{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:13px}
-.leg{display:flex;flex-direction:column;gap:7px}
-.leg>.lab{font-size:9.5px}
-.leg .node{flex:none}
-.fig .cap{color:var(--mute);font-size:12.5px;margin:13px 0 0;line-height:1.5}
-/* The pane holding the selected node's note. It keeps its height between
-   selections so the figure below it does not jump as a reader moves across. */
-.detail{border-top:1px solid var(--hair);margin-top:16px;padding-top:12px;
-  color:var(--dim);font-size:13.5px;line-height:1.55;min-height:4.6em}
+.fig+.fig{margin-top:32px}
+/* One recorded answer, with its parts named in the gutter. The gutter folds
+   above each part under 560px, where 104px of label beside 240px of passage
+   stops being a layout. */
+.card{border:1px solid var(--hair);border-radius:3px;background:var(--nest);
+  padding:4px 0;margin-top:18px}
+.part{display:grid;grid-template-columns:104px 1fr;gap:14px;width:100%;
+  text-align:left;font-family:inherit;background:none;border:0;cursor:pointer;
+  padding:11px 14px;color:var(--dim);border-left:2px solid transparent;
+  transition:background .14s var(--ease),border-color .14s var(--ease)}
+.part+.part{border-top:1px solid var(--hair)}
+.part:hover,.part:focus-visible{background:var(--card);color:var(--ink);outline:none}
+.part[aria-pressed="true"]{border-left-color:var(--s1);background:var(--card);
+  color:var(--ink)}
+.pl{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--faint);padding-top:3px}
+.part[aria-pressed="true"] .pl{color:var(--s1)}
+.pv{font-size:13.5px;line-height:1.5}
+.pv .meta{font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+.pv .sc{font-family:var(--mono);color:var(--ink)}
+.pv em{color:var(--faint);font-style:normal}
+@media (max-width:560px){
+  .part{grid-template-columns:1fr;gap:4px}
+  .pl{padding-top:0}
+}
+/* The note for the selected part. It holds its height so the figure below does
+   not jump as a reader moves down the card. */
+.detail{border-top:1px solid var(--hair);margin-top:14px;padding-top:12px;
+  color:var(--dim);font-size:13.5px;line-height:1.55;min-height:3.2em}
 .detail .dk{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--s1);display:block;margin-bottom:4px}
 .detail .hint{color:var(--faint)}
+.fig .cap{color:var(--mute);font-size:12.5px;margin:12px 0 0;line-height:1.5}
 /* Names the figure for a screen reader without putting the sentence on
    screen twice; quality.html carries its own copy of this rule. */
 .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
   clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
-.distwrap{overflow-x:auto}
-.dist{width:100%;height:auto;display:block;overflow:visible;min-width:600px}
-@media (max-width:460px){
-  .node .nv{font-size:13px}
-}
+.dist{width:100%;display:block}
 </style>
 </head>
 <body>
@@ -282,15 +285,26 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
         <!-- SECURITY.md, "The server has no authentication"; README.md, the
              local bind and the model sizes; src/serve.py, which records
              nothing a reader does -->
-        <p>NotebookLM, Glean and the search tools sold to companies answer
-           better than this, because they have larger models and far more
-           compute. What they do not show is the middle. A question goes in, an
-           answer comes out, and the steps between are not part of what a
-           reader gets. This site shows those steps, each with the score its
-           stage assigned, and every default traces to a measurement on the
-           analytics page. It has no account, no permission model and no
-           connection to a live document store, which is most of what a product
-           sold to companies is.</p>
+        <!-- requirements.txt, which lists no orchestration framework;
+             corpora.json, the per-corpus settings; README.md, the five
+             settings measured per corpus -->
+        <p>The usual way to build this is LangChain, LlamaIndex or Haystack,
+           which supply the retriever, the pipeline and the defaults, so a
+           working system is a short script. This uses none of them. It uses
+           libraries instead, FAISS for the dense index, rank_bm25 for the
+           sparse score and sentence-transformers to run the models, and the
+           code between those stages is the project's own. What a framework
+           gives up is the reason. Five settings here had to be measured for
+           each set of documents rather than chosen once, and the three
+           abstention thresholds that came out of it span 5.5 points, so no
+           single default would have served all three.</p>
+        <p>A framework would also have supplied connectors, loaders and
+           maintenance that this does not have, and the products sold to
+           companies answer better than it does, because they have larger models
+           and far more compute. What none of them show is the middle. This has
+           no account, no permission model and no connection to a live document
+           store, and every stage it does run is on screen with the score it
+           assigned.</p>
       </div>
     </div>
   </section>
@@ -301,85 +315,43 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
       <span class="lab right">Anatomy of an answer</span></div>
     <div class="pbody">
       <div class="prose">
-        <p>A result is the top-ranked passage after reranking, together with the
-           route the search took to reach it. Nothing is generated by default,
-           so the text is the retrieved passage word for word. The figure below
-           is the tail of the pipeline, from the reranked passage to what
-           reaches the page.</p>
+        <p>A result is the highest-ranked passage after reranking, returned word
+           for word. Below is one, recorded from the ornithology set, with its
+           parts named.</p>
       </div>
 
-      <figure class="fig" id="anatomy" style="margin-top:20px">
-        <div class="flow">
-          <button type="button" class="node" data-k="top" aria-pressed="false">
-            <span class="nk">1 &middot; input</span>
-            <span class="nv">Top-ranked passage, with its cross-encoder score</span>
-          </button>
-          <div class="conn" aria-hidden="true"></div>
-          <button type="button" class="node" data-k="gate" aria-pressed="false">
-            <span class="nk">2 &middot; decision</span>
-            <span class="nv">Abstention gate, comparing that score with this
-              corpus's threshold</span>
-          </button>
-          <div class="conn" aria-hidden="true"></div>
-          <div class="legs">
-            <div class="leg">
-              <span class="lab">At or above the threshold</span>
-              <button type="button" class="node" data-k="passage" aria-pressed="false">
-                <span class="nk">3 &middot; returned</span>
-                <span class="nv">Passage, verbatim</span>
-              </button>
-              <button type="button" class="node" data-k="citation" aria-pressed="false">
-                <span class="nk">4 &middot; returned</span>
-                <span class="nv">Citation and locator</span>
-              </button>
-              <button type="button" class="node" data-k="also" aria-pressed="false">
-                <span class="nk">5 &middot; returned</span>
-                <span class="nv">&ldquo;Also found&rdquo;, the passages ranked below it</span>
-              </button>
-            </div>
-            <div class="leg">
-              <span class="lab">Below the threshold</span>
-              <button type="button" class="node" data-k="declined" aria-pressed="false">
-                <span class="nk">6 &middot; returned</span>
-                <span class="nv">&ldquo;Not in these documents&rdquo;, and no passage</span>
-              </button>
-            </div>
-          </div>
+      <figure class="fig" id="anatomy">
+        <div class="card" id="card" aria-busy="true">
+          <p class="cap" style="padding:10px 14px;margin:0">Reading&hellip;</p>
         </div>
         <figcaption class="detail" id="anatomy-detail">
-          <span class="hint">Select a stage to read what it does.</span>
+          <span class="hint">Select a part for what it is.</span>
         </figcaption>
       </figure>
 
       <figure class="fig" id="scoredist">
-        <div class="distwrap">
-          <svg class="dist" id="dist-svg" role="img"
-               aria-labelledby="dist-title" aria-describedby="dist-desc"></svg>
-        </div>
+        <svg class="dist" id="dist-svg" role="img"
+             aria-labelledby="dist-title" aria-describedby="dist-desc"></svg>
         <span id="dist-title" class="vh">Cross-encoder score of every labelled
           question, by corpus</span>
-        <span id="dist-desc" class="vh">For each corpus, one mark per labelled
-          question. Answerable questions sit above the axis and adversarial ones
-          below it, and the vertical rule is the score below which the system
-          declines.</span>
+        <span id="dist-desc" class="vh">One mark per labelled question.
+          Answerable questions sit above the axis and adversarial ones below it,
+          and the dashed rule is the score below which the system declines.</span>
         <p class="cap" id="dist-cap">Reading&hellip;</p>
       </figure>
+
       <div class="prose" style="margin-top:26px">
-        <!-- ui/about.html #reading, the generator; README.md, answer quality;
-             ui/about.html #development, "A larger generator" -->
-        <p>Everything above is text taken from a document. Composing an answer
-           is the step where a system can state something no document said, so
-           although the project <em>can</em> write one from the same passages
-           with a model on the serving machine, that is off here, because the
-           site exists to show the retrieval. When it does compose, the result
-           is scored on whether it cites a document it was never given, whether
-           it declines the questions the documents cannot answer, and how much
-           of its wording came from the passages it was shown. No model judges
-           those answers, since a judge is a second system whose own mistakes
-           are invisible. <a href="/quality">The figures are on the analytics
-           page.</a></p>
+        <!-- README.md, answer quality; ui/about.html #development, "A larger
+             generator" -->
+        <p>Composing an answer is the step where a system can state something no
+           document said, so it is off here and the passage stands on its own.
+           The project can write one from the same passages with a model on the
+           serving machine, and when it does, the result is scored on whether it
+           cites a document it was never given, whether it declines the
+           questions the documents cannot answer, and how much of its wording
+           came from the passages it was shown. <a href="/quality">Those figures
+           are on the analytics page.</a></p>
       </div>
-    </div>
   </section>
 
   <!-- --------------------------------------------------------------- pipeline -->
@@ -894,73 +866,95 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
 })();
 </script>
 <script>
-/* The anatomy notes, and the score distribution drawn from the analytics
-   payload. The thresholds and every plotted score are read at run time for the
-   same reason the stat tiles are: a transcribed number goes stale in silence,
-   and this project has been caught by that three times. */
+/* The card is a real recorded answer, and the distribution is every labelled
+   question's score. Both are fetched rather than written down, for the reason
+   the stat tiles are: a transcribed number goes stale in silence, and this
+   project has been caught by that three times. */
 (() => {
+  // The fused collarbone question, which Limitations already works through.
+  // The cross-encoder puts the pygostyle first and the furcula second, so the
+  // card shows a confident answer that is wrong, which is what the
+  // distribution below it is about. If it ever leaves the golden set the
+  // figure falls back to whatever the payload offers first.
+  const WANTED = "What is the fused collarbone of a bird called?";
+
   const NOTE = {
-    top: ["Top-ranked passage",
-      "The cross-encoder scores each candidate passage against the question and "
-      + "the highest scoring one is returned. The score is the model's raw "
-      + "output, running roughly \u221211 to +11. Nothing calibrates it, so it "
-      + "is neither a probability nor a percentage, and it measures how well the "
-      + "passage matches the question rather than whether the passage is right."],
-    gate: ["Abstention gate",
-      "The threshold is measured separately for each corpus against labelled "
-      + "questions, because a value that suits one corpus refuses answerable "
-      + "questions on another. The second figure plots where each one falls."],
+    question: ["Question",
+      "Reaches the search in the words it was typed in. Four ways of rewriting "
+      + "it first were measured and none shipped."],
     passage: ["Passage",
-      "Returned verbatim, with the words that overlap the question set in bold. "
-      + "The emphasis follows lexical overlap, so a question asking what "
-      + "something is called withholds the one word that would be marked, and "
-      + "those passages carry no emphasis at all."],
-    citation: ["Citation and locator",
-      "The document's real title, and a position in the unit its format has: a "
-      + "page for a PDF, a slide for a deck, a sheet for a spreadsheet. Saying "
-      + "\u201cpage 3\u201d of a slide deck sends a reader somewhere that does "
-      + "not exist."],
+      "Returned word for word. Bold marks the words it shares with the "
+      + "question, so a question asking what something is called has nothing to "
+      + "mark."],
+    citation: ["Citation",
+      "The document's real title and a position in the unit its format has, a "
+      + "page for a PDF and a slide for a deck."],
+    score: ["Score",
+      "The cross-encoder's raw output, roughly \u221211 to +11 and uncalibrated, "
+      + "so it is neither a probability nor a percentage. It rates how well the "
+      + "passage matches the question, not whether the passage is right."],
     also: ["Also found",
-      "The remaining passages, one from each further document first and then the "
-      + "rest in rank order. On 27 of the 121 recorded answers that carry a "
-      + "labelled answer string, the passage holding the answer sits here rather "
-      + "than at the top, which is why the list is shown rather than discarded."],
-    declined: ["Declined",
-      "Below the threshold the system returns no passage. This is the gate "
-      + "working, and some of the example questions on the front page are chosen "
-      + "to trigger it."],
+      "The passages ranked below the first. On 27 of the 121 recorded answers "
+      + "carrying a labelled answer string, the one holding the answer sits "
+      + "here instead of at the top."],
   };
+
+  const esc = s => String(s).replace(/[&<>"]/g,
+    c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // Zero takes no sign. "+0.00" reads as a rounded positive rather than
+  // the exact value the ML corpus was calibrated to.
+  const sgn = n => (n === 0 ? "" : n > 0 ? "+" : "\u2212")
+    + Math.abs(n).toFixed(2);
 
   const detail = document.getElementById("anatomy-detail");
-  const nodes = [...document.querySelectorAll("#anatomy .node")];
-  let pinned = null;
-
-  const show = k => {
-    const [head, body] = NOTE[k];
-    detail.innerHTML = "";
-    const h = document.createElement("span");
-    h.className = "dk"; h.textContent = head;
-    detail.append(h, document.createTextNode(body));
-    nodes.forEach(n => n.setAttribute("aria-pressed", String(n.dataset.k === k)));
-  };
   const clear = () => {
-    detail.innerHTML = '<span class="hint">Select a stage to read what it does.</span>';
-    nodes.forEach(n => n.setAttribute("aria-pressed", "false"));
+    detail.innerHTML = '<span class="hint">Select a part for what it is.</span>';
+    for (const p of document.querySelectorAll(".part"))
+      p.setAttribute("aria-pressed", "false");
   };
 
-  for (const n of nodes) {
-    const k = n.dataset.k;
-    n.addEventListener("mouseenter", () => { if (!pinned) show(k); });
-    n.addEventListener("focus", () => { if (!pinned) show(k); });
-    n.addEventListener("mouseleave", () => { if (!pinned) clear(); });
-    n.addEventListener("blur", () => { if (!pinned) clear(); });
-    // A click pins the note, so a reader can move the pointer away to read it
-    // and a touch screen has any way at all to reach it.
-    n.addEventListener("click", () => {
-      pinned = pinned === k ? null : k;
-      pinned ? show(k) : clear();
-    });
-  }
+  const buildCard = (q, top, rest, verdict) => {
+    const card = document.getElementById("card");
+    const row = (k, label, html) =>
+      `<button type="button" class="part" data-k="${k}" aria-pressed="false">`
+      + `<span class="pl">${label}</span><span class="pv">${html}</span></button>`;
+
+    const others = rest.shown.map(it =>
+      `<div class="meta">${esc(it.source)} &middot; ${esc(it.locator)}`
+      + ` &nbsp;<span class="sc">${sgn(it.score)}</span></div>`).join("")
+      + (rest.more > 0
+        ? `<div class="meta"><em>and ${rest.more} more</em></div>` : "");
+
+    card.innerHTML =
+      row("question", "question", esc(q))
+      + row("passage", "passage", esc(top.text.trim()))
+      + row("citation", "citation",
+        `<span class="meta">${esc(top.source)} &middot; ${esc(top.locator)}</span>`)
+      + row("score", "score",
+        `<span class="sc">${sgn(top.score)}</span> `
+        + `<em>this set declines below ${sgn(verdict.threshold)}</em>`)
+      + row("also", "also found", others);
+    card.removeAttribute("aria-busy");
+
+    for (const p of card.querySelectorAll(".part")) {
+      const k = p.dataset.k;
+      const show = () => {
+        const [head, body] = NOTE[k];
+        detail.innerHTML = "";
+        const h = document.createElement("span");
+        h.className = "dk"; h.textContent = head;
+        detail.append(h, document.createTextNode(body));
+        for (const q2 of card.querySelectorAll(".part"))
+          q2.setAttribute("aria-pressed", String(q2 === p));
+      };
+      p.addEventListener("mouseenter", show);
+      p.addEventListener("focus", show);
+      p.addEventListener("mouseleave", clear);
+      p.addEventListener("blur", clear);
+      // A tap has no hover, so it pins instead.
+      p.addEventListener("click", show);
+    }
+  };
 
   /* ---------------------------------------------------- score distribution */
   const SVGNS = "http://www.w3.org/2000/svg";
@@ -973,78 +967,109 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
 
   const draw = corpora => {
     const svg = document.getElementById("dist-svg");
-    const W = 720, ROW = 84, PADL = 104, PADR = 20, TOP = 16;
-    const H = TOP + ROW * corpora.length + 26;
+    // One viewBox unit per CSS pixel, so the type is the size it says it is at
+    // every width. The corpus name and its threshold sit above each axis,
+    // because beside it they need more room than a phone has.
+    const W = Math.max(300, Math.round(
+      svg.parentElement.getBoundingClientRect().width));
+    const ROW = W < 520 ? 76 : 92, PADL = 6, PADR = 10, TOP = 6;
+    const H = TOP + ROW * corpora.length + 24;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-
+    svg.setAttribute("height", H);
     const all = corpora.flatMap(c => [...c.dist.answerable, ...c.dist.adversarial]);
     const lo = Math.floor(Math.min(...all) - 1), hi = Math.ceil(Math.max(...all) + 1);
     const x = v => PADL + (v - lo) / (hi - lo) * (W - PADL - PADR);
 
     corpora.forEach((c, i) => {
-      const mid = TOP + ROW * i + ROW / 2;
-      const g = el("g");
-
-      // The corpus name, and its threshold in the same mono face the rest of
-      // the interface gives a measured number.
-      const nm = el("text", { x: PADL - 12, y: mid - 3, "text-anchor": "end",
-        fill: "var(--dim)", "font-size": 12.5, "font-family": "var(--sans)" });
+      const top = TOP + ROW * i, axis = top + 54, g = el("g");
+      const nm = el("text", { x: PADL, y: top + 13, fill: "var(--dim)",
+        "font-size": 12.5, "font-family": "var(--sans)" });
       nm.textContent = c.label;
-      const th = el("text", { x: PADL - 12, y: mid + 12, "text-anchor": "end",
+      const th = el("text", { x: W - PADR, y: top + 13, "text-anchor": "end",
         fill: "var(--faint)", "font-size": 10.5, "font-family": "var(--mono)" });
-      th.textContent = `declines below ${c.threshold.toFixed(2)}`;
-      g.append(nm, th);
-
-      g.append(el("line", { x1: PADL, y1: mid, x2: W - PADR, y2: mid,
+      th.textContent = `declines below ${sgn(c.threshold)}`;
+      g.append(nm, th, el("line", { x1: PADL, y1: axis, x2: W - PADR, y2: axis,
         stroke: "var(--hair)", "stroke-width": 1 }));
-
-      // Answerable above the axis, adversarial below it. One mark per question,
-      // so the overlap between the two groups is the thing on screen.
       for (const v of c.dist.answerable)
-        g.append(el("line", { x1: x(v), y1: mid - 3, x2: x(v), y2: mid - 22,
+        g.append(el("line", { x1: x(v), y1: axis - 3, x2: x(v), y2: axis - 24,
           stroke: HUE[i % 3], "stroke-width": 1.5, opacity: .62 }));
       for (const v of c.dist.adversarial)
-        g.append(el("line", { x1: x(v), y1: mid + 3, x2: x(v), y2: mid + 22,
+        g.append(el("line", { x1: x(v), y1: axis + 3, x2: x(v), y2: axis + 20,
           stroke: "var(--faint)", "stroke-width": 1.5, opacity: .85 }));
-
-      g.append(el("line", { x1: x(c.threshold), y1: mid - 28, x2: x(c.threshold),
-        y2: mid + 28, stroke: "var(--bad)", "stroke-width": 1,
+      g.append(el("line", { x1: x(c.threshold), y1: axis - 30, x2: x(c.threshold),
+        y2: axis + 26, stroke: "var(--bad)", "stroke-width": 1,
         "stroke-dasharray": "3 3" }));
       svg.append(g);
     });
 
-    // One axis under the last row, since all three share a scale.
+    // One axis under the last row, since all three share a scale. The end
+    // labels are anchored inward so neither runs past the edge.
     const base = TOP + ROW * corpora.length + 2;
-    for (let v = Math.ceil(lo / 4) * 4; v <= hi; v += 4) {
+    const ticks = [];
+    const step = W < 520 ? 8 : 4;
+    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
+    ticks.forEach((v, j) => {
       svg.append(el("line", { x1: x(v), y1: base - 4, x2: x(v), y2: base,
         stroke: "var(--wire)", "stroke-width": 1 }));
-      const t = el("text", { x: x(v), y: base + 14, "text-anchor": "middle",
+      const anchor = j === 0 ? "start" : j === ticks.length - 1 ? "end" : "middle";
+      const t2 = el("text", { x: x(v), y: base + 14, "text-anchor": anchor,
         fill: "var(--faint)", "font-size": 10.5, "font-family": "var(--mono)" });
-      t.textContent = v > 0 ? `+${v}` : String(v);
-      svg.append(t);
-    }
-    const lab = el("text", { x: PADL - 12, y: base + 14, "text-anchor": "end",
-      fill: "var(--faint)", "font-size": 10.5, "font-family": "var(--mono)" });
-    lab.textContent = "score";
-    svg.append(lab);
+      t2.textContent = v === 0 ? "0"
+        : v > 0 ? `+${v}` : `−${Math.abs(v)}`;
+      svg.append(t2);
+    });
   };
 
   (async () => {
     const cap = document.getElementById("dist-cap");
+    let corpora = null;
     try {
-      const data = await (await fetch("/api/analytics")).json();
-      draw(data.corpora);
-      const n = data.corpora.reduce(
+      corpora = (await (await fetch("/api/analytics")).json()).corpora;
+      draw(corpora);
+      let t = 0;
+      new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(() => draw(corpora), 120);
+      }).observe(document.getElementById("scoredist"));
+      const n = corpora.reduce(
         (s, c) => s + c.dist.answerable.length + c.dist.adversarial.length, 0);
-      cap.innerHTML = "One mark for each of the " + n + " labelled questions, "
-        + "coloured above the axis where the documents answer and grey below "
-        + "where they cannot. The dashed rule is the score below which that "
-        + "corpus declines. The two groups overlap, and that overlap is why a "
-        + "wrong answer can score highly: the gate reads a number that measures "
-        + "the match between question and passage, and no number in the "
-        + "pipeline measures whether the passage is right.";
+      cap.textContent = "One mark for each of the " + n + " labelled questions, "
+        + "coloured where the documents answer and grey where they cannot. "
+        + "The two groups overlap, and that overlap is why a wrong answer can "
+        + "score well. The gate reads the match between question and passage, "
+        + "and nothing in the pipeline reads whether the passage is right.";
     } catch {
       cap.textContent = "The distribution could not be read.";
+    }
+
+    try {
+      const ask = async q => (await fetch("/api/chat", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q }),
+      })).json();
+      let d = await ask(WANTED);
+      if (!d || !d.stages) {
+        const ex = corpora && corpora.flatMap(c => c.examples || [])
+          .find(e => !e.adversarial);
+        if (ex) d = await ask(ex.q);
+      }
+      const items = d.stages[d.stages.length - 1].items;
+      buildCard(d.query, items[0],
+        { shown: items.slice(1, 3), more: Math.max(0, items.length - 3) },
+        d.verdict);
+      const fig = document.getElementById("anatomy");
+      const note = document.createElement("p");
+      note.className = "cap";
+      note.innerHTML = "A recorded answer, and a wrong one. The right passage "
+        + "names the furcula and sits second, so the system returns the "
+        + "pygostyle and returns it confidently. <a href=\"#limits\">"
+        + "Limitations</a> has the rest.";
+      fig.append(note);
+    } catch {
+      document.getElementById("card").innerHTML =
+        '<p class="cap" style="padding:10px 14px;margin:0">'
+        + "The example answer could not be read.</p>";
     }
   })();
 })();
