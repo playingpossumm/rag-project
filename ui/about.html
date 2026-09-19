@@ -180,7 +180,6 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
    hover alone cannot be reached on a touch screen, and this figure is the
    section's content rather than an ornament beside it. */
 .fig{margin:0;max-width:var(--measure)}
-.fig+.fig{margin-top:32px}
 /* One recorded answer, with its parts named in the gutter. The gutter folds
    above each part under 560px, where 104px of label beside 240px of passage
    stops being a layout. */
@@ -213,11 +212,6 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   text-transform:uppercase;color:var(--s1);display:block;margin-bottom:4px}
 .detail .hint{color:var(--faint)}
 .fig .cap{color:var(--mute);font-size:12.5px;margin:12px 0 0;line-height:1.5}
-/* Names the figure for a screen reader without putting the sentence on
-   screen twice; quality.html carries its own copy of this rule. */
-.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
-  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
-.dist{width:100%;display:block}
 </style>
 </head>
 <body>
@@ -316,8 +310,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
     <div class="pbody">
       <div class="prose">
         <p>A result is the highest-ranked passage after reranking, returned word
-           for word. Below is one, recorded from the ornithology set, with its
-           parts named.</p>
+           for word. No model writes any of it.</p>
       </div>
 
       <figure class="fig" id="anatomy">
@@ -328,30 +321,7 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
           <span class="hint">Select a part for what it is.</span>
         </figcaption>
       </figure>
-
-      <figure class="fig" id="scoredist">
-        <svg class="dist" id="dist-svg" role="img"
-             aria-labelledby="dist-title" aria-describedby="dist-desc"></svg>
-        <span id="dist-title" class="vh">Cross-encoder score of every labelled
-          question, by corpus</span>
-        <span id="dist-desc" class="vh">One mark per labelled question.
-          Answerable questions sit above the axis and adversarial ones below it,
-          and the dashed rule is the score below which the system declines.</span>
-        <p class="cap" id="dist-cap">Reading&hellip;</p>
-      </figure>
-
-      <div class="prose" style="margin-top:26px">
-        <!-- README.md, answer quality; ui/about.html #development, "A larger
-             generator" -->
-        <p>Composing an answer is the step where a system can state something no
-           document said, so it is off here and the passage stands on its own.
-           The project can write one from the same passages with a model on the
-           serving machine, and when it does, the result is scored on whether it
-           cites a document it was never given, whether it declines the
-           questions the documents cannot answer, and how much of its wording
-           came from the passages it was shown. <a href="/quality">Those figures
-           are on the analytics page.</a></p>
-      </div>
+    </div>
   </section>
 
   <!-- --------------------------------------------------------------- pipeline -->
@@ -956,116 +926,24 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
     }
   };
 
-  /* ---------------------------------------------------- score distribution */
-  const SVGNS = "http://www.w3.org/2000/svg";
-  const el = (n, a = {}) => {
-    const e = document.createElementNS(SVGNS, n);
-    for (const [k, v] of Object.entries(a)) e.setAttribute(k, v);
-    return e;
-  };
-  const HUE = ["var(--s1)", "var(--s2)", "var(--s3)"];
-
-  const draw = corpora => {
-    const svg = document.getElementById("dist-svg");
-    // One viewBox unit per CSS pixel, so the type is the size it says it is at
-    // every width. The corpus name and its threshold sit above each axis,
-    // because beside it they need more room than a phone has.
-    const W = Math.max(300, Math.round(
-      svg.parentElement.getBoundingClientRect().width));
-    const ROW = W < 520 ? 76 : 92, PADL = 6, PADR = 10, TOP = 6;
-    const H = TOP + ROW * corpora.length + 24;
-    while (svg.firstChild) svg.removeChild(svg.firstChild);
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-    svg.setAttribute("height", H);
-    const all = corpora.flatMap(c => [...c.dist.answerable, ...c.dist.adversarial]);
-    const lo = Math.floor(Math.min(...all) - 1), hi = Math.ceil(Math.max(...all) + 1);
-    const x = v => PADL + (v - lo) / (hi - lo) * (W - PADL - PADR);
-
-    corpora.forEach((c, i) => {
-      const top = TOP + ROW * i, axis = top + 54, g = el("g");
-      const nm = el("text", { x: PADL, y: top + 13, fill: "var(--dim)",
-        "font-size": 12.5, "font-family": "var(--sans)" });
-      nm.textContent = c.label;
-      const th = el("text", { x: W - PADR, y: top + 13, "text-anchor": "end",
-        fill: "var(--faint)", "font-size": 10.5, "font-family": "var(--mono)" });
-      th.textContent = `declines below ${sgn(c.threshold)}`;
-      g.append(nm, th, el("line", { x1: PADL, y1: axis, x2: W - PADR, y2: axis,
-        stroke: "var(--hair)", "stroke-width": 1 }));
-      for (const v of c.dist.answerable)
-        g.append(el("line", { x1: x(v), y1: axis - 3, x2: x(v), y2: axis - 24,
-          stroke: HUE[i % 3], "stroke-width": 1.5, opacity: .62 }));
-      for (const v of c.dist.adversarial)
-        g.append(el("line", { x1: x(v), y1: axis + 3, x2: x(v), y2: axis + 20,
-          stroke: "var(--faint)", "stroke-width": 1.5, opacity: .85 }));
-      g.append(el("line", { x1: x(c.threshold), y1: axis - 30, x2: x(c.threshold),
-        y2: axis + 26, stroke: "var(--bad)", "stroke-width": 1,
-        "stroke-dasharray": "3 3" }));
-      svg.append(g);
-    });
-
-    // One axis under the last row, since all three share a scale. The end
-    // labels are anchored inward so neither runs past the edge.
-    const base = TOP + ROW * corpora.length + 2;
-    const ticks = [];
-    const step = W < 520 ? 8 : 4;
-    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) ticks.push(v);
-    ticks.forEach((v, j) => {
-      svg.append(el("line", { x1: x(v), y1: base - 4, x2: x(v), y2: base,
-        stroke: "var(--wire)", "stroke-width": 1 }));
-      const anchor = j === 0 ? "start" : j === ticks.length - 1 ? "end" : "middle";
-      const t2 = el("text", { x: x(v), y: base + 14, "text-anchor": anchor,
-        fill: "var(--faint)", "font-size": 10.5, "font-family": "var(--mono)" });
-      t2.textContent = v === 0 ? "0"
-        : v > 0 ? `+${v}` : `−${Math.abs(v)}`;
-      svg.append(t2);
-    });
-  };
-
   (async () => {
-    const cap = document.getElementById("dist-cap");
-    let corpora = null;
     try {
-      corpora = (await (await fetch("/api/analytics")).json()).corpora;
-      draw(corpora);
-      let t = 0;
-      new ResizeObserver(() => {
-        clearTimeout(t);
-        t = setTimeout(() => draw(corpora), 120);
-      }).observe(document.getElementById("scoredist"));
-      const n = corpora.reduce(
-        (s, c) => s + c.dist.answerable.length + c.dist.adversarial.length, 0);
-      cap.textContent = "One mark for each of the " + n + " labelled questions, "
-        + "coloured where the documents answer and grey where they cannot. "
-        + "The two groups overlap, and that overlap is why a wrong answer can "
-        + "score well. The gate reads the match between question and passage, "
-        + "and nothing in the pipeline reads whether the passage is right.";
-    } catch {
-      cap.textContent = "The distribution could not be read.";
-    }
-
-    try {
-      const ask = async q => (await fetch("/api/chat", {
+      const r = await fetch("/api/chat", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q }),
-      })).json();
-      let d = await ask(WANTED);
-      if (!d || !d.stages) {
-        const ex = corpora && corpora.flatMap(c => c.examples || [])
-          .find(e => !e.adversarial);
-        if (ex) d = await ask(ex.q);
-      }
+        body: JSON.stringify({ question: WANTED }),
+      });
+      const d = await r.json();
       const items = d.stages[d.stages.length - 1].items;
       buildCard(d.query, items[0],
         { shown: items.slice(1, 3), more: Math.max(0, items.length - 3) },
         d.verdict);
-      const fig = document.getElementById("anatomy");
       const note = document.createElement("p");
       note.className = "cap";
       note.innerHTML = "A recorded answer, and a wrong one. The right passage "
         + "names the furcula and sits second, so the system returns the "
         + "pygostyle and returns it confidently. <a href=\"#limits\">"
         + "Limitations</a> has the rest.";
-      fig.append(note);
+      document.getElementById("anatomy").append(note);
     } catch {
       document.getElementById("card").innerHTML =
         '<p class="cap" style="padding:10px 14px;margin:0">'
