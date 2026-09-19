@@ -590,44 +590,37 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
         <!-- ui/about.html #reading, the eleven wrong answers and their
              scores; ui/index.html, the retrieval result reading -->
         <p>The answer can be wrong, and it does not look wrong when it is.
-           Across the three sets there are eleven questions where nothing that
-           comes back answers them, and the system shows an answer anyway on
-           nine of those, the highest scoring +6.36 on a scale running to about
-           +11. Nothing in the pipeline checks that a passage is right. The
-           score measures how well a passage matches the question, which is a
-           different thing.</p>
+           Across the three sets, eleven questions have nothing that answers
+           them, and the system shows an answer anyway on nine of those, the
+           highest scoring +6.36 on a scale reaching about +11.</p>
 
-        <!-- ui/about.html #reading, the fused collarbone; ui/index.html, the
-             retrieval result reading; ui/about.html #development, "An invented
-             answer"; docs/polish-backlog.md item 18 -->
+        <!-- ui/about.html #reading, the recorded card, which is this case
+             worked through; ui/about.html #development, "An invented answer";
+             docs/polish-backlog.md item 18 -->
         <h3>Relevance without correctness</h3>
-        <p>The decision to answer or decline reads the cross-encoder's score,
-           which compares the question with the passage and does not check that
-           the passage is right. When the cross-encoder prefers the wrong
-           passage, the system answers with confidence. Asked for a bird's
-           fused collarbone, it ranks a passage about the pygostyle first and
-           the passage naming the furcula second, and every question these sets
-           get wrong scores above its own set's refusal line.</p>
+        <p>The decision to answer or decline reads the cross-encoder's
+           score, which rates the match between question and passage and not
+           whether the passage is right. When the wrong passage scores higher,
+           the system answers with confidence. Every question these sets get
+           wrong scores above its own refusal line.</p>
 
 
-        <!-- ui/about.html #development, "The shared cause" -->
+        <!-- ui/about.html #development, "Shared failure modes" -->
         <h3>Vocabulary mismatch</h3>
         <p>When the passage that answers does not contain the words of the
-           question, the search misses it, and putting that passage in front of
-           the reranker does not help, because the reranker reads the same
-           question and reaches the same conclusion. A question that asks what
-           something is called withholds the one word that would find its
-           answer. This is the shared cause described under Development.</p>
+           question, the search misses it. Putting that passage in front of the
+           reranker does not help, because the reranker reads the same question
+           and reaches the same conclusion. A question that asks what something
+           is called withholds the one word that would find its answer.</p>
 
 
         <!-- README.md, "157 cases across three corpora is still small";
              ui/about.html #development, "A larger generator" -->
         <h3>Sample size</h3>
-        <p>The retrieval and answer figures on the analytics page are measured
-           over 157 labelled questions across the three sets. At that size a
-           difference of one or two questions is inside the noise, so a small
-           gain between two configurations is not evidence that one is
-           better.</p>
+        <p>Every figure on the analytics page comes from 157 labelled
+           questions across the three sets. At that size a difference of one or
+           two questions is inside the noise, so a small gain between two
+           configurations is not evidence that one is better.</p>
       </div>
     </div>
   </section>
@@ -850,25 +843,23 @@ details.grp>.tl,details.grp>.gloss{margin-bottom:8px}
   // figure falls back to whatever the payload offers first.
   const WANTED = "What is the fused collarbone of a bird called?";
 
+  // Each note says what the part is. Why a default was chosen, and what was
+  // measured and rejected, belong to Development and Limitations.
   const NOTE = {
     question: ["Question",
-      "Reaches the search in the words it was typed in. Four ways of rewriting "
-      + "it first were measured and none shipped."],
+      "The question as typed. It reaches the search unchanged."],
     passage: ["Passage",
-      "Returned word for word. Bold marks the words it shares with the "
-      + "question, so a question asking what something is called has nothing to "
-      + "mark."],
+      "The retrieved text, word for word. Bold marks the words it shares with "
+      + "the question."],
     citation: ["Citation",
-      "The document's real title and a position in the unit its format has, a "
-      + "page for a PDF and a slide for a deck."],
+      "The document it came from, and where in it, in whichever unit that "
+      + "format has. A page for a PDF, a slide for a deck."],
     score: ["Score",
-      "The cross-encoder's raw output, roughly \u221211 to +11 and uncalibrated, "
-      + "so it is neither a probability nor a percentage. It rates how well the "
-      + "passage matches the question, not whether the passage is right."],
+      "How closely the reranker matched this passage to the question, on a "
+      + "scale of roughly −11 to +11. It rates the match, not the answer."],
     also: ["Also found",
-      "The passages ranked below the first. On 27 of the 121 recorded answers "
-      + "carrying a labelled answer string, the one holding the answer sits "
-      + "here instead of at the top."],
+      "The passages ranked below the first, one from each further document, "
+      + "then the rest in rank order."],
   };
 
   const esc = s => String(s).replace(/[&<>"]/g,
