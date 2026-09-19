@@ -160,6 +160,11 @@ h3.grp{margin:0 0 12px;color:var(--faint)}
    count stay on the page and the entries open on a click, which is the pattern
    the front page already uses for Detail and Also found. Nothing is removed. */
 details.grp{margin:0 0 4px}
+/* A group's top edge is its summary's border-top, and the 11px above the label
+   sits inside that rule rather than above it. Stacked groups want the rules
+   close, so the 4px between them stays; the first group after a paragraph or a
+   list was touching the text it followed. 26px matches the h3 rhythm. */
+:is(.prose, ol.tl) + details.grp{margin-top:26px}
 details.grp>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;
   gap:12px;padding:11px 0;border-top:1px solid var(--hair);color:var(--mute)}
 details.grp>summary::-webkit-details-marker{display:none}
